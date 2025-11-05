@@ -1,0 +1,21 @@
+{
+  "name": "cyber-witches-idle-coven",
+  "version": "1.0.0",
+  "description": "An idle game about casting spells and building workstations",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 8080 -o",
+    "start": "npx http-server . -p 8080 -o"
+  },
+  "keywords": [
+    "idle",
+    "game",
+    "incremental"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
+

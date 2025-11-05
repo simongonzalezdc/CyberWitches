@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+package-lock.json
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Optional: Old Godot files (if keeping for reference)
+# .godot/
+# *.tmp
+# .godot-editor/
+# .godot-imported/
+# .godot-export/
+# .import/
+# export_presets.cfg
+# build/
+# *.pck
+# *.zip
+# user://
+

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Witches: Idle Coven</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- HUD -->
+    <div class="hud">
+        <div class="top-bar">
+            <div class="currency">
+                <span id="ab-display">AB: 0</span>
+                <span id="abps-display">0 AB/s</span>
+                <span id="combo-display" class="combo-display" style="display: none;"></span>
+            </div>
+            <div class="top-bar-right">
+                <button id="auto-cast-toggle" class="secondary-button" style="margin-right: 10px;">Auto: OFF</button>
+                <button id="cast-button" class="cast-button">✨ Cast</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-button active" data-tab="workstations">🏭 Workstations</button>
+            <button class="tab-button" data-tab="inscriptions">📜 Inscriptions</button>
+            <button class="tab-button" data-tab="inventory">🎒 Inventory</button>
+            <button class="tab-button" data-tab="experiment">🔬 Experiment</button>
+            <button class="tab-button" data-tab="dailies">📅 Dailies</button>
+            <button class="tab-button" data-tab="boons">⭐ Boons</button>
+            <button class="tab-button" data-tab="stats">📊 Stats</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Workstations Tab -->
+            <div id="workstations-tab" class="tab-pane active">
+                <div class="scroll-container" id="workstation-list"></div>
+            </div>
+
+            <!-- Inscriptions Tab -->
+            <div id="inscriptions-tab" class="tab-pane">
+                <div class="scroll-container" id="upgrade-list"></div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="inventory-tab" class="tab-pane">
+                <div class="scroll-container" id="inventory-list"></div>
+            </div>
+
+            <!-- Experiment Tab -->
+            <div id="experiment-tab" class="tab-pane">
+                <button id="experiment-button" class="primary-button">🔬 Try Experiment</button>
+                <div id="experiment-result" class="result-label"></div>
+                <div class="scroll-container" id="recipe-list"></div>
+            </div>
+
+            <!-- Dailies Tab -->
+            <div id="dailies-tab" class="tab-pane">
+                <div class="scroll-container" id="task-list"></div>
+            </div>
+
+            <!-- Boons Tab -->
+            <div id="boons-tab" class="tab-pane">
+                <div class="boon-header">
+                    <span id="ek-display">Eldritch Keys: 0</span>
+                </div>
+                <div class="scroll-container" id="boon-list"></div>
+            </div>
+            
+            <!-- Stats Tab -->
+            <div id="stats-tab" class="tab-pane">
+                <div class="stats-container">
+                    <h2>📊 Statistics</h2>
+                    <div id="stats-list"></div>
+                </div>
+                <div class="achievements-container">
+                    <h2>🏆 Achievements</h2>
+                    <div id="achievements-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prestige Modal -->
+    <div id="prestige-modal" class="modal">
+        <div class="modal-content">
+            <h2>⚡ Ascend</h2>
+            <p>Eldritch Keys: <span id="prestige-ek">0</span></p>
+            <p>Next Ascend: +<span id="prestige-gain">0</span> EK</p>
+            <div class="modal-buttons">
+                <button id="ascend-button" class="primary-button">Ascend</button>
+                <button id="close-prestige-button" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Back Modal -->
+    <div id="welcome-back-modal" class="modal">
+        <div class="modal-content">
+            <h2>🌙 Welcome Back!</h2>
+            <p id="welcome-time">⏰ Away for: 0s</p>
+            <p id="welcome-ab">✨ Earned: 0 AB</p>
+            <button id="close-welcome-button" class="primary-button">Close</button>
+        </div>
+    </div>
+    
+    <!-- Active Events Display -->
+    <div id="active-events" class="active-events"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/game.js"></script>
+</body>
+</html>
+
