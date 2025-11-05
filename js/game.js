@@ -3,7 +3,7 @@ import { DailyRituals } from './dailyRituals.js';
 import { AchievementSystem } from './achievements.js';
 import { ComboSystem } from './comboSystem.js';
 import { EventSystem } from './eventSystem.js';
-import { PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
+import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { formatShort, formatPrecise, formatTimeDuration } from './utils.js';
 import { createParticle, pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
 import { VirtualWorkstationList, VirtualUpgradeList, VirtualAchievementList } from './virtualScroll.js';
@@ -1184,6 +1184,15 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             const owned = gameState.workstations[prodData.id] || 0;
             const recipe = getScaledRecipe(prodData.recipe, owned, prodData.growth);
             
+            // Check affordability for different amounts
+            const canAfford1 = gameState.canAfford(recipe);
+            
+            // For x10, check if we can afford at least 1 craft (simplified - actual crafting will handle the limit)
+            const canAfford10 = canAfford1; // Simplified - will let craft function handle actual amount
+            
+            // For max, check if we can afford at least 1 craft
+            const canAffordMax = canAfford1;
+            
             const card = document.createElement('div');
             card.className = 'card';
             card.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
@@ -1208,9 +1217,9 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                     }).join('')}
                 </div>
                 <div class="button-row">
-                    <button class="btn-primary" data-action="craft" data-ws-id="${prodData.id}" data-amount="1">Craft x1</button>
-                    <button class="btn-primary" data-action="craft" data-ws-id="${prodData.id}" data-amount="10">Craft x10</button>
-                    <button class="btn-primary" data-action="craft-max" data-ws-id="${prodData.id}">Max</button>
+                    <button class="btn-primary ${canAfford1 ? '' : 'btn-disabled'}" data-action="craft" data-ws-id="${prodData.id}" data-amount="1" ${canAfford1 ? '' : 'disabled'}>Craft x1</button>
+                    <button class="btn-primary ${canAfford10 ? '' : 'btn-disabled'}" data-action="craft" data-ws-id="${prodData.id}" data-amount="10" ${canAfford10 ? '' : 'disabled'}>Craft x10</button>
+                    <button class="btn-primary ${canAffordMax ? '' : 'btn-disabled'}" data-action="craft-max" data-ws-id="${prodData.id}" ${canAffordMax ? '' : 'disabled'}>Max</button>
                 </div>
             `;
             
@@ -1425,29 +1434,102 @@ function updateInventoryTab() {
         return;
     }
     
+    // Ensure container is visible
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.gap = '15px';
+    container.style.visibility = 'visible';
+    container.style.opacity = '1';
     container.innerHTML = '';
     
     if (!gameState.inventory || Object.keys(gameState.inventory).length === 0) {
         const emptyMsg = document.createElement('div');
         emptyMsg.className = 'card';
-        emptyMsg.innerHTML = '<div class="card-value">No ingredients yet. Cast to gather ingredients!</div>';
+        emptyMsg.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
+        emptyMsg.innerHTML = '<div class="card-title">Inventory</div><div class="card-description">No ingredients yet. Cast to gather ingredients!</div>';
         container.appendChild(emptyMsg);
         return;
     }
     
-    // Batch DOM updates for better performance
-    const fragment = document.createDocumentFragment();
+    // Get all items and sort by tier and amount
+    const items = [];
+    let maxAmount = 0;
     
     for (const ingId in gameState.inventory) {
         const amount = gameState.inventory[ingId];
         if (amount <= 0) continue;
         
-        const item = document.createElement('div');
-        item.className = 'card';
-        item.innerHTML = `
-            <div class="card-value">${ingId}: ${formatShort(amount)}</div>
+        const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+        const tier = ingredient?.tier || 0;
+        const displayName = ingredient?.displayName || ingId;
+        
+        items.push({ id: ingId, amount, tier, displayName });
+        maxAmount = Math.max(maxAmount, amount);
+    }
+    
+    // Sort by tier (ascending), then by amount (descending)
+    items.sort((a, b) => {
+        if (a.tier !== b.tier) return a.tier - b.tier;
+        return b.amount - a.amount;
+    });
+    
+    // Batch DOM updates for better performance
+    const fragment = document.createDocumentFragment();
+    
+    // Create header card
+    const headerCard = document.createElement('div');
+    headerCard.className = 'card';
+    headerCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
+    headerCard.innerHTML = `
+        <div class="card-title">📦 Inventory</div>
+        <div class="card-description">Total Items: ${items.length}</div>
+    `;
+    fragment.appendChild(headerCard);
+    
+    // Create items with progress bars
+    for (const item of items) {
+        const percentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
+        
+        // Get tier icon/color
+        const tierColors = {
+            0: { icon: '⚪', color: '#888', glow: 'rgba(136, 136, 136, 0.3)' },
+            1: { icon: '🔵', color: '#3CE3C5', glow: 'rgba(60, 227, 197, 0.3)' },
+            2: { icon: '🟣', color: '#FF2DAA', glow: 'rgba(255, 45, 170, 0.3)' },
+            3: { icon: '🟡', color: '#FFDB6E', glow: 'rgba(255, 219, 110, 0.3)' },
+            4: { icon: '🔴', color: '#FF6B6B', glow: 'rgba(255, 107, 107, 0.3)' }
+        };
+        
+        const tierStyle = tierColors[item.tier] || tierColors[0];
+        
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
+        
+        card.innerHTML = `
+            <div class="card-section" style="padding: 15px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">${tierStyle.icon}</span>
+                        <div>
+                            <div class="card-label" style="font-size: 16px; font-weight: bold; color: ${tierStyle.color};">${item.displayName}</div>
+                            <div class="card-description" style="font-size: 12px; color: var(--text-dim);">Tier ${item.tier}</div>
+                        </div>
+                    </div>
+                    <div class="card-value" style="font-size: 18px; font-weight: bold; color: ${tierStyle.color};">
+                        ${formatShort(item.amount)}
+                    </div>
+                </div>
+                <div class="progress-bar-container" style="width: 100%; height: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; overflow: hidden; position: relative;">
+                    <div class="progress-bar-fill" style="height: 100%; width: ${percentage}%; background: linear-gradient(90deg, ${tierStyle.color}, ${tierStyle.color}dd); border-radius: 4px; transition: width 0.3s ease; box-shadow: 0 0 10px ${tierStyle.glow};"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-dim);">
+                    <span>${percentage.toFixed(1)}% of max</span>
+                    <span>ID: ${item.id}</span>
+                </div>
+            </div>
         `;
-        fragment.appendChild(item);
+        
+        fragment.appendChild(card);
     }
     
     container.appendChild(fragment);

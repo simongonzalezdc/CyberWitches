@@ -360,6 +360,24 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
                 const owned = (currentGameState.workstations && currentGameState.workstations[workstation.id]) || 0;
                 const recipe = VirtualWorkstationList.getScaledRecipeStatic(workstation.recipe, owned, workstation.growth);
+                
+                // Check affordability
+                let canAfford1 = true;
+                if (currentGameState && currentGameState.canAfford && typeof currentGameState.canAfford === 'function') {
+                    canAfford1 = currentGameState.canAfford(recipe);
+                } else {
+                    // Fallback check
+                    for (const ingId in recipe) {
+                        const needed = recipe[ingId];
+                        const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
+                        if (have < needed) {
+                            canAfford1 = false;
+                            break;
+                        }
+                    }
+                }
+                const canAfford10 = canAfford1; // Simplified
+                const canAffordMax = canAfford1;
             
             card.innerHTML = `
                 <div class="card-title">${workstation.displayName}</div>
@@ -382,9 +400,9 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                     }).join('')}
                 </div>
                 <div class="button-row">
-                    <button class="btn-primary" data-action="craft" data-ws-id="${workstation.id}" data-amount="1">Craft x1</button>
-                    <button class="btn-primary" data-action="craft" data-ws-id="${workstation.id}" data-amount="10">Craft x10</button>
-                    <button class="btn-primary" data-action="craft-max" data-ws-id="${workstation.id}">Max</button>
+                    <button class="btn-primary ${canAfford1 ? '' : 'btn-disabled'}" data-action="craft" data-ws-id="${workstation.id}" data-amount="1" ${canAfford1 ? '' : 'disabled'}>Craft x1</button>
+                    <button class="btn-primary ${canAfford10 ? '' : 'btn-disabled'}" data-action="craft" data-ws-id="${workstation.id}" data-amount="10" ${canAfford10 ? '' : 'disabled'}>Craft x10</button>
+                    <button class="btn-primary ${canAffordMax ? '' : 'btn-disabled'}" data-action="craft-max" data-ws-id="${workstation.id}" ${canAffordMax ? '' : 'disabled'}>Max</button>
                 </div>
             `;
             
