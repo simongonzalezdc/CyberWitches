@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+    <meta name="description" content="Cyber Witches: Idle Coven - A magical idle game about casting spells and building workstations">
+    <meta name="theme-color" content="#0E0E12">
+    <title>Cyber Witches: Idle Coven</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- HUD -->
+    <div class="hud" role="banner" aria-label="Game Header">
+        <div class="top-bar">
+            <div class="currency" role="status" aria-live="polite" aria-atomic="true">
+                <span id="ab-display" aria-label="Arcane Bits balance">AB: 0</span>
+                <span id="abps-display" aria-label="Arcane Bits per second">0 AB/s</span>
+            </div>
+            <div class="top-bar-right" role="toolbar" aria-label="Game Controls">
+                <button id="cast-button" class="cast-button"
+                        aria-label="Cast spell to generate resources">✨ Cast</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container" id="main-content" role="main">
+        <!-- Particle Effects Canvas -->
+        <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></canvas>
+        <!-- Tab Navigation -->
+        <nav class="tabs" role="tablist" aria-label="Game Sections">
+            <button class="tab-button active" data-tab="workstations"
+                    role="tab" aria-selected="true" aria-controls="workstations-tab"
+                    tabindex="0">🏭 Workstations</button>
+            <button class="tab-button" data-tab="inscriptions"
+                    role="tab" aria-selected="false" aria-controls="inscriptions-tab"
+                    tabindex="-1">📜 Inscriptions</button>
+            <button class="tab-button" data-tab="inventory"
+                    role="tab" aria-selected="false" aria-controls="inventory-tab"
+                    tabindex="-1">🎒 Inventory</button>
+            <button class="tab-button" data-tab="coven"
+                    role="tab" aria-selected="false" aria-controls="coven-tab"
+                    tabindex="-1">🔮 Coven</button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Workstations Tab -->
+            <div id="workstations-tab" class="tab-pane active"
+                 role="tabpanel" aria-labelledby="workstations-tab" tabindex="0">
+                <div class="scroll-container" id="workstation-list"
+                     role="region" aria-label="Workstations List"></div>
+            </div>
+
+            <!-- Inscriptions Tab -->
+            <div id="inscriptions-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="inscriptions-tab" tabindex="0">
+                <div class="scroll-container" id="upgrade-list"
+                     role="region" aria-label="Inscriptions List"></div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="inventory-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="inventory-tab" tabindex="0">
+                <div class="scroll-container" id="inventory-list"
+                     role="region" aria-label="Inventory Items"></div>
+            </div>
+
+            <!-- Coven Tab -->
+            <div id="coven-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="coven-tab" tabindex="0">
+                <div class="scroll-container" id="coven-content"
+                     role="region" aria-label="Coven Information"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Core Dependencies - Load in specific order to avoid dependency issues -->
+    <script type="module">
+        // Global error handler
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            document.body.innerHTML += `<div style="background: red; color: white; padding: 10px;">Error: ${e.error.message}</div>`;
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+            document.body.innerHTML += `<div style="background: red; color: white; padding: 10px;">Promise Error: ${e.reason}</div>`;
+        });
+    </script>
+    
+    <!-- Load core modules first -->
+    <script type="module" src="js/data.js"></script>
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/errorHandler.js"></script>
+    
+    <!-- Performance Features -->
+    <script type="module" src="js/commonUtils.js"></script>
+    <script type="module" src="js/animations.js"></script>
+    <script type="module" src="js/virtualScroll.js"></script>
+    
+    <!-- Social Features -->
+    <script type="module" src="js/covenSystem.js"></script>
+    
+    <!-- Mobile & Accessibility -->
+    <script type="module" src="js/mobile.js"></script>
+    <script type="module" src="js/accessibility.js"></script>
+    
+    <!-- Advanced Features -->
+    <script type="module" src="js/cloudSave.js"></script>
+    <script type="module" src="js/analytics.js"></script>
+    <script type="module" src="js/particleEffects.js"></script>
+    
+    <!-- Game Systems -->
+    <script type="module" src="js/gameState.js"></script>
+    
+    <!-- Main Game -->
+    <script type="module">
+        // Import core functionality
+        import { PRODUCERS, UPGRADES } from './js/data.js';
+        import { formatShort } from './js/utils.js';
+        import { GameState } from './js/gameState.js';
+        import { handleError } from './js/errorHandler.js';
+        
+        // Import performance features
+        import { animateNumber, createParticle, pulseElement, highlightElement } from './js/animations.js';
+        import { VirtualWorkstationList, VirtualUpgradeList } from './js/virtualScroll.js';
+        import { debounce } from './js/commonUtils.js';
+        
+        // Import social features
+        import { CovenSystem } from './js/covenSystem.js';
+        
+        // Import mobile & accessibility features
+        // Note: mobile.js and accessibility.js auto-initialize when loaded
+        
+        // Import advanced features
+        import { CloudSaveSystem } from './js/cloudSave.js';
+        import { analytics } from './js/analytics.js';
+        import { particleEffects } from './js/particleEffects.js';
+
+        // Global game state
+        let gameState;
+        let covenSystem;
+        let cloudSaveSystem;
+        let abDisplay;
+        let abpsDisplay;
+        let castButton;
+        let tabButtons;
+        let tabPanes;
+
+        // Simple notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'error' ? '#ff4444' : '#44ff44'};
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                z-index: 10000;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Initialize game
+        function initGame() {
+            try {
+                console.log('Initializing game...');
+                
+                // Get UI elements
+                abDisplay = document.getElementById('ab-display');
+                abpsDisplay = document.getElementById('abps-display');
+                castButton = document.getElementById('cast-button');
+                tabButtons = document.querySelectorAll('.tab-button');
+                tabPanes = document.querySelectorAll('.tab-pane');
+                
+                // Initialize game state
+                gameState = new GameState();
+                
+                // Initialize coven system
+                covenSystem = new CovenSystem(gameState);
+                
+                // Initialize cloud save system
+                cloudSaveSystem = new CloudSaveSystem(gameState);
+                
+                // Set up cloud save callbacks
+                cloudSaveSystem.onSyncStarted = () => {
+                    showNotification('Syncing with cloud...', 'info');
+                };
+                
+                cloudSaveSystem.onSyncCompleted = () => {
+                    showNotification('Cloud sync complete!', 'success');
+                };
+                
+                cloudSaveSystem.onSyncFailed = (error) => {
+                    showNotification(`Cloud sync failed: ${error}`, 'error');
+                };
+                
+                cloudSaveSystem.onSaveImported = (saveData) => {
+                    showNotification('Save imported successfully!', 'success');
+                    updateAllUI();
+                };
+                
+                // Set up coven system callbacks
+                covenSystem.onCovenJoined = (coven) => {
+                    showNotification(`Joined coven: ${coven.name}!`, 'success');
+                    updateCovenTab();
+                };
+                
+                covenSystem.onCovenLeft = (coven) => {
+                    showNotification(`Left coven: ${coven.name}`, 'info');
+                    updateCovenTab();
+                };
+                
+                covenSystem.onRitualProgress = (ritual) => {
+                    const progress = (ritual.progress / ritual.maxProgress * 100).toFixed(1);
+                    showNotification(`${ritual.name}: ${progress}% complete`, 'info');
+                };
+                
+                covenSystem.onRitualCompleted = (ritual) => {
+                    showNotification(`Ritual completed: ${ritual.name}!`, 'success');
+                    updateCovenTab();
+                };
+                
+                covenSystem.onCovenLevelUp = (level) => {
+                    showNotification(`Coven reached level ${level}!`, 'success');
+                    updateCovenTab();
+                };
+                
+                // Set up callbacks with animations
+                gameState.onAbChanged = (newValue) => {
+                    if (abDisplay) {
+                        const oldValue = parseFloat(abDisplay.textContent.replace('AB: ', '').replace(/[^0-9.-]/g, '')) || 0;
+                        animateNumber(abDisplay, oldValue, newValue);
+                    }
+                };
+                
+                // Start game
+                gameState.start();
+                
+                // Set up cast button with animations
+                if (castButton) {
+                    castButton.addEventListener('click', () => {
+                        // Add pulse animation
+                        pulseElement(castButton, 1.2, 150);
+                        
+                        // Cast spell
+                        gameState.cast();
+                        
+                        // Update coven progress
+                        if (covenSystem) {
+                            covenSystem.updateCovenProgress('casting', 1);
+                        }
+                        
+                        // Track analytics
+                        analytics.trackAction('cast_spell', { amount: 1 });
+                        
+                        // Announce to screen reader
+                        if (window.Accessibility) {
+                            window.Accessibility.announceGameEvent('cast', { amount: 1 });
+                        }
+                        
+                        // Create particle effect at button position
+                        const rect = castButton.getBoundingClientRect();
+                        createParticle(
+                            rect.left + rect.width / 2,
+                            rect.top + rect.height / 2,
+                            '+1 AB',
+                            '#FF2DAA'
+                        );
+                        
+                        // Create enhanced particle effect
+                        particleEffects.createSpellCastEffect(
+                            rect.left + rect.width / 2,
+                            rect.top + rect.height / 2
+                        );
+                        
+                        updateWorkstationsTab();
+                        updateInventoryTab();
+                    });
+                }
+                
+                // Set up tab switching
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const tabName = button.dataset.tab;
+                        switchTab(tabName);
+                    });
+                });
+                
+                // Update UI
+                updateAllUI();
+                
+                // Update ABPS every second
+                setInterval(() => {
+                    if (abpsDisplay && gameState) {
+                        const abps = gameState.getAbPerSecond();
+                        abpsDisplay.textContent = `${abps.toFixed(1)} AB/s`;
+                    }
+                }, 1000);
+                
+                console.log('Game initialized successfully!');
+                showNotification('Game loaded successfully!', 'success');
+                
+                // Initialize accessibility features
+                if (window.Accessibility) {
+                    // Make game state available to accessibility module
+                    window.gameState = gameState;
+                    window.showNotification = showNotification;
+                }
+                
+                // Initialize mobile features
+                if (window.MobileFeatures) {
+                    // Make game state available to mobile module
+                    window.gameState = gameState;
+                    window.castButton = castButton;
+                }
+                
+            } catch (error) {
+                console.error('Error initializing game:', error);
+                handleError(error, 'gameInitialization', true);
+                showNotification(`Failed to initialize game: ${error.message}`, 'error');
+            }
+        }
+
+        function switchTab(tabName) {
+            if (!tabButtons || !tabPanes) return;
+            
+            // Update buttons
+            tabButtons.forEach(btn => {
+                const isActive = btn.dataset.tab === tabName;
+                btn.classList.toggle('active', isActive);
+            });
+            
+            // Update panes
+            tabPanes.forEach(pane => {
+                const isActive = pane.id === `${tabName}-tab`;
+                pane.classList.toggle('active', isActive);
+            });
+            
+            // Update tab content
+            switch(tabName) {
+                case 'workstations':
+                    updateWorkstationsTab();
+                    break;
+                case 'inscriptions':
+                    updateInscriptionsTab();
+                    break;
+                case 'inventory':
+                    updateInventoryTab();
+                    break;
+                case 'coven':
+                    updateCovenTab();
+                    break;
+            }
+        }
+
+        // Virtual scroll managers
+        let workstationVirtualList = null;
+        let upgradeVirtualList = null;
+        
+        function updateWorkstationsTab() {
+            if (!gameState) return;
+            
+            const container = document.getElementById('workstation-list');
+            if (!container) return;
+            
+            // Show only unlocked workstations
+            const unlockedWorkstations = PRODUCERS.filter(prod => gameState.ab >= prod.unlockAtAb);
+            
+            // Initialize virtual scroll if not already done
+            if (!workstationVirtualList) {
+                workstationVirtualList = new VirtualWorkstationList(container, unlockedWorkstations, gameState);
+            } else {
+                // Update existing virtual list
+                workstationVirtualList.workstations = unlockedWorkstations;
+                workstationVirtualList.refresh();
+            }
+        }
+
+        function updateInscriptionsTab() {
+            if (!gameState) return;
+            
+            const container = document.getElementById('upgrade-list');
+            if (!container) return;
+            
+            // Show only unlocked upgrades
+            const unlockedUpgrades = UPGRADES.filter(upg => gameState.ab >= upg.unlockAtAb);
+            
+            // Initialize virtual scroll if not already done
+            if (!upgradeVirtualList) {
+                upgradeVirtualList = new VirtualUpgradeList(container, unlockedUpgrades, gameState);
+            } else {
+                // Update existing virtual list
+                upgradeVirtualList.upgrades = unlockedUpgrades;
+                upgradeVirtualList.refresh();
+            }
+        }
+
+        function updateInventoryTab() {
+            if (!gameState) return;
+            
+            const container = document.getElementById('inventory-list');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (!gameState.inventory || Object.keys(gameState.inventory).length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'card';
+                emptyMsg.innerHTML = '<div class="card-value">No ingredients yet. Cast to gather ingredients!</div>';
+                container.appendChild(emptyMsg);
+                return;
+            }
+            
+            for (const ingId in gameState.inventory) {
+                const amount = gameState.inventory[ingId];
+                if (amount <= 0) continue;
+                
+                const item = document.createElement('div');
+                item.className = 'card';
+                item.innerHTML = `
+                    <div class="card-value">${ingId}: ${formatShort(amount)}</div>
+                `;
+                container.appendChild(item);
+            }
+        }
+
+        function updateCovenTab() {
+            if (!covenSystem) return;
+            
+            const container = document.getElementById('coven-content');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (!covenSystem.isInCoven()) {
+                // Show coven creation/joining interface
+                const createCard = document.createElement('div');
+                createCard.className = 'card';
+                createCard.innerHTML = `
+                    <div class="card-title">Create or Join a Coven</div>
+                    <div class="card-description">Join forces with other Cyber Witches to unlock powerful bonuses!</div>
+                    <div class="card-section">
+                        <div class="card-label">Coven Name:</div>
+                        <input type="text" id="coven-name-input" placeholder="Enter coven name" maxlength="50" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg);">
+                        <div class="card-label">Description (optional):</div>
+                        <textarea id="coven-desc-input" placeholder="Describe your coven" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); resize: vertical; min-height: 60px;"></textarea>
+                    </div>
+                    <div class="button-row">
+                        <button class="primary-button" onclick="createCoven()">Create Coven</button>
+                        <button class="primary-button" onclick="joinMockCoven()">Join Mock Coven</button>
+                    </div>
+                `;
+                container.appendChild(createCard);
+            } else {
+                // Show coven information
+                const coven = covenSystem.getCurrentCoven();
+                const memberInfo = covenSystem.getPlayerMemberInfo();
+                const isLeader = covenSystem.isCovenLeader();
+                const bonus = covenSystem.getCovenProductionBonus();
+                
+                // Coven info card
+                const infoCard = document.createElement('div');
+                infoCard.className = 'card';
+                infoCard.innerHTML = `
+                    <div class="card-title">${coven.name}</div>
+                    <div class="card-description">${coven.description}</div>
+                    <div class="card-section">
+                        <div class="card-label">Level: ${coven.level}</div>
+                        <div class="card-value">EXP: ${coven.experience}/${coven.experienceToNext}</div>
+                        <div class="card-value">Production Bonus: +${((bonus - 1) * 100).toFixed(1)}%</div>
+                        <div class="card-value">Members: ${coven.members.length}</div>
+                    </div>
+                    <div class="button-row">
+                        ${isLeader ? '<button class="primary-button" onclick="leaveCoven()">Disband Coven</button>' : '<button class="primary-button" onclick="leaveCoven()">Leave Coven</button>'}
+                    </div>
+                `;
+                container.appendChild(infoCard);
+                
+                // Members card
+                const membersCard = document.createElement('div');
+                membersCard.className = 'card';
+                membersCard.innerHTML = `
+                    <div class="card-title">Members</div>
+                    <div class="card-section">
+                        ${coven.members.map(member => `
+                            <div class="card-value">
+                                ${member.isLeader ? '👑' : '🧙'} ${member.name}
+                                ${member.id === covenSystem.playerId ? ' (You)' : ''}
+                                <br>Contribution: ${formatShort(member.contribution)} AB
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(membersCard);
+                
+                // Rituals card
+                const ritualsCard = document.createElement('div');
+                ritualsCard.className = 'card';
+                ritualsCard.innerHTML = `
+                    <div class="card-title">Active Rituals</div>
+                    <div class="card-section">
+                        ${coven.activeRituals.map(ritual => {
+                            const progress = (ritual.progress / ritual.maxProgress * 100).toFixed(1);
+                            const completed = ritual.completedAt > 0;
+                            return `
+                                <div class="card-value">
+                                    ${completed ? '✅' : '🔄'} ${ritual.name}
+                                    <br>${ritual.description}
+                                    <br>Progress: ${progress}%
+                                    ${!completed ? `<div style="background: var(--border); height: 8px; border-radius: 4px; margin-top: 4px;">
+                                        <div style="background: var(--success); height: 100%; width: ${progress}%; border-radius: 4px;"></div>
+                                    </div>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                container.appendChild(ritualsCard);
+            }
+        }
+
+        function updateAllUI() {
+            updateWorkstationsTab();
+            updateInscriptionsTab();
+            updateInventoryTab();
+            updateCovenTab();
+        }
+
+        // Global functions for onclick handlers with animations
+        window.craftWorkstation = (wsId, amount = 1, buttonElement = null) => {
+            if (!gameState) return;
+            if (gameState.craftWorkstation(wsId, amount)) {
+                const displayName = PRODUCERS.find(p => p.id === wsId)?.displayName || wsId;
+                showNotification(`Crafted ${amount > 1 ? `${amount}x ` : ''}${displayName}!`, 'success');
+                
+                // Update coven progress
+                if (covenSystem) {
+                    covenSystem.updateCovenProgress('crafting', amount);
+                }
+                
+                // Track analytics
+                analytics.trackEconomy('craft_workstation', {
+                    workstationId: wsId,
+                    amount: amount,
+                    displayName: displayName
+                });
+                
+                // Announce to screen reader
+                if (window.Accessibility) {
+                    window.Accessibility.announceGameEvent('workstation_crafted', { name: displayName, amount });
+                }
+                
+                // Create celebration effect for crafting
+                if (buttonElement) {
+                    const rect = buttonElement.getBoundingClientRect();
+                    createCelebrationEffect(
+                        rect.left + rect.width / 2,
+                        rect.top + rect.height / 2,
+                        'craft'
+                    );
+                }
+                
+                // Add animation to button if provided
+                if (buttonElement) {
+                    pulseElement(buttonElement, 1.1, 200);
+                }
+                
+                updateWorkstationsTab();
+                updateInventoryTab();
+            } else {
+                // Shake button if crafting failed
+                if (buttonElement) {
+                    const card = buttonElement.closest('.card');
+                    if (card) highlightElement(card, '#ff4444', 300);
+                }
+            }
+        };
+
+        window.craftWorkstationMax = (wsId) => {
+            if (!gameState) return;
+            const maxAmount = gameState.getMaxCraftable(wsId);
+            if (maxAmount > 0) {
+                window.craftWorkstation(wsId, maxAmount);
+            }
+        };
+
+        window.inscribeUpgrade = (upgId, buttonElement = null) => {
+            if (!gameState) return;
+            if (gameState.inscribeUpgrade(upgId)) {
+                const displayName = UPGRADES.find(u => u.id === upgId)?.displayName || upgId;
+                showNotification(`Inscribed ${displayName}!`, 'success');
+                
+                // Track analytics
+                analytics.trackEconomy('purchase_upgrade', {
+                    upgradeId: upgId,
+                    displayName: displayName
+                });
+                
+                // Announce to screen reader
+                if (window.Accessibility) {
+                    window.Accessibility.announceGameEvent('upgrade_purchased', { name: displayName });
+                }
+                
+                // Create celebration effect for upgrade
+                if (buttonElement) {
+                    const rect = buttonElement.getBoundingClientRect();
+                    createCelebrationEffect(
+                        rect.left + rect.width / 2,
+                        rect.top + rect.height / 2,
+                        'upgrade'
+                    );
+                }
+                
+                // Add animation to button if provided
+                if (buttonElement) {
+                    pulseElement(buttonElement, 1.1, 200);
+                }
+                
+                updateInscriptionsTab();
+                updateInventoryTab();
+            } else {
+                // Shake button if inscription failed
+                if (buttonElement) {
+                    const card = buttonElement.closest('.card');
+                    if (card) highlightElement(card, '#ff4444', 300);
+                }
+            }
+        };
+
+        // Coven-related global functions
+        window.createCoven = () => {
+            if (!covenSystem) return;
+            
+            const nameInput = document.getElementById('coven-name-input');
+            const descInput = document.getElementById('coven-desc-input');
+            
+            if (!nameInput || !nameInput.value.trim()) {
+                showNotification('Please enter a coven name', 'error');
+                return;
+            }
+            
+            if (covenSystem.createCoven(nameInput.value.trim(), descInput?.value?.trim() || '')) {
+                nameInput.value = '';
+                if (descInput) descInput.value = '';
+            }
+        };
+
+        window.joinMockCoven = () => {
+            if (!covenSystem) return;
+            
+            const mockCovenId = 'mock_coven_' + Date.now();
+            covenSystem.joinCoven(mockCovenId);
+        };
+
+        window.leaveCoven = () => {
+            if (!covenSystem) return;
+            
+            if (confirm('Are you sure you want to leave your coven?')) {
+                covenSystem.leaveCoven();
+            }
+        };
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGame);
+        } else {
+            initGame();
+        }
+    </script>
+</body>
+</html>

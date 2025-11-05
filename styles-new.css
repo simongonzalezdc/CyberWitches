@@ -70,8 +70,6 @@ body {
 }
 
 /* Buttons */
-/* Ensure all buttons are clickable */
-button,
 .btn-primary,
 .btn-secondary,
 .btn-cast {
@@ -214,22 +212,6 @@ button,
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    position: relative !important;
-    z-index: 1 !important;
-    pointer-events: auto !important;
-    min-height: 300px !important;
-    padding: 20px !important;
-}
-
-.tab-panel.active .content-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative !important;
-    z-index: 1 !important;
-    pointer-events: auto !important;
 }
 
 /* Content Lists */
@@ -244,43 +226,6 @@ button,
     z-index: 1;
     pointer-events: auto;
     visibility: visible;
-}
-
-/* Virtual Scrolling */
-.virtual-scroll-inner {
-    position: relative;
-    width: 100%;
-    min-height: 100%;
-    visibility: visible !important;
-    display: block !important;
-    opacity: 1 !important;
-}
-
-.virtual-scroll-viewport {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    min-height: 100%;
-    visibility: visible !important;
-    display: block !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    z-index: 1 !important;
-}
-
-.virtual-scroll-item {
-    position: absolute;
-    left: 0;
-    right: 0;
-    width: 100%;
-    box-sizing: border-box;
-    visibility: visible !important;
-    display: block !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    z-index: 1 !important;
 }
 
 /* Cards */

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Witches Debug</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="hud">
+        <div class="top-bar">
+            <div class="currency">
+                <span id="ab-display">AB: 0</span>
+                <span id="abps-display">0 AB/s</span>
+            </div>
+            <div class="top-bar-right">
+                <button id="auto-cast-toggle" class="secondary-button">Auto: OFF</button>
+                <button id="cast-button" class="cast-button">✨ Cast</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <nav class="tabs">
+            <button class="tab-button active" data-tab="workstations">🏭 Workstations</button>
+            <button class="tab-button" data-tab="inscriptions">📜 Inscriptions</button>
+            <button class="tab-button" data-tab="inventory">🎒 Inventory</button>
+        </nav>
+
+        <div class="tab-content">
+            <div id="workstations-tab" class="tab-pane active">
+                <div class="scroll-container" id="workstation-list"></div>
+            </div>
+            <div id="inscriptions-tab" class="tab-pane">
+                <div class="scroll-container" id="upgrade-list"></div>
+            </div>
+            <div id="inventory-tab" class="tab-pane">
+                <div class="scroll-container" id="inventory-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug Console -->
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 300px; max-height: 200px; overflow-y: auto;">
+        <div id="debug-console">Debug Console:<br></div>
+    </div>
+
+    <!-- Scripts - Load in specific order to test -->
+    <script type="module">
+        function debugLog(message) {
+            const console = document.getElementById('debug-console');
+            console.innerHTML += message + '<br>';
+            console.log(message);
+        }
+
+        debugLog('Starting debug test...');
+
+        // Test basic module loading
+        try {
+            debugLog('Loading data.js...');
+            import('./js/data.js').then(dataModule => {
+                debugLog('✓ data.js loaded');
+                debugLog('PRODUCERS count: ' + dataModule.PRODUCERS.length);
+                
+                debugLog('Loading utils.js...');
+                return import('./js/utils.js');
+            }).then(utilsModule => {
+                debugLog('✓ utils.js loaded');
+                
+                debugLog('Loading gameState.js...');
+                return import('./js/gameState.js');
+            }).then(gameStateModule => {
+                debugLog('✓ gameState.js loaded');
+                
+                debugLog('Creating GameState instance...');
+                const gameState = new gameStateModule.GameState();
+                debugLog('✓ GameState instance created');
+                
+                debugLog('Starting game...');
+                gameState.start();
+                debugLog('✓ Game started');
+                
+                // Test basic functionality
+                debugLog('Testing cast...');
+                gameState.cast();
+                debugLog('✓ Cast completed');
+                
+                debugLog('AB after cast: ' + gameState.ab);
+                
+                // Update UI
+                const abDisplay = document.getElementById('ab-display');
+                if (abDisplay) {
+                    abDisplay.textContent = 'AB: ' + Math.floor(gameState.ab);
+                    debugLog('✓ UI updated');
+                } else {
+                    debugLog('✗ ab-display element not found');
+                }
+                
+            }).catch(error => {
+                debugLog('✗ Error: ' + error.message);
+                debugLog('Stack: ' + error.stack);
+            });
+        } catch (error) {
+            debugLog('✗ Critical error: ' + error.message);
+        }
+    </script>
+</body>
+</html>

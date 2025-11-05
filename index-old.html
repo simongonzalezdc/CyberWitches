@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+    <meta name="description" content="Cyber Witches: Idle Coven - A magical idle game about casting spells and building workstations">
+    <meta name="theme-color" content="#0E0E12">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cyber Witches">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Cyber Witches: Idle Coven</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- HUD -->
+    <div class="hud" role="banner" aria-label="Game Header">
+        <div class="top-bar">
+            <div class="currency" role="status" aria-live="polite" aria-atomic="true">
+                <span id="ab-display" aria-label="Arcane Bits balance">AB: 0</span>
+                <span id="abps-display" aria-label="Arcane Bits per second">0 AB/s</span>
+                <span id="combo-display" class="combo-display" style="display: none;" aria-label="Combo multiplier"></span>
+            </div>
+            <div class="top-bar-right" role="toolbar" aria-label="Game Controls">
+                <button id="auto-cast-toggle" class="secondary-button" style="margin-right: 10px;"
+                        aria-label="Toggle auto-cast" aria-pressed="false">Auto: OFF</button>
+                <button id="cast-button" class="cast-button"
+                        aria-label="Cast spell to generate resources">✨ Cast</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container" id="main-content" role="main" style="position: relative !important; z-index: 1 !important; pointer-events: auto !important; visibility: visible !important; display: block !important; padding-top: 80px !important; min-height: calc(100vh - 80px) !important;">
+        <!-- Particle Effects Canvas -->
+        <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></canvas>
+        
+        <!-- Tab Navigation -->
+        <nav class="tabs" role="tablist" aria-label="Game Sections">
+            <button class="tab-button active" data-tab="workstations"
+                    role="tab" aria-selected="true" aria-controls="workstations-tab"
+                    tabindex="0">🏭 Workstations</button>
+            <button class="tab-button" data-tab="inscriptions"
+                    role="tab" aria-selected="false" aria-controls="inscriptions-tab"
+                    tabindex="-1">📜 Inscriptions</button>
+            <button class="tab-button" data-tab="inventory"
+                    role="tab" aria-selected="false" aria-controls="inventory-tab"
+                    tabindex="-1">🎒 Inventory</button>
+            <button class="tab-button" data-tab="experiment"
+                    role="tab" aria-selected="false" aria-controls="experiment-tab"
+                    tabindex="-1">🔬 Experiment</button>
+            <button class="tab-button" data-tab="dailies"
+                    role="tab" aria-selected="false" aria-controls="dailies-tab"
+                    tabindex="-1">📅 Dailies</button>
+            <button class="tab-button" data-tab="coven"
+                    role="tab" aria-selected="false" aria-controls="coven-tab"
+                    tabindex="-1">🔮 Coven</button>
+            <button class="tab-button" data-tab="boons"
+                    role="tab" aria-selected="false" aria-controls="boons-tab"
+                    tabindex="-1">⭐ Boons</button>
+            <button class="tab-button" data-tab="stats"
+                    role="tab" aria-selected="false" aria-controls="stats-tab"
+                    tabindex="-1">📊 Stats</button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div class="tab-content" style="display: flex !important; flex-direction: column !important; gap: 20px !important; position: relative !important; z-index: 1 !important; pointer-events: auto !important; width: 100% !important; min-height: 400px !important; visibility: visible !important;">
+            <!-- Workstations Tab -->
+            <div id="workstations-tab" class="tab-pane active"
+                 role="tabpanel" aria-labelledby="workstations-tab" tabindex="0"
+                 style="display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; min-height: 200px !important; position: relative !important; z-index: 1 !important; pointer-events: auto !important; background: rgba(14, 14, 14, 0.1) !important; border-radius: 12px !important; padding: 20px !important;">
+                <div class="scroll-container" id="workstation-list"
+                     role="region" aria-label="Workstations List"
+                     style="max-height: 60vh !important; overflow-y: auto !important; padding-right: 10px !important; border-radius: 8px !important; background: rgba(14, 14, 14, 0.05) !important; min-height: 100px !important; position: relative !important; z-index: 1 !important; pointer-events: auto !important; visibility: visible !important; display: block !important;"></div>
+            </div>
+
+            <!-- Inscriptions Tab -->
+            <div id="inscriptions-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="inscriptions-tab" tabindex="0">
+                <div class="scroll-container" id="upgrade-list"
+                     role="region" aria-label="Inscriptions List"></div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="inventory-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="inventory-tab" tabindex="0">
+                <div class="scroll-container" id="inventory-list"
+                     role="region" aria-label="Inventory Items"></div>
+            </div>
+
+            <!-- Experiment Tab -->
+            <div id="experiment-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="experiment-tab" tabindex="0">
+                <button id="experiment-button" class="primary-button"
+                        aria-label="Try a magical experiment">🔬 Try Experiment</button>
+                <div id="experiment-result" class="result-label"
+                     role="status" aria-live="polite" aria-atomic="true"></div>
+                <div class="scroll-container" id="recipe-list"
+                     role="region" aria-label="Discovered Recipes"></div>
+            </div>
+
+            <!-- Dailies Tab -->
+            <div id="dailies-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="dailies-tab" tabindex="0">
+                <div class="scroll-container" id="task-list"
+                     role="region" aria-label="Daily Tasks"></div>
+            </div>
+
+            <!-- Boons Tab -->
+            <div id="boons-tab" class="tab-pane"
+                 role="tabpanel" aria-labelledby="boons-tab" tabindex="0">
+                <div class="boon-header">
+                    <span id="ek-display" aria-label="Eldritch Keys balance">Eldritch Keys: 0</span>
+                </div>
+                <div class="scroll-container" id="boon-list"
+                     role="region" aria-label="Prestige Boons"></div>
+            </div>
+            
+            <!-- Coven Tab -->
+            <div id="coven-tab" class="tab-pane">
+                <div class="coven-container">
+                    <!-- Coven Status -->
+                    <div id="coven-status" class="coven-status">
+                        <div class="coven-info">
+                            <h2 id="coven-name">Not in a Coven</h2>
+                            <p id="coven-description">Join or create a coven to unlock social bonuses!</p>
+                            <div class="coven-stats">
+                                <div class="coven-stat">
+                                    <span class="stat-label">Level:</span>
+                                    <span id="coven-level">-</span>
+                                </div>
+                                <div class="coven-stat">
+                                    <span class="stat-label">Members:</span>
+                                    <span id="coven-member-count">-</span>
+                                </div>
+                                <div class="coven-stat">
+                                    <span class="stat-label">Production Bonus:</span>
+                                    <span id="coven-bonus">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="coven-progress">
+                            <div class="progress-label">Coven Experience</div>
+                            <div class="progress-bar">
+                                <div id="coven-exp-progress" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <div id="coven-exp-text" class="progress-text">0 / 0 XP</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Coven Actions -->
+                    <div id="coven-actions" class="coven-actions">
+                        <div id="coven-join-section" class="coven-section">
+                            <h3>Join a Coven</h3>
+                            <div class="input-group">
+                                <input type="text" id="coven-code-input" placeholder="Enter Coven Code" maxlength="20">
+                                <button id="join-coven-button" class="primary-button">Join Coven</button>
+                            </div>
+                        </div>
+                        
+                        <div id="coven-create-section" class="coven-section">
+                            <h3>Create a Coven</h3>
+                            <div class="input-group">
+                                <input type="text" id="coven-name-input" placeholder="Coven Name" maxlength="50">
+                                <input type="text" id="coven-desc-input" placeholder="Coven Description (optional)" maxlength="200">
+                                <button id="create-coven-button" class="primary-button">Create Coven</button>
+                            </div>
+                        </div>
+                        
+                        <div id="coven-manage-section" class="coven-section" style="display: none;">
+                            <h3>Coven Management</h3>
+                            <div class="button-group">
+                                <button id="leave-coven-button" class="secondary-button">Leave Coven</button>
+                                <button id="coven-members-button" class="primary-button">View Members</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Coven Rituals -->
+                    <div id="coven-rituals" class="coven-section" style="display: none;">
+                        <h3>Collaborative Rituals</h3>
+                        <div id="ritual-list" class="ritual-list"></div>
+                    </div>
+                    
+                    <!-- Coven Members -->
+                    <div id="coven-members" class="coven-section" style="display: none;">
+                        <h3>Coven Members</h3>
+                        <div id="member-list" class="member-list"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Tab -->
+            <div id="stats-tab" class="tab-pane">
+                <div class="stats-container">
+                    <h2>📊 Statistics</h2>
+                    <div id="stats-list"></div>
+                </div>
+                <div class="achievements-container">
+                    <h2>🏆 Achievements</h2>
+                    <div id="achievements-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prestige Modal -->
+    <div id="prestige-modal" class="modal" style="display: none !important; pointer-events: none !important; visibility: hidden !important;">
+        <div class="modal-content">
+            <h2>⚡ Ascend</h2>
+            <p>Eldritch Keys: <span id="prestige-ek">0</span></p>
+            <p>Next Ascend: +<span id="prestige-gain">0</span> EK</p>
+            <div class="modal-buttons">
+                <button id="ascend-button" class="primary-button">Ascend</button>
+                <button id="close-prestige-button" class="secondary-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Back Modal -->
+    <div id="welcome-back-modal" class="modal" style="display: none !important; pointer-events: none !important; visibility: hidden !important;">
+        <div class="modal-content">
+            <h2>🌙 Welcome Back!</h2>
+            <p id="welcome-time">⏰ Away for: 0s</p>
+            <p id="welcome-ab">✨ Earned: 0 AB</p>
+            <button id="close-welcome-button" class="primary-button">Close</button>
+        </div>
+    </div>
+    
+    <!-- Active Events Display -->
+    <div id="active-events" class="active-events"
+         role="region" aria-live="polite" aria-label="Active Game Events"></div>
+
+    <!-- Scripts -->
+    <!-- Core Dependencies - Load in specific order to avoid dependency issues -->
+    <script type="module">
+        // Global error handler
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            document.body.innerHTML += `<div style="background: red; color: white; padding: 10px;">Error: ${e.error.message}</div>`;
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+            document.body.innerHTML += `<div style="background: red; color: white; padding: 10px;">Promise Error: ${e.reason}</div>`;
+        });
+    </script>
+    
+    <!-- Load core modules first -->
+    <script type="module" src="js/data.js"></script>
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/errorHandler.js"></script>
+    
+    <!-- Performance Features -->
+    <script type="module" src="js/commonUtils.js"></script>
+    <script type="module" src="js/animations.js"></script>
+    <script type="module" src="js/virtualScroll.js"></script>
+    
+    <!-- Social Features -->
+    <script type="module" src="js/covenSystem.js"></script>
+    
+    <!-- Mobile & Accessibility -->
+    <script type="module" src="js/mobile.js"></script>
+    <script type="module" src="js/accessibility.js"></script>
+    
+    <!-- Advanced Features -->
+    <script type="module" src="js/cloudSave.js"></script>
+    <script type="module" src="js/analytics.js"></script>
+    <script type="module" src="js/particleEffects.js"></script>
+    <script type="module" src="js/performanceMonitor.js"></script>
+    
+    <!-- Game Systems -->
+    <script type="module" src="js/gameState.js"></script>
+    <script type="module" src="js/dailyRituals.js"></script>
+    <script type="module" src="js/achievements.js"></script>
+    <script type="module" src="js/comboSystem.js"></script>
+    <script type="module" src="js/eventSystem.js"></script>
+    
+    <!-- Main Game -->
+    <script type="module" src="js/game.js"></script>
+</body>
+</html>

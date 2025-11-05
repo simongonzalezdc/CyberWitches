@@ -2,135 +2,111 @@
 
 ## ✅ What's Been Implemented
 
-All core game systems have been implemented:
+All core game systems have been implemented in vanilla JavaScript:
 
 ### ✅ Core Systems
-- **Format.gd** - Number formatting (K, M, B suffixes)
-- **Balance.gd** - All formulas (prestige, scaling, multipliers)
-- **Crafting.gd** - Recipe management and validation
-- **Persistence.gd** - Save/Load system
-- **GameState.gd** - Main game logic (tick loop, production, crafting, prestige, experiments)
-- **DailyRituals.gd** - Daily task system
-- **DataInitializer.gd** - Fallback data initialization
+- **Number formatting** - Number formatting (K, M, B suffixes)
+- **Balance formulas** - All formulas (prestige, scaling, multipliers)
+- **Crafting system** - Recipe management and validation
+- **Save/Load system** - Auto-save to localStorage
+- **Game state** - Main game logic (tick loop, production, crafting, prestige, experiments)
+- **Daily rituals** - Daily task system
+- **Data definitions** - All game content definitions
 
-### ✅ Resource Classes
-- **IngredientData.gd** - Ingredient definitions
-- **ProducerData.gd** - Workstation definitions
-- **UpgradeData.gd** - Upgrade definitions
-- **PrestigeBonusData.gd** - Prestige bonus definitions
-- **DailyTaskData.gd** - Daily task definitions
+### ✅ UI Components
+- **Main HUD** - Top bar with AB display and Cast button
+- **Workstations tab** - Workstation crafting interface
+- **Inscriptions tab** - Upgrade purchasing interface
+- **Inventory tab** - Inventory display
+- **Experiment tab** - Experiment/discovery interface
+- **Daily rituals tab** - Daily tasks interface
+- **Boons tab** - Prestige bonuses interface
+- **Welcome back modal** - Offline progress modal
+- **Prestige modal** - Prestige/ascend modal
 
-### ✅ UI Scripts
-- **UI_HUD.gd** - Top bar with AB display and Cast button
-- **WorkstationsTab.gd** - Workstation crafting interface
-- **InscriptionsTab.gd** - Upgrade purchasing interface
-- **InventoryTab.gd** - Inventory display
-- **ExperimentTab.gd** - Experiment/discovery interface
-- **UI_DailyRituals.gd** - Daily tasks interface
-- **BoonsTab.gd** - Prestige bonuses interface
-- **UI_WelcomeBack.gd** - Offline progress modal
-- **UI_Prestige.gd** - Prestige/ascend modal
+## 🚀 Getting Started
 
-### ✅ Project Configuration
-- **project.godot** - Project settings with autoloads configured
+### Option 1: Using npm (Recommended)
 
-## 🎯 Next Steps (In Godot Editor)
-
-### 1. Create Main Scene (Main.tscn)
-
-Create a new scene with this structure:
-
-```
-Main (Node2D)
-└── CanvasLayer
-    ├── Background (ColorRect)
-    │   └── Color: #0E0E12
-    │
-    ├── TopBar (HBoxContainer)
-    │   ├── ABLabel (Label)
-    │   ├── ABPerSecLabel (Label)
-    │   └── CastButton (Button)
-    │
-    ├── TabContainer
-    │   ├── Workstations (Control) - attach WorkstationsTab.gd
-    │   │   └── ScrollContainer
-    │   │       └── WorkstationList (VBoxContainer)
-    │   │
-    │   ├── Inscriptions (Control) - attach InscriptionsTab.gd
-    │   │   └── ScrollContainer
-    │   │       └── UpgradeList (VBoxContainer)
-    │   │
-    │   ├── Inventory (Control) - attach InventoryTab.gd
-    │   │   └── ScrollContainer
-    │   │       └── InventoryList (VBoxContainer)
-    │   │
-    │   ├── Experiment (Control) - attach ExperimentTab.gd
-    │   │   ├── ExperimentButton (Button)
-    │   │   ├── ResultLabel (Label)
-    │   │   └── ScrollContainer
-    │   │       └── RecipeList (VBoxContainer)
-    │   │
-    │   ├── Dailies (Control) - attach UI_DailyRituals.gd
-    │   │   └── ScrollContainer
-    │   │       └── TaskList (VBoxContainer)
-    │   │
-    │   └── Boons (Control) - attach BoonsTab.gd
-    │       ├── Header (HBoxContainer)
-    │       │   └── EKLabel (Label)
-    │       └── ScrollContainer
-    │           └── BoonList (VBoxContainer)
-    │
-    └── Modals
-        ├── WelcomeBack (Panel) - attach UI_WelcomeBack.gd
-        │   └── VBoxContainer
-        │       ├── TimeLabel (Label)
-        │       ├── ABLabel (Label)
-        │       └── CloseButton (Button)
-        │
-        └── Prestige (Panel) - attach UI_Prestige.gd
-            └── VBoxContainer
-                ├── EKLabel (Label)
-                ├── GainLabel (Label)
-                ├── AscendButton (Button)
-                └── CloseButton (Button)
+```bash
+npm install
+npm start
 ```
 
-### 2. Attach Scripts
+This will start a local server and open the game in your browser at `http://localhost:8080`
 
-1. Select the CanvasLayer node
-2. Attach `scripts/UI_HUD.gd` as its script
-3. For each tab, attach the corresponding script:
-   - Workstations → `scripts/WorkstationsTab.gd`
-   - Inscriptions → `scripts/InscriptionsTab.gd`
-   - Inventory → `scripts/InventoryTab.gd`
-   - Experiment → `scripts/ExperimentTab.gd`
-   - Dailies → `scripts/UI_DailyRituals.gd`
-   - Boons → `scripts/BoonsTab.gd`
+### Option 2: Using Python
 
-### 3. Set Up Node Paths
+```bash
+python3 -m http.server 8080
+```
 
-Make sure all `@onready` variables in the scripts match the node names in your scene.
+Then open `http://localhost:8080` in your browser.
 
-### 4. (Optional) Create .tres Resource Files
+### Option 3: Direct File Access
 
-The game will work with fallback initialization, but you can create proper .tres files:
+Simply open `index.html` in your browser (some features may be limited due to CORS).
 
-1. Create a new Resource
-2. Add a property called `data` of type Array
-3. Populate with data from `DataInitializer.gd`
-4. Save in `data/` folder
+## 📁 Project Structure
 
-### 5. Test the Game
+```
+CyberWitches/
+├── index.html          # Main HTML structure
+├── styles.css          # All styling (neon theme)
+├── js/
+│   ├── game.js        # Main game controller & UI
+│   ├── gameState.js   # Core game logic
+│   ├── dailyRituals.js # Daily task system
+│   ├── data.js        # Game content definitions
+│   ├── utils.js       # Utility functions
+│   ├── achievements.js # Achievement system
+│   ├── animations.js  # UI animations
+│   ├── comboSystem.js # Combo system
+│   └── eventSystem.js # Event management
+├── package.json        # npm configuration
+└── README.md          # Project documentation
+```
 
-1. Press F5 to run
-2. Click the Cast button to gather ingredients
-3. Craft workstations to produce resources
-4. Experiment to discover recipes
-5. Ascend when you have enough lifetime AB
+## 🎮 How to Play
 
-## 🎨 Theme Styling (Optional)
+1. **Cast** - Click the Cast button to gather ingredients
+2. **Craft Workstations** - Use ingredients to build auto-producing workstations
+3. **Inscribe Upgrades** - Purchase permanent upgrades to boost production
+4. **Experiment** - Try experimenting to discover hidden recipes
+5. **Complete Dailies** - Finish daily tasks for rewards
+6. **Ascend** - Prestige to earn Eldritch Keys and permanent bonuses
 
-Create a theme resource with:
+## 🛠️ Development
+
+All code is in vanilla JavaScript (ES6 modules). No build step required!
+
+### Key Files
+
+- **game.js** - Main entry point, UI initialization and updates
+- **gameState.js** - Core game state management (tick loop, production, crafting)
+- **dailyRituals.js** - Daily task system with auto-refresh
+- **data.js** - All game content (ingredients, producers, upgrades, etc.)
+- **utils.js** - Formatting functions and balance formulas
+
+### Adding New Content
+
+Edit `js/data.js` to add:
+- New ingredients
+- New producers (workstations)
+- New upgrades
+- New prestige bonuses
+- New daily tasks
+
+### Modifying Game Balance
+
+Edit formulas in `js/utils.js`:
+- `Balance.prestigeScale` - Prestige point calculation
+- `Balance.offlineCapSeconds` - Offline progress cap
+- Production multipliers in `gameState.js`
+
+## 🎨 Styling
+
+The game uses a neon cyberpunk theme defined in `styles.css`:
 - Background: `#0E0E12` (dark)
 - Primary: `#FF2DAA` (pink)
 - Secondary: `#22E3FF` (cyan)
@@ -138,31 +114,43 @@ Create a theme resource with:
 - Success: `#3CE3C5` (teal)
 - Mystical: `#C9A0FF` (purple)
 
+## 📱 Responsive Design
+
+The game is designed to work on:
+- Desktop browsers
+- Mobile devices (portrait orientation)
+- Tablets
+
+## 💾 Save System
+
+Saves are stored in browser localStorage under the key `cyberWitchesSave`. The game auto-saves every 30 seconds and on window close.
+
+### Manual Save/Load
+
+Saves happen automatically. To manually export/import saves:
+- Export: Copy the value from `localStorage.getItem('cyberWitchesSave')`
+- Import: Use `localStorage.setItem('cyberWitchesSave', yourSaveData)`
+
 ## 🐛 Troubleshooting
 
-### Error: "DataInitializer not found"
-- Make sure `scripts/DataInitializer.gd` is in the project
-- The class_name should be registered
+### Game not loading
+- Check browser console for errors
+- Ensure you're using a modern browser (Chrome, Firefox, Edge, Safari)
+- Make sure JavaScript modules are enabled
 
-### Error: "Node path not found"
-- Check that all `@onready` node paths match your scene structure
-- Node names are case-sensitive
+### Save not working
+- Check if localStorage is available (some private browsing modes disable it)
+- Clear browser cache and try again
 
-### Error: "Resource class not found"
-- Make sure all Resource classes are in `resources/` folder
-- They should be registered as class_name
-
-### Game not saving
-- Check that `user://` directory is writable
-- On web, saves use IndexedDB
+### Performance issues
+- Reduce tick rate in `gameState.js` (currently 10 ticks/second)
+- Close other browser tabs
 
 ## 📝 Notes
 
 - All game systems are fully implemented and ready to use
-- UI scenes need to be created in the Godot editor
-- The game will work even without .tres files (uses fallback)
-- Portrait orientation is enforced (1080x1920)
+- The game works entirely in the browser with no external dependencies
 - Auto-save happens every 30 seconds
+- Offline progress is capped at 12 hours
 
 Good luck! 🎮✨
-

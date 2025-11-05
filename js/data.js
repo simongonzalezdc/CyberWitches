@@ -70,7 +70,7 @@ export const PRODUCERS = [
     {
         id: "ws_candle",
         displayName: "Digital Candle Farm",
-        unlockAtAb: 100.0,
+        unlockAtAb: 75.0,
         recipe: { wax_block: 5, braided_wick: 1, dist_aether: 2 },
         growth: 1.14,
         outputs: { ab: 1.0 }
@@ -81,7 +81,15 @@ export const PRODUCERS = [
         unlockAtAb: 250.0,
         recipe: { shaped_crys: 2, dist_aether: 2 },
         growth: 1.14,
-        outputs: { ab: 0.15, crystal_dust: 0.05 }
+        outputs: { ab: 0.2, crystal_dust: 0.05 }
+    },
+    {
+        id: "ws_digcandle_forge",
+        displayName: "Digital Candle Forge",
+        unlockAtAb: 750.0,
+        recipe: { wax_block: 8, braided_wick: 2, dist_aether: 3 },
+        growth: 1.15,
+        outputs: { dig_candle: 0.5 }
     },
     {
         id: "ws_cauldron",
@@ -232,6 +240,16 @@ export const UPGRADES = [
         value: 2.0,
         recipe: { shaped_crys: 2, dist_aether: 1 },
         unlockAtAb: 250.0
+    },
+    {
+        id: "u_digcandle_forge_1",
+        displayName: "Candle Algorithm",
+        description: "Doubles Digital Candle Forge production",
+        affects: "producer:ws_digcandle_forge",
+        type: "multiplier",
+        value: 2.0,
+        recipe: { dig_candle: 5, wax_block: 10 },
+        unlockAtAb: 1000.0
     },
     {
         id: "u_cauldron_1",
@@ -747,6 +765,20 @@ export const HIDDEN_RECIPES = [
         outputs: { ab: 50 },
         name: "Crystal Boost",
         description: "Convert crystals directly to AB"
+    },
+    {
+        id: "crystal_ab_conversion",
+        inputs: { crystal_dust: 100 },
+        outputs: { ab: 10 },
+        name: "Crystal to AB Conversion",
+        description: "Convert crystal dust to AB"
+    },
+    {
+        id: "excess_basic_conversion",
+        inputs: { wax_bits: 1000, wick_fiber: 1000 },
+        outputs: { dist_aether: 5 },
+        name: "Excess Materials Conversion",
+        description: "Convert excess basic materials to distilled aether"
     },
     
     // Tier 2 conversions

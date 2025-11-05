@@ -1,7 +1,12 @@
 import { PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { Balance } from './utils.js';
+import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
+import { CovenSystem } from './covenSystem.js';
 
-// Game State Manager
+/**
+ * Game State Manager - Manages all game state and logic
+ * Implements DOM update batching to reduce frequent DOM manipulations
+ */
 export class GameState {
     constructor() {
         // Currency
@@ -39,6 +44,9 @@ export class GameState {
         this.tickInterval = null;
         this.lastTickTime = Date.now();
         
+        // Coven System
+        this.covenSystem = new CovenSystem(this);
+        
         // Callbacks
         this.onAbChanged = null;
         this.onIngredientChanged = null;
@@ -47,13 +55,24 @@ export class GameState {
         this.onPrestigeCompleted = null;
         this.onRecipeDiscovered = null;
         this.onWelcomeBack = null;
+        
+        // DOM update batching
+        this.pendingUpdates = new Set();
+        this.batchTimeout = null;
+        this.batchDelay = 16; // ~60fps
     }
     
+    /**
+     * Initialize the game state
+     */
     start() {
         this.loadGameState();
         this.startTickLoop();
     }
     
+    /**
+     * Start the game tick loop with optimized timing
+     */
     startTickLoop() {
         const tickRate = 100; // 10 ticks per second
         this.tickInterval = setInterval(() => {
@@ -61,6 +80,10 @@ export class GameState {
         }, tickRate);
     }
     
+    /**
+     * Main game tick with optimized timing and batching
+     * @param {number} eventMultiplier - Event multiplier for production
+     */
     tick(eventMultiplier = 1.0) {
         const now = Date.now();
         const delta = (now - this.lastTickTime) / 1000;
@@ -138,6 +161,12 @@ export class GameState {
             }
         }
         
+        // Apply coven production bonus if in a coven
+        if (totalOutput.ab && this.covenSystem.isInCoven()) {
+            const covenBonus = this.covenSystem.getCovenProductionBonus();
+            totalOutput.ab *= covenBonus;
+        }
+        
         return totalOutput;
     }
     
@@ -210,34 +239,52 @@ export class GameState {
         });
     }
     
+    /**
+     * Add AB to the player's balance with DOM update batching
+     * @param {number} amount - Amount of AB to add
+     */
     addAb(amount) {
         this.ab += amount;
         this.abTotalEarned += amount;
         this.prestigeLifetimeEarned += amount;
-        if (this.onAbChanged) {
-            this.onAbChanged(this.ab);
-        }
+        this.batchUpdate('abChanged', this.ab);
     }
     
+    /**
+     * Spend AB if the player has enough
+     * @param {number} amount - Amount of AB to spend
+     * @returns {boolean} - Whether the transaction was successful
+     */
     spendAb(amount) {
         if (this.ab < amount) return false;
         this.ab -= amount;
-        if (this.onAbChanged) this.onAbChanged(this.ab);
+        this.batchUpdate('abChanged', this.ab);
         return true;
     }
     
+    /**
+     * Add ingredient to inventory with DOM update batching
+     * @param {string} ingId - Ingredient ID
+     * @param {number} amount - Amount to add
+     */
     addIngredient(ingId, amount) {
         if (!this.inventory[ingId]) {
             this.inventory[ingId] = 0.0;
         }
         this.inventory[ingId] += amount;
-        if (this.onIngredientChanged) this.onIngredientChanged(ingId, this.inventory[ingId]);
+        this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
     }
     
+    /**
+     * Spend ingredient if the player has enough
+     * @param {string} ingId - Ingredient ID
+     * @param {number} amount - Amount to spend
+     * @returns {boolean} - Whether the transaction was successful
+     */
     spendIngredient(ingId, amount) {
         if ((this.inventory[ingId] || 0) < amount) return false;
         this.inventory[ingId] -= amount;
-        if (this.onIngredientChanged) this.onIngredientChanged(ingId, this.inventory[ingId]);
+        this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
         return true;
     }
     
@@ -286,8 +333,11 @@ export class GameState {
         
         // Also grant a small amount of AB per cast (for progression)
         // This allows players to eventually unlock AB-producing workstations
-        const abPerCast = 0.1 * totalMult;
+        const abPerCast = 0.15 * totalMult;
         this.addAb(abPerCast);
+        
+        // Update coven progress for casting
+        this.covenSystem.updateCovenProgress('casting', 1);
     }
     
     craftWorkstation(wsId, amount = 1) {
@@ -312,6 +362,10 @@ export class GameState {
         
         if (successCount > 0) {
             if (this.onWorkstationCrafted) this.onWorkstationCrafted(wsId, this.workstations[wsId]);
+            
+            // Update coven progress for crafting
+            this.covenSystem.updateCovenProgress('crafting', successCount);
+            
             return true;
         }
         
@@ -464,76 +518,209 @@ export class GameState {
         return true;
     }
     
+    /**
+     * Save game state to localStorage with error handling
+     */
     saveGameState() {
-        const saveData = {
-            ab: this.ab,
-            abTotal: this.abTotalEarned,
-            inventory: { ...this.inventory },
-            workstations: { ...this.workstations },
-            upgrades: { ...this.upgradesOwned },
-            prestige: {
-                points: this.prestigePoints,
-                lifetimeEarned: this.prestigeLifetimeEarned,
-                bonuses: { ...this.prestigeBonuses }
-            },
-            experiments: {
-                discovered: [...this.discoveredRecipes]
-            },
-            stats: {
-                totalTaps: this.totalTaps,
-                totalWorkstationsCrafted: this.totalWorkstationsCrafted
-            },
-            timestamp: Date.now() / 1000
-        };
-        
-        localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
-        this.lastSaveTime = Date.now() / 1000;
-    }
-    
-    loadGameState() {
-        const saveDataStr = localStorage.getItem('cyberWitchesSave');
-        if (!saveDataStr) return;
-        
-        const data = JSON.parse(saveDataStr);
-        
-        // Calculate offline progress BEFORE loading state
-        const elapsed = (Date.now() / 1000) - (data.timestamp || Date.now() / 1000);
-        
-        // Load state
-        this.ab = data.ab || 0.0;
-        this.abTotalEarned = data.abTotal || 0.0;
-        this.inventory = data.inventory || {};
-        this.workstations = data.workstations || {};
-        this.upgradesOwned = data.upgrades || {};
-        
-        const prestigeData = data.prestige || {};
-        this.prestigePoints = prestigeData.points || 0;
-        this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
-        this.prestigeBonuses = prestigeData.bonuses || {};
-        
-        const experimentsData = data.experiments || {};
-        this.discoveredRecipes = experimentsData.discovered || [];
-        
-        const stats = data.stats || {};
-        this.totalTaps = stats.totalTaps || 0;
-        this.totalWorkstationsCrafted = stats.totalWorkstationsCrafted || 0;
-        
-        // Apply offline progress
-        if (elapsed > 0) {
-            this.applyOfflineProgress(elapsed);
+        try {
+            const saveData = {
+                ab: this.ab,
+                abTotal: this.abTotalEarned,
+                inventory: { ...this.inventory },
+                workstations: { ...this.workstations },
+                upgrades: { ...this.upgradesOwned },
+                prestige: {
+                    points: this.prestigePoints,
+                    lifetimeEarned: this.prestigeLifetimeEarned,
+                    bonuses: { ...this.prestigeBonuses }
+                },
+                experiments: {
+                    discovered: [...this.discoveredRecipes]
+                },
+                stats: {
+                    totalTaps: this.totalTaps,
+                    totalWorkstationsCrafted: this.totalWorkstationsCrafted
+                },
+                coven: this.covenSystem.saveCovenData(),
+                timestamp: Date.now() / 1000,
+                version: "2.0" // Updated version for coven features
+            };
+            
+            localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
+            this.lastSaveTime = Date.now() / 1000;
+        } catch (error) {
+            handleError(error, 'save', true);
         }
-        
-        this.lastSaveTime = Date.now() / 1000;
     }
     
+    /**
+     * Load game state from localStorage with validation and error handling
+     */
+    loadGameState() {
+        try {
+            const saveDataStr = localStorage.getItem('cyberWitchesSave');
+            if (!saveDataStr) return;
+            
+            const data = JSON.parse(saveDataStr);
+            
+            // Validate save data structure
+            if (!this.validateSaveData(data)) {
+                console.warn('Invalid save data detected, starting fresh');
+                return;
+            }
+            
+            // Calculate offline progress BEFORE loading state
+            const elapsed = (Date.now() / 1000) - (data.timestamp || Date.now() / 1000);
+            
+            // Load state
+            this.ab = data.ab || 0.0;
+            this.abTotalEarned = data.abTotal || 0.0;
+            this.inventory = data.inventory || {};
+            this.workstations = data.workstations || {};
+            this.upgradesOwned = data.upgrades || {};
+            
+            const prestigeData = data.prestige || {};
+            this.prestigePoints = prestigeData.points || 0;
+            this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
+            this.prestigeBonuses = prestigeData.bonuses || {};
+            
+            const experimentsData = data.experiments || {};
+            this.discoveredRecipes = experimentsData.discovered || [];
+            
+            const stats = data.stats || {};
+            this.totalTaps = stats.totalTaps || 0;
+            this.totalWorkstationsCrafted = stats.totalWorkstationsCrafted || 0;
+            
+            // Load coven data
+            this.covenSystem.loadCovenData(data.coven);
+            
+            // Apply offline progress
+            if (elapsed > 0) {
+                this.applyOfflineProgress(elapsed);
+            }
+            
+            this.lastSaveTime = Date.now() / 1000;
+        } catch (error) {
+            handleError(error, 'load', true);
+        }
+    }
+    
+    /**
+     * Apply offline progress with validation
+     * @param {number} elapsedSeconds - Time elapsed in seconds
+     */
     applyOfflineProgress(elapsedSeconds) {
         const abps = this.getAbPerSecond();
         const offlineAb = Balance.calculateOfflineProduction(elapsedSeconds, abps);
         
         if (offlineAb > 0) {
             this.addAb(offlineAb);
-            if (this.onWelcomeBack) this.onWelcomeBack(elapsedSeconds, offlineAb);
+            this.batchUpdate('welcomeBack', elapsedSeconds, offlineAb);
+            
+            // Update coven progress for offline production
+            this.covenSystem.updateCovenProgress('production', offlineAb, 'ab');
         }
+    }
+    
+    /**
+     * Batch DOM updates to reduce frequent manipulations
+     * @param {string} updateType - Type of update
+     * @param {...any} args - Arguments for the update callback
+     */
+    batchUpdate(updateType, ...args) {
+        // Add to pending updates
+        this.pendingUpdates.add({ type: updateType, args });
+        
+        // Clear existing timeout
+        if (this.batchTimeout) {
+            clearTimeout(this.batchTimeout);
+        }
+        
+        // Set new timeout to process batch
+        this.batchTimeout = setTimeout(() => {
+            this.processBatchedUpdates();
+        }, this.batchDelay);
+    }
+    
+    /**
+     * Process all batched DOM updates
+     */
+    processBatchedUpdates() {
+        // Group updates by type to avoid redundant calls
+        const updateGroups = new Map();
+        
+        for (const update of this.pendingUpdates) {
+            if (!updateGroups.has(update.type)) {
+                updateGroups.set(update.type, []);
+            }
+            updateGroups.get(update.type).push(update.args);
+        }
+        
+        // Process each group
+        for (const [type, argsList] of updateGroups) {
+            // Use only the latest args for each type to avoid redundant updates
+            const latestArgs = argsList[argsList.length - 1];
+            
+            switch (type) {
+                case 'abChanged':
+                    if (this.onAbChanged) {
+                        this.onAbChanged(...latestArgs);
+                    }
+                    break;
+                case 'ingredientChanged':
+                    if (this.onIngredientChanged) {
+                        this.onIngredientChanged(...latestArgs);
+                    }
+                    break;
+                case 'welcomeBack':
+                    if (this.onWelcomeBack) {
+                        this.onWelcomeBack(...latestArgs);
+                    }
+                    break;
+            }
+        }
+        
+        // Clear pending updates
+        this.pendingUpdates.clear();
+        this.batchTimeout = null;
+    }
+    
+    /**
+     * Validate save data structure and values
+     * @param {Object} data - Save data to validate
+     * @returns {boolean} - Whether the data is valid
+     */
+    validateSaveData(data) {
+        // Check basic structure
+        if (!data || typeof data !== 'object') {
+            return false;
+        }
+        
+        // Validate numeric values
+        const numericFields = ['ab', 'abTotal', 'timestamp'];
+        for (const field of numericFields) {
+            if (data[field] !== undefined && (typeof data[field] !== 'number' || isNaN(data[field]))) {
+                return false;
+            }
+        }
+        
+        // Validate nested objects
+        const objectFields = ['inventory', 'workstations', 'upgrades', 'prestige', 'experiments', 'stats'];
+        for (const field of objectFields) {
+            if (data[field] !== undefined && typeof data[field] !== 'object') {
+                return false;
+            }
+        }
+        
+        // Validate arrays
+        const arrayFields = ['discoveredRecipes'];
+        for (const field of arrayFields) {
+            if (data[field] !== undefined && !Array.isArray(data[field])) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
 

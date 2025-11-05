@@ -2,7 +2,6 @@
 ## Complete Implementation Guide
 
 **Version:** 2.0 - Experiment Edition  
-**Engine:** Godot 4.5+  
 **Platform:** Web (HTML5), Portrait-First  
 **Timeline:** Full scope, no constraints
 
@@ -21,7 +20,7 @@
 9. [Balance Formulas](#balance-formulas)
 10. [Daily Rituals](#daily-rituals)
 11. [Testing Checklist](#testing-checklist)
-12. [Web Export](#web-export)
+12. [Web Deployment](#web-deployment)
 13. [Implementation Timeline](#implementation-timeline)
 
 ---
@@ -48,1221 +47,604 @@ No shops. No purchases. Just gathering, crafting, and discovery.
 
 ### Initial Configuration
 
-**Step 1: Create New Project**
+**Step 1: Create Project Structure**
 
 ```
-Project Name: CyberWitchesIdleCoven
-Renderer: Forward+ (Mobile fallback)
-Target: Web
-Resolution: 1080x1920 (portrait)
+CyberWitches/
+├── index.html          # Main HTML file
+├── styles.css          # CSS styling
+├── js/                 # JavaScript files
+├── package.json        # npm configuration
+└── README.md          # Documentation
 ```
 
-**Step 2: Display Settings**
+**Step 2: Initialize npm Project**
 
-```gdscript
-# Project Settings → Display → Window
-viewport_width = 1080
-viewport_height = 1920
-mode = 2  # fullscreen
-stretch_mode = "canvas_items"
-stretch_aspect = "keep"
+```bash
+npm init -y
+npm install --save-dev http-server
 ```
 
-**Step 3: Rendering Settings**
+**Step 3: Add Start Script**
 
-```gdscript
-# Project Settings → Rendering
-renderer/rendering_method = "forward_plus"
-renderer/rendering_method.mobile = "mobile"
-2d/snap/snap_2d_transforms_to_pixel = true
-textures/vram_compression/import_etc2_astc = true
-```
-
----
-
-### Autoload Scripts
-
-**Add these in order** (Project Settings → Autoload):
-
-| Order | Name | Path | Purpose |
-|-------|------|------|---------|
-| 1 | `GameState` | `res://scripts/GameState.gd` | Main game state |
-| 2 | `Balance` | `res://scripts/Balance.gd` | Formulas & math |
-| 3 | `Crafting` | `res://scripts/Crafting.gd` | Recipe management |
-| 4 | `Format` | `res://scripts/Format.gd` | Number formatting |
-| 5 | `Persistence` | `res://scripts/Persistence.gd` | Save/Load |
-| 6 | `DailyRituals` | `res://scripts/DailyRituals.gd` | Daily tasks |
-
----
-
-## 📁 FOLDER STRUCTURE
-
-```
-CyberWitchesIdleCoven/
-│
-├── 📂 assets/
-│   ├── pixel/          # Sprites (32x32)
-│   ├── icons/          # UI icons
-│   ├── sfx/            # Sound effects
-│   └── fonts/          # Custom fonts
-│
-├── 📂 data/            # .tres files
-│   ├── ingredients.tres
-│   ├── producers.tres
-│   ├── upgrades.tres
-│   ├── prestige_bonuses.tres
-│   └── daily_tasks_pool.tres
-│
-├── 📂 resources/       # Resource scripts
-│   ├── IngredientData.gd
-│   ├── ProducerData.gd
-│   ├── UpgradeData.gd
-│   ├── PrestigeBonusData.gd
-│   └── DailyTaskData.gd
-│
-├── 📂 scenes/
-│   ├── Main.tscn
-│   ├── UI_HUD.tscn
-│   ├── UI_WelcomeBack.tscn
-│   ├── UI_Prestige.tscn
-│   ├── UI_DailyRituals.tscn
-│   ├── UI_Experiment.tscn
-│   ├── UI_Inventory.tscn
-│   └── UI_Settings.tscn
-│
-├── 📂 scripts/         # Core systems
-│   ├── GameState.gd
-│   ├── Balance.gd
-│   ├── Crafting.gd
-│   ├── Format.gd
-│   ├── Persistence.gd
-│   └── DailyRituals.gd
-│
-└── 📂 theme/
-    ├── colors.tres
-    └── ui_theme.tres
-```
-
----
-
-## 📊 DATA MODELS
-
-### Resource Classes Overview
-
-Each data type has its own Resource class.  
-These define the **structure** of game content.
-
----
-
-### 1️⃣ IngredientData.gd
-
-**What it stores:** Basic materials and items
-
-```gdscript
-extends Resource
-class_name IngredientData
-
-@export var id: String = ""
-@export var display_name: String = ""
-@export var tier: int = 0
-@export var stack_limit: int = 0  # 0 = unlimited
-@export var icon: Texture2D = null
-@export var description: String = ""
-
-func _init(
-    p_id: String = "",
-    p_display_name: String = "",
-    p_tier: int = 0
-):
-    id = p_id
-    display_name = p_display_name
-    tier = p_tier
-```
-
-**Example:**
-```gdscript
-IngredientData.new("wax_bits", "Wax Bits", 0)
-```
-
----
-
-### 2️⃣ ProducerData.gd
-
-**What it stores:** Workstations that auto-produce
-
-```gdscript
-extends Resource
-class_name ProducerData
-
-@export var id: String = ""
-@export var display_name: String = ""
-@export var description: String = ""
-@export var unlock_at_ab: float = 0.0
-
-# Recipe to craft ONE unit
-@export var recipe: Dictionary = {}
-
-# Cost scaling per unit owned
-@export var growth: float = 1.10
-
-# What it produces per second
-# Format: {"ingredient_id": rate, "ab": rate}
-@export var outputs: Dictionary = {}
-
-@export var icon: Texture2D = null
-```
-
-**Example:**
-```gdscript
-ProducerData.new(
-    "ws_melter",
-    "Wax Melter",
-    0.0,
-    {"wax_bits": 10},
-    1.10,
-    {"wax_block": 0.30}
-)
-```
-
----
-
-### 3️⃣ UpgradeData.gd
-
-**What it stores:** One-time permanent boosts
-
-```gdscript
-extends Resource
-class_name UpgradeData
-
-@export var id: String = ""
-@export var display_name: String = ""
-@export var description: String = ""
-
-# What does it affect?
-# Options: "global" | "producer:<ws_id>" | "click"
-@export var affects: String = "global"
-
-# How does it boost?
-# Options: "multiplier" | "additive"
-@export var type: String = "multiplier"
-
-@export var value: float = 1.5
-
-# One-time crafting cost
-@export var recipe: Dictionary = {}
-
-@export var unlock_at_ab: float = 0.0
-@export var icon: Texture2D = null
-```
-
-**Example:**
-```gdscript
-UpgradeData.new(
-    "u_global_1",
-    "Hex Compiler v1",
-    "global",
-    "multiplier",
-    1.5,
-    {"wax_block": 2, "braided_wick": 2}
-)
-```
-
----
-
-### 4️⃣ PrestigeBonusData.gd
-
-**What it stores:** Permanent upgrades from prestige currency
-
-```gdscript
-extends Resource
-class_name PrestigeBonusData
-
-@export var id: String = ""
-@export var display_name: String = ""
-@export var description: String = ""
-
-# Cost in Eldritch Keys (EK)
-@export var base_cost_pp: float = 10.0
-@export var cost_growth: float = 1.5
-
-# Type of bonus
-# Options: "global_mult" | "producer_mult" | 
-#          "starting_currency" | "start_ingredient"
-@export var type: String = "global_mult"
-
-# If producer_mult or start_ingredient, which one?
-@export var param: String = ""
-
-# Value granted per level
-@export var value: float = 0.10
-
-@export var icon: Texture2D = null
-```
-
-**Example:**
-```gdscript
-PrestigeBonusData.new(
-    "pp_global_1",
-    "Coven's Oath",
-    "global_mult",
-    0.10,
-    10.0
-)
-```
-
----
-
-### 5️⃣ DailyTaskData.gd
-
-**What it stores:** Daily challenge definitions
-
-```gdscript
-extends Resource
-class_name DailyTaskData
-
-@export var id: String = ""
-@export var display_name: String = ""
-@export var description: String = ""
-
-# Condition format examples:
-# "craft:workstation:ws_melter:3"
-# "own:workstation:ws_crystal:5"
-# "tap:150"
-# "craft_item:braided_wick:20"
-@export var condition: String = ""
-
-# Reward types: "ab" | "buff" | "ek_frag"
-@export var reward_type: String = "ab"
-
-# Amount (for AB/EK) or duration seconds (for buff)
-@export var reward_value: float = 5000.0
-
-# If buff, the multiplier
-@export var buff_multiplier: float = 0.10
-
-@export var icon: String = ""
-```
-
-**Example:**
-```gdscript
-DailyTaskData.new(
-    "d_kindle",
-    "Kindle the Grid",
-    "craft:workstation:ws_melter:3",
-    "ab",
-    5000.0
-)
-```
-
----
-
-### 💾 Save File Format
-
+Add to package.json:
 ```json
 {
-  "version": 2,
-  "timestamp": 1730640000,
-  "ab": 123456.0,
-  "ab_total": 456789.0,
-  "inventory": {
-    "wax_bits": 120,
-    "wick_fiber": 60
-  },
-  "workstations": {
-    "ws_melter": 2,
-    "ws_spinner": 1
-  },
-  "upgrades": {
-    "u_global_1": true
-  },
-  "prestige": {
-    "points": 15,
-    "lifetime_earned": 1200000.0,
-    "bonuses": {
-      "pp_global_1": 2
-    }
-  },
-  "dailies": {
-    "day_key": "2025-11-03",
-    "active_ids": ["d_kindle", "d_song", "d_flow"],
-    "progress": {"d_flow": 73},
-    "claimed": {"d_kindle": true}
-  },
-  "experiments": {
-    "discovered": ["wax_block_bulk", "braid_wick"]
+  "scripts": {
+    "start": "http-server -p 8080 -o"
   }
 }
 ```
 
 ---
 
+## 📁 FOLDER STRUCTURE
+
+```
+CyberWitches/
+│
+├── index.html          # Main HTML structure
+├── styles.css          # All styling (neon theme)
+├── package.json        # npm configuration
+│
+├── js/
+│   ├── game.js        # Main game controller & UI
+│   ├── gameState.js   # Core game logic
+│   ├── dailyRituals.js # Daily task system
+│   ├── data.js        # Game content definitions
+│   ├── utils.js       # Utility functions
+│   ├── achievements.js # Achievement system
+│   ├── animations.js  # UI animations
+│   ├── comboSystem.js # Combo system
+│   └── eventSystem.js # Event management
+│
+└── docs/
+    ├── README.md
+    ├── SETUP_GUIDE.md
+    ├── GAME_MANUAL.md
+    └── QUICK_START.md
+```
+
+---
+
+## 📊 DATA MODELS
+
+### JavaScript Data Structures
+
+All game data is defined as JavaScript objects and arrays in `js/data.js`.
+
+---
+
+### 1️⃣ Ingredients
+
+```javascript
+// Basic ingredients from casting
+const INGREDIENTS = [
+    {
+        id: "wax_bits",
+        displayName: "Wax Bits",
+        tier: 0,
+        icon: "🕯️"
+    },
+    {
+        id: "wick_fiber",
+        displayName: "Wick Fiber",
+        tier: 0,
+        icon: "🧵"
+    },
+    // ... more ingredients
+];
+```
+
+---
+
+### 2️⃣ Workstations (Producers)
+
+```javascript
+// Workstations that auto-produce
+const WORKSTATIONS = [
+    {
+        id: "ws_melter",
+        displayName: "Wax Melter",
+        description: "Melts wax into refined blocks",
+        unlockAtAB: 0,
+        recipe: { wax_bits: 10 },
+        growth: 1.10,
+        outputs: { wax_block: 0.30 },
+        icon: "🔥"
+    },
+    // ... more workstations
+];
+```
+
+---
+
+### 3️⃣ Upgrades
+
+```javascript
+// One-time permanent boosts
+const UPGRADES = [
+    {
+        id: "u_global_1",
+        displayName: "Hex Compiler v1",
+        description: "Increases all production by 50%",
+        affects: "global",
+        type: "multiplier",
+        value: 1.5,
+        recipe: { wax_block: 2, braided_wick: 2 },
+        unlockAtAB: 0
+    },
+    // ... more upgrades
+];
+```
+
+---
+
+### 4️⃣ Prestige Bonuses
+
+```javascript
+// Permanent upgrades from prestige currency
+const PRESTIGE_BONUSES = [
+    {
+        id: "pp_global_1",
+        displayName: "Coven's Oath",
+        description: "Global production boost",
+        type: "global_mult",
+        value: 0.10,
+        baseCost: 10,
+        costGrowth: 1.5
+    },
+    // ... more bonuses
+];
+```
+
+---
+
+### 5️⃣ Daily Tasks
+
+```javascript
+// Daily challenge definitions
+const DAILY_TASKS_POOL = [
+    {
+        id: "d_kindle",
+        displayName: "Kindle the Grid",
+        description: "Craft 3 Wax Melters",
+        condition: "craft:workstation:ws_melter:3",
+        rewardType: "ab",
+        rewardValue: 5000
+    },
+    // ... more tasks
+];
+```
+
+---
+
+### 💾 Save File Format
+
+```javascript
+// localStorage save structure
+const saveData = {
+    version: 2,
+    timestamp: 1730640000,
+    ab: 123456.0,
+    abTotal: 456789.0,
+    inventory: {
+        wax_bits: 120,
+        wick_fiber: 60
+    },
+    workstations: {
+        ws_melter: 2,
+        ws_spinner: 1
+    },
+    upgrades: {
+        u_global_1: true
+    },
+    prestige: {
+        points: 15,
+        lifetimeEarned: 1200000.0,
+        bonuses: {
+            pp_global_1: 2
+        }
+    },
+    dailies: {
+        dayKey: "2025-11-03",
+        activeIds: ["d_kindle", "d_song", "d_flow"],
+        progress: { d_flow: 73 },
+        claimed: { d_kindle: true }
+    },
+    experiments: {
+        discovered: ["wax_block_bulk", "braid_wick"]
+    }
+};
+```
+
+---
+
 ## ⚙️ CORE SYSTEMS
 
-### System 1: Format.gd
+### System 1: Number Formatting (utils.js)
 
-**Purpose:** Format big numbers for display
-
-```gdscript
-extends Node
-
-# Format with K, M, B suffixes
-func short(value: float) -> String:
-    if value < 1000.0:
-        return str(int(value))
+```javascript
+// Format with K, M, B suffixes
+function formatShort(value) {
+    if (value < 1000) return Math.floor(value).toString();
     
-    var suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"]
-    var tier = 0
+    const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"];
+    let tier = 0;
     
-    while value >= 1000.0 and tier < suffixes.size() - 1:
-        value /= 1000.0
-        tier += 1
-    
-    return "%.2f%s" % [value, suffixes[tier]]
-
-# Format with decimals
-func precise(value: float, decimals: int = 2) -> String:
-    return ("%." + str(decimals) + "f") % value
-
-# Format time duration
-func time_duration(seconds: float) -> String:
-    var hrs = int(seconds / 3600)
-    var mins = int((seconds - hrs * 3600) / 60)
-    var secs = int(seconds - hrs * 3600 - mins * 60)
-    
-    if hrs > 0:
-        return "%dh %dm" % [hrs, mins]
-    elif mins > 0:
-        return "%dm %ds" % [mins, secs]
-    else:
-        return "%ds" % secs
-```
-
-**Usage:**
-```gdscript
-Format.short(1234567)  # "1.23M"
-Format.precise(3.14159, 2)  # "3.14"
-Format.time_duration(3665)  # "1h 1m"
-```
-
----
-
-### System 2: Balance.gd
-
-**Purpose:** All formulas and calculations
-
-```gdscript
-extends Node
-
-# ========================================
-# PRESTIGE FORMULAS
-# ========================================
-
-static var prestige_scale: float = 1_200_000.0
-
-# Calculate EK earned from lifetime AB
-static func prestige_points_for(lifetime_earned: float) -> int:
-    return int(floor(sqrt(max(lifetime_earned, 0.0) / prestige_scale)))
-
-# Calculate next EK threshold
-static func next_prestige_threshold(current_ek: int) -> float:
-    return pow(current_ek + 1, 2) * prestige_scale
-
-# ========================================
-# RECIPE SCALING
-# ========================================
-
-# Scale recipe cost based on owned count
-static func scaled_recipe(
-    base_recipe: Dictionary, 
-    owned: int, 
-    growth: float
-) -> Dictionary:
-    var scaled = {}
-    for ing_id in base_recipe:
-        var base_cost = base_recipe[ing_id]
-        scaled[ing_id] = ceil(base_cost * pow(growth, owned))
-    return scaled
-
-# ========================================
-# PRODUCTION MULTIPLIERS
-# ========================================
-
-static func get_production_multiplier(
-    workstation_id: String,
-    upgrades: Dictionary,
-    prestige_bonuses: Dictionary,
-    buffs: Array,
-    upgrade_data_list: Array,
-    prestige_data_list: Array
-) -> float:
-    var mult = 1.0
-    
-    # Global upgrades
-    for upgrade_id in upgrades:
-        for upg_data in upgrade_data_list:
-            if upg_data.id == upgrade_id:
-                if upg_data.affects == "global" and upg_data.type == "multiplier":
-                    mult *= upg_data.value
-    
-    # Producer-specific upgrades
-    var target_affects = "producer:" + workstation_id
-    for upgrade_id in upgrades:
-        for upg_data in upgrade_data_list:
-            if upg_data.id == upgrade_id:
-                if upg_data.affects == target_affects and upg_data.type == "multiplier":
-                    mult *= upg_data.value
-    
-    # Prestige bonuses (global)
-    for bonus_id in prestige_bonuses:
-        for bonus_data in prestige_data_list:
-            if bonus_data.id == bonus_id:
-                if bonus_data.type == "global_mult":
-                    var levels = prestige_bonuses[bonus_id]
-                    mult *= (1.0 + bonus_data.value * levels)
-    
-    # Prestige bonuses (producer-specific)
-    for bonus_id in prestige_bonuses:
-        for bonus_data in prestige_data_list:
-            if bonus_data.id == bonus_id:
-                if bonus_data.type == "producer_mult" and bonus_data.param == workstation_id:
-                    var levels = prestige_bonuses[bonus_id]
-                    mult *= (1.0 + bonus_data.value * levels)
-    
-    # Active buffs
-    for buff in buffs:
-        if buff.has("multiplier"):
-            mult *= (1.0 + buff.multiplier)
-    
-    return mult
-
-# ========================================
-# OFFLINE PROGRESS
-# ========================================
-
-static var offline_cap_seconds: float = 43200.0  # 12 hours
-
-static func calculate_offline_production(
-    elapsed_seconds: float,
-    production_per_second: float
-) -> float:
-    var capped_time = min(elapsed_seconds, offline_cap_seconds)
-    return production_per_second * capped_time
-```
-
----
-
-### System 3: Crafting.gd
-
-**Purpose:** Recipe management and validation
-
-```gdscript
-extends Node
-
-# Loaded data
-var ingredients: Array = []
-var producers: Array = []
-var upgrades: Array = []
-
-func _ready():
-    load_all_data()
-
-func load_all_data():
-    # Load from .tres files
-    var ing_res = load("res://data/ingredients.tres")
-    if ing_res and ing_res.has("data"):
-        ingredients = ing_res.data
-    
-    var prod_res = load("res://data/producers.tres")
-    if prod_res and prod_res.has("data"):
-        producers = prod_res.data
-    
-    var upg_res = load("res://data/upgrades.tres")
-    if upg_res and upg_res.has("data"):
-        upgrades = upg_res.data
-
-# ========================================
-# LOOKUPS
-# ========================================
-
-func get_ingredient(id: String):
-    for ing in ingredients:
-        if ing.id == id:
-            return ing
-    return null
-
-func get_producer(id: String):
-    for prod in producers:
-        if prod.id == id:
-            return prod
-    return null
-
-func get_upgrade(id: String):
-    for upg in upgrades:
-        if upg.id == id:
-            return upg
-    return null
-
-# ========================================
-# RECIPE HELPERS
-# ========================================
-
-# Get scaled recipe for producer
-func get_producer_recipe(producer_id: String, owned: int) -> Dictionary:
-    var prod = get_producer(producer_id)
-    if not prod:
-        return {}
-    
-    return Balance.scaled_recipe(prod.recipe, owned, prod.growth)
-
-# Check if player can afford recipe
-func can_afford(recipe: Dictionary, inventory: Dictionary) -> bool:
-    for ing_id in recipe:
-        var needed = recipe[ing_id]
-        var have = inventory.get(ing_id, 0.0)
-        if have < needed:
-            return false
-    return true
-
-# Consume recipe from inventory
-func consume_recipe(recipe: Dictionary, inventory: Dictionary) -> bool:
-    if not can_afford(recipe, inventory):
-        return false
-    
-    for ing_id in recipe:
-        inventory[ing_id] -= recipe[ing_id]
-    
-    return true
-
-# Get what's missing
-func get_deficit(recipe: Dictionary, inventory: Dictionary) -> Dictionary:
-    var deficit = {}
-    for ing_id in recipe:
-        var needed = recipe[ing_id]
-        var have = inventory.get(ing_id, 0.0)
-        if have < needed:
-            deficit[ing_id] = needed - have
-    return deficit
-```
-
----
-
-### System 4: Persistence.gd
-
-**Purpose:** Save/Load to JSON
-
-```gdscript
-extends Node
-
-const SAVE_PATH = "user://save.json"
-const SAVE_VERSION = 2
-
-# ========================================
-# SAVE
-# ========================================
-
-func save_game(data: Dictionary) -> bool:
-    data["version"] = SAVE_VERSION
-    data["timestamp"] = Time.get_unix_time_from_system()
-    
-    var json_string = JSON.stringify(data, "\t")
-    var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-    
-    if not file:
-        push_error("Failed to open save file for writing")
-        return false
-    
-    file.store_string(json_string)
-    file.close()
-    return true
-
-# ========================================
-# LOAD
-# ========================================
-
-func load_game() -> Dictionary:
-    if not FileAccess.file_exists(SAVE_PATH):
-        return {}
-    
-    var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
-    if not file:
-        push_error("Failed to open save file for reading")
-        return {}
-    
-    var json_string = file.get_as_text()
-    file.close()
-    
-    var json = JSON.new()
-    var parse_result = json.parse(json_string)
-    
-    if parse_result != OK:
-        push_error("Failed to parse save file JSON")
-        return {}
-    
-    var data = json.data
-    
-    # Handle version migrations
-    if data.get("version", 1) < SAVE_VERSION:
-        data = migrate_save(data)
-    
-    return data
-
-# ========================================
-# MIGRATION
-# ========================================
-
-func migrate_save(old_data: Dictionary) -> Dictionary:
-    var version = old_data.get("version", 1)
-    
-    if version < 2:
-        # Add new fields for v2
-        if not old_data.has("experiments"):
-            old_data["experiments"] = {
-                "discovered": []
-            }
-    
-    old_data["version"] = SAVE_VERSION
-    return old_data
-
-# ========================================
-# UTILITIES
-# ========================================
-
-func delete_save() -> bool:
-    if FileAccess.file_exists(SAVE_PATH):
-        DirAccess.remove_absolute(SAVE_PATH)
-        return true
-    return false
-
-func has_save() -> bool:
-    return FileAccess.file_exists(SAVE_PATH)
-```
-
----
-
-### System 5: GameState.gd
-
-**Purpose:** Central game state manager
-
-**⚠️ This is the largest file - contains all game logic**
-
-```gdscript
-extends Node
-
-# ========================================
-# STATE VARIABLES
-# ========================================
-
-# Currency
-var ab: float = 0.0
-var ab_total_earned: float = 0.0
-
-# Inventory (ingredient_id: amount)
-var inventory: Dictionary = {}
-
-# Workstations (producer_id: owned_count)
-var workstations: Dictionary = {}
-
-# Upgrades (upgrade_id: true)
-var upgrades_owned: Dictionary = {}
-
-# Prestige
-var prestige_points: int = 0
-var prestige_lifetime_earned: float = 0.0
-var prestige_bonuses: Dictionary = {}  # bonus_id: level
-
-# Buffs (active temporary effects)
-var active_buffs: Array = []
-
-# Experiments (discovered recipes)
-var discovered_recipes: Array = []
-
-# Hidden recipes for discovery
-var hidden_recipes: Array = []
-
-# Stats
-var total_taps: int = 0
-var total_workstations_crafted: int = 0
-
-# Timestamps
-var last_save_time: float = 0.0
-
-# ========================================
-# SIGNALS
-# ========================================
-
-signal ab_changed(new_value: float)
-signal ingredient_changed(ingredient_id: String, new_value: float)
-signal workstation_crafted(workstation_id: String, new_count: int)
-signal upgrade_purchased(upgrade_id: String)
-signal prestige_completed(ek_earned: int)
-signal recipe_discovered(recipe_id: String)
-
-# ========================================
-# INITIALIZATION
-# ========================================
-
-func _ready():
-    load_hidden_recipes()
-    load_game_state()
-    
-    # Start tick loop
-    var timer = Timer.new()
-    timer.wait_time = 0.1  # 10 ticks per second
-    timer.timeout.connect(_on_tick)
-    add_child(timer)
-    timer.start()
-
-func _notification(what):
-    if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_WM_GO_BACK_REQUEST:
-        save_game_state()
-        get_tree().quit()
-
-# ========================================
-# GAME TICK
-# ========================================
-
-func _on_tick():
-    var delta = 0.1  # 100ms tick
-    
-    # Update buffs
-    update_buffs(delta)
-    
-    # Calculate production
-    var production = calculate_total_production(delta)
-    
-    # Apply production
-    for output_id in production:
-        if output_id == "ab":
-            add_ab(production[output_id])
-        else:
-            add_ingredient(output_id, production[output_id])
-    
-    # Auto-save every 30 seconds
-    if Time.get_unix_time_from_system() - last_save_time > 30.0:
-        save_game_state()
-
-# ========================================
-# PRODUCTION CALCULATIONS
-# ========================================
-
-func calculate_total_production(delta: float) -> Dictionary:
-    var total_output = {}
-    
-    for ws_id in workstations:
-        var owned = workstations[ws_id]
-        var prod_data = Crafting.get_producer(ws_id)
-        if not prod_data:
-            continue
-        
-        # Get base outputs
-        for output_id in prod_data.outputs:
-            var base_rate = prod_data.outputs[output_id]
-            
-            # Apply multipliers
-            var mult = Balance.get_production_multiplier(
-                ws_id,
-                upgrades_owned,
-                prestige_bonuses,
-                active_buffs,
-                Crafting.upgrades,
-                load("res://data/prestige_bonuses.tres").data if load("res://data/prestige_bonuses.tres") else []
-            )
-            
-            var final_rate = base_rate * mult * owned
-            
-            if not total_output.has(output_id):
-                total_output[output_id] = 0.0
-            total_output[output_id] += final_rate * delta
-    
-    return total_output
-
-func get_ab_per_second() -> float:
-    var production = calculate_total_production(1.0)
-    return production.get("ab", 0.0)
-
-# ========================================
-# BUFFS
-# ========================================
-
-func update_buffs(delta: float):
-    var i = active_buffs.size() - 1
-    while i >= 0:
-        active_buffs[i].remaining -= delta
-        if active_buffs[i].remaining <= 0:
-            active_buffs.remove_at(i)
-        i -= 1
-
-func add_buff(multiplier: float, duration: float):
-    active_buffs.append({
-        "multiplier": multiplier,
-        "remaining": duration
-    })
-
-# ========================================
-# CURRENCY & INVENTORY
-# ========================================
-
-func add_ab(amount: float):
-    ab += amount
-    ab_total_earned += amount
-    prestige_lifetime_earned += amount
-    ab_changed.emit(ab)
-
-func spend_ab(amount: float) -> bool:
-    if ab < amount:
-        return false
-    ab -= amount
-    ab_changed.emit(ab)
-    return true
-
-func add_ingredient(ing_id: String, amount: float):
-    if not inventory.has(ing_id):
-        inventory[ing_id] = 0.0
-    inventory[ing_id] += amount
-    ingredient_changed.emit(ing_id, inventory[ing_id])
-
-func spend_ingredient(ing_id: String, amount: float) -> bool:
-    if inventory.get(ing_id, 0.0) < amount:
-        return false
-    inventory[ing_id] -= amount
-    ingredient_changed.emit(ing_id, inventory[ing_id])
-    return true
-
-# ========================================
-# CAST (Manual Gathering)
-# ========================================
-
-func cast():
-    total_taps += 1
-    
-    # Base tier-0 ingredients
-    var base_amounts = {
-        "wax_bits": 1.0,
-        "wick_fiber": 1.0,
-        "crystal_dust": 0.5,
-        "aether_ess": 0.5
+    while (value >= 1000 && tier < suffixes.length - 1) {
+        value /= 1000;
+        tier++;
     }
     
-    # Apply click upgrades
-    var click_mult = 1.0
-    for upg_id in upgrades_owned:
-        var upg_data = Crafting.get_upgrade(upg_id)
-        if upg_data and upg_data.affects == "click":
-            if upg_data.type == "multiplier":
-                click_mult *= upg_data.value
-            elif upg_data.type == "additive":
-                click_mult += upg_data.value
-    
-    # Grant ingredients
-    for ing_id in base_amounts:
-        add_ingredient(ing_id, base_amounts[ing_id] * click_mult)
+    return value.toFixed(2) + suffixes[tier];
+}
 
-# ========================================
-# CRAFTING
-# ========================================
+// Format time duration
+function formatTimeDuration(seconds) {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds - hrs * 3600) / 60);
+    const secs = Math.floor(seconds - hrs * 3600 - mins * 60);
+    
+    if (hrs > 0) return `${hrs}h ${mins}m`;
+    if (mins > 0) return `${mins}m ${secs}s`;
+    return `${secs}s`;
+}
+```
 
-func craft_workstation(ws_id: String, amount: int = 1) -> bool:
-    var prod_data = Crafting.get_producer(ws_id)
-    if not prod_data:
-        return false
-    
-    # Check unlock
-    if ab < prod_data.unlock_at_ab:
-        return false
-    
-    var success_count = 0
-    for i in range(amount):
-        var current_owned = workstations.get(ws_id, 0)
-        var recipe = Crafting.get_producer_recipe(ws_id, current_owned)
-        
-        if not Crafting.consume_recipe(recipe, inventory):
-            break
-        
-        workstations[ws_id] = current_owned + 1
-        success_count += 1
-        total_workstations_crafted += 1
-    
-    if success_count > 0:
-        workstation_crafted.emit(ws_id, workstations[ws_id])
-        return true
-    
-    return false
+---
 
-func inscribe_upgrade(upg_id: String) -> bool:
-    if upgrades_owned.has(upg_id):
-        return false  # Already owned
-    
-    var upg_data = Crafting.get_upgrade(upg_id)
-    if not upg_data:
-        return false
-    
-    # Check unlock
-    if ab < upg_data.unlock_at_ab:
-        return false
-    
-    # Check recipe
-    if not Crafting.consume_recipe(upg_data.recipe, inventory):
-        return false
-    
-    upgrades_owned[upg_id] = true
-    upgrade_purchased.emit(upg_id)
-    return true
+### System 2: Balance Formulas (utils.js)
 
-# ========================================
-# PRESTIGE
-# ========================================
+```javascript
+// Prestige calculations
+const PRESTIGE_SCALE = 1200000;
 
-func calculate_prestige_gain() -> int:
-    var current_ek = Balance.prestige_points_for(prestige_lifetime_earned)
-    return max(0, current_ek - prestige_points)
+function calculatePrestigePoints(lifetimeEarned) {
+    return Math.floor(Math.sqrt(Math.max(lifetimeEarned, 0) / PRESTIGE_SCALE));
+}
 
-func ascend():
-    var ek_gain = calculate_prestige_gain()
-    if ek_gain <= 0:
-        return
-    
-    prestige_points += ek_gain
-    
-    # Reset run
-    ab = 0.0
-    ab_total_earned = 0.0
-    inventory.clear()
-    workstations.clear()
-    upgrades_owned.clear()
-    active_buffs.clear()
-    total_taps = 0
-    total_workstations_crafted = 0
-    
-    # Apply prestige start bonuses
-    apply_prestige_start_bonuses()
-    
-    prestige_completed.emit(ek_gain)
-    save_game_state()
-
-func apply_prestige_start_bonuses():
-    var prestige_data_res = load("res://data/prestige_bonuses.tres")
-    if not prestige_data_res:
-        return
-    
-    var prestige_data_list = prestige_data_res.data if prestige_data_res.has("data") else []
-    
-    # Starting AB
-    for bonus_id in prestige_bonuses:
-        for bonus_data in prestige_data_list:
-            if bonus_data.id == bonus_id and bonus_data.type == "starting_currency":
-                var levels = prestige_bonuses[bonus_id]
-                add_ab(bonus_data.value * levels)
-    
-    # Starting ingredients
-    for bonus_id in prestige_bonuses:
-        for bonus_data in prestige_data_list:
-            if bonus_data.id == bonus_id and bonus_data.type == "start_ingredient":
-                var levels = prestige_bonuses[bonus_id]
-                add_ingredient(bonus_data.param, bonus_data.value * levels)
-
-func purchase_prestige_bonus(bonus_id: String) -> bool:
-    var prestige_data_res = load("res://data/prestige_bonuses.tres")
-    if not prestige_data_res:
-        return false
-    
-    var prestige_data_list = prestige_data_res.data if prestige_data_res.has("data") else []
-    
-    var bonus_data = null
-    for data in prestige_data_list:
-        if data.id == bonus_id:
-            bonus_data = data
-            break
-    
-    if not bonus_data:
-        return false
-    
-    var current_level = prestige_bonuses.get(bonus_id, 0)
-    var cost = bonus_data.base_cost_pp * pow(bonus_data.cost_growth, current_level)
-    
-    if prestige_points < cost:
-        return false
-    
-    prestige_points -= int(cost)
-    prestige_bonuses[bonus_id] = current_level + 1
-    
-    return true
-
-# ========================================
-# EXPERIMENT SYSTEM (Discovery)
-# ========================================
-
-func load_hidden_recipes():
-    hidden_recipes = [
-        {
-            "id": "wax_block_bulk",
-            "inputs": {"wax_bits": 50},
-            "outputs": {"wax_block": 5},
-            "name": "Wax Block Bulk",
-            "description": "Convert raw wax into refined blocks"
-        },
-        {
-            "id": "braid_wick",
-            "inputs": {"wick_fiber": 30},
-            "outputs": {"braided_wick": 3},
-            "name": "Braided Wick",
-            "description": "Weave fibers into sturdy wicks"
-        },
-        {
-            "id": "distill_aether",
-            "inputs": {"aether_ess": 40},
-            "outputs": {"dist_aether": 4},
-            "name": "Distilled Aether",
-            "description": "Purify essence into stable aether"
-        },
-        {
-            "id": "candle_compile",
-            "inputs": {"wax_block": 5, "braided_wick": 1, "dist_aether": 2},
-            "outputs": {"dig_candle": 1},
-            "name": "Digital Candle",
-            "description": "Assemble a mystical candle artifact"
-        },
-        {
-            "id": "crystal_boost",
-            "inputs": {"shaped_crys": 10, "dist_aether": 5},
-            "outputs": {"ab": 50},
-            "name": "Crystal Boost",
-            "description": "Convert crystals directly to AB"
-        }
-    ]
-
-func try_experiment() -> Dictionary:
-    for recipe in hidden_recipes:
-        if recipe.id in discovered_recipes:
-            continue
-        
-        # Check if player has ingredients
-        var has_all = true
-        for ing_id in recipe.inputs:
-            if inventory.get(ing_id, 0.0) < recipe.inputs[ing_id]:
-                has_all = false
-                break
-        
-        if has_all:
-            discovered_recipes.append(recipe.id)
-            recipe_discovered.emit(recipe.id)
-            return {
-                "success": true,
-                "recipe": recipe
-            }
-    
-    return {
-        "success": false,
-        "message": "No new recipes discovered. Try gathering more materials!"
+// Recipe scaling
+function scaleRecipe(baseRecipe, owned, growth) {
+    const scaled = {};
+    for (const [ingId, baseCost] of Object.entries(baseRecipe)) {
+        scaled[ingId]] = Math.ceil(baseCost * Math.pow(growth, owned));
     }
+    return scaled;
+}
 
-func craft_discovered_recipe(recipe_id: String) -> bool:
-    if not recipe_id in discovered_recipes:
-        return false
+// Production multipliers
+function getProductionMultiplier(workstationId, upgrades, prestigeBonuses, buffs) {
+    let mult = 1.0;
     
-    # Find recipe
-    var recipe = null
-    for r in hidden_recipes:
-        if r.id == recipe_id:
-            recipe = r
-            break
-    
-    if not recipe:
-        return false
-    
-    # Check and consume inputs
-    if not Crafting.consume_recipe(recipe.inputs, inventory):
-        return false
-    
-    # Grant outputs
-    for output_id in recipe.outputs:
-        if output_id == "ab":
-            add_ab(recipe.outputs[output_id])
-        else:
-            add_ingredient(output_id, recipe.outputs[output_id])
-    
-    return true
-
-# ========================================
-# SAVE / LOAD
-# ========================================
-
-func save_game_state():
-    var save_data = {
-        "ab": ab,
-        "ab_total": ab_total_earned,
-        "inventory": inventory.duplicate(),
-        "workstations": workstations.duplicate(),
-        "upgrades": upgrades_owned.duplicate(),
-        "prestige": {
-            "points": prestige_points,
-            "lifetime_earned": prestige_lifetime_earned,
-            "bonuses": prestige_bonuses.duplicate()
-        },
-        "dailies": DailyRituals.save_state(),
-        "experiments": {
-            "discovered": discovered_recipes.duplicate()
-        },
-        "stats": {
-            "total_taps": total_taps,
-            "total_workstations_crafted": total_workstations_crafted
+    // Apply global upgrades
+    for (const upgradeId of Object.keys(upgrades)) {
+        const upgrade = UPGRADES.find(u => u.id === upgradeId);
+        if (upgrade && upgrade.affects === "global" && upgrade.type === "multiplier") {
+            mult *= upgrade.value;
         }
     }
     
-    Persistence.save_game(save_data)
-    last_save_time = Time.get_unix_time_from_system()
+    // Apply prestige bonuses
+    for (const [bonusId, level] of Object.entries(prestigeBonuses)) {
+        const bonus = PRESTIGE_BONUSES.find(b => b.id === bonusId);
+        if (bonus && bonus.type === "global_mult") {
+            mult *= (1.0 + bonus.value * level);
+        }
+    }
+    
+    // Apply active buffs
+    for (const buff of buffs) {
+        if (buff.multiplier) {
+            mult *= (1.0 + buff.multiplier);
+        }
+    }
+    
+    return mult;
+}
 
-func load_game_state():
-    var data = Persistence.load_game()
-    if data.is_empty():
-        return
-    
-    # Calculate offline progress BEFORE loading state
-    var elapsed = Time.get_unix_time_from_system() - data.get("timestamp", Time.get_unix_time_from_system())
-    
-    # Load state
-    ab = data.get("ab", 0.0)
-    ab_total_earned = data.get("ab_total", 0.0)
-    inventory = data.get("inventory", {})
-    workstations = data.get("workstations", {})
-    upgrades_owned = data.get("upgrades", {})
-    
-    var prestige_data = data.get("prestige", {})
-    prestige_points = prestige_data.get("points", 0)
-    prestige_lifetime_earned = prestige_data.get("lifetime_earned", 0.0)
-    prestige_bonuses = prestige_data.get("bonuses", {})
-    
-    var dailies_data = data.get("dailies", {})
-    DailyRituals.load_state(dailies_data)
-    
-    var experiments_data = data.get("experiments", {})
-    discovered_recipes = experiments_data.get("discovered", [])
-    
-    var stats = data.get("stats", {})
-    total_taps = stats.get("total_taps", 0)
-    total_workstations_crafted = stats.get("total_workstations_crafted", 0)
-    
-    # Apply offline progress
-    if elapsed > 0:
-        apply_offline_progress(elapsed)
-    
-    last_save_time = Time.get_unix_time_from_system()
+// Offline progress (capped at 12 hours)
+const OFFLINE_CAP_SECONDS = 43200;
 
-func apply_offline_progress(elapsed_seconds: float):
-    var abps = get_ab_per_second()
-    var offline_ab = Balance.calculate_offline_production(elapsed_seconds, abps)
-    
-    if offline_ab > 0:
-        add_ab(offline_ab)
+function calculateOfflineProduction(elapsedSeconds, productionPerSecond) {
+    const cappedTime = Math.min(elapsedSeconds, OFFLINE_CAP_SECONDS);
+    return productionPerSecond * cappedTime;
+}
+```
+
+---
+
+### System 3: Game State (gameState.js)
+
+```javascript
+class GameState {
+    constructor() {
+        // Currency
+        this.ab = 0.0;
+        this.abTotalEarned = 0.0;
         
-        # Show welcome back modal
-        call_deferred("show_welcome_back_modal", elapsed_seconds, offline_ab)
-
-func show_welcome_back_modal(elapsed: float, ab_gained: float):
-    # Signal to UI
-    print("Welcome back! Offline for %s, earned %s AB" % [
-        Format.time_duration(elapsed), 
-        Format.short(ab_gained)
-    ])
+        // Inventory
+        this.inventory = {};
+        
+        // Workstations
+        this.workstations = {};
+        
+        // Upgrades
+        this.upgradesOwned = {};
+        
+        // Prestige
+        this.prestigePoints = 0;
+        this.prestigeLifetimeEarned = 0.0;
+        this.prestigeBonuses = {};
+        
+        // Buffs
+        this.activeBuffs = [];
+        
+        // Experiments
+        this.discoveredRecipes = [];
+        
+        // Stats
+        this.totalTaps = 0;
+        this.totalWorkstationsCrafted = 0;
+        
+        // Initialize
+        this.loadGameState();
+        this.startTickLoop();
+    }
+    
+    // Start the main game loop
+    startTickLoop() {
+        setInterval(() => this.tick(), 100); // 10 ticks per second
+    }
+    
+    // Main game tick
+    tick() {
+        const delta = 0.1; // 100ms tick
+        
+        // Update buffs
+        this.updateBuffs(delta);
+        
+        // Calculate production
+        const production = this.calculateTotalProduction(delta);
+        
+        // Apply production
+        for (const [outputId, amount] of Object.entries(production)) {
+            if (outputId === "ab") {
+                this.addAB(amount);
+            } else {
+                this.addIngredient(outputId, amount);
+            }
+        }
+        
+        // Auto-save every 30 seconds
+        if (Date.now() - this.lastSaveTime > 30000) {
+            this.saveGameState();
+        }
+    }
+    
+    // Calculate total production from all workstations
+    calculateTotalProduction(delta) {
+        const totalOutput = {};
+        
+        for (const [wsId, owned] of Object.entries(this.workstations)) {
+            const workstation = WORKSTATIONS.find(ws => ws.id === wsId);
+            if (!workstation || owned <= 0) continue;
+            
+            // Get base outputs
+            for (const [outputId, baseRate] of Object.entries(workstation.outputs)) {
+                // Apply multipliers
+                const mult = getProductionMultiplier(
+                    wsId,
+                    this.upgradesOwned,
+                    this.prestigeBonuses,
+                    this.activeBuffs
+                );
+                
+                const finalRate = baseRate * mult * owned;
+                
+                if (!totalOutput[outputId]) {
+                    totalOutput[outputId] = 0.0;
+                }
+                totalOutput[outputId] += finalRate * delta;
+            }
+        }
+        
+        return totalOutput;
+    }
+    
+    // Cast spell (manual gathering)
+    cast() {
+        this.totalTaps++;
+        
+        // Base ingredients from casting
+        const baseAmounts = {
+            wax_bits: 1.0,
+            wick_fiber: 1.0,
+            crystal_dust: 0.5,
+            aether_ess: 0.5
+        };
+        
+        // Apply click upgrades
+        let clickMult = 1.0;
+        for (const upgradeId of Object.keys(this.upgradesOwned)) {
+            const upgrade = UPGRADES.find(u => u.id === upgradeId);
+            if (upgrade && upgrade.affects === "click") {
+                if (upgrade.type === "multiplier") {
+                    clickMult *= upgrade.value;
+                } else if (upgrade.type === "additive") {
+                    clickMult += upgrade.value;
+                }
+            }
+        }
+        
+        // Grant ingredients
+        for (const [ingId, amount] of Object.entries(baseAmounts)) {
+            this.addIngredient(ingId, amount * clickMult);
+        }
+    }
+    
+    // Add AB
+    addAB(amount) {
+        this.ab += amount;
+        this.abTotalEarned += amount;
+        this.prestigeLifetimeEarned += amount;
+        this.updateUI();
+    }
+    
+    // Add ingredient to inventory
+    addIngredient(ingId, amount) {
+        if (!this.inventory[ingId]) {
+            this.inventory[ingId] = 0.0;
+        }
+        this.inventory[ingId] += amount;
+        this.updateUI();
+    }
+    
+    // Craft workstation
+    craftWorkstation(wsId, amount = 1) {
+        const workstation = WORKSTATIONS.find(ws => ws.id === wsId);
+        if (!workstation) return false;
+        
+        // Check unlock
+        if (this.ab < workstation.unlockAtAB) return false;
+        
+        let successCount = 0;
+        for (let i = 0; i < amount; i++) {
+            const currentOwned = this.workstations[wsId] || 0;
+            const recipe = scaleRecipe(workstation.recipe, currentOwned, workstation.growth);
+            
+            if (!this.canAfford(recipe)) break;
+            
+            // Consume ingredients
+            for (const [ingId, cost] of Object.entries(recipe)) {
+                this.inventory[ingId] -= cost;
+            }
+            
+            // Add workstation
+            this.workstations[wsId] = currentOwned + 1;
+            successCount++;
+            this.totalWorkstationsCrafted++;
+        }
+        
+        if (successCount > 0) {
+            this.updateUI();
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Check if player can afford recipe
+    canAfford(recipe) {
+        for (const [ingId, cost] of Object.entries(recipe)) {
+            if ((this.inventory[ingId] || 0) < cost) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Save game state
+    saveGameState() {
+        const saveData = {
+            version: 2,
+            timestamp: Date.now(),
+            ab: this.ab,
+            abTotal: this.abTotalEarned,
+            inventory: this.inventory,
+            workstations: this.workstations,
+            upgrades: this.upgradesOwned,
+            prestige: {
+                points: this.prestigePoints,
+                lifetimeEarned: this.prestigeLifetimeEarned,
+                bonuses: this.prestigeBonuses
+            },
+            dailies: dailyRituals.saveState(),
+            experiments: {
+                discovered: this.discoveredRecipes
+            },
+            stats: {
+                totalTaps: this.totalTaps,
+                totalWorkstationsCrafted: this.totalWorkstationsCrafted
+            }
+        };
+        
+        localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
+        this.lastSaveTime = Date.now();
+    }
+    
+    // Load game state
+    loadGameState() {
+        const saveDataStr = localStorage.getItem('cyberWitchesSave');
+        if (!saveDataStr) return;
+        
+        try {
+            const saveData = JSON.parse(saveDataStr);
+            
+            // Calculate offline progress
+            const elapsed = (Date.now() - saveData.timestamp) / 1000;
+            
+            // Load state
+            this.ab = saveData.ab || 0;
+            this.abTotalEarned = saveData.abTotal || 0;
+            this.inventory = saveData.inventory || {};
+            this.workstations = saveData.workstations || {};
+            this.upgradesOwned = saveData.upgrades || {};
+            
+            const prestigeData = saveData.prestige || {};
+            this.prestigePoints = prestigeData.points || 0;
+            this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0;
+            this.prestigeBonuses = prestigeData.bonuses || {};
+            
+            const experimentsData = saveData.experiments || {};
+            this.discoveredRecipes = experimentsData.discovered || [];
+            
+            const stats = saveData.stats || {};
+            this.totalTaps = stats.totalTaps || 0;
+            this.totalWorkstationsCrafted = stats.totalWorkstationsCrafted || 0;
+            
+            // Apply offline progress
+            if (elapsed > 0) {
+                this.applyOfflineProgress(elapsed);
+            }
+            
+            this.lastSaveTime = Date.now();
+        } catch (error) {
+            console.error('Failed to load save data:', error);
+        }
+    }
+    
+    // Apply offline progress
+    applyOfflineProgress(elapsedSeconds) {
+        const abps = this.getABPerSecond();
+        const offlineAB = calculateOfflineProduction(elapsedSeconds, abps);
+        
+        if (offlineAB > 0) {
+            this.addAB(offlineAB);
+            this.showWelcomeBackModal(elapsedSeconds, offlineAB);
+        }
+    }
+    
+    // Get current AB production per second
+    getABPerSecond() {
+        const production = this.calculateTotalProduction(1.0);
+        return production.ab || 0;
+    }
+    
+    // Update UI elements
+    updateUI() {
+        // This would be implemented in game.js
+        if (window.gameUI) {
+            window.gameUI.updateDisplay();
+        }
+    }
+    
+    // Show welcome back modal
+    showWelcomeBackModal(elapsed, abGained) {
+        // This would be implemented in game.js
+        console.log(`Welcome back! Away for ${formatTimeDuration(elapsed)}, earned ${formatShort(abGained)} AB`);
+    }
+}
 ```
 
 ---
@@ -1282,504 +664,750 @@ func show_welcome_back_modal(elapsed: float, ab_gained: float):
 5. Recipe unlocked permanently
 6. Can now craft that recipe anytime
 
-### Visual Example
-
-```
-╔════════════════════════════════╗
-║      EXPERIMENT LAB            ║
-╠════════════════════════════════╣
-║                                ║
-║  You have:                     ║
-║  • Wax Bits: 150               ║
-║  • Wick Fiber: 75              ║
-║  • Crystal Dust: 20            ║
-║                                ║
-║  ┌─────────────────────────┐   ║
-║  │   [EXPERIMENT]          │   ║
-║  └─────────────────────────┘   ║
-║                                ║
-║  ✨ Discovery!                 ║
-║  You've learned:               ║
-║  "Wax Block Bulk"              ║
-║                                ║
-╚════════════════════════════════╝
-```
-
 ### Implementation
 
-Already included in **GameState.gd** above:
+```javascript
+// Hidden recipes for discovery
+const HIDDEN_RECIPES = [
+    {
+        id: "wax_block_bulk",
+        inputs: { wax_bits: 50 },
+        outputs: { wax_block: 5 },
+        name: "Wax Block Bulk",
+        description: "Convert raw wax into refined blocks"
+    },
+    {
+        id: "braid_wick",
+        inputs: { wick_fiber: 30 },
+        outputs: { braided_wick: 3 },
+        name: "Braided Wick",
+        description: "Weave fibers into sturdy wicks"
+    },
+    // ... more recipes
+];
 
-- `load_hidden_recipes()` - Defines all recipes
-- `try_experiment()` - Checks for discoveries
-- `craft_discovered_recipe()` - Uses discovered recipes
-
-### UI Integration
-
-```gdscript
-# In ExperimentTab.gd
-
-@onready var experiment_button = $ExperimentButton
-@onready var result_label = $ResultLabel
-@onready var recipe_list = $RecipeList
-
-func _ready():
-    experiment_button.pressed.connect(_on_experiment_pressed)
-    GameState.recipe_discovered.connect(_on_recipe_discovered)
-    update_recipe_list()
-
-func _on_experiment_pressed():
-    var result = GameState.try_experiment()
-    
-    if result.success:
-        result_label.text = "✨ Discovered: " + result.recipe.name
-        result_label.modulate = Color.GREEN
-    else:
-        result_label.text = result.message
-        result_label.modulate = Color.YELLOW
-    
-    update_recipe_list()
-
-func _on_recipe_discovered(recipe_id: String):
-    # Play celebration effect
-    pass
-
-func update_recipe_list():
-    # Clear existing
-    for child in recipe_list.get_children():
-        child.queue_free()
-    
-    # Show discovered recipes
-    for recipe_id in GameState.discovered_recipes:
-        var recipe = null
-        for r in GameState.hidden_recipes:
-            if r.id == recipe_id:
-                recipe = r
-                break
+// Try to discover a new recipe
+function tryExperiment() {
+    for (const recipe of HIDDEN_RECIPES) {
+        if (gameState.discoveredRecipes.includes(recipe.id)) continue;
         
-        if not recipe:
-            continue
+        // Check if player has ingredients
+        let hasAll = true;
+        for (const [ingId, amount] of Object.entries(recipe.inputs)) {
+            if ((gameState.inventory[ingId] || 0) < amount) {
+                hasAll = false;
+                break;
+            }
+        }
         
-        var card = create_recipe_card(recipe)
-        recipe_list.add_child(card)
+        if (hasAll) {
+            gameState.discoveredRecipes.push(recipe.id);
+            return {
+                success: true,
+                recipe: recipe
+            };
+        }
+    }
+    
+    return {
+        success: false,
+        message: "No new recipes discovered. Try gathering more materials!"
+    };
+}
 
-func create_recipe_card(recipe: Dictionary) -> Control:
-    var card = VBoxContainer.new()
+// Craft discovered recipe
+function craftDiscoveredRecipe(recipeId) {
+    if (!gameState.discoveredRecipes.includes(recipeId)) return false;
     
-    # Title
-    var title = Label.new()
-    title.text = recipe.name
-    card.add_child(title)
+    const recipe = HIDDEN_RECIPES.find(r => r.id === recipeId);
+    if (!recipe) return false;
     
-    # Inputs
-    var inputs_label = Label.new()
-    inputs_label.text = "Costs:"
-    card.add_child(inputs_label)
+    // Check and consume inputs
+    if (!gameState.canAfford(recipe.inputs)) return false;
     
-    for ing_id in recipe.inputs:
-        var amount = recipe.inputs[ing_id]
-        var have = GameState.inventory.get(ing_id, 0.0)
-        
-        var ing_label = Label.new()
-        ing_label.text = "  %s: %s / %s" % [
-            ing_id,
-            Format.short(have),
-            Format.short(amount)
-        ]
-        
-        if have >= amount:
-            ing_label.modulate = Color.GREEN
-        else:
-            ing_label.modulate = Color.RED
-        
-        card.add_child(ing_label)
+    for (const [ingId, cost] of Object.entries(recipe.inputs)) {
+        gameState.inventory[ingId] -= cost;
+    }
     
-    # Craft button
-    var craft_btn = Button.new()
-    craft_btn.text = "Craft"
-    craft_btn.pressed.connect(func(): craft_recipe(recipe.id))
-    card.add_child(craft_btn)
+    // Grant outputs
+    for (const [outputId, amount] of Object.entries(recipe.outputs)) {
+        if (outputId === "ab") {
+            gameState.addAB(amount);
+        } else {
+            gameState.addIngredient(outputId, amount);
+        }
+    }
     
-    return card
-
-func craft_recipe(recipe_id: String):
-    if GameState.craft_discovered_recipe(recipe_id):
-        update_recipe_list()
+    return true;
+}
 ```
 
 ---
 
 ## 🎨 UI IMPLEMENTATION
 
-### Main Scene Structure
+### Main HTML Structure (index.html)
 
-```
-Main (Node2D)
-├── CanvasLayer
-│   ├── Background (ColorRect)
-│   │   └── #0E0E12 (dark)
-│   │
-│   ├── TopBar (HBoxContainer)
-│   │   ├── ABLabel
-│   │   ├── ABPerSecLabel
-│   │   └── CastButton
-│   │
-│   ├── TabContainer
-│   │   ├── Workstations
-│   │   ├── Inscriptions
-│   │   ├── Inventory
-│   │   ├── Experiment
-│   │   ├── Dailies
-│   │   └── Boons
-│   │
-│   └── Modals
-│       ├── WelcomeBack
-│       ├── Prestige
-│       └── Settings
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Witches: Idle Coven</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Top Bar -->
+        <div id="top-bar">
+            <div id="ab-display">AB: 0</div>
+            <div id="abps-display">0 AB/s</div>
+            <button id="cast-button">✨ Cast</button>
+        </div>
+        
+        <!-- Tab Container -->
+        <div id="tab-container">
+            <div id="tab-buttons">
+                <button class="tab-button active" data-tab="workstations">🏭 Workstations</button>
+                <button class="tab-button" data-tab="inscriptions">📜 Inscriptions</button>
+                <button class="tab-button" data-tab="inventory">🎒 Inventory</button>
+                <button class="tab-button" data-tab="experiment">🔬 Experiment</button>
+                <button class="tab-button" data-tab="dailies">📅 Dailies</button>
+                <button class="tab-button" data-tab="boons">⭐ Boons</button>
+            </div>
+            
+            <!-- Tab Content -->
+            <div id="tab-content">
+                <div id="workstations-tab" class="tab-content active">
+                    <div id="workstation-list"></div>
+                </div>
+                <div id="inscriptions-tab" class="tab-content">
+                    <div id="upgrade-list"></div>
+                </div>
+                <div id="inventory-tab" class="tab-content">
+                    <div id="inventory-list"></div>
+                </div>
+                <div id="experiment-tab" class="tab-content">
+                    <button id="experiment-button">Try Experiment</button>
+                    <div id="experiment-result"></div>
+                    <div id="recipe-list"></div>
+                </div>
+                <div id="dailies-tab" class="tab-content">
+                    <div id="daily-tasks"></div>
+                </div>
+                <div id="boons-tab" class="tab-content">
+                    <div id="prestige-display">EK: 0</div>
+                    <div id="boon-list"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modals -->
+        <div id="welcome-back-modal" class="modal">
+            <div class="modal-content">
+                <h2>Welcome Back!</h2>
+                <p id="away-time"></p>
+                <p id="offline-ab"></p>
+                <button id="close-welcome">Continue</button>
+            </div>
+        </div>
+        
+        <div id="prestige-modal" class="modal">
+            <div class="modal-content">
+                <h2>Ascend</h2>
+                <p id="prestige-gain"></p>
+                <button id="ascend-button">Ascend</button>
+                <button id="cancel-prestige">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script type="module" src="js/data.js"></script>
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/dailyRituals.js"></script>
+    <script type="module" src="js/gameState.js"></script>
+    <script type="module" src="js/game.js"></script>
+</body>
+</html>
 ```
 
 ---
 
-### UI Controller (UI_HUD.gd)
+### Main Game Controller (game.js)
 
-```gdscript
-extends CanvasLayer
-
-@onready var ab_label = $TopBar/ABLabel
-@onready var abps_label = $TopBar/ABPerSecLabel
-@onready var cast_button = $TopBar/CastButton
-
-func _ready():
-    # Connect signals
-    GameState.ab_changed.connect(_on_ab_changed)
-    cast_button.pressed.connect(_on_cast_pressed)
+```javascript
+// Main UI controller
+class GameUI {
+    constructor() {
+        this.gameState = new GameState();
+        this.initializeEventListeners();
+        this.updateDisplay();
+    }
     
-    # Initial update
-    update_display()
-    
-    # Update loop for ABPS
-    var timer = Timer.new()
-    timer.wait_time = 0.5
-    timer.timeout.connect(update_display)
-    add_child(timer)
-    timer.start()
-
-func update_display():
-    ab_label.text = "AB: " + Format.short(GameState.ab)
-    abps_label.text = Format.short(GameState.get_ab_per_second()) + " AB/s"
-
-func _on_ab_changed(new_value):
-    ab_label.text = "AB: " + Format.short(new_value)
-
-func _on_cast_pressed():
-    GameState.cast()
-    
-    # Visual feedback
-    var tween = create_tween()
-    tween.tween_property(cast_button, "scale", Vector2(1.2, 1.2), 0.1)
-    tween.tween_property(cast_button, "scale", Vector2(1.0, 1.0), 0.1)
-```
-
----
-
-### Workstations Tab
-
-```gdscript
-# WorkstationsTab.gd
-extends VBoxContainer
-
-@onready var workstation_list = $ScrollContainer/WorkstationList
-
-func _ready():
-    GameState.workstation_crafted.connect(_on_workstation_crafted)
-    populate_workstations()
-
-func populate_workstations():
-    # Clear existing
-    for child in workstation_list.get_children():
-        child.queue_free()
-    
-    # Add workstation cards
-    for prod_data in Crafting.producers:
-        if GameState.ab < prod_data.unlock_at_ab:
-            continue
+    initializeEventListeners() {
+        // Cast button
+        document.getElementById('cast-button').addEventListener('click', () => {
+            this.gameState.cast();
+        });
         
-        var card = create_workstation_card(prod_data)
-        workstation_list.add_child(card)
-
-func create_workstation_card(prod_data) -> Control:
-    var card = VBoxContainer.new()
-    card.add_theme_constant_override("separation", 8)
-    
-    # === Title ===
-    var title = Label.new()
-    title.text = prod_data.display_name
-    title.add_theme_font_size_override("font_size", 20)
-    title.add_theme_color_override("font_color", Color("#22E3FF"))
-    card.add_child(title)
-    
-    # === Owned Count ===
-    var owned = GameState.workstations.get(prod_data.id, 0)
-    var owned_label = Label.new()
-    owned_label.text = "⚙️ Owned: %d" % owned
-    card.add_child(owned_label)
-    
-    # === Output Display ===
-    var output_label = Label.new()
-    var output_text = "Produces: "
-    for output_id in prod_data.outputs:
-        var rate = prod_data.outputs[output_id]
-        output_text += "%s/s %s  " % [Format.precise(rate, 2), output_id]
-    output_label.text = output_text
-    card.add_child(output_label)
-    
-    # === Recipe (Have/Need) ===
-    var recipe = Crafting.get_producer_recipe(prod_data.id, owned)
-    
-    var recipe_title = Label.new()
-    recipe_title.text = "Recipe for next:"
-    recipe_title.add_theme_font_size_override("font_size", 14)
-    card.add_child(recipe_title)
-    
-    for ing_id in recipe:
-        var amount_needed = recipe[ing_id]
-        var amount_have = GameState.inventory.get(ing_id, 0.0)
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
+        });
         
-        var ing_label = Label.new()
-        ing_label.text = "  %s: %s / %s" % [
-            ing_id,
-            Format.short(amount_have),
-            Format.short(amount_needed)
-        ]
+        // Experiment button
+        document.getElementById('experiment-button').addEventListener('click', () => {
+            this.tryExperiment();
+        });
         
-        if amount_have >= amount_needed:
-            ing_label.add_theme_color_override("font_color", Color("#3CE3C5"))
-        else:
-            ing_label.add_theme_color_override("font_color", Color("#FF2DAA"))
+        // Modal close buttons
+        document.getElementById('close-welcome').addEventListener('click', () => {
+            this.closeModal('welcome-back-modal');
+        });
         
-        card.add_child(ing_label)
-    
-    # === Craft Buttons ===
-    var button_row = HBoxContainer.new()
-    button_row.add_theme_constant_override("separation", 10)
-    
-    var craft_1 = Button.new()
-    craft_1.text = "Craft x1"
-    craft_1.pressed.connect(func(): craft_workstation(prod_data.id, 1))
-    button_row.add_child(craft_1)
-    
-    var craft_10 = Button.new()
-    craft_10.text = "Craft x10"
-    craft_10.pressed.connect(func(): craft_workstation(prod_data.id, 10))
-    button_row.add_child(craft_10)
-    
-    var craft_max = Button.new()
-    craft_max.text = "Max"
-    craft_max.pressed.connect(func(): craft_workstation_max(prod_data.id))
-    button_row.add_child(craft_max)
-    
-    card.add_child(button_row)
-    
-    # === Separator ===
-    var sep = HSeparator.new()
-    sep.add_theme_constant_override("separation", 20)
-    card.add_child(sep)
-    
-    return card
-
-func craft_workstation(ws_id: String, amount: int):
-    GameState.craft_workstation(ws_id, amount)
-    populate_workstations()
-
-func craft_workstation_max(ws_id: String):
-    # Calculate max affordable
-    var max_count = 0
-    for i in range(1000):  # Safety limit
-        var owned = GameState.workstations.get(ws_id, 0) + max_count
-        var recipe = Crafting.get_producer_recipe(ws_id, owned)
+        document.getElementById('cancel-prestige').addEventListener('click', () => {
+            this.closeModal('prestige-modal');
+        });
         
-        if Crafting.can_afford(recipe, GameState.inventory):
-            max_count += 1
-        else:
-            break
+        document.getElementById('ascend-button').addEventListener('click', () => {
+            this.ascend();
+        });
+    }
     
-    if max_count > 0:
-        craft_workstation(ws_id, max_count)
-
-func _on_workstation_crafted(_ws_id, _count):
-    populate_workstations()
-```
-
----
-
-### Welcome Back Modal
-
-```gdscript
-# UI_WelcomeBack.gd
-extends Panel
-
-@onready var time_label = $VBoxContainer/TimeLabel
-@onready var ab_label = $VBoxContainer/ABLabel
-@onready var close_button = $VBoxContainer/CloseButton
-
-signal closed
-
-func _ready():
-    close_button.pressed.connect(_on_close_pressed)
-    hide()
-
-func show_welcome(elapsed_seconds: float, ab_gained: float):
-    time_label.text = "⏰ Away for: " + Format.time_duration(elapsed_seconds)
-    ab_label.text = "✨ Earned: " + Format.short(ab_gained) + " AB"
-    show()
+    switchTab(tabName) {
+        // Update button states
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        
+        // Update content visibility
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+        // Update tab content
+        this.updateTabContent(tabName);
+    }
     
-    # Auto-hide after 5 seconds
-    await get_tree().create_timer(5.0).timeout
-    if visible:
-        hide()
+    updateTabContent(tabName) {
+        switch (tabName) {
+            case 'workstations':
+                this.updateWorkstationsTab();
+                break;
+            case 'inscriptions':
+                this.updateInscriptionsTab();
+                break;
+            case 'inventory':
+                this.updateInventoryTab();
+                break;
+            case 'experiment':
+                this.updateExperimentTab();
+                break;
+            case 'dailies':
+                this.updateDailiesTab();
+                break;
+            case 'boons':
+                this.updateBoonsTab();
+                break;
+        }
+    }
+    
+    updateDisplay() {
+        // Update AB display
+        document.getElementById('ab-display').textContent = `AB: ${formatShort(this.gameState.ab)}`;
+        document.getElementById('abps-display').textContent = `${formatShort(this.gameState.getABPerSecond())} AB/s`;
+        
+        // Update prestige display
+        document.getElementById('prestige-display').textContent = `EK: ${this.gameState.prestigePoints}`;
+    }
+    
+    updateWorkstationsTab() {
+        const container = document.getElementById('workstation-list');
+        container.innerHTML = '';
+        
+        for (const workstation of WORKSTATIONS) {
+            if (this.gameState.ab < workstation.unlockAtAB) continue;
+            
+            const owned = this.gameState.workstations[workstation.id] || 0;
+            const recipe = scaleRecipe(workstation.recipe, owned, workstation.growth);
+            
+            const card = this.createWorkstationCard(workstation, owned, recipe);
+            container.appendChild(card);
+        }
+    }
+    
+    createWorkstationCard(workstation, owned, recipe) {
+        const card = document.createElement('div');
+        card.className = 'workstation-card';
+        
+        card.innerHTML = `
+            <h3>${workstation.displayName}</h3>
+            <p>⚙️ Owned: ${owned}</p>
+            <p>Produces: ${Object.entries(workstation.outputs).map(([id, rate]) => 
+                `${formatShort(rate)}/s ${id}`).join(', ')}</p>
+            <h4>Recipe for next:</h4>
+            ${Object.entries(recipe).map(([id, cost]) => {
+                const have = this.gameState.inventory[id] || 0;
+                const canAfford = have >= cost;
+                return `<p class="${canAfford ? 'can-afford' : 'cannot-afford'}">
+                    ${id}: ${formatShort(have)} / ${formatShort(cost)}
+                </p>`;
+            }).join('')}
+            <div class="button-row">
+                <button onclick="gameUI.craftWorkstation('${workstation.id}', 1)">Craft x1</button>
+                <button onclick="gameUI.craftWorkstation('${workstation.id}', 10)">Craft x10</button>
+                <button onclick="gameUI.craftWorkstation('${workstation.id}', 'max')">Max</button>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    craftWorkstation(wsId, amount) {
+        if (amount === 'max') {
+            // Calculate max affordable
+            amount = 0;
+            const workstation = WORKSTATIONS.find(ws => ws.id === wsId);
+            if (!workstation) return;
+            
+            for (let i = 0; i < 1000; i++) { // Safety limit
+                const owned = (this.gameState.workstations[wsId] || 0) + amount;
+                const recipe = scaleRecipe(workstation.recipe, owned, workstation.growth);
+                
+                if (this.gameState.canAfford(recipe)) {
+                    amount++;
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        this.gameState.craftWorkstation(wsId, amount);
+        this.updateWorkstationsTab();
+    }
+    
+    tryExperiment() {
+        const result = tryExperiment();
+        const resultDiv = document.getElementById('experiment-result');
+        
+        if (result.success) {
+            resultDiv.innerHTML = `<div class="success">✨ Discovered: ${result.recipe.name}</div>`;
+            resultDiv.className = 'experiment-success';
+        } else {
+            resultDiv.innerHTML = `<div class="failure">${result.message}</div>`;
+            resultDiv.className = 'experiment-failure';
+        }
+        
+        this.updateExperimentTab();
+    }
+    
+    updateExperimentTab() {
+        const container = document.getElementById('recipe-list');
+        container.innerHTML = '';
+        
+        for (const recipeId of this.gameState.discoveredRecipes) {
+            const recipe = HIDDEN_RECIPES.find(r => r.id === recipeId);
+            if (!recipe) continue;
+            
+            const card = this.createRecipeCard(recipe);
+            container.appendChild(card);
+        }
+    }
+    
+    createRecipeCard(recipe) {
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        
+        card.innerHTML = `
+            <h3>${recipe.name}</h3>
+            <p>${recipe.description}</p>
+            <h4>Cost:</h4>
+            ${Object.entries(recipe.inputs).map(([id, cost]) => {
+                const have = this.gameState.inventory[id] || 0;
+                const canAfford = have >= cost;
+                return `<p class="${canAfford ? 'can-afford' : 'cannot-afford'}">
+                    ${id}: ${formatShort(have)} / ${formatShort(cost)}
+                </p>`;
+            }).join('')}
+            <h4>Produces:</h4>
+            ${Object.entries(recipe.outputs).map(([id, amount]) => 
+                `<p>${formatShort(amount)} ${id}</p>`).join('')}
+            <button onclick="gameUI.craftDiscoveredRecipe('${recipe.id}')">Craft</button>
+        `;
+        
+        return card;
+    }
+    
+    craftDiscoveredRecipe(recipeId) {
+        if (craftDiscoveredRecipe(recipeId)) {
+            this.updateExperimentTab();
+            this.updateDisplay();
+        }
+    }
+    
+    // ... other tab update methods would be implemented similarly
+    
+    closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    
+    showModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
+    }
+    
+    ascend() {
+        const ekGain = this.gameState.calculatePrestigeGain();
+        if (ekGain > 0) {
+            this.gameState.ascend();
+            this.closeModal('prestige-modal');
+            this.updateDisplay();
+            this.updateTabContent('workstations');
+        }
+    }
+}
 
-func _on_close_pressed():
-    hide()
-    closed.emit()
-```
-
----
-
-### Theme & Colors
-
-**Create:** `theme/colors.tres`
-
-```gdscript
-# Cozy Neon Pixel Palette
-const BG_DARK = Color("#0E0E12")
-const PRIMARY = Color("#FF2DAA")      # Pink
-const SECONDARY = Color("#22E3FF")    # Cyan
-const ACCENT = Color("#FFDB6E")       # Gold
-const SUCCESS = Color("#3CE3C5")      # Teal
-const MYSTICAL = Color("#C9A0FF")     # Purple
-```
-
-**Apply to UI:**
-
-```gdscript
-# In Main.tscn or theme setup
-var theme = Theme.new()
-
-# Background
-var bg_style = StyleBoxFlat.new()
-bg_style.bg_color = Color("#0E0E12")
-theme.set_stylebox("panel", "Panel", bg_style)
-
-# Buttons
-var btn_style = StyleBoxFlat.new()
-btn_style.bg_color = Color("#FF2DAA")
-btn_style.corner_radius_top_left = 4
-btn_style.corner_radius_top_right = 4
-btn_style.corner_radius_bottom_left = 4
-btn_style.corner_radius_bottom_right = 4
-theme.set_stylebox("normal", "Button", btn_style)
+// Initialize game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.gameUI = new GameUI();
+});
 ```
 
 ---
 
 ## 📦 GAME CONTENT
 
-### Ingredients
+### Ingredients (data.js)
 
-**Create:** `data/ingredients.tres`
-
-```gdscript
-# Use Godot's Resource system
-# Create an Array Resource with these items:
-
-[
-    IngredientData.new("wax_bits", "Wax Bits", 0),
-    IngredientData.new("wick_fiber", "Wick Fiber", 0),
-    IngredientData.new("crystal_dust", "Crystal Dust", 0),
-    IngredientData.new("aether_ess", "Aether Essence", 0),
-    IngredientData.new("wax_block", "Wax Block", 1),
-    IngredientData.new("braided_wick", "Braided Wick", 1),
-    IngredientData.new("shaped_crys", "Shaped Crystal", 1),
-    IngredientData.new("dist_aether", "Distilled Aether", 1),
-    IngredientData.new("dig_candle", "Digital Candle", 2)
-]
+```javascript
+export const INGREDIENTS = [
+    {
+        id: "wax_bits",
+        displayName: "Wax Bits",
+        tier: 0,
+        icon: "🕯️"
+    },
+    {
+        id: "wick_fiber",
+        displayName: "Wick Fiber",
+        tier: 0,
+        icon: "🧵"
+    },
+    {
+        id: "crystal_dust",
+        displayName: "Crystal Dust",
+        tier: 0,
+        icon: "💎"
+    },
+    {
+        id: "aether_ess",
+        displayName: "Aether Essence",
+        tier: 0,
+        icon: "✨"
+    },
+    {
+        id: "wax_block",
+        displayName: "Wax Block",
+        tier: 1,
+        icon: "🧱"
+    },
+    {
+        id: "braided_wick",
+        displayName: "Braided Wick",
+        tier: 1,
+        icon: "🪢"
+    },
+    {
+        id: "shaped_crys",
+        displayName: "Shaped Crystal",
+        tier: 1,
+        icon: "💠"
+    },
+    {
+        id: "dist_aether",
+        displayName: "Distilled Aether",
+        tier: 1,
+        icon: "🧪"
+    },
+    {
+        id: "dig_candle",
+        displayName: "Digital Candle",
+        tier: 2,
+        icon: "🕯️"
+    }
+];
 ```
 
 ---
 
-### Workstations (Producers)
+### Workstations (data.js)
 
-**Create:** `data/producers.tres`
-
-| ID | Name | Unlock AB | Recipe | Growth | Output |
-|----|------|-----------|--------|--------|--------|
-| `ws_melter` | Wax Melter | 0 | 10× wax_bits | 1.10 | 0.30/s wax_block |
-| `ws_spinner` | Wick Spinner | 0 | 10× wick_fiber | 1.10 | 0.30/s braided_wick |
-| `ws_shaper` | Crystal Shaper | 25 | 10× crystal_dust | 1.12 | 0.20/s shaped_crys |
-| `ws_still` | Aether Still | 50 | 10× aether_ess | 1.12 | 0.20/s dist_aether |
-| `ws_candle` | Digital Candle Farm | 100 | 5× wax_block + 1× braided_wick + 2× dist_aether | 1.14 | 1.0/s AB |
-| `ws_crystal` | Crystal Rig | 250 | 2× shaped_crys + 2× dist_aether | 1.14 | 0.15/s AB + 0.05/s crystal_dust |
-| `ws_cauldron` | Quantum Cauldron | 1500 | 3× shaped_crys + 3× dist_aether + 1× dig_candle | 1.16 | 2.5/s AB |
-
-```gdscript
-# In producers.tres
-[
-    ProducerData.new(
-        "ws_melter", "Wax Melter", 0.0,
-        {"wax_bits": 10}, 1.10,
-        {"wax_block": 0.30}
-    ),
-    ProducerData.new(
-        "ws_spinner", "Wick Spinner", 0.0,
-        {"wick_fiber": 10}, 1.10,
-        {"braided_wick": 0.30}
-    ),
-    # ... add all 7 workstations
-]
+```javascript
+export const WORKSTATIONS = [
+    {
+        id: "ws_melter",
+        displayName: "Wax Melter",
+        description: "Melts raw wax into refined blocks",
+        unlockAtAB: 0,
+        recipe: { wax_bits: 10 },
+        growth: 1.10,
+        outputs: { wax_block: 0.30 },
+        icon: "🔥"
+    },
+    {
+        id: "ws_spinner",
+        displayName: "Wick Spinner",
+        description: "Spins fibers into braided wicks",
+        unlockAtAB: 0,
+        recipe: { wick_fiber: 10 },
+        growth: 1.10,
+        outputs: { braided_wick: 0.30 },
+        icon: "🌀"
+    },
+    {
+        id: "ws_shaper",
+        displayName: "Crystal Shaper",
+        description: "Shapes dust into refined crystals",
+        unlockAtAB: 25,
+        recipe: { crystal_dust: 10 },
+        growth: 1.12,
+        outputs: { shaped_crys: 0.20 },
+        icon: "💎"
+    },
+    {
+        id: "ws_still",
+        displayName: "Aether Still",
+        description: "Distills essence into pure aether",
+        unlockAtAB: 50,
+        recipe: { aether_ess: 10 },
+        growth: 1.12,
+        outputs: { dist_aether: 0.20 },
+        icon: "🧪"
+    },
+    {
+        id: "ws_candle",
+        displayName: "Digital Candle Farm",
+        description: "Automated candle production",
+        unlockAtAB: 100,
+        recipe: { wax_block: 5, braided_wick: 1, dist_aether: 2 },
+        growth: 1.14,
+        outputs: { ab: 1.0 },
+        icon: "🕯️"
+    },
+    {
+        id: "ws_crystal",
+        displayName: "Crystal Rig",
+        description: "Mining operation for crystals and AB",
+        unlockAtAB: 250,
+        recipe: { shaped_crys: 2, dist_aether: 2 },
+        growth: 1.14,
+        outputs: { ab: 0.15, crystal_dust: 0.05 },
+        icon: "⛏️"
+    },
+    {
+        id: "ws_cauldron",
+        displayName: "Quantum Cauldron",
+        description: "Advanced AB generation",
+        unlockAtAB: 1500,
+        recipe: { shaped_crys: 3, dist_aether: 3, dig_candle: 1 },
+        growth: 1.16,
+        outputs: { ab: 2.5 },
+        icon: "🪄"
+    }
+];
 ```
 
 ---
 
-### Inscriptions (Upgrades)
+### Upgrades (data.js)
 
-**Create:** `data/upgrades.tres`
-
-| ID | Name | Affects | Type | Value | Recipe |
-|----|------|---------|------|-------|--------|
-| `u_global_1` | Hex Compiler v1 | global | multiplier | 1.5 | 2× wax_block + 2× braided_wick + 1× shaped_crys |
-| `u_candle_1` | Wax Algorithm | producer:ws_candle | multiplier | 2.0 | 3× wax_block + 1× dist_aether |
-| `u_crystal_1` | Quantum Faceting | producer:ws_crystal | multiplier | 2.0 | 2× shaped_crys + 1× dist_aether |
-| `u_click_1` | Sigil Stroke | click | additive | 1.0 | 10× wick_fiber |
-| `u_cauldron_1` | Brew Daemon | producer:ws_cauldron | multiplier | 1.8 | 2× shaped_crys + 2× dist_aether + 1× dig_candle |
-| `u_global_2` | Sigil Cache | global | multiplier | 1.8 | 3× wax_block + 2× shaped_crys + 2× dist_aether |
+```javascript
+export const UPGRADES = [
+    {
+        id: "u_global_1",
+        displayName: "Hex Compiler v1",
+        description: "Increases all production by 50%",
+        affects: "global",
+        type: "multiplier",
+        value: 1.5,
+        recipe: { wax_block: 2, braided_wick: 2, shaped_crys: 1 },
+        unlockAtAB: 0
+    },
+    {
+        id: "u_click_1",
+        displayName: "Sigil Stroke",
+        description: "Adds +1 to all cast rewards",
+        affects: "click",
+        type: "additive",
+        value: 1.0,
+        recipe: { wick_fiber: 10 },
+        unlockAtAB: 0
+    },
+    {
+        id: "u_candle_1",
+        displayName: "Wax Algorithm",
+        description: "Doubles Digital Candle Farm production",
+        affects: "producer:ws_candle",
+        type: "multiplier",
+        value: 2.0,
+        recipe: { wax_block: 3, dist_aether: 1 },
+        unlockAtAB: 100
+    },
+    {
+        id: "u_crystal_1",
+        displayName: "Quantum Faceting",
+        description: "Doubles Crystal Rig production",
+        affects: "producer:ws_crystal",
+        type: "multiplier",
+        value: 2.0,
+        recipe: { shaped_crys: 2, dist_aether: 1 },
+        unlockAtAB: 250
+    },
+    {
+        id: "u_global_2",
+        displayName: "Sigil Cache",
+        description: "Increases all production by 80%",
+        affects: "global",
+        type: "multiplier",
+        value: 1.8,
+        recipe: { wax_block: 3, shaped_crys: 2, dist_aether: 2 },
+        unlockAtAB: 500
+    },
+    {
+        id: "u_cauldron_1",
+        displayName: "Brew Daemon",
+        description: "Increases Quantum Cauldron production by 80%",
+        affects: "producer:ws_cauldron",
+        type: "multiplier",
+        value: 1.8,
+        recipe: { shaped_crys: 2, dist_aether: 2, dig_candle: 1 },
+        unlockAtAB: 1500
+    }
+];
+```
 
 ---
 
-### Prestige Boons
+### Prestige Bonuses (data.js)
 
-**Create:** `data/prestige_bonuses.tres`
-
-| ID | Name | Type | Param | Value | Base Cost | Growth |
-|----|------|------|-------|-------|-----------|--------|
-| `pp_global_1` | Coven's Oath | global_mult | - | 0.10 | 10 | 1.5 |
-| `pp_start_bits` | Seeded Spellbook | starting_currency | - | 1000 | 5 | 1.5 |
-| `pp_candle_mult` | Wax Moon | producer_mult | ws_candle | 0.05 | 8 | 1.5 |
-| `pp_crystal_mult` | Facet Star | producer_mult | ws_crystal | 0.05 | 10 | 1.5 |
-| `pp_cauldron_mult` | Crucible Pact | producer_mult | ws_cauldron | 0.05 | 12 | 1.5 |
-| `pp_start_ingred` | Pocket Satchel | start_ingredient | wax_bits | 100 | 6 | 1.5 |
+```javascript
+export const PRESTIGE_BONUSES = [
+    {
+        id: "pp_global_1",
+        displayName: "Coven's Oath",
+        description: "Global production boost",
+        type: "global_mult",
+        value: 0.05,
+        baseCost: 10,
+        costGrowth: 1.5
+    },
+    {
+        id: "pp_start_ab",
+        displayName: "Seeded Spellbook",
+        description: "Start with AB after prestige",
+        type: "starting_currency",
+        value: 1000,
+        baseCost: 5,
+        costGrowth: 1.5
+    },
+    {
+        id: "pp_candle_mult",
+        displayName: "Wax Moon",
+        description: "Digital Candle Farm bonus",
+        type: "producer_mult",
+        param: "ws_candle",
+        value: 0.05,
+        baseCost: 8,
+        costGrowth: 1.5
+    },
+    {
+        id: "pp_crystal_mult",
+        displayName: "Facet Star",
+        description: "Crystal Rig bonus",
+        type: "producer_mult",
+        param: "ws_crystal",
+        value: 0.05,
+        baseCost: 10,
+        costGrowth: 1.5
+    },
+    {
+        id: "pp_cauldron_mult",
+        displayName: "Crucible Pact",
+        description: "Quantum Cauldron bonus",
+        type: "producer_mult",
+        param: "ws_cauldron",
+        value: 0.05,
+        baseCost: 12,
+        costGrowth: 1.5
+    },
+    {
+        id: "pp_start_wax",
+        displayName: "Pocket Satchel",
+        description: "Start with ingredients",
+        type: "start_ingredient",
+        param: "wax_bits",
+        value: 100,
+        baseCost: 6,
+        costGrowth: 1.5
+    }
+];
+```
 
 ---
 
-### Daily Tasks
+### Daily Tasks (data.js)
 
-**Create:** `data/daily_tasks_pool.tres`
-
-| ID | Name | Condition | Reward Type | Reward Value |
-|----|------|-----------|-------------|--------------|
-| `d_kindle` | Kindle the Grid | craft:workstation:ws_melter:3 | ab | 5000 |
-| `d_song` | Crystal Song | own:workstation:ws_crystal:3 | buff | 900s @ +10% |
-| `d_flow` | Rite of Flow | tap:150 | ek_frag | 1 |
-| `d_threads` | Threads of Fate | craft_item:braided_wick:20 | ab | 8000 |
-| `d_alchemy` | Aether Alchemy | craft_item:dist_aether:10 | buff | 600s @ +15% |
+```javascript
+export const DAILY_TASKS_POOL = [
+    {
+        id: "d_kindle",
+        displayName: "Kindle the Grid",
+        description: "Craft 3 Wax Melters",
+        condition: "craft:workstation:ws_melter:3",
+        rewardType: "ab",
+        rewardValue: 5000
+    },
+    {
+        id: "d_song",
+        displayName: "Crystal Song",
+        description: "Own 3 Crystal Rigs",
+        condition: "own:workstation:ws_crystal:3",
+        rewardType: "buff",
+        rewardValue: 900,
+        buffMultiplier: 0.10
+    },
+    {
+        id: "d_flow",
+        displayName: "Rite of Flow",
+        description: "Cast 150 times",
+        condition: "tap:150",
+        rewardType: "ek_frag",
+        rewardValue: 1
+    },
+    {
+        id: "d_threads",
+        displayName: "Threads of Fate",
+        description: "Craft 20 Braided Wicks",
+        condition: "craft_item:braided_wick:20",
+        rewardType: "ab",
+        rewardValue: 8000
+    },
+    {
+        id: "d_alchemy",
+        displayName: "Aether Alchemy",
+        description: "Craft 10 Distilled Aether",
+        condition: "craft_item:dist_aether:10",
+        rewardType: "buff",
+        rewardValue: 600,
+        buffMultiplier: 0.15
+    }
+];
+```
 
 ---
 
@@ -1787,245 +1415,231 @@ theme.set_stylebox("normal", "Button", btn_style)
 
 ### Key Constants
 
-```gdscript
-# First prestige target
-TARGET_MINUTES = 35
-TARGET_AB = 1_200_000  # ~35 min with base rates
+```javascript
+// First prestige target (about 35 minutes with base rates)
+const PRESTIGE_SCALE = 1200000;
 
-# Offline cap
-OFFLINE_CAP_HOURS = 12
+// Offline progress cap
+const OFFLINE_CAP_SECONDS = 43200; // 12 hours
 
-# Cast base amounts
-CAST_WAX_BITS = 1.0
-CAST_WICK_FIBER = 1.0
-CAST_CRYSTAL = 0.5
-CAST_AETHER = 0.5
+// Cast base amounts
+const CAST_BASE_AMOUNTS = {
+    wax_bits: 1.0,
+    wick_fiber: 1.0,
+    crystal_dust: 0.5,
+    aether_ess: 0.5
+};
 ```
 
 ---
 
 ### Prestige Formula
 
-```
-EK = floor(sqrt(lifetime_AB / 1,200,000))
+```javascript
+// EK = floor(sqrt(lifetime_AB / 1,200,000))
 
-Example:
-- 1.2M lifetime → 1 EK
-- 4.8M lifetime → 2 EK
-- 10.8M lifetime → 3 EK
-```
+// Examples:
+// - 1.2M lifetime → 1 EK
+// - 4.8M lifetime → 2 EK
+// - 10.8M lifetime → 3 EK
 
-**Next threshold:**
-```
-Next = (current_EK + 1)² × 1,200,000
+// Next threshold:
+// Next = (current_EK + 1)² × 1,200,000
 
-Example:
-- Currently 1 EK → need 4.8M (+3.6M more)
-- Currently 2 EK → need 10.8M (+6M more)
+// Examples:
+// - Currently 1 EK → need 4.8M (+3.6M more)
+// - Currently 2 EK → need 10.8M (+6M more)
 ```
 
 ---
 
 ### Recipe Scaling
 
-```
-cost = base_cost × (growth ^ owned)
+```javascript
+// cost = base_cost × (growth ^ owned)
 
-Example:
-- Wax Melter (growth 1.10)
-- 1st: 10 wax_bits
-- 2nd: 11 wax_bits
-- 10th: 26 wax_bits
-- 100th: 137,795 wax_bits
+// Example: Wax Melter (growth 1.10)
+// - 1st: 10 wax_bits
+// - 2nd: 11 wax_bits
+// - 10th: 26 wax_bits
+// - 100th: 137,795 wax_bits
 ```
 
 ---
 
 ### Production Multipliers
 
-```
-final_output = base_rate × global_mult × producer_mult × buff_mult × owned
+```javascript
+// final_output = base_rate × global_mult × producer_mult × buff_mult × owned
 
-Where:
-- global_mult = product of all global upgrades
-- producer_mult = product of producer-specific upgrades
-- buff_mult = product of active buffs
+// Where:
+// - global_mult = product of all global upgrades
+// - producer_mult = product of producer-specific upgrades
+// - buff_mult = product of active buffs
 ```
 
 ---
 
 ## 📅 DAILY RITUALS
 
-### DailyRituals.gd
+### Daily Rituals System (dailyRituals.js)
 
-```gdscript
-extends Node
-
-var task_pool: Array = []
-var active_tasks: Array = []
-var task_progress: Dictionary = {}
-var claimed_tasks: Array = []
-var current_day_key: String = ""
-var ek_fragments: int = 0
-
-signal task_progress_updated(task_id: String, progress: float, target: float)
-signal task_completed(task_id: String)
-signal tasks_refreshed
-
-func _ready():
-    load_task_pool()
-    check_daily_refresh()
-
-func load_task_pool():
-    var tasks_res = load("res://data/daily_tasks_pool.tres")
-    if tasks_res and tasks_res.has("data"):
-        task_pool = tasks_res.data
-
-func check_daily_refresh():
-    var today = get_day_key()
-    
-    if today != current_day_key:
-        current_day_key = today
-        select_daily_tasks()
-        task_progress.clear()
-        claimed_tasks.clear()
-        tasks_refreshed.emit()
-
-func get_day_key() -> String:
-    var time = Time.get_datetime_dict_from_system()
-    return "%04d-%02d-%02d" % [time.year, time.month, time.day]
-
-func select_daily_tasks():
-    # Randomly select 3 tasks
-    active_tasks.clear()
-    
-    var available = task_pool.duplicate()
-    available.shuffle()
-    
-    for i in range(min(3, available.size())):
-        active_tasks.append(available[i])
-
-func update_task_progress(condition_type: String, param: String, value: int):
-    for task in active_tasks:
-        if task.id in claimed_tasks:
-            continue
+```javascript
+export class DailyRituals {
+    constructor() {
+        this.taskPool = DAILY_TASKS_POOL;
+        this.activeTasks = [];
+        this.taskProgress = {};
+        this.claimedTasks = [];
+        this.currentDayKey = "";
+        this.ekFragments = 0;
         
-        var parts = task.condition.split(":")
-        if parts.size() < 2:
-            continue
-        
-        var task_type = parts[0]
-        
-        # Match condition type
-        if task_type == condition_type:
-            # For workstation tasks
-            if condition_type in ["craft", "own"] and parts.size() > 2:
-                if parts[2] == param:
-                    var target = int(parts[3]) if parts.size() > 3 else 1
-                    task_progress[task.id] = value
-                    task_progress_updated.emit(task.id, value, target)
-                    
-                    if value >= target:
-                        task_completed.emit(task.id)
-            
-            # For tap tasks
-            elif condition_type == "tap":
-                var target = int(parts[1])
-                task_progress[task.id] = value
-                task_progress_updated.emit(task.id, value, target)
-                
-                if value >= target:
-                    task_completed.emit(task.id)
-
-func claim_task(task_id: String) -> bool:
-    if task_id in claimed_tasks:
-        return false
-    
-    # Find task
-    var task = null
-    for t in active_tasks:
-        if t.id == task_id:
-            task = t
-            break
-    
-    if not task:
-        return false
-    
-    # Check completion
-    var parts = task.condition.split(":")
-    var target = int(parts[-1]) if parts.size() > 0 else 1
-    var progress = task_progress.get(task_id, 0)
-    
-    if progress < target:
-        return false
-    
-    # Grant reward
-    match task.reward_type:
-        "ab":
-            GameState.add_ab(task.reward_value)
-        "buff":
-            GameState.add_buff(task.buff_multiplier, task.reward_value)
-        "ek_frag":
-            grant_ek_fragments(int(task.reward_value))
-    
-    claimed_tasks.append(task_id)
-    return true
-
-func grant_ek_fragments(amount: int):
-    ek_fragments += amount
-    
-    # Convert 5 fragments → 1 EK
-    while ek_fragments >= 5:
-        ek_fragments -= 5
-        GameState.prestige_points += 1
-
-func save_state() -> Dictionary:
-    return {
-        "day_key": current_day_key,
-        "active_ids": active_tasks.map(func(t): return t.id),
-        "progress": task_progress.duplicate(),
-        "claimed": claimed_tasks.duplicate(),
-        "ek_fragments": ek_fragments
+        this.checkDailyRefresh();
     }
-
-func load_state(data: Dictionary):
-    current_day_key = data.get("day_key", "")
-    task_progress = data.get("progress", {})
-    claimed_tasks = data.get("claimed", [])
-    ek_fragments = data.get("ek_fragments", 0)
     
-    # Reconstruct active tasks
-    var active_ids = data.get("active_ids", [])
-    active_tasks.clear()
-    for task_id in active_ids:
-        for task in task_pool:
-            if task.id == task_id:
-                active_tasks.append(task)
-                break
+    checkDailyRefresh() {
+        const today = this.getDayKey();
+        
+        if (today !== this.currentDayKey) {
+            this.currentDayKey = today;
+            this.selectDailyTasks();
+            this.taskProgress = {};
+            this.claimedTasks = [];
+        }
+    }
     
-    check_daily_refresh()
-```
-
----
-
-### Wire Into GameState
-
-**Add to GameState.gd:**
-
-```gdscript
-func _ready():
-    # ... existing code ...
+    getDayKey() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
     
-    # Connect daily tracking
-    workstation_crafted.connect(_on_workstation_for_dailies)
-
-func _on_workstation_for_dailies(ws_id: String, new_count: int):
-    DailyRituals.update_task_progress("craft", ws_id, total_workstations_crafted)
-    DailyRituals.update_task_progress("own", ws_id, new_count)
-
-func cast():
-    # ... existing code ...
-    DailyRituals.update_task_progress("tap", "", total_taps)
+    selectDailyTasks() {
+        // Randomly select 3 tasks
+        this.activeTasks = [];
+        const available = [...this.taskPool];
+        
+        // Shuffle array
+        for (let i = available.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [available[i], available[j]] = [available[j], available[i]];
+        }
+        
+        // Select first 3
+        for (let i = 0; i < Math.min(3, available.length); i++) {
+            this.activeTasks.push(available[i]);
+        }
+    }
+    
+    updateTaskProgress(conditionType, param, value) {
+        for (const task of this.activeTasks) {
+            if (this.claimedTasks.includes(task.id)) continue;
+            
+            const parts = task.condition.split(":");
+            if (parts.length < 2) continue;
+            
+            const taskType = parts[0];
+            
+            // Match condition type
+            if (taskType === conditionType) {
+                // For workstation tasks
+                if (["craft", "own"].includes(conditionType) && parts.length > 2) {
+                    if (parts[2] === param) {
+                        const target = parseInt(parts[3]) || 1;
+                        this.taskProgress[task.id] = value;
+                        
+                        if (value >= target) {
+                            this.onTaskCompleted(task.id);
+                        }
+                    }
+                }
+                // For tap tasks
+                else if (conditionType === "tap") {
+                    const target = parseInt(parts[1]);
+                    this.taskProgress[task.id] = value;
+                    
+                    if (value >= target) {
+                        this.onTaskCompleted(task.id);
+                    }
+                }
+            }
+        }
+    }
+    
+    onTaskCompleted(taskId) {
+        // Play celebration effect
+        console.log(`Task completed: ${taskId}`);
+    }
+    
+    claimTask(taskId) {
+        if (this.claimedTasks.includes(taskId)) return false;
+        
+        // Find task
+        const task = this.activeTasks.find(t => t.id === taskId);
+        if (!task) return false;
+        
+        // Check completion
+        const parts = task.condition.split(":");
+        const target = parseInt(parts[parts.length - 1]) || 1;
+        const progress = this.taskProgress[taskId] || 0;
+        
+        if (progress < target) return false;
+        
+        // Grant reward
+        switch (task.rewardType) {
+            case "ab":
+                gameState.addAB(task.rewardValue);
+                break;
+            case "buff":
+                gameState.addBuff(task.buffMultiplier, task.rewardValue);
+                break;
+            case "ek_frag":
+                this.grantEKFragments(parseInt(task.rewardValue));
+                break;
+        }
+        
+        this.claimedTasks.push(taskId);
+        return true;
+    }
+    
+    grantEKFragments(amount) {
+        this.ekFragments += amount;
+        
+        // Convert 5 fragments → 1 EK
+        while (this.ekFragments >= 5) {
+            this.ekFragments -= 5;
+            gameState.prestigePoints += 1;
+        }
+    }
+    
+    saveState() {
+        return {
+            dayKey: this.currentDayKey,
+            activeIds: this.activeTasks.map(t => t.id),
+            progress: this.taskProgress,
+            claimed: this.claimedTasks,
+            ekFragments: this.ekFragments
+        };
+    }
+    
+    loadState(data) {
+        this.currentDayKey = data.dayKey || "";
+        this.taskProgress = data.progress || {};
+        this.claimedTasks = data.claimed || [];
+        this.ekFragments = data.ekFragments || 0;
+        
+        // Reconstruct active tasks
+        const activeIds = data.activeIds || [];
+        this.activeTasks = [];
+        for (const taskId of activeIds) {
+            const task = this.taskPool.find(t => t.id === taskId);
+            if (task) {
+                this.activeTasks.push(task);
+            }
+        }
+        
+        this.checkDailyRefresh();
+    }
+}
 ```
 
 ---
@@ -2061,7 +1675,7 @@ func cast():
 
 ### Offline Progress
 
-- [ ] Save file creates in user://
+- [ ] Save creates in localStorage
 - [ ] Offline time calculates correctly
 - [ ] Production caps at 12h
 - [ ] Welcome Back shows correct values
@@ -2091,88 +1705,88 @@ func cast():
 - [ ] Buttons disable when broke
 - [ ] Modals show/hide properly
 
-### Web Export
+### Web Performance
 
 - [ ] 60 FPS on desktop browser
 - [ ] 30+ FPS on mobile browser
-- [ ] Save persists (IndexedDB)
+- [ ] Save persists (localStorage)
 - [ ] No console errors
 - [ ] Touch input works
 - [ ] Portrait orientation locks
 
 ---
 
-## 🌐 WEB EXPORT
-
-### Export Preset Settings
-
-```
-Preset: Web
-Runnable: Yes
-Export Path: build/web/index.html
-
-Options:
-  Custom HTML Shell: (default)
-  
-  Head Include:
-    <meta name="viewport" content="width=device-width, 
-          initial-scale=1, maximum-scale=1, user-scalable=no">
-  
-  VRAM Compression:
-    For Desktop: ✓
-    For Mobile: ✓
-  
-  Progressive Web App:
-    Enabled: ✓
-    Cross Origin Isolation: ✓
-    
-    Icons:
-      144×144: res://icon_144.png
-      180×180: res://icon_180.png
-      512×512: res://icon_512.png
-    
-    Orientation: portrait
-    Display: standalone
-    Background Color: #0E0E12
-```
-
----
+## 🌐 WEB DEPLOYMENT
 
 ### Local Testing
 
 ```bash
-# Navigate to export folder
-cd build/web
+# Navigate to project folder
+cd CyberWitches
+
+# Install dependencies
+npm install
 
 # Start local server
-python3 -m http.server 8000
+npm start
 
-# Open browser
-http://localhost:8000
+# Open browser to http://localhost:8080
+```
+
+---
+
+### Production Deployment
+
+```bash
+# Build for production (if using build tools)
+npm run build
+
+# Deploy to hosting service
+# Options: GitHub Pages, Netlify, Vercel, etc.
 ```
 
 ---
 
 ### Performance Tips
 
-```gdscript
-# In project settings or Main.gd
+```javascript
+// Limit FPS for better performance
+let lastFrameTime = 0;
+const targetFPS = 60;
 
-# Limit FPS for web
-if OS.has_feature("web"):
-    Engine.max_fps = 60
+function gameLoop(timestamp) {
+    if (timestamp - lastFrameTime >= 1000 / targetFPS) {
+        updateGame();
+        render();
+        lastFrameTime = timestamp;
+    }
+    
+    requestAnimationFrame(gameLoop);
+}
 
-# Reduce physics if not using
-Physics2DServer.set_active(false)
+// Optimize DOM updates
+let pendingUpdate = false;
 
-# Optimize particles
-const MAX_PARTICLES = 50
+function scheduleUpdate() {
+    if (!pendingUpdate) {
+        pendingUpdate = true;
+        requestAnimationFrame(() => {
+            updateUI();
+            pendingUpdate = false;
+        });
+    }
+}
 
-# Enable sprite batching
-ProjectSettings.set_setting(
-    "rendering/batching/options/use_batching", 
-    true
-)
+// Use object pooling for frequently created/destroyed elements
+const elementPool = [];
+
+function getDivElement() {
+    return elementPool.pop() || document.createElement('div');
+}
+
+function returnDivElement(element) {
+    elementPool.push(element);
+}
 ```
 
 ---
@@ -2182,31 +1796,31 @@ ProjectSettings.set_setting(
 ### Phase 1: Foundation (Week 1)
 
 **Days 1-2: Project Setup**
-- [ ] Create Godot project
-- [ ] Configure display/rendering
-- [ ] Set up autoloads
+- [ ] Create HTML structure
+- [ ] Set up CSS styling
+- [ ] Configure npm project
 - [ ] Create folder structure
 
-**Days 3-5: Resource Classes**
-- [ ] Create all data model scripts
-- [ ] Test each class with dummy data
-- [ ] Create .tres templates
+**Days 3-5: Data Models**
+- [ ] Define all game data
+- [ ] Create data structures
+- [ ] Test data loading
 
 **Days 6-7: Core Utils**
-- [ ] Implement Format.gd
-- [ ] Implement Balance.gd
+- [ ] Implement number formatting
+- [ ] Implement balance formulas
 - [ ] Test formulas
 
 ---
 
 ### Phase 2: Core Systems (Week 2)
 
-**Days 8-10: Crafting & Persistence**
-- [ ] Implement Crafting.gd
-- [ ] Implement Persistence.gd
-- [ ] Test save/load cycle
+**Days 8-10: Game State**
+- [ ] Implement GameState class
+- [ ] Implement save/load system
+- [ ] Test persistence
 
-**Days 11-14: GameState**
+**Days 11-14: Production**
 - [ ] Implement inventory system
 - [ ] Implement Cast() function
 - [ ] Implement tick loop
@@ -2239,7 +1853,7 @@ ProjectSettings.set_setting(
 - [ ] Test discovery flow
 
 **Days 25-28: Daily Rituals**
-- [ ] Implement DailyRituals.gd
+- [ ] Implement DailyRituals class
 - [ ] Wire task tracking
 - [ ] Test daily refresh
 - [ ] Test EK fragments
@@ -2249,7 +1863,7 @@ ProjectSettings.set_setting(
 ### Phase 5: UI (Weeks 5-6)
 
 **Days 29-35: Basic UI**
-- [ ] Create Main.tscn structure
+- [ ] Create HTML structure
 - [ ] Implement TopBar + Cast
 - [ ] Create tab system
 - [ ] Implement Workstations tab
@@ -2264,16 +1878,14 @@ ProjectSettings.set_setting(
 
 ---
 
-### Phase 6: Content (Week 7)
+### Phase 6: Polish (Week 7)
 
-**Days 43-49: Data Entry**
-- [ ] Create all .tres files
-- [ ] Populate ingredients
-- [ ] Populate workstations
-- [ ] Populate upgrades
-- [ ] Populate boons
-- [ ] Populate daily tasks
-- [ ] Test all content loads
+**Days 43-49: Quality of Life**
+- [ ] Add animations
+- [ ] Implement settings panel
+- [ ] Add accessibility options
+- [ ] Fix visual bugs
+- [ ] Optimize performance
 
 ---
 
@@ -2288,25 +1900,13 @@ ProjectSettings.set_setting(
 
 ---
 
-### Phase 8: Polish (Week 9)
+### Phase 8: Deployment (Week 9)
 
-**Days 57-63: Quality of Life**
-- [ ] Add sound effects
-- [ ] Add particle effects
-- [ ] Implement settings panel
-- [ ] Add accessibility options
-- [ ] Fix visual bugs
-- [ ] Optimize performance
-
----
-
-### Phase 9: Web Export (Week 10)
-
-**Days 64-70: Deployment**
-- [ ] Configure HTML5 export
+**Days 57-63: Deployment**
+- [ ] Configure for production
 - [ ] Test on Chrome/Firefox/Safari
 - [ ] Test on mobile devices
-- [ ] Verify IndexedDB
+- [ ] Verify localStorage
 - [ ] Optimize loading times
 - [ ] Deploy to hosting
 
@@ -2370,10 +1970,10 @@ Desktop simulation doesn't catch mobile issues.
 ### Common Pitfalls
 
 ⚠️ **Forgetting to save**
-Call `save_game_state()` after major changes
+Call `saveGameState()` after major changes
 
 ⚠️ **UI not updating**
-Connect signals properly to refresh displays
+Connect events properly to refresh displays
 
 ⚠️ **Recipe scaling bugs**
 Always test with 0, 1, 10, 100 owned units
@@ -2382,17 +1982,17 @@ Always test with 0, 1, 10, 100 owned units
 Verify production rates before calculating offline
 
 ⚠️ **Prestige bonuses not applying**
-Check `apply_prestige_start_bonuses()` calls on new run
+Check starting bonus application on new run
 
 ---
 
 ### Getting Help
 
-**Godot Documentation:**
-https://docs.godotengine.org/en/stable/
+**JavaScript Documentation:**
+https://developer.mozilla.org/en-US/docs/Web/JavaScript
 
-**GDScript Reference:**
-https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/
+**Web Game Development:**
+https://developer.mozilla.org/en-US/docs/Games
 
 **Idle Game Design:**
 https://www.reddit.com/r/incremental_games/
@@ -2401,9 +2001,9 @@ https://www.reddit.com/r/incremental_games/
 
 ## 🎮 YOU'RE READY TO BUILD
 
-This document contains everything needed to implement **Cyber Witches: Idle Coven v1.0** with the **Experiment discovery system**.
+This document contains everything needed to implement **Cyber Witches: Idle Coven v1.0** with **Experiment discovery system** using vanilla JavaScript.
 
-Follow the phases sequentially, test frequently, and you'll have a polished web game in **10-12 weeks**.
+Follow phases sequentially, test frequently, and you'll have a polished web game in **8-9 weeks**.
 
 **Good luck, and may your code compile on the first try!** ✨
 
