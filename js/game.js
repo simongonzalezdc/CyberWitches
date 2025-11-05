@@ -3,9 +3,14 @@ import { DailyRituals } from './dailyRituals.js';
 import { AchievementSystem } from './achievements.js';
 import { ComboSystem } from './comboSystem.js';
 import { EventSystem } from './eventSystem.js';
+import { MeditationState } from './meditationState.js';
+import { MeditationUI } from './meditationUI.js';
+import { MeditationTowers } from './meditationTowers.js';
+import { DesignTierSystem } from './designTierSystem.js';
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { formatShort, formatPrecise, formatTimeDuration } from './utils.js';
 import { createParticle, pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
+import { particleEffects } from './particleEffects.js';
 import { VirtualWorkstationList, VirtualUpgradeList, VirtualAchievementList } from './virtualScroll.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { debounce, throttle, deepClone, formatWithCommas, clamp, lerp, inRange, randomInt, randomFloat, randomChoice, shuffle, isEmpty, capitalize, secondsToTime, calculatePercentage, isMobile, isTouchDevice, getPixelRatio, createElement, batchDOMUpdate, setLocalStorage, getLocalStorage, removeLocalStorage, clearLocalStorage, isInViewport, scrollIntoView, addEventListener, PerformanceMonitor } from './commonUtils.js';
@@ -20,6 +25,10 @@ let dailyRituals;
 let achievements;
 let comboSystem;
 let eventSystem;
+let meditationState;
+let meditationUI;
+let meditationTowers;
+let designTierSystem;
 
 // UI Elements (will be set after DOM loads)
 let abDisplay;
@@ -67,7 +76,8 @@ const keyboardShortcuts = {
     '5': () => switchTab('dailies'),
     '6': () => switchTab('coven'),
     '7': () => switchTab('boons'),
-    '8': () => switchTab('stats'),
+    '8': () => switchTab('meditation'),
+    '9': () => switchTab('stats'),
     ' ': () => {
         if (castButton) {
             const handler = castButton.onclick;
@@ -131,7 +141,7 @@ function defineGlobalFunctions() {
             if (gained > 0) {
                 const displayName = PRODUCERS.find(p => p.id === wsId)?.displayName || wsId;
                 if (typeof showNotification === 'function') {
-                    showNotification(`✨ Crafted ${gained} ${displayName}!`, 'success');
+                    showNotification(`<span class="css-icon-sparkle"></span> Crafted ${gained} ${displayName}!`, 'success');
                 }
                 
                 // Announce to screen reader
@@ -199,7 +209,7 @@ function defineGlobalFunctions() {
             const upgrade = UPGRADES.find(u => u.id === upgId);
             const displayName = upgrade?.displayName || upgId;
             if (typeof showNotification === 'function') {
-                showNotification(`✨ Inscribed ${displayName}!`, 'success');
+                showNotification(`<span class="css-icon-sparkle"></span> Inscribed ${displayName}!`, 'success');
             }
             
             // Announce to screen reader
@@ -224,8 +234,13 @@ function defineGlobalFunctions() {
     window.craftRecipe = (recipeId) => {
         if (!gameState) return;
         if (gameState.craftDiscoveredRecipe(recipeId)) {
+            // Track potion crafting for daily tasks
+            if (typeof updateDailyProgress === 'function' && gameState) {
+                updateDailyProgress('craft_potion', '', gameState.totalPotionsCrafted);
+            }
+            
             if (typeof showNotification === 'function') {
-                showNotification('✨ Recipe crafted!', 'success');
+                showNotification('<span class="css-icon-sparkle"></span> Recipe crafted!', 'success');
             }
             if (typeof updateExperimentTab === 'function') updateExperimentTab();
             if (typeof updateInventoryTab === 'function') updateInventoryTab();
@@ -416,6 +431,47 @@ function initUI() {
     comboSystem = new ComboSystem();
     eventSystem = new EventSystem(gameState);
     
+    // Initialize design tier system (Feature 2: Progressive Design Revelation)
+    designTierSystem = new DesignTierSystem(gameState);
+    designTierSystem.applyTier(designTierSystem.getCurrentTier());
+    window.designTierSystem = designTierSystem; // Make globally accessible
+    window.achievements = achievements; // Make achievements accessible for design tier system
+    window.particleEffects = particleEffects; // Make particle effects accessible globally
+    
+    // Initialize particle system if canvas exists
+    const particleCanvas = document.getElementById('particle-canvas');
+    if (particleCanvas) {
+        particleEffects.initialize(particleCanvas);
+        // Hide by default - will be enabled when tier 3+ is unlocked
+        if (designTierSystem.getCurrentTier() < 3) {
+            particleCanvas.style.display = 'none';
+            particleEffects.disable();
+        }
+    }
+    
+    // Check for tier unlocks periodically
+    setInterval(() => {
+        if (designTierSystem && gameState) {
+            designTierSystem.checkTierUnlocks();
+        }
+    }, 5000); // Check every 5 seconds
+    
+    // Initialize meditation systems only after first ascension
+    if (gameState.prestigeCount >= 1) {
+        meditationState = new MeditationState(gameState);
+        meditationState.loadState();
+        meditationState.startTickLoop();
+        meditationUI = new MeditationUI(meditationState, gameState);
+        meditationTowers = new MeditationTowers(meditationState, gameState);
+        meditationUI.init();
+        meditationTowers.init();
+        window.meditationTowers = meditationTowers; // Make globally accessible for tower placement
+        window.meditationUI = meditationUI; // Make globally accessible for UI updates
+    }
+    
+    // Update meditation tab visibility based on prestige count
+    updateMeditationVisibility();
+    
     // Initialize auto-save
     initAutoSave();
     
@@ -430,6 +486,67 @@ function initUI() {
             });
         });
     }
+    
+    // Settings tab event handlers
+    const tierSelector = document.getElementById('tier-selector');
+    if (tierSelector && designTierSystem) {
+        tierSelector.addEventListener('change', (e) => {
+            const selectedTier = parseInt(e.target.value, 10);
+            const unlockedTiers = designTierSystem.getUnlockedTiers();
+            if (unlockedTiers.includes(selectedTier)) {
+                designTierSystem.setTier(selectedTier);
+                updateSettingsTab(); // Refresh display
+                if (window.showNotification) {
+                    window.showNotification(`Design tier set to ${selectedTier}`, 'info');
+                }
+            } else {
+                // Reset to current tier if trying to select locked tier
+                e.target.value = designTierSystem.getCurrentTier().toString();
+                if (window.showNotification) {
+                    window.showNotification('This tier has not been unlocked yet!', 'error');
+                }
+            }
+        });
+    }
+    
+    // Reset all progress button - use event delegation for reliability
+    // Attach to document to ensure it works even if button is added later
+    if (!window.resetButtonListenerAttached) {
+        document.addEventListener('click', (e) => {
+            // Check if click is on the button or any child element inside it
+            const button = e.target.closest('#reset-all-progress-button');
+            if (button) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Reset button clicked via delegation');
+                resetAllProgress();
+            }
+        }, true); // Use capture phase for better reliability
+        window.resetButtonListenerAttached = true;
+        console.log('Reset button event delegation attached');
+    }
+    
+    // Also attach directly if button exists
+    const resetButton = document.getElementById('reset-all-progress-button');
+    if (resetButton) {
+        // Remove any existing listeners by cloning
+        const newResetBtn = resetButton.cloneNode(true);
+        resetButton.parentNode.replaceChild(newResetBtn, resetButton);
+        
+        // Attach fresh listener
+        newResetBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Reset button clicked via direct listener');
+            resetAllProgress();
+        }, true); // Use capture phase
+        console.log('Reset button direct event listener attached');
+    } else {
+        console.warn('Reset button not found during initUI');
+    }
+    
+    // Make resetAllProgress globally accessible for debugging
+    window.resetAllProgress = resetAllProgress;
     
     // Cast button - optimized for responsiveness
     if (castButton) {
@@ -573,8 +690,29 @@ function initUI() {
     if (ascendButton) {
         ascendButton.addEventListener('click', () => {
             if (gameState) {
+                const oldPrestigeCount = gameState.prestigeCount;
                 gameState.ascend();
                 if (prestigeModal) prestigeModal.classList.remove('active');
+                
+                // If this is the first ascension, initialize meditation
+                if (oldPrestigeCount === 0 && gameState.prestigeCount >= 1) {
+                    if (!meditationState) {
+                        meditationState = new MeditationState(gameState);
+                        meditationState.loadState();
+                        meditationState.startTickLoop();
+                        meditationUI = new MeditationUI(meditationState, gameState);
+                        meditationTowers = new MeditationTowers(meditationState, gameState);
+                        meditationUI.init();
+                        meditationTowers.init();
+                        window.meditationTowers = meditationTowers;
+                        window.meditationUI = meditationUI;
+                    }
+                    updateMeditationVisibility();
+                    if (window.showNotification) {
+                        window.showNotification('Meditation unlocked!', 'success');
+                    }
+                }
+                
                 updateAllUI();
             }
         });
@@ -611,6 +749,11 @@ function initUI() {
     gameState.onAbChanged = (newValue) => {
         if (!abDisplay) return;
         
+        // Track AB earning for daily tasks (use total earned, not current balance)
+        if (typeof updateDailyProgress === 'function' && gameState) {
+            updateDailyProgress('earn_ab', '', gameState.abTotalEarned);
+        }
+        
         // Use debounced update for better performance
         debouncedUIUpdate('abDisplay', () => {
             // Simple update for small changes, animate for large changes
@@ -637,10 +780,34 @@ function initUI() {
     };
     
     gameState.onPrestigeCompleted = (ekGained) => {
+        // Check if meditation should be unlocked after this ascension
+        if (gameState.prestigeCount >= 1 && !meditationState) {
+            // Initialize meditation after first ascension
+            meditationState = new MeditationState(gameState);
+            meditationState.loadState();
+            meditationState.startTickLoop();
+            meditationUI = new MeditationUI(meditationState, gameState);
+            meditationTowers = new MeditationTowers(meditationState, gameState);
+            meditationUI.init();
+            meditationTowers.init();
+            window.meditationTowers = meditationTowers;
+            window.meditationUI = meditationUI;
+            updateMeditationVisibility();
+            if (window.showNotification) {
+                window.showNotification('Meditation unlocked!', 'success');
+            }
+        } else if (gameState.prestigeCount >= 1) {
+            // Just update visibility if already initialized
+            updateMeditationVisibility();
+        }
         debouncedUIUpdate('allUI', updateAllUI);
     };
     
     gameState.onRecipeDiscovered = (recipeId) => {
+        // Track recipe discovery for daily tasks
+        if (typeof updateDailyProgress === 'function') {
+            updateDailyProgress('discover_recipe', '', gameState.discoveredRecipes.length);
+        }
         debouncedUIUpdate('experimentTab', updateExperimentTab);
     };
     
@@ -844,6 +1011,10 @@ function initUI() {
     window.gameState = gameState;
     window.castButton = castButton;
     
+    // Make data available globally for virtual scroll
+    window.UPGRADES = UPGRADES;
+    window.INGREDIENTS = INGREDIENTS;
+    
     // Initial AB display
     if (abDisplay && gameState) {
         abDisplay.textContent = `AB: ${formatShort(gameState.ab)}`;
@@ -1032,7 +1203,31 @@ function switchTab(tabName) {
             }, 100);
             break;
         case 'boons':
+            // Check if boons is unlocked (after first ascension)
+            if (gameState && gameState.prestigeCount < 1) {
+                if (window.showNotification) {
+                    window.showNotification('Boons unlock after your first ascension!', 'info');
+                }
+                // Switch to a different tab
+                switchTab('workstations');
+                return;
+            }
             updateBoonsTab();
+            break;
+        case 'meditation':
+            // Check if meditation is unlocked (after first ascension)
+            if (gameState && gameState.prestigeCount < 1) {
+                if (window.showNotification) {
+                    window.showNotification('Meditation unlocks after your first ascension!', 'info');
+                }
+                // Switch to a different tab
+                switchTab('workstations');
+                return;
+            }
+            console.log('Updating meditation tab content...');
+            if (meditationUI) {
+                meditationUI.updateAll();
+            }
             break;
         case 'stats':
             console.log('Updating stats tab content...');
@@ -1045,6 +1240,26 @@ function switchTab(tabName) {
                     console.log('Stats content container forced visible, children:', container.children.length);
                 }
             }, 100);
+            break;
+        case 'settings':
+            console.log('Updating settings tab content...');
+            updateSettingsTab();
+            // Re-attach reset button listener when settings tab is shown
+            const resetBtn = document.getElementById('reset-all-progress-button');
+            if (resetBtn) {
+                // Remove any existing listeners by cloning
+                const newResetBtn = resetBtn.cloneNode(true);
+                resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+                
+                // Attach fresh listener
+                newResetBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Reset button clicked from settings tab');
+                    resetAllProgress();
+                }, true); // Use capture phase
+                console.log('Reset button listener re-attached on settings tab open');
+            }
             break;
         default:
             console.warn('Unknown tab:', tabName);
@@ -1154,6 +1369,144 @@ function updateWorkstationsTab() {
     }
 }
 
+/**
+ * Get inscription bonuses for a workstation (only inscriptions, not buffs/prestige)
+ * @param {string} workstationId - The workstation ID
+ * @returns {Object} - Object with multiplier and list of applied inscriptions
+ */
+function getInscriptionBonuses(workstationId) {
+    let mult = 1.0;
+    const inscriptions = [];
+    
+    // Global upgrades
+    for (const upgId in gameState.upgradesOwned) {
+        const upgData = UPGRADES.find(u => u.id === upgId);
+        if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
+            mult *= upgData.value;
+            inscriptions.push({
+                name: upgData.displayName,
+                type: 'global',
+                multiplier: upgData.value
+            });
+        }
+    }
+    
+    // Producer-specific upgrades
+    const targetAffects = "producer:" + workstationId;
+    for (const upgId in gameState.upgradesOwned) {
+        const upgData = UPGRADES.find(u => u.id === upgId);
+        if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
+            mult *= upgData.value;
+            inscriptions.push({
+                name: upgData.displayName,
+                type: 'workstation',
+                multiplier: upgData.value
+            });
+        }
+    }
+    
+    return { multiplier: mult, inscriptions };
+}
+
+/**
+ * Calculate inscription bonus per second for each output
+ * @param {Object} prodData - Producer data
+ * @param {number} owned - Number owned
+ * @param {number} inscriptionMult - Inscription multiplier
+ * @returns {Object} - Object with outputId -> bonus rate per second
+ */
+function getInscriptionBonusRates(prodData, owned, inscriptionMult) {
+    const bonuses = {};
+    
+    if (owned > 0 && inscriptionMult > 1.0) {
+        for (const [outputId, baseRate] of Object.entries(prodData.outputs)) {
+            const baseTotal = baseRate * owned;
+            const actualTotal = baseTotal * inscriptionMult;
+            const bonus = actualTotal - baseTotal;
+            if (bonus > 0) {
+                bonuses[outputId] = bonus;
+            }
+        }
+    }
+    
+    return bonuses;
+}
+
+/**
+ * Get tier symbol and styles - centralized helper for consistent tier symbols throughout app
+ * @param {number} tier - Tier number (0-4)
+ * @returns {Object} Tier symbol and style information
+ */
+function getTierSymbol(tier) {
+    const tierStyles = {
+        0: { 
+            symbol: '◉',
+            color: '#FFFFFF', // White
+            glow: 'rgba(255, 255, 255, 0.4)',
+            gradient: 'linear-gradient(135deg, #FFFFFF 0%, #E0E0E0 100%)',
+            borderGlow: 'rgba(255, 255, 255, 0.6)'
+        },
+        1: { 
+            symbol: '◆', // Swapped from tier 2
+            color: '#FF10F0', // Neon Pink
+            glow: 'rgba(255, 16, 240, 0.4)',
+            gradient: 'linear-gradient(135deg, #FF10F0 0%, #FF2DAA 100%)',
+            borderGlow: 'rgba(255, 16, 240, 0.8)'
+        },
+        2: { 
+            symbol: '◈', // Swapped from tier 1
+            color: '#FFFF00', // Neon Yellow
+            glow: 'rgba(255, 255, 0, 0.4)',
+            gradient: 'linear-gradient(135deg, #FFFF00 0%, #FFD700 100%)',
+            borderGlow: 'rgba(255, 255, 0, 0.9)'
+        },
+        3: { 
+            symbol: '✧', // Swapped from tier 4
+            color: '#39FF14', // Neon Green
+            glow: 'rgba(57, 255, 20, 0.4)',
+            gradient: 'linear-gradient(135deg, #39FF14 0%, #00FF00 100%)',
+            borderGlow: 'rgba(57, 255, 20, 0.6)'
+        },
+        4: { 
+            symbol: '✦', // Swapped from tier 3
+            color: '#00FFFF', // Neon Cyan
+            glow: 'rgba(0, 255, 255, 0.4)',
+            gradient: 'linear-gradient(135deg, #00FFFF 0%, #00CED1 100%)',
+            borderGlow: 'rgba(0, 255, 255, 0.7)'
+        }
+    };
+    return tierStyles[tier] || tierStyles[0];
+}
+
+/**
+ * Get tier for a workstation based on its position in PRODUCERS array
+ * Tier 0: indices 0-3, Tier 1: 4-7, Tier 2: 8-12, Tier 3: 13-17, Tier 4: 18-21
+ */
+function getWorkstationTier(prodData) {
+    const index = PRODUCERS.findIndex(p => p.id === prodData.id);
+    if (index <= 3) return 0;
+    if (index <= 7) return 1;
+    if (index <= 12) return 2;
+    if (index <= 17) return 3;
+    return 4;
+}
+
+/**
+ * Get tier for an upgrade based on the highest tier ingredient in its recipe
+ * @param {Object} upgData - Upgrade data
+ * @returns {number} - Tier (0-4)
+ */
+function getUpgradeTier(upgData) {
+    let maxTier = 0;
+    for (const ingId in upgData.recipe) {
+        const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+        if (ingredient && ingredient.tier !== undefined) {
+            maxTier = Math.max(maxTier, ingredient.tier);
+        }
+    }
+    return maxTier;
+}
+
 // Traditional rendering function (used for small lists or as fallback)
 function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
     container.innerHTML = '';
@@ -1171,7 +1524,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                     <div class="card-label">Current AB: ${formatShort(gameState.ab)}</div>
                 </div>
                 <div class="button-row">
-                    <button class="btn-primary" style="position: relative; z-index: 11; pointer-events: auto;" onclick="console.log('Cast button clicked from message'); if (typeof window.castButton !== 'undefined' && window.castButton) window.castButton.click();">✨ Cast to Earn AB</button>
+                    <button class="btn-primary" style="position: relative; z-index: 11; pointer-events: auto;" onclick="console.log('Cast button clicked from message'); if (typeof window.castButton !== 'undefined' && window.castButton) window.castButton.click();"><span class="css-icon-sparkle"></span> Cast to Earn AB</button>
                 </div>
             `;
             container.appendChild(message);
@@ -1180,7 +1533,31 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
         }
         
         console.log('Rendering', unlockedWorkstations.length, 'workstations using traditional rendering');
+        
+        // Group workstations by tier
+        const workstationsByTier = {};
         for (const prodData of unlockedWorkstations) {
+            const tier = getWorkstationTier(prodData);
+            if (!workstationsByTier[tier]) {
+                workstationsByTier[tier] = [];
+            }
+            workstationsByTier[tier].push(prodData);
+        }
+        
+        // Render by tier
+        const tierNames = ['Tier 0', 'Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'];
+        for (let tier = 0; tier <= 4; tier++) {
+            if (!workstationsByTier[tier] || workstationsByTier[tier].length === 0) continue;
+            
+            // Add tier header with tier symbol
+            const tierSymbol = getTierSymbol(tier);
+            const tierHeader = document.createElement('div');
+            tierHeader.className = 'tier-header';
+            tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierSymbol.color}; text-shadow: 0 0 10px ${tierSymbol.glow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>${tierNames[tier]} Workstations`;
+            container.appendChild(tierHeader);
+            
+            // Render workstations for this tier
+            for (const prodData of workstationsByTier[tier]) {
             const owned = gameState.workstations[prodData.id] || 0;
             const recipe = getScaledRecipe(prodData.recipe, owned, prodData.growth);
             
@@ -1193,29 +1570,67 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             // For max, check if we can afford at least 1 craft
             const canAffordMax = canAfford1;
             
+            // Get inscription bonuses
+            const inscriptionData = getInscriptionBonuses(prodData.id);
+            const inscriptionBonusRates = getInscriptionBonusRates(prodData, owned, inscriptionData.multiplier);
+            
             const card = document.createElement('div');
             card.className = 'card';
             card.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
             
+            // Build inscription bonus display (compact 2-column layout)
+            let inscriptionBonusHTML = '';
+            if (Object.keys(inscriptionBonusRates).length > 0) {
+                const bonusEntries = Object.entries(inscriptionBonusRates);
+                inscriptionBonusHTML = `
+                    <div class="card-label" style="color: var(--success); font-size: 12px; margin-bottom: 6px;"><span class="css-icon-scroll"></span> Inscription Bonuses:</div>
+                    <div class="inscription-bonuses">
+                        ${bonusEntries.map(([outputId, bonusRate]) => {
+                            const ingredient = INGREDIENTS.find(ing => ing.id === outputId);
+                            const displayName = ingredient?.displayName || outputId;
+                            return `<div class="inscription-bonus-item">
+                                +${formatShort(bonusRate)}/s ${displayName}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    ${inscriptionData.inscriptions.length > 0 ? `
+                        <div class="inscription-list">
+                            ${inscriptionData.inscriptions.map(ins => `• ${ins.name} (×${ins.multiplier.toFixed(2)})`).join('<br>')}
+                        </div>
+                    ` : ''}
+                `;
+            }
+            
             card.innerHTML = `
                 <div class="card-title">${prodData.displayName}</div>
                 <div class="card-description">⚙️ Owned: ${owned}</div>
-                <div class="card-section">
-                    <div class="card-label">Produces:</div>
-                    ${Object.entries(prodData.outputs).map(([id, rate]) =>
-                        `<div class="card-value">${formatPrecise(rate, 2)}/s ${id}</div>`
-                    ).join('')}
+                <div class="card-content-left">
+                    <div class="card-section">
+                        <div class="card-label">Produces:</div>
+                        ${Object.entries(prodData.outputs).map(([id, rate]) => {
+                            const baseTotal = rate * owned;
+                            const actualRate = owned > 0 ? baseTotal : rate;
+                            const ingredient = INGREDIENTS.find(ing => ing.id === id);
+                            const displayName = ingredient?.displayName || id;
+                            return `<div class="card-value">${formatPrecise(actualRate, 2)}/s ${displayName}</div>`;
+                        }).join('')}
+                    </div>
                 </div>
-                <div class="card-section">
-                    <div class="card-label">Recipe for next:</div>
-                    ${Object.entries(recipe).map(([ingId, amount]) => {
-                        const have = gameState.inventory[ingId] || 0;
-                        const canAfford = have >= amount;
-                        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                            ${ingId}: ${formatShort(have)} / ${formatShort(amount)}
-                        </div>`;
-                    }).join('')}
+                <div class="card-content-right">
+                    <div class="card-section">
+                        <div class="card-label">Recipe for next:</div>
+                        ${Object.entries(recipe).map(([ingId, amount]) => {
+                            const have = gameState.inventory[ingId] || 0;
+                            const canAfford = have >= amount;
+                            const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+                            const displayName = ingredient?.displayName || ingId;
+                            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+                                ${displayName}: ${formatShort(have)} / ${formatShort(amount)}
+                            </div>`;
+                        }).join('')}
+                    </div>
                 </div>
+                ${inscriptionBonusHTML ? `<div class="card-section full-width" style="border-left: 3px solid var(--success); background: rgba(60, 227, 197, 0.1);">${inscriptionBonusHTML}</div>` : ''}
                 <div class="button-row">
                     <button class="btn-primary ${canAfford1 ? '' : 'btn-disabled'}" data-action="craft" data-ws-id="${prodData.id}" data-amount="1" ${canAfford1 ? '' : 'disabled'}>Craft x1</button>
                     <button class="btn-primary ${canAfford10 ? '' : 'btn-disabled'}" data-action="craft" data-ws-id="${prodData.id}" data-amount="10" ${canAfford10 ? '' : 'disabled'}>Craft x10</button>
@@ -1257,6 +1672,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             
             container.appendChild(card);
             console.log('Added workstation card to container, total children:', container.children.length);
+            }
         }
         console.log('Finished rendering workstations, container now has', container.children.length, 'children');
     }
@@ -1354,7 +1770,31 @@ function updateInscriptionsTab() {
 function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
     container.innerHTML = '';
     
+    // Group upgrades by tier
+    const upgradesByTier = {};
     for (const upgData of unlockedUpgrades) {
+        const tier = getUpgradeTier(upgData);
+        if (!upgradesByTier[tier]) {
+            upgradesByTier[tier] = [];
+        }
+        upgradesByTier[tier].push(upgData);
+    }
+    
+    // Render upgrades grouped by tier
+    for (let tier = 0; tier <= 4; tier++) {
+        if (!upgradesByTier[tier] || upgradesByTier[tier].length === 0) {
+            continue;
+        }
+        
+        // Add tier header with tier symbol
+        const tierSymbol = getTierSymbol(tier);
+        const tierHeader = document.createElement('div');
+        tierHeader.className = 'tier-header';
+        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierSymbol.color}; text-shadow: 0 0 10px ${tierSymbol.glow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>Tier ${tier} Inscriptions`;
+        container.appendChild(tierHeader);
+        
+        // Render upgrades for this tier
+        for (const upgData of upgradesByTier[tier]) {
             const owned = gameState.upgradesOwned[upgData.id] || false;
             
             const card = document.createElement('div');
@@ -1382,8 +1822,10 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
                     ${Object.entries(upgData.recipe).map(([ingId, amount]) => {
                         const have = gameState.inventory[ingId] || 0;
                         const canAfford = have >= amount;
+                        const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+                        const displayName = ingredient?.displayName || ingId;
                         return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                            ${ingId}: ${formatShort(have)} / ${formatShort(amount)}
+                            ${displayName}: ${formatShort(have)} / ${formatShort(amount)}
                         </div>`;
                     }).join('')}
                 </div>
@@ -1392,32 +1834,33 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
                 </button>
             `;
             
-                // Attach event listener directly
-                const button = card.querySelector('button[data-action="inscribe"]');
-                if (button) {
-                    // Ensure button is clickable
-                    button.style.position = 'relative';
-                    button.style.zIndex = '100';
-                    button.style.pointerEvents = owned ? 'none' : 'auto';
-                    button.style.cursor = owned ? 'not-allowed' : 'pointer';
-                    button.style.visibility = 'visible';
-                    button.style.display = 'inline-block';
-                    
-                    if (!owned && typeof window.inscribeUpgrade === 'function') {
-                        button.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('Inscribe button clicked:', { upgId: upgData.id, button });
-                            window.inscribeUpgrade(upgData.id, button);
-                        });
-                    }
+            // Attach event listener directly
+            const button = card.querySelector('button[data-action="inscribe"]');
+            if (button) {
+                // Ensure button is clickable
+                button.style.position = 'relative';
+                button.style.zIndex = '100';
+                button.style.pointerEvents = owned ? 'none' : 'auto';
+                button.style.cursor = owned ? 'not-allowed' : 'pointer';
+                button.style.visibility = 'visible';
+                button.style.display = 'inline-block';
+                
+                if (!owned && typeof window.inscribeUpgrade === 'function') {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Inscribe button clicked:', { upgId: upgData.id, button });
+                        window.inscribeUpgrade(upgData.id, button);
+                    });
                 }
+            }
             
             container.appendChild(card);
             console.log('Added upgrade card to container, total children:', container.children.length);
         }
-        console.log('Finished rendering upgrades, container now has', container.children.length, 'children');
     }
+    console.log('Finished rendering upgrades, container now has', container.children.length, 'children');
+}
 
 /**
  * Update inventory tab with optimized rendering
@@ -1473,63 +1916,171 @@ function updateInventoryTab() {
         return b.amount - a.amount;
     });
     
+    // Group items by tier
+    const itemsByTier = {};
+    for (const item of items) {
+        if (!itemsByTier[item.tier]) {
+            itemsByTier[item.tier] = [];
+        }
+        itemsByTier[item.tier].push(item);
+    }
+    
     // Batch DOM updates for better performance
     const fragment = document.createDocumentFragment();
     
     // Create header card
     const headerCard = document.createElement('div');
-    headerCard.className = 'card';
+    headerCard.className = 'card inventory-header';
     headerCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
     headerCard.innerHTML = `
-        <div class="card-title">📦 Inventory</div>
-        <div class="card-description">Total Items: ${items.length}</div>
+        <div class="card-title" style="font-size: 24px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 28px; filter: drop-shadow(0 0 8px var(--primary));">◈</span> Inventory
+        </div>
+        <div class="card-description" style="font-size: 14px;">Total Items: ${items.length} • Total Value: ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))}</div>
     `;
     fragment.appendChild(headerCard);
     
-    // Create items with progress bars
-    for (const item of items) {
-        const percentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
+    // Create items grouped by tier with enhanced visuals
+    for (let tier = 0; tier <= 4; tier++) {
+        if (!itemsByTier[tier] || itemsByTier[tier].length === 0) {
+            continue;
+        }
         
-        // Get tier icon/color
-        const tierColors = {
-            0: { icon: '⚪', color: '#888', glow: 'rgba(136, 136, 136, 0.3)' },
-            1: { icon: '🔵', color: '#3CE3C5', glow: 'rgba(60, 227, 197, 0.3)' },
-            2: { icon: '🟣', color: '#FF2DAA', glow: 'rgba(255, 45, 170, 0.3)' },
-            3: { icon: '🟡', color: '#FFDB6E', glow: 'rgba(255, 219, 110, 0.3)' },
-            4: { icon: '🔴', color: '#FF6B6B', glow: 'rgba(255, 107, 107, 0.3)' }
-        };
+        // Add tier header with tier symbol
+        const tierSymbol = getTierSymbol(tier);
+        const tierHeader = document.createElement('div');
+        tierHeader.className = 'tier-header';
+        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierSymbol.color}; text-shadow: 0 0 10px ${tierSymbol.glow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>Tier ${tier} Ingredients`;
+        fragment.appendChild(tierHeader);
         
-        const tierStyle = tierColors[item.tier] || tierColors[0];
+        // Use centralized tier style
+        const tierStyle = tierSymbol;
+        tierStyle.symbol = tierSymbol.symbol; // Ensure symbol is available
         
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
-        
-        card.innerHTML = `
-            <div class="card-section" style="padding: 15px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 24px;">${tierStyle.icon}</span>
+        // Create items for this tier
+        for (const item of itemsByTier[tier]) {
+            const percentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
+            const cardId = `inventory-item-${item.id}`;
+            
+            const card = document.createElement('div');
+            card.className = 'card inventory-item';
+            card.setAttribute('data-tier', tier);
+            card.setAttribute('data-item-id', item.id);
+            card.style.cssText = `
+                position: relative; 
+                z-index: 1; 
+                pointer-events: auto; 
+                visibility: visible; 
+                display: block;
+                border: 2px solid ${tierStyle.borderGlow};
+                background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
+                box-shadow: 
+                    0 4px 20px rgba(0, 0, 0, 0.4),
+                    0 0 20px ${tierStyle.glow},
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                overflow: hidden;
+            `;
+            
+            // Add shimmer overlay
+            const shimmer = document.createElement('div');
+            shimmer.className = 'inventory-shimmer';
+            shimmer.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+                animation: inventoryShimmer 3s infinite;
+                pointer-events: none;
+                z-index: 1;
+            `;
+            card.appendChild(shimmer);
+            
+            // Add pulsing glow for high tiers (using dark background to maintain consistency)
+            if (tier >= 3) {
+                const pulseGlow = document.createElement('div');
+                pulseGlow.className = 'inventory-pulse-glow';
+                pulseGlow.style.cssText = `
+                    position: absolute;
+                    top: -2px;
+                    left: -2px;
+                    right: -2px;
+                    bottom: -2px;
+                    border-radius: 16px;
+                    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%);
+                    opacity: 0.3;
+                    animation: pulseGlow 2s ease-in-out infinite;
+                    pointer-events: none;
+                    z-index: 0;
+                `;
+                card.appendChild(pulseGlow);
+            }
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'inventory-item-content';
+            contentDiv.style.cssText = 'position: relative; z-index: 2; padding: 20px;';
+            contentDiv.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="inventory-icon tier-icon-${tier}" style="font-size: 32px; color: ${tierStyle.color}; text-shadow: 0 0 10px ${tierStyle.color}, 0 0 20px ${tierStyle.glow}; animation: iconFloat ${2 + tier * 0.5}s ease-in-out infinite; display: inline-block; line-height: 1;">${tierStyle.symbol}</span>
                         <div>
-                            <div class="card-label" style="font-size: 16px; font-weight: bold; color: ${tierStyle.color};">${item.displayName}</div>
-                            <div class="card-description" style="font-size: 12px; color: var(--text-dim);">Tier ${item.tier}</div>
+                            <div class="card-label" style="font-size: 18px; font-weight: 700; color: ${tierStyle.color}; text-shadow: 0 0 10px ${tierStyle.glow}; font-family: 'Orbitron', sans-serif;">${item.displayName}</div>
+                            <div class="card-description" style="font-size: 12px; color: var(--text-dim); margin-top: 2px;">Tier ${tier} • ${item.id}</div>
                         </div>
                     </div>
-                    <div class="card-value" style="font-size: 18px; font-weight: bold; color: ${tierStyle.color};">
+                    <div class="inventory-amount" style="font-size: 22px; font-weight: 700; color: ${tierStyle.color}; text-shadow: 0 0 15px ${tierStyle.glow}; font-family: 'Orbitron', monospace; min-width: 80px; text-align: right;">
                         ${formatShort(item.amount)}
                     </div>
                 </div>
-                <div class="progress-bar-container" style="width: 100%; height: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; overflow: hidden; position: relative;">
-                    <div class="progress-bar-fill" style="height: 100%; width: ${percentage}%; background: linear-gradient(90deg, ${tierStyle.color}, ${tierStyle.color}dd); border-radius: 4px; transition: width 0.3s ease; box-shadow: 0 0 10px ${tierStyle.glow};"></div>
+                <div class="progress-bar-container" style="width: 100%; height: 12px; background: rgba(0, 0, 0, 0.5); border-radius: 8px; overflow: hidden; position: relative; margin-top: 8px; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);">
+                    <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: ${tierStyle.gradient}; border-radius: 8px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px ${tierStyle.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.2); position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shimmer 2s infinite;"></div>
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-dim);">
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-dim);">
                     <span>${percentage.toFixed(1)}% of max</span>
-                    <span>ID: ${item.id}</span>
+                    <span style="opacity: 0.6;">${formatShort(item.amount)} total</span>
                 </div>
-            </div>
-        `;
-        
-        fragment.appendChild(card);
+            `;
+            
+            card.appendChild(contentDiv);
+            
+            // Add hover effect listener
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px) scale(1.02)';
+                card.style.boxShadow = `
+                    0 8px 30px rgba(0, 0, 0, 0.5),
+                    0 0 40px ${tierStyle.glow},
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2)
+                `;
+                card.style.borderColor = tierStyle.color;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.boxShadow = `
+                    0 4px 20px rgba(0, 0, 0, 0.4),
+                    0 0 20px ${tierStyle.glow},
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1)
+                `;
+                card.style.borderColor = tierStyle.borderGlow;
+            });
+            
+            // Add click effect
+            card.addEventListener('click', () => {
+                const rect = card.getBoundingClientRect();
+                createParticle(
+                    rect.left + rect.width / 2,
+                    rect.top + rect.height / 2,
+                    tierStyle.symbol,
+                    tierStyle.color
+                );
+            });
+            
+            fragment.appendChild(card);
+        }
     }
     
     container.appendChild(fragment);
@@ -1545,18 +2096,20 @@ function updateExperimentTab() {
     // Experiment button handler
     const expButton = document.getElementById('experiment-button');
     if (expButton) {
+        // Explicitly set button text to ensure no emoji (prevents caching issues)
+        expButton.textContent = 'Try Experiment';
         expButton.onclick = () => {
             try {
                 const result = gameState.tryExperiment();
                 const resultLabel = document.getElementById('experiment-result');
                 
                 if (result.success) {
-                    resultLabel.textContent = `✨ Discovered: ${result.recipe.name}`;
+                    resultLabel.innerHTML = `<span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}`;
                     resultLabel.className = 'result-label success';
                     
                     // Celebration!
                     pulseElement(expButton, 1.2, 400);
-                    showNotification(`🎉 Discovered: ${result.recipe.name}!`, 'success');
+                    showNotification(`<span class="css-icon-celebration"></span> Discovered: ${result.recipe.name}!`, 'success');
                     
                     // Create confetti-like particles
                     const rect = expButton.getBoundingClientRect();
@@ -1808,7 +2361,7 @@ function updateComboDisplay() {
     
     if (comboCount > 0 && comboDisplay) {
         const mult = comboSystem.getComboMultiplier();
-        comboDisplay.textContent = `🔥 ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)`;
+        comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)`;
         comboDisplay.style.display = 'block';
     } else if (comboDisplay) {
         comboDisplay.style.display = 'none';
@@ -2190,6 +2743,199 @@ function updateAllUI() {
     updateCovenTab();
     updateBoonsTab();
     updateStatsTab();
+    updateMeditationVisibility(); // Update meditation tab visibility
+}
+
+/**
+ * Update meditation and boons tab visibility based on prestige count
+ */
+function updateMeditationVisibility() {
+    if (!gameState) return;
+    
+    const isUnlocked = gameState.prestigeCount >= 1;
+    
+    // Update meditation tab
+    const meditationTabButton = document.querySelector('.tab-btn[data-tab="meditation"]');
+    const meditationTabPanel = document.getElementById('meditation-tab');
+    
+    if (meditationTabButton) {
+        if (isUnlocked) {
+            meditationTabButton.style.display = 'flex';
+            meditationTabButton.style.visibility = 'visible';
+            meditationTabButton.style.opacity = '1';
+            meditationTabButton.style.pointerEvents = 'auto';
+        } else {
+            meditationTabButton.style.display = 'none';
+            meditationTabButton.style.visibility = 'hidden';
+            meditationTabButton.style.opacity = '0';
+            meditationTabButton.style.pointerEvents = 'none';
+        }
+    }
+    
+    if (meditationTabPanel) {
+        if (isUnlocked) {
+            meditationTabPanel.style.display = 'block';
+            meditationTabPanel.style.visibility = 'visible';
+            meditationTabPanel.style.opacity = '1';
+            meditationTabPanel.style.pointerEvents = 'auto';
+        } else {
+            meditationTabPanel.style.display = 'none';
+            meditationTabPanel.style.visibility = 'hidden';
+            meditationTabPanel.style.opacity = '0';
+            meditationTabPanel.style.pointerEvents = 'none';
+        }
+    }
+    
+    // Update boons tab (also requires first ascension)
+    const boonsTabButton = document.querySelector('.tab-btn[data-tab="boons"]');
+    const boonsTabPanel = document.getElementById('boons-tab');
+    
+    if (boonsTabButton) {
+        if (isUnlocked) {
+            boonsTabButton.style.display = 'flex';
+            boonsTabButton.style.visibility = 'visible';
+            boonsTabButton.style.opacity = '1';
+            boonsTabButton.style.pointerEvents = 'auto';
+        } else {
+            boonsTabButton.style.display = 'none';
+            boonsTabButton.style.visibility = 'hidden';
+            boonsTabButton.style.opacity = '0';
+            boonsTabButton.style.pointerEvents = 'none';
+        }
+    }
+    
+    if (boonsTabPanel) {
+        if (isUnlocked) {
+            boonsTabPanel.style.display = 'block';
+            boonsTabPanel.style.visibility = 'visible';
+            boonsTabPanel.style.opacity = '1';
+            boonsTabPanel.style.pointerEvents = 'auto';
+        } else {
+            boonsTabPanel.style.display = 'none';
+            boonsTabPanel.style.visibility = 'hidden';
+            boonsTabPanel.style.opacity = '0';
+            boonsTabPanel.style.pointerEvents = 'none';
+        }
+    }
+}
+
+/**
+ * Update settings tab content
+ */
+function updateSettingsTab() {
+    if (!gameState || !designTierSystem) {
+        console.error('gameState or designTierSystem not initialized');
+        return;
+    }
+    
+    // Update current tier display
+    const currentTierDisplay = document.getElementById('current-tier-display');
+    if (currentTierDisplay) {
+        currentTierDisplay.textContent = designTierSystem.getCurrentTier();
+    }
+    
+    // Update tier selector
+    const tierSelector = document.getElementById('tier-selector');
+    if (tierSelector) {
+        tierSelector.value = designTierSystem.getCurrentTier().toString();
+        
+        // Disable locked tiers
+        const unlockedTiers = designTierSystem.getUnlockedTiers();
+        Array.from(tierSelector.options).forEach(option => {
+            const tier = parseInt(option.value, 10);
+            option.disabled = !unlockedTiers.includes(tier);
+        });
+    }
+}
+
+/**
+ * Reset all game progress
+ */
+function resetAllProgress() {
+    console.log('resetAllProgress called');
+    
+    if (!confirm('⚠️ WARNING: This will permanently delete ALL your game progress!\n\nThis includes:\n- All currency and ingredients\n- All workstations and upgrades\n- All prestige points and bonuses\n- All achievements\n- All milestones\n- Everything!\n\nThis action CANNOT be undone!\n\nAre you ABSOLUTELY sure?')) {
+        console.log('Reset cancelled by user (first confirmation)');
+        return;
+    }
+    
+    // Double confirmation - use confirm instead of prompt (prompt() is blocked in some browsers)
+    if (!confirm('⚠️ FINAL WARNING!\n\nYou are about to PERMANENTLY DELETE everything!\n\nThis is your LAST chance to cancel.\n\nClick OK to proceed with reset, or Cancel to keep your progress.')) {
+        console.log('Reset cancelled by user (second confirmation)');
+        if (window.showNotification) {
+            window.showNotification('Reset cancelled. Your progress is safe.', 'info');
+        }
+        return;
+    }
+    
+    console.log('Reset confirmed, proceeding with reset...');
+    
+    // Clear all localStorage
+    localStorage.clear();
+    
+    // Reset all game state
+    if (gameState) {
+        // Reset game state to initial values
+        gameState.ab = 0.0;
+        gameState.abTotalEarned = 0.0;
+        gameState.inventory = {};
+        gameState.workstations = {};
+        gameState.upgradesOwned = {};
+        gameState.activeBuffs = [];
+        gameState.prestigePoints = 0;
+        gameState.prestigeLifetimeEarned = 0.0;
+        gameState.prestigeBonuses = {};
+        gameState.prestigeCount = 0;
+        gameState.discoveredRecipes = [];
+        gameState.totalTaps = 0;
+        gameState.totalWorkstationsCrafted = 0;
+        gameState.totalPotionsCrafted = 0;
+        gameState.unlockedMilestones = new Set();
+        
+        // Save empty state
+        gameState.saveGameState();
+    }
+    
+    // Reset design tier system
+    if (designTierSystem) {
+        designTierSystem.currentTier = 0;
+        designTierSystem.unlockedTiers = new Set([0]);
+        designTierSystem.applyTier(0);
+        designTierSystem.saveTier();
+    }
+    
+    // Reset combo system
+    if (comboSystem) {
+        comboSystem.reset();
+    }
+    
+    // Reset achievements
+    if (achievements) {
+        achievements.reset();
+    }
+    
+    // Reset daily rituals
+    if (dailyRituals) {
+        dailyRituals.activeTasks = [];
+        dailyRituals.taskProgress = {};
+        dailyRituals.claimedTasks = [];
+        dailyRituals.ekFragments = 0;
+    }
+    
+    // Reset meditation state
+    if (meditationState) {
+        meditationState.reset();
+    }
+    
+    // Show notification
+    if (window.showNotification) {
+        window.showNotification('<span class="css-icon-reset"></span> All progress has been reset!', 'info');
+    }
+    
+    // Reload the page to ensure clean state
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
 }
 
 // Note: Global functions are now defined in defineGlobalFunctions() 
@@ -2205,8 +2951,13 @@ function getScaledRecipe(baseRecipe, owned, growth) {
 }
 
 function updateDailyProgress(conditionType, param, value) {
-    dailyRituals.updateTaskProgress(conditionType, param, value);
+    if (dailyRituals) {
+        dailyRituals.updateTaskProgress(conditionType, param, value);
+    }
 }
+
+// Make globally accessible for meditation system
+window.updateDailyProgress = updateDailyProgress;
 
 /**
  * Debounced UI update function to prevent excessive DOM manipulations
@@ -2306,7 +3057,7 @@ function showNotification(message, type = 'info') {
 function createNotificationElement(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
-    notification.textContent = message;
+    notification.innerHTML = message; // Use innerHTML to support CSS icons
     document.body.appendChild(notification);
     
     slideIn(notification, 'top', 300);
@@ -2340,8 +3091,8 @@ function processNotificationQueue() {
 }
 
 function showWelcomeBack(elapsed, abGained) {
-    document.getElementById('welcome-time').textContent = `⏰ Away for: ${formatTimeDuration(elapsed)}`;
-    document.getElementById('welcome-ab').textContent = `✨ Earned: ${formatShort(abGained)} AB`;
+    document.getElementById('welcome-time').innerHTML = `<span class="css-icon-clock"></span> Away for: ${formatTimeDuration(elapsed)}`;
+    document.getElementById('welcome-ab').innerHTML = `<span class="css-icon-sparkle"></span> Earned: ${formatShort(abGained)} AB`;
     welcomeBackModal.classList.add('active');
     // Force show when active
     welcomeBackModal.style.display = 'flex';
@@ -2459,7 +3210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
                     if (window.showNotification) {
-                        window.showNotification('🎉 Cyber Witches installed successfully!', 'success');
+                        window.showNotification('<span class="css-icon-celebration"></span> Cyber Witches installed successfully!', 'success');
                     }
                     console.log('User accepted install prompt');
                 } else {
@@ -2481,7 +3232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         deferredPrompt = null;
         // Show success notification
         if (window.showNotification) {
-            window.showNotification('🎉 Cyber Witches is now installed!', 'success');
+            window.showNotification('<span class="css-icon-celebration"></span> Cyber Witches is now installed!', 'success');
         }
     });
     
@@ -2494,7 +3245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ascendBtn = document.createElement('button');
             ascendBtn.id = 'ascend-button-hud';
             ascendBtn.className = 'btn-primary';
-            ascendBtn.textContent = '⚡ Ascend';
+            ascendBtn.innerHTML = '<span class="css-icon-lightning"></span> Ascend';
             ascendBtn.setAttribute('aria-label', 'Ascend to gain Eldritch Keys');
             ascendBtn.style.marginLeft = '10px';
             ascendBtn.style.position = 'relative';
@@ -2647,12 +3398,12 @@ function initCovenSystem() {
     };
     
     covenSystem.onRitualCompleted = (ritual) => {
-        showNotification(`🎉 Ritual completed: ${ritual.name}!`, 'success');
+        showNotification(`<span class="css-icon-celebration"></span> Ritual completed: ${ritual.name}!`, 'success');
         updateCovenTab();
     };
     
     covenSystem.onCovenLevelUp = (newLevel) => {
-        showNotification(`🎊 Coven reached level ${newLevel}!`, 'success');
+        showNotification(`<span class="css-icon-celebration"></span> Coven reached level ${newLevel}!`, 'success');
         updateCovenTab();
     };
     

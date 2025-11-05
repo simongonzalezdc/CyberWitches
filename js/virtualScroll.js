@@ -489,25 +489,109 @@ export class VirtualWorkstationList extends VirtualScrollManager {
         // Use static method instead of instance method to avoid 'this' issues
         const recipe = VirtualWorkstationList.getScaledRecipeStatic(workstation.recipe, owned, workstation.growth);
         
+        // Get inscription bonuses (only inscriptions, not buffs/prestige)
+        let inscriptionMult = 1.0;
+        const inscriptions = [];
+        
+        // Global upgrades
+        for (const upgId in gameState.upgradesOwned) {
+            const upgData = window.UPGRADES?.find(u => u.id === upgId);
+            if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
+                inscriptionMult *= upgData.value;
+                inscriptions.push({
+                    name: upgData.displayName,
+                    type: 'global',
+                    multiplier: upgData.value
+                });
+            }
+        }
+        
+        // Producer-specific upgrades
+        const targetAffects = "producer:" + workstation.id;
+        for (const upgId in gameState.upgradesOwned) {
+            const upgData = window.UPGRADES?.find(u => u.id === upgId);
+            if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
+                inscriptionMult *= upgData.value;
+                inscriptions.push({
+                    name: upgData.displayName,
+                    type: 'workstation',
+                    multiplier: upgData.value
+                });
+            }
+        }
+        
+        // Calculate inscription bonus rates
+        const inscriptionBonusRates = {};
+        if (owned > 0 && inscriptionMult > 1.0) {
+            for (const [outputId, baseRate] of Object.entries(workstation.outputs)) {
+                const baseTotal = baseRate * owned;
+                const actualTotal = baseTotal * inscriptionMult;
+                const bonus = actualTotal - baseTotal;
+                if (bonus > 0) {
+                    inscriptionBonusRates[outputId] = bonus;
+                }
+            }
+        }
+        
+        // Build inscription bonus display (compact 2-column layout)
+        let inscriptionBonusHTML = '';
+        if (Object.keys(inscriptionBonusRates).length > 0) {
+            const formatShortFn = window.formatShort || ((n) => n.toFixed(2));
+            const INGREDIENTS = window.INGREDIENTS || [];
+            const bonusEntries = Object.entries(inscriptionBonusRates);
+            inscriptionBonusHTML = `
+                <div class="card-label" style="color: var(--success); font-size: 12px; margin-bottom: 6px;"><span class="css-icon-scroll"></span> Inscription Bonuses:</div>
+                <div class="inscription-bonuses">
+                    ${bonusEntries.map(([outputId, bonusRate]) => {
+                        const ingredient = INGREDIENTS.find(ing => ing.id === outputId);
+                        const displayName = ingredient?.displayName || outputId;
+                        return `<div class="inscription-bonus-item">
+                            +${formatShortFn(bonusRate)}/s ${displayName}
+                        </div>`;
+                    }).join('')}
+                </div>
+                ${inscriptions.length > 0 ? `
+                    <div class="inscription-list">
+                        ${inscriptions.map(ins => `• ${ins.name} (×${ins.multiplier.toFixed(2)})`).join('<br>')}
+                    </div>
+                ` : ''}
+            `;
+        }
+        
+        const formatPreciseFn = window.formatPrecise || ((n, p) => n.toFixed(p));
+        const formatShortFn = window.formatShort || ((n) => n.toFixed(2));
+        const INGREDIENTS_REF = window.INGREDIENTS || [];
+        
         card.innerHTML = `
             <div class="card-title">${workstation.displayName}</div>
             <div class="card-description">⚙️ Owned: ${owned}</div>
-            <div class="card-section">
-                <div class="card-label">Produces:</div>
-                ${Object.entries(workstation.outputs).map(([id, rate]) => 
-                    `<div class="card-value">${rate.toFixed(2)}/s ${id}</div>`
-                ).join('')}
+            <div class="card-content-left">
+                <div class="card-section">
+                    <div class="card-label">Produces:</div>
+                    ${Object.entries(workstation.outputs).map(([id, rate]) => {
+                        const baseTotal = rate * owned;
+                        const actualRate = owned > 0 ? baseTotal : rate;
+                        const ingredient = INGREDIENTS_REF.find(ing => ing.id === id);
+                        const displayName = ingredient?.displayName || id;
+                        return `<div class="card-value">${formatPreciseFn(actualRate, 2)}/s ${displayName}</div>`;
+                    }).join('')}
+                </div>
             </div>
-            <div class="card-section">
-                <div class="card-label">Recipe for next:</div>
-                ${Object.entries(recipe).map(([ingId, amount]) => {
-                    const have = gameState.inventory[ingId] || 0;
-                    const canAfford = have >= amount;
-                    return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                        ${ingId}: ${formatShort(have)} / ${formatShort(amount)}
-                    </div>`;
-                }).join('')}
+            <div class="card-content-right">
+                <div class="card-section">
+                    <div class="card-label">Recipe for next:</div>
+                    ${Object.entries(recipe).map(([ingId, amount]) => {
+                        const have = gameState.inventory[ingId] || 0;
+                        const canAfford = have >= amount;
+                        const ingredient = INGREDIENTS_REF.find(ing => ing.id === ingId);
+                        const displayName = ingredient?.displayName || ingId;
+                        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+                            ${displayName}: ${formatShortFn(have)} / ${formatShortFn(amount)}
+                        </div>`;
+                    }).join('')}
+                </div>
             </div>
+            ${inscriptionBonusHTML ? `<div class="card-section full-width" style="border-left: 3px solid var(--success); background: rgba(60, 227, 197, 0.1);">${inscriptionBonusHTML}</div>` : ''}
             <div class="button-row">
                 <button class="btn-primary" data-action="craft" data-ws-id="${workstation.id}" data-amount="1">Craft x1</button>
                 <button class="btn-primary" data-action="craft" data-ws-id="${workstation.id}" data-amount="10">Craft x10</button>

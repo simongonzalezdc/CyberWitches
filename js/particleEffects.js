@@ -859,6 +859,34 @@ export class ParticleEffectsSystem {
             this.maxParticles = 500;
         }
     }
+    
+    /**
+     * Enable particle effects system
+     */
+    enable() {
+        this.isRunning = true;
+        if (this.canvas) {
+            this.canvas.style.display = 'block';
+        }
+        if (!this.animationId && this.canvas) {
+            this.startAnimationLoop();
+        }
+    }
+    
+    /**
+     * Disable particle effects system
+     */
+    disable() {
+        this.isRunning = false;
+        this.stopAllEffects();
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+        }
+        if (this.canvas) {
+            this.canvas.style.display = 'none';
+        }
+    }
 }
 
 // Create global particle effects instance

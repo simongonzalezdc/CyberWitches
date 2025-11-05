@@ -132,6 +132,9 @@ body::after {
     display: block;
     visibility: visible;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    height: auto;
+    min-height: 70px; /* Ensure consistent height */
+    max-height: 100px; /* Prevent it from being too tall */
 }
 
 .hud-content {
@@ -218,29 +221,34 @@ button::before {
 /* Removed button:active transform to prevent flickering */
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: var(--text);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--primary);
+    border: 2px solid var(--primary);
     box-shadow: 
-        0 6px 25px rgba(255, 45, 170, 0.6),
-        0 0 40px rgba(255, 45, 170, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        0 4px 15px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 45, 170, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     position: relative;
     font-size: 20px !important;
     font-weight: 700 !important;
     padding: 20px 36px !important;
     min-height: 60px !important;
+    text-shadow: 0 0 10px rgba(255, 45, 170, 0.5);
 }
 
 .btn-primary::after {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
-    width: 100%;
+    left: 0;
+    width: 0;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: none;
+    background: rgba(255, 45, 170, 0.1);
+    transition: width 0.3s ease;
     pointer-events: none;
+    z-index: -1;
 }
 
 /* Removed .btn-primary:hover to prevent flickering */
@@ -248,11 +256,13 @@ button::before {
 /* Removed .btn-primary:active transform to prevent flickering */
 
 .btn-primary:disabled {
-    background: var(--bg-light);
+    background: rgba(0, 0, 0, 0.3);
     color: var(--text-dim);
+    border-color: rgba(255, 255, 255, 0.1);
     cursor: not-allowed;
     box-shadow: none;
     opacity: 0.5;
+    text-shadow: none;
 }
 
 .btn-secondary {
@@ -267,33 +277,38 @@ button::before {
 /* Removed .btn-secondary:hover to prevent flickering */
 
 .btn-cast {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: var(--text);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--secondary);
+    border: 3px solid var(--secondary);
     padding: 22px 44px;
     font-size: 28px;
     font-weight: 700;
     box-shadow: 
-        0 8px 30px rgba(34, 227, 255, 0.5),
-        0 0 50px rgba(34, 227, 255, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        0 6px 25px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(34, 227, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     min-width: 220px;
     min-height: 80px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 15px rgba(34, 227, 255, 0.6);
     animation: pulseGlow 2s ease-in-out infinite;
 }
 
 @keyframes pulseGlow {
     0%, 100% {
         box-shadow: 
-            0 8px 30px rgba(34, 227, 255, 0.5),
-            0 0 50px rgba(34, 227, 255, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            0 6px 25px rgba(0, 0, 0, 0.5),
+            0 0 30px rgba(34, 227, 255, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border-color: var(--secondary);
     }
     50% {
         box-shadow: 
-            0 12px 40px rgba(34, 227, 255, 0.7),
-            0 0 70px rgba(34, 227, 255, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            0 8px 35px rgba(0, 0, 0, 0.6),
+            0 0 45px rgba(34, 227, 255, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(34, 227, 255, 0.9);
     }
 }
 
@@ -301,9 +316,10 @@ button::before {
     transform: translateY(-3px) scale(1.05);
     animation: none;
     box-shadow: 
-        0 12px 40px rgba(34, 227, 255, 0.8),
-        0 0 80px rgba(34, 227, 255, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        0 10px 35px rgba(0, 0, 0, 0.6),
+        0 0 50px rgba(34, 227, 255, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-color: var(--secondary);
 }
 
 .btn-cast:active {
@@ -314,6 +330,7 @@ button::before {
 .main-game {
     margin-top: 100px;
     padding: 40px 30px;
+    padding-top: 120px; /* Extra padding to ensure tabs are visible below HUD */
     max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
@@ -330,6 +347,7 @@ button::before {
     flex-wrap: wrap;
     gap: 12px;
     margin-bottom: 30px;
+    margin-top: 0; /* Ensure it starts right below HUD */
     justify-content: center;
     padding: 10px;
     background: var(--glass-bg);
@@ -338,6 +356,20 @@ button::before {
     border-radius: 16px;
     border: 1px solid var(--glass-border);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 100; /* Below HUD but above content */
+    width: 100%;
+}
+
+/* Hide meditation and boons tabs by default - will be shown after first ascension */
+.tab-btn[data-tab="meditation"],
+.tab-btn[data-tab="boons"] {
+    display: none;
+}
+
+#meditation-tab,
+#boons-tab {
+    display: none;
 }
 
 .tab-btn {
@@ -388,16 +420,94 @@ button::before {
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: var(--text);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--primary);
+    border: 2px solid var(--primary);
     box-shadow: 
-        0 4px 20px rgba(255, 45, 170, 0.5),
-        0 0 30px rgba(255, 45, 170, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    border-color: transparent;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        0 2px 12px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 45, 170, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    text-shadow: 0 0 10px rgba(255, 45, 170, 0.5);
     transform: translateY(0);
     will-change: auto;
+}
+
+/* Tab Icons - Styled Unicode Symbols */
+.tab-icon {
+    display: inline-block;
+    font-size: 1.2em;
+    line-height: 1;
+    margin-right: 8px;
+    vertical-align: middle;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+/* Workstations - Gear icon - Neon Cyan */
+.tab-icon-workstations {
+    color: #00FFFF !important; /* Neon Cyan */
+    text-shadow: 0 0 12px #00FFFF, 0 0 24px rgba(0, 255, 255, 0.7), 0 0 36px rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Inscriptions - Diamond outline icon - Neon Pink */
+.tab-icon-inscriptions {
+    color: #FF10F0 !important; /* Neon Pink */
+    text-shadow: 0 0 12px #FF10F0, 0 0 24px rgba(255, 16, 240, 0.8), 0 0 36px rgba(255, 16, 240, 0.6) !important;
+}
+
+/* Inventory - Filled square icon - Neon Yellow */
+.tab-icon-inventory {
+    color: #FFFF00 !important; /* Neon Yellow */
+    text-shadow: 0 0 14px #FFFF00, 0 0 28px rgba(255, 255, 0, 0.9), 0 0 42px rgba(255, 255, 0, 0.7) !important;
+}
+
+/* Experiment - Lightning icon - Neon Green */
+.tab-icon-experiment {
+    color: #39FF14 !important; /* Neon Green */
+    text-shadow: 0 0 14px #39FF14, 0 0 28px rgba(57, 255, 20, 0.8), 0 0 42px rgba(57, 255, 20, 0.6) !important;
+}
+
+.tab-icon-experiment .css-icon-lightning {
+    color: #39FF14 !important;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Dailies - Filled circle icon - White */
+.tab-icon-dailies {
+    color: #FFFFFF !important; /* White */
+    text-shadow: 0 0 10px #FFFFFF, 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Coven - Filled star icon - Neon Cyan */
+.tab-icon-coven {
+    color: #00FFFF !important; /* Neon Cyan */
+    text-shadow: 0 0 16px #00FFFF, 0 0 32px rgba(0, 255, 255, 0.9), 0 0 48px rgba(0, 255, 255, 0.7) !important;
+    animation: iconFloat 3s ease-in-out infinite, tier4IconPulse 2s ease-in-out infinite !important;
+}
+
+/* Boons - Triangle icon - Neon Yellow */
+.tab-icon-boons {
+    color: #FFFF00 !important; /* Neon Yellow */
+    text-shadow: 0 0 16px #FFFF00, 0 0 32px rgba(255, 255, 0, 0.9), 0 0 48px rgba(255, 255, 0, 0.7) !important;
+    animation: iconFloat 3s ease-in-out infinite, tier4IconPulse 2s ease-in-out infinite !important;
+}
+
+/* Meditation - Circle with dot icon - Neon Green */
+.tab-icon-meditation {
+    color: #39FF14 !important; /* Neon Green */
+    text-shadow: 0 0 12px #39FF14, 0 0 24px rgba(57, 255, 20, 0.7), 0 0 36px rgba(57, 255, 20, 0.5) !important;
+}
+
+/* Stats - Square with cross icon - Neon Pink */
+.tab-icon-stats {
+    color: #FF10F0 !important; /* Neon Pink */
+    text-shadow: 0 0 12px #FF10F0, 0 0 24px rgba(255, 16, 240, 0.8), 0 0 36px rgba(255, 16, 240, 0.6) !important;
 }
 
 /* Tab Panels - Glassmorphism */
@@ -459,9 +569,9 @@ button::before {
 }
 
 .tab-panel.active .content-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 20px !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 18px !important;
     visibility: visible !important;
     opacity: 1 !important;
     position: relative !important;
@@ -529,8 +639,10 @@ button::before {
     z-index: 1;
     pointer-events: auto;
     visibility: visible;
-    display: flex;
-    flex-direction: column;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto auto auto auto;
+    gap: 12px;
     transition: none;
     overflow: visible;
     min-height: auto;
@@ -538,11 +650,114 @@ button::before {
     width: 100%;
     box-sizing: border-box;
     cursor: default;
-    justify-content: flex-start;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+}
+
+/* Card header spans full width */
+.card > .card-title {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.card > .card-description {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+/* Card content columns */
+.card-content-left {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card-content-right {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Full-width sections (buttons, inscription bonuses) */
+.card-section.full-width {
+    grid-column: 1 / -1;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Inscription bonuses compact 2-column layout - must override parent flex */
+.inscription-bonuses {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    margin-top: 6px;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex: none !important;
+}
+
+.card-section.full-width .inscription-bonuses {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex: none !important;
+}
+
+.inscription-bonus-item {
+    font-size: 12px;
+    color: var(--success);
+    padding: 4px 6px;
+    background: rgba(60, 227, 197, 0.1);
+    border-radius: 4px;
+    border-left: 2px solid var(--success);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.inscription-list {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(60, 227, 197, 0.3);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+/* Tier header for workstation grouping */
+.content-list > .tier-header {
+    grid-column: 1 / -1;
+    margin: 20px 0 10px 0;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--text-bright);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.content-list > .tier-header:first-child {
+    margin-top: 0;
+}
+
+/* Button row spans full width */
+.button-row {
+    grid-column: 1 / -1;
 }
 
 .card::before {
@@ -584,7 +799,7 @@ button::before {
 }
 
 .card-section {
-    margin-bottom: 10px;
+    margin-bottom: 0;
     padding: 10px;
     background: rgba(0, 0, 0, 0.25);
     border-radius: 8px;
@@ -669,11 +884,16 @@ button::before {
     font-weight: 700 !important;
     min-height: 36px !important;
     border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1.5px solid var(--primary) !important;
     box-shadow: 
-        0 4px 20px rgba(255, 45, 170, 0.5),
-        0 0 30px rgba(255, 45, 170, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        0 0 15px rgba(255, 45, 170, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: var(--primary) !important;
+    text-shadow: 0 0 8px rgba(255, 45, 170, 0.4) !important;
     letter-spacing: 0.3px;
     line-height: 1.2;
     position: relative !important;
@@ -683,7 +903,7 @@ button::before {
     display: flex !important;
     align-items: center;
     justify-content: center;
-    transition: none;
+    transition: all 0.2s ease !important;
     cursor: pointer !important;
 }
 
@@ -709,10 +929,13 @@ button::before {
 .card button[data-action]:not(:disabled):not(.btn-disabled),
 .card .btn-primary:not(:disabled):not(.btn-disabled) {
     opacity: 1 !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-color: var(--primary) !important;
     box-shadow: 
-        0 4px 20px rgba(255, 45, 170, 0.5),
-        0 0 30px rgba(255, 45, 170, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+        0 2px 12px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 45, 170, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    text-shadow: 0 0 10px rgba(255, 45, 170, 0.5) !important;
     cursor: pointer !important;
 }
 
@@ -907,14 +1130,225 @@ button::before {
     }
 }
 
-/* Inventory Item Cards */
-.inventory-item {
-    transition: var(--transition-normal);
+/* Inventory Item Cards - Enhanced with Eye Candy */
+.inventory-header {
+    background: linear-gradient(135deg, rgba(255, 45, 170, 0.15) 0%, rgba(34, 227, 255, 0.15) 100%) !important;
+    border: 2px solid var(--primary) !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(255, 45, 170, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
 
-.inventory-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(60, 227, 197, 0.3);
+.inventory-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: visible;
+}
+
+.inventory-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 16px;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.inventory-item:hover::before {
+    opacity: 0.5;
+}
+
+.inventory-item-content {
+    position: relative;
+    z-index: 2;
+}
+
+.inventory-icon {
+    display: inline-block;
+    animation: iconFloat 3s ease-in-out infinite;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Tier-specific icon styling with neon colors */
+.tier-icon-0 {
+    color: #FFFFFF !important; /* White */
+    text-shadow: 0 0 10px #FFFFFF, 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+}
+
+.tier-icon-1 {
+    color: #FF10F0 !important; /* Neon Pink */
+    text-shadow: 0 0 12px #FF10F0, 0 0 24px rgba(255, 16, 240, 0.8), 0 0 36px rgba(255, 16, 240, 0.6) !important;
+}
+
+.tier-icon-2 {
+    color: #FFFF00 !important; /* Neon Yellow */
+    text-shadow: 0 0 14px #FFFF00, 0 0 28px rgba(255, 255, 0, 0.9), 0 0 42px rgba(255, 255, 0, 0.7) !important;
+}
+
+.tier-icon-3 {
+    color: #39FF14 !important; /* Neon Green */
+    text-shadow: 0 0 16px #39FF14, 0 0 32px rgba(57, 255, 20, 0.6), 0 0 48px rgba(57, 255, 20, 0.4) !important;
+}
+
+.tier-icon-4 {
+    color: #00FFFF !important; /* Neon Cyan */
+    text-shadow: 0 0 18px #00FFFF, 0 0 36px rgba(0, 255, 255, 0.7), 0 0 54px rgba(0, 255, 255, 0.5) !important;
+    animation: iconFloat 3s ease-in-out infinite, tier4IconPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes iconFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-5px) rotate(5deg);
+    }
+}
+
+@keyframes tier4IconPulse {
+    0%, 100% {
+        text-shadow: 0 0 18px #00FFFF, 0 0 36px rgba(0, 255, 255, 0.7), 0 0 54px rgba(0, 255, 255, 0.5);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow: 0 0 22px #00FFFF, 0 0 44px rgba(0, 255, 255, 0.9), 0 0 66px rgba(0, 255, 255, 0.7);
+        transform: scale(1.1);
+    }
+}
+
+.inventory-amount {
+    position: relative;
+}
+
+.inventory-progress {
+    position: relative;
+    overflow: hidden;
+}
+
+.inventory-shimmer {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: inventoryShimmer 3s infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes inventoryShimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+.inventory-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.02);
+    }
+}
+
+/* Tier-specific inventory item enhancements */
+.inventory-item[data-tier="0"] {
+    border-color: rgba(136, 136, 136, 0.5);
+}
+
+.inventory-item[data-tier="1"] {
+    border-color: rgba(60, 227, 197, 0.6);
+}
+
+.inventory-item[data-tier="2"] {
+    border-color: rgba(255, 45, 170, 0.7);
+}
+
+.inventory-item[data-tier="3"] {
+    border-color: rgba(255, 219, 110, 0.8);
+    animation: tier3Pulse 3s ease-in-out infinite;
+}
+
+.inventory-item[data-tier="4"] {
+    border-color: rgba(255, 107, 107, 0.9);
+    animation: tier4Pulse 2s ease-in-out infinite;
+}
+
+@keyframes tier3Pulse {
+    0%, 100% {
+        box-shadow: 
+            0 4px 20px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(255, 219, 110, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 6px 30px rgba(0, 0, 0, 0.5),
+            0 0 40px rgba(255, 219, 110, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+@keyframes tier4Pulse {
+    0%, 100% {
+        box-shadow: 
+            0 4px 20px rgba(0, 0, 0, 0.4),
+            0 0 25px rgba(255, 107, 107, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 8px 40px rgba(0, 0, 0, 0.6),
+            0 0 60px rgba(255, 107, 107, 0.7),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Enhanced progress bar for inventory */
+.inventory-item .progress-bar-container {
+    position: relative;
+    overflow: visible;
+}
+
+.inventory-item .progress-bar-fill {
+    position: relative;
+    overflow: hidden;
+}
+
+.inventory-item .progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
 }
 
 /* Responsive Design */
@@ -985,4 +1419,1074 @@ button::before {
     button {
         border-width: 2px;
     }
+}
+
+/* Meditation Tab Styles */
+
+.meditation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 2px solid var(--primary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.meditation-currency,
+.meditation-health,
+.meditation-wave {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-bright);
+    font-family: 'Orbitron', sans-serif;
+}
+
+.meditation-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.meditation-main {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    min-height: 600px;
+}
+
+.meditation-grid-container {
+    position: relative;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#meditation-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    display: block;
+}
+
+
+.meditation-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.tower-selection,
+.meditation-inventory,
+.meditation-upgrades {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    padding: 15px;
+}
+
+.tower-selection h3,
+.meditation-inventory h3,
+.meditation-upgrades h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 15px;
+    font-family: 'Orbitron', sans-serif;
+    text-shadow: 0 0 10px var(--primary);
+}
+
+.tower-list,
+.meditation-inventory-list,
+.meditation-upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tower-card,
+.inventory-item-card,
+.upgrade-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.tower-card.can-afford {
+    border-color: var(--success);
+    box-shadow: 0 0 10px rgba(60, 227, 197, 0.3);
+}
+
+.tower-card.cannot-afford {
+    border-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.6;
+}
+
+.tower-place-button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.tower-place-button.selected {
+    background: rgba(0, 255, 0, 0.3) !important;
+    border-color: var(--success) !important;
+    box-shadow: 0 0 15px rgba(60, 227, 197, 0.5) !important;
+    color: var(--success) !important;
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 20px;
+    font-style: italic;
+}
+
+
+/* Responsive Design for Meditation Tab */
+@media (max-width: 1200px) {
+    .meditation-main {
+        grid-template-columns: 1fr;
+    }
+    
+    .meditation-sidebar {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .meditation-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .meditation-currency,
+    .meditation-health,
+    .meditation-wave {
+        font-size: 16px;
+    }
+    
+    #meditation-canvas {
+        min-height: 400px;
+    }
+}
+
+/* ============================================
+   Design Tier System - Progressive Revelation
+   Feature 2: Progressive Design Revelation
+   ============================================ */
+
+/* Tier 0 - Monochrome/CLI Terminal (Default State) */
+body.tier-0 {
+    color: #FFFFFF;
+    background: #000000 !important;
+    background-image: none !important;
+    background-size: auto !important;
+    background-position: 0 0 !important;
+    font-family: 'Courier New', 'Consolas', 'Fira Code', monospace;
+}
+
+/* Disable ALL animations, transitions, and movements on Tier 0 */
+body.tier-0 *,
+body.tier-0 *::before,
+body.tier-0 *::after {
+    animation: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    scale: none !important;
+    translate: none !important;
+}
+
+body.tier-0 * {
+    color: #FFFFFF !important;
+    background: transparent !important;
+    border-color: #FFFFFF !important;
+}
+
+body.tier-0 .btn-primary,
+body.tier-0 .btn-cast,
+body.tier-0 button {
+    background: #000000 !important;
+    border: 1px solid #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+body.tier-0 .card,
+body.tier-0 .workstation-card,
+body.tier-0 .upgrade-card {
+    background: #000000 !important;
+    border: 1px solid #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* Disable background animations */
+body.tier-0::before,
+body.tier-0::after {
+    display: none !important;
+    animation: none !important;
+}
+
+/* Disable particle effects canvas */
+body.tier-0 #particle-canvas {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Disable hover, focus, and active effects on Tier 0 */
+body.tier-0 *:hover,
+body.tier-0 *:focus,
+body.tier-0 *:active {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    scale: none !important;
+    translate: none !important;
+}
+
+/* Disable any floating or movement animations */
+body.tier-0 .icon-float,
+body.tier-0 [class*="float"],
+body.tier-0 [class*="pulse"],
+body.tier-0 [class*="glow"],
+body.tier-0 [class*="animate"],
+body.tier-0 [class*="slide"],
+body.tier-0 [class*="shake"],
+body.tier-0 [class*="spin"] {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Disable any number animations */
+body.tier-0 .animate-number,
+body.tier-0 [data-animate] {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Force all tab icons to white in Tier 0 */
+body.tier-0 .tab-icon,
+body.tier-0 .tab-icon-workstations,
+body.tier-0 .tab-icon-inscriptions,
+body.tier-0 .tab-icon-inventory,
+body.tier-0 .tab-icon-experiment,
+body.tier-0 .tab-icon-dailies,
+body.tier-0 .tab-icon-coven,
+body.tier-0 .tab-icon-boons,
+body.tier-0 .tab-icon-meditation,
+body.tier-0 .tab-icon-stats,
+body.tier-0 .tab-icon-settings,
+body.tier-0 .tab-icon *,
+body.tier-0 .css-icon-lightning,
+body.tier-0 .tab-icon-experiment .css-icon-lightning {
+    color: #FFFFFF !important;
+    text-shadow: none !important;
+}
+
+/* Tier 1 - Basic Color (CLI-like) */
+body.tier-1 {
+    /* Colors are enabled via CSS variables */
+    font-family: 'Courier New', 'Consolas', 'Fira Code', monospace;
+    background: #000000 !important;
+    background-image: none !important;
+    color: #FFFFFF;
+    /* No transitions or animations on Tier 1 */
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Remove all glows, shadows, animations, and transitions on Tier 1 */
+body.tier-1 *,
+body.tier-1 *::before,
+body.tier-1 *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transform: none !important;
+}
+
+/* Buttons: border only, transparent background, dark base */
+body.tier-1 .btn-primary,
+body.tier-1 .btn-cast,
+body.tier-1 .btn-secondary,
+body.tier-1 .btn-danger,
+body.tier-1 button {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--primary) !important;
+    color: var(--primary) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+body.tier-1 .btn-cast {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+body.tier-1 .btn-secondary {
+    border-color: var(--secondary) !important;
+    color: var(--secondary) !important;
+}
+
+body.tier-1 .btn-danger {
+    border-color: #FF4444 !important;
+    color: #FF4444 !important;
+}
+
+/* Cards: dark background with border only */
+body.tier-1 .card,
+body.tier-1 .workstation-card,
+body.tier-1 .upgrade-card {
+    background: #000000 !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--border) !important;
+    color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+body.tier-1 .card-section {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Remove purple/pink backgrounds from HUD and tabs on Tier 1 */
+body.tier-1 .hud {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.tier-1 .tabs-nav {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 2px solid var(--border) !important;
+}
+
+body.tier-1 .tab-btn {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+body.tier-1 .tab-btn.active {
+    background: transparent !important;
+    background-image: none !important;
+    border-color: var(--primary) !important;
+}
+
+body.tier-1 .tab-btn::before,
+body.tier-1 .tab-btn::after {
+    display: none !important;
+}
+
+/* Remove any purple/pink backgrounds from all elements */
+body.tier-1 * {
+    background-image: none !important;
+}
+
+body.tier-1 *[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Specific overrides for common purple backgrounds */
+body.tier-1 .card-section.full-width,
+body.tier-1 .inscription-bonuses,
+body.tier-1 .card-content-left,
+body.tier-1 .card-content-right {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove purple/pink backgrounds from card sections with borders */
+body.tier-1 .card-section.full-width[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove any rgba purple backgrounds */
+body.tier-1 *[style*="rgba(255, 45, 170"],
+body.tier-1 *[style*="rgba(255, 16, 240"],
+body.tier-1 *[style*="#FF2DAA"],
+body.tier-1 *[style*="#FF10F0"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Ensure all purple/pink tinted backgrounds are removed */
+body.tier-1 .card::before {
+    display: none !important;
+}
+
+body.tier-1 .tab-panel {
+    background: transparent !important;
+}
+
+body.tier-1 .tab-panel.active {
+    background: transparent !important;
+}
+
+/* Remove glass backgrounds that might have purple tint */
+body.tier-1 [class*="glass"],
+body.tier-1 [style*="backdrop-filter"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Remove background gradients */
+body.tier-1::before,
+body.tier-1::after {
+    display: none !important;
+}
+
+/* Keep particle canvas disabled */
+body.tier-1 #particle-canvas {
+    display: none !important;
+}
+
+/* No hover effects on Tier 1 */
+body.tier-1 *:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+/* Buttons on hover - keep border, no background change, no animations */
+body.tier-1 .btn-primary:hover,
+body.tier-1 .btn-cast:hover,
+body.tier-1 .btn-secondary:hover,
+body.tier-1 .btn-danger:hover,
+body.tier-1 button:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* No transitions or animations on Tier 1 */
+body.tier-1 .color-transitions {
+    transition: none !important;
+    animation: none !important;
+}
+
+body.tier-1 .btn-primary,
+body.tier-1 .btn-cast,
+body.tier-1 .btn-secondary,
+body.tier-1 .btn-danger,
+body.tier-1 button {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Tier 2 - Sound Effects (same visual as Tier 1) */
+body.tier-2 {
+    /* Same as Tier 1 visually */
+}
+
+/* Tier 3 - Full Animations */
+body.tier-3 .full-animations {
+    /* All animations enabled */
+}
+
+body.tier-3 .full-animations * {
+    transition: all var(--transition-normal);
+}
+
+body.tier-3 .btn-primary:hover,
+body.tier-3 .btn-cast:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+body.tier-3 .card:hover,
+body.tier-3 .workstation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px var(--shadow-glow);
+}
+
+/* Tier 4 - Music (same visual as Tier 3) */
+body.tier-4 {
+    /* Same as Tier 3 visually */
+}
+
+/* Water and Air Element Colors */
+:root {
+    /* Water Colors */
+    --water-primary: #22E3FF;
+    --water-secondary: #00FFFF;
+    --water-dark: #0066CC;
+    
+    /* Air Colors */
+    --air-primary: #88D8FF;
+    --air-secondary: #FFFFFF;
+    --air-light: #E0F4FF;
+}
+
+/* ============================================
+   Settings Tab Styles
+   ============================================ */
+
+.settings-content {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-header {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 30px;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.settings-section {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.settings-section h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 15px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.settings-section p {
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.settings-note {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 10px;
+}
+
+.settings-select {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-dark);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: 'Rajdhani', sans-serif;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.settings-select:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--shadow-glow);
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--shadow-glow);
+}
+
+.settings-select option:disabled {
+    color: var(--text-muted);
+    background: var(--bg-dark);
+}
+
+/* Danger Zone Styles */
+.settings-section-danger {
+    border-color: #FF4444;
+    background: rgba(255, 68, 68, 0.05);
+}
+
+.settings-section-danger h3 {
+    color: #FF4444;
+}
+
+.settings-warning {
+    color: #FFAA44 !important;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.btn-danger {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%);
+    border: 2px solid #FF6666;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer !important;
+    transition: all var(--transition-normal);
+    margin-top: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.btn-danger * {
+    pointer-events: none !important;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #FF6666 0%, #FF0000 100%);
+    border-color: #FF8888;
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+    transform: translateY(-2px);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+#current-tier-display {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 20px;
+}
+
+/* Settings Icons - Pure CSS */
+.settings-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    position: relative;
+}
+
+.settings-header .tab-icon {
+    margin-right: 10px;
+}
+
+/* Settings/Gear Icon - Pure CSS */
+.css-icon-settings {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    position: relative;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.css-icon-settings::before {
+    content: '';
+    position: absolute;
+    width: 0.5em;
+    height: 0.5em;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.css-icon-settings::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 0.25em;
+    top: -0.3em;
+    left: 50%;
+    transform: translateX(-50%);
+    background: currentColor;
+    box-shadow: 
+        0 0.5em 0 0 currentColor,
+        0.35em 0.25em 0 0 currentColor,
+        -0.35em 0.25em 0 0 currentColor,
+        0.35em -0.25em 0 0 currentColor,
+        -0.35em -0.25em 0 0 currentColor;
+}
+
+/* Warning Triangle Icon - Pure CSS */
+.css-icon-warning {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 0.5em solid transparent;
+    border-right: 0.5em solid transparent;
+    border-bottom: 0.866em solid currentColor;
+    position: relative;
+    margin-right: 8px;
+}
+
+.css-icon-warning::after {
+    content: '!';
+    position: absolute;
+    top: 0.15em;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #000000;
+    font-weight: bold;
+    font-size: 0.7em;
+    line-height: 1;
+}
+
+.settings-icon-warning .css-icon-warning {
+    color: #FFAA44;
+}
+
+/* Reset/Delete Icon - Pure CSS */
+.css-icon-reset {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.9em;
+    position: relative;
+    border: 2px solid currentColor;
+    border-top: none;
+    border-radius: 0 0 2px 2px;
+    margin-right: 8px;
+}
+
+.css-icon-reset::before {
+    content: '';
+    position: absolute;
+    top: -0.3em;
+    left: -0.15em;
+    width: 0.3em;
+    height: 0.15em;
+    border: 2px solid currentColor;
+    border-bottom: none;
+    border-radius: 0.15em 0.15em 0 0;
+}
+
+.css-icon-reset::after {
+    content: '';
+    position: absolute;
+    top: -0.3em;
+    right: -0.15em;
+    width: 0.3em;
+    height: 0.15em;
+    border: 2px solid currentColor;
+    border-bottom: none;
+    border-radius: 0.15em 0.15em 0 0;
+}
+
+/* Horizontal lines inside trash can */
+.css-icon-reset {
+    background: 
+        linear-gradient(currentColor, currentColor) center/0.2em 0.1em no-repeat,
+        linear-gradient(currentColor, currentColor) center 0.25em/0.2em 0.1em no-repeat;
+}
+
+/* Sparkle/Star Icon - Pure CSS (for cast, crafted, inscribed notifications) */
+.css-icon-sparkle {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    position: relative;
+}
+
+.css-icon-sparkle::before,
+.css-icon-sparkle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: currentColor;
+}
+
+.css-icon-sparkle::before {
+    width: 0.15em;
+    height: 0.8em;
+    border-radius: 0.075em;
+}
+
+.css-icon-sparkle::after {
+    width: 0.8em;
+    height: 0.15em;
+    border-radius: 0.075em;
+}
+
+/* Lightning Bolt Icon - Pure CSS (for ascend) */
+.css-icon-lightning {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-lightning::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 0.25em solid transparent;
+    border-right: 0.25em solid transparent;
+    border-top: 0.4em solid currentColor;
+}
+
+.css-icon-lightning::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.1em;
+    width: 0;
+    height: 0;
+    border-left: 0.15em solid transparent;
+    border-right: 0.15em solid transparent;
+    border-bottom: 0.4em solid currentColor;
+}
+
+/* Scroll Icon - Pure CSS (for inscription bonuses) */
+.css-icon-scroll {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.9em;
+    position: relative;
+    margin-right: 0.2em;
+    border: 2px solid currentColor;
+    border-radius: 0.15em 0.15em 0 0;
+    background: transparent;
+}
+
+.css-icon-scroll::before {
+    content: '';
+    position: absolute;
+    bottom: -0.2em;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.5em;
+    height: 0.3em;
+    border: 2px solid currentColor;
+    border-top: none;
+    border-radius: 0 0 0.15em 0.15em;
+}
+
+.css-icon-scroll::after {
+    content: '';
+    position: absolute;
+    top: 0.15em;
+    left: 0.15em;
+    width: 0.4em;
+    height: 0.05em;
+    background: currentColor;
+    border-radius: 0.025em;
+    box-shadow: 0 0.15em 0 0 currentColor, 0 0.3em 0 0 currentColor;
+}
+
+/* Fire Icon - Pure CSS (for combo milestones) */
+.css-icon-fire {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.9em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-fire::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.3em;
+    height: 0.4em;
+    background: currentColor;
+    border-radius: 0.15em 0.15em 0 0;
+    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+}
+
+.css-icon-fire::after {
+    content: '';
+    position: absolute;
+    bottom: 0.2em;
+    left: 0.1em;
+    width: 0.5em;
+    height: 0.6em;
+    background: currentColor;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    clip-path: polygon(20% 100%, 50% 0, 80% 100%);
+}
+
+/* Celebration/Party Icon - Pure CSS */
+.css-icon-celebration {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-celebration::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.2em;
+    height: 0.3em;
+    background: currentColor;
+    border-radius: 50% 50% 0 0;
+}
+
+.css-icon-celebration::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.4em;
+    height: 0.5em;
+    background: currentColor;
+    border-radius: 0 0 50% 50%;
+    box-shadow: 
+        -0.15em 0 0 0 currentColor,
+        0.15em 0 0 0 currentColor,
+        -0.1em -0.1em 0 0 currentColor,
+        0.1em -0.1em 0 0 currentColor;
+}
+
+/* Clock Icon - Pure CSS */
+.css-icon-clock {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.css-icon-clock::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0.1em;
+    height: 0.25em;
+    background: currentColor;
+    transform-origin: bottom center;
+    transform: translate(-50%, -100%) translateY(0.1em);
+}
+
+.css-icon-clock::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.2em;
+    height: 0.1em;
+    background: currentColor;
+    transform-origin: left center;
+    transform: translate(-50%, -50%) translateX(0.1em);
+}
+
+/* Sound/Speaker Icon - Pure CSS */
+.css-icon-sound {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-sound::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.3em;
+    height: 0.5em;
+    border: 2px solid currentColor;
+    border-right: none;
+    border-radius: 0.15em 0 0 0.15em;
+    background: transparent;
+}
+
+.css-icon-sound::after {
+    content: '';
+    position: absolute;
+    top: 0.1em;
+    left: 0.25em;
+    width: 0.15em;
+    height: 0.3em;
+    border: 2px solid currentColor;
+    border-left: none;
+    border-radius: 0 0.15em 0.15em 0;
+    background: currentColor;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 50% 50%);
+}
+
+/* Music Note Icon - Pure CSS */
+.css-icon-music {
+    display: inline-block;
+    width: 0.6em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-music::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0.2em;
+    width: 0.15em;
+    height: 0.5em;
+    border: 2px solid currentColor;
+    border-radius: 0.075em;
+    background: transparent;
+}
+
+.css-icon-music::after {
+    content: '';
+    position: absolute;
+    top: 0.4em;
+    left: 0;
+    width: 0.3em;
+    height: 0.3em;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0.2em 0.2em 0 0 currentColor;
 }

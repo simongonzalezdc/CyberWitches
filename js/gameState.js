@@ -26,6 +26,7 @@ export class GameState {
         this.prestigePoints = 0;
         this.prestigeLifetimeEarned = 0.0;
         this.prestigeBonuses = {};
+        this.prestigeCount = 0; // Track number of ascensions (prestige completions)
         
         // Buffs
         this.activeBuffs = [];
@@ -36,6 +37,11 @@ export class GameState {
         // Stats
         this.totalTaps = 0;
         this.totalWorkstationsCrafted = 0;
+        this.totalPotionsCrafted = 0;
+        
+        // Milestone rewards (Feature 3: Dopamine Maximization)
+        this.unlockedMilestones = new Set();
+        this.milestones = [100, 1000, 10000, 100000, 1000000, 10000000];
         
         // Timestamps
         this.lastSaveTime = Date.now() / 1000;
@@ -159,6 +165,9 @@ export class GameState {
                     totalOutput.ab *= (1.0 + bonusData.value * levels);
                 }
             }
+            
+            // Apply AB production buffs
+            totalOutput.ab *= this.getBuff('ab_production');
         }
         
         // Apply coven production bonus if in a coven
@@ -208,12 +217,11 @@ export class GameState {
             }
         }
         
-        // Active buffs
-        for (const buff of this.activeBuffs) {
-            if (buff.multiplier) {
-                mult *= (1.0 + buff.multiplier);
-            }
-        }
+        // Active production buffs
+        mult *= this.getBuff('production');
+        
+        // Active ingredient production buffs
+        mult *= this.getBuff('ingredient_production');
         
         return mult;
     }
@@ -232,11 +240,69 @@ export class GameState {
         }
     }
     
-    addBuff(multiplier, duration) {
+    addBuff(type, value, duration) {
         this.activeBuffs.push({
-            multiplier: multiplier,
-            remaining: duration
+            type: type, // 'production', 'ab_production', 'cast_speed', 'ingredient_production', 'prestige_gain'
+            value: value, // Multiplier value (e.g., 0.5 for +50%)
+            remaining: duration // Duration in seconds
         });
+    }
+    
+    getBuff(type) {
+        let totalValue = 0;
+        for (const buff of this.activeBuffs) {
+            if (buff.type === type) {
+                totalValue += buff.value;
+            }
+        }
+        return 1.0 + totalValue; // Return as multiplier (1.0 + 0.5 = 1.5x)
+    }
+    
+    getPotionEffect(potionId) {
+        // Activate potion based on ID
+        const potionEffects = {
+            // Tier 1
+            'production_elixir': { type: 'production', value: 0.5, duration: 30 * 60 },
+            'haste_potion': { type: 'cast_speed', value: 1.0, duration: 15 * 60 },
+            'ab_amplifier': { type: 'ab_production', value: 2.0, duration: 20 * 60 },
+            
+            // Tier 2
+            'mega_production_elixir': { type: 'production', value: 1.0, duration: 60 * 60 },
+            'speed_essence': { type: 'cast_speed', value: 2.0, duration: 30 * 60 },
+            'ab_turbo_charge': { type: 'ab_production', value: 5.0, duration: 45 * 60 },
+            'rare_catalyst': { type: 'ingredient_production', value: 1.0, duration: 60 * 60 },
+            
+            // Tier 3
+            'ultimate_production_elixir': { type: 'production', value: 2.0, duration: 2 * 60 * 60 },
+            'quantum_speed_boost': { type: 'cast_speed', value: 3.0, duration: 60 * 60 },
+            'ab_overdrive': { type: 'ab_production', value: 10.0, duration: 1.5 * 60 * 60 },
+            'master_catalyst': { type: 'ingredient_production', value: 2.0, duration: 2 * 60 * 60 },
+            'prestige_boost': { type: 'prestige_gain', value: 0.5, duration: 3 * 60 * 60 },
+            
+            // Tier 4
+            'infinity_production_elixir': { type: 'production', value: 5.0, duration: 4 * 60 * 60 },
+            'void_speed_surge': { type: 'cast_speed', value: 5.0, duration: 2 * 60 * 60 },
+            'ab_infinity_boost': { type: 'ab_production', value: 20.0, duration: 3 * 60 * 60 },
+            'infinity_catalyst': { type: 'ingredient_production', value: 4.0, duration: 4 * 60 * 60 },
+            'prestige_mastery': { type: 'prestige_gain', value: 1.0, duration: 6 * 60 * 60 }
+        };
+        
+        return potionEffects[potionId] || null;
+    }
+    
+    consumePotion(potionId) {
+        const have = this.inventory[potionId] || 0;
+        if (have < 1) return false;
+        
+        this.spendIngredient(potionId, 1);
+        
+        const effect = this.getPotionEffect(potionId);
+        if (effect) {
+            this.addBuff(effect.type, effect.value, effect.duration);
+            return true;
+        }
+        
+        return false;
     }
     
     /**
@@ -248,6 +314,66 @@ export class GameState {
         this.abTotalEarned += amount;
         this.prestigeLifetimeEarned += amount;
         this.batchUpdate('abChanged', this.ab);
+        
+        // Check for milestone rewards (Feature 3: Dopamine Maximization)
+        this.checkMilestones();
+    }
+    
+    /**
+     * Check and unlock milestone rewards
+     */
+    checkMilestones() {
+        const currentAB = this.ab;
+        
+        this.milestones.forEach(milestone => {
+            if (currentAB >= milestone && !this.unlockedMilestones.has(milestone)) {
+                this.unlockMilestone(milestone);
+            }
+        });
+    }
+    
+    /**
+     * Unlock a milestone and give reward
+     */
+    unlockMilestone(ab) {
+        this.unlockedMilestones.add(ab);
+        
+        // Give milestone reward (10% of milestone as bonus)
+        const reward = ab * 0.1;
+        this.ab += reward;
+        
+        // Visual feedback
+        if (window.showNotification) {
+            window.showNotification(`Milestone: ${this.formatShort(ab)} AB! +${this.formatShort(reward)} bonus`, 'success');
+        }
+        
+        // Particle effect
+        if (window.createParticle) {
+            const abDisplay = document.getElementById('ab-display');
+            if (abDisplay) {
+                const rect = abDisplay.getBoundingClientRect();
+                window.createParticle(
+                    rect.left + rect.width / 2,
+                    rect.top + rect.height / 2,
+                    `MILESTONE!`,
+                    '#FFDB6E'
+                );
+            }
+        }
+        
+        // Audio feedback
+        if (window.audioSystem && window.audioSystem.playSound) {
+            window.audioSystem.playSound('achievement');
+        }
+    }
+    
+    /**
+     * Format short number for display
+     */
+    formatShort(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toFixed(1);
     }
     
     /**
@@ -291,13 +417,31 @@ export class GameState {
     cast(comboMultiplier = 1.0, eventMultiplier = 1.0) {
         this.totalTaps++;
         
-        // Base tier-0 ingredients
+        // Base tier-0 ingredients (all 5 alchemical elements)
         const baseAmounts = {
             wax_bits: 1.0,
             wick_fiber: 1.0,
             crystal_dust: 0.5,
-            aether_ess: 0.5
+            aether_ess: 0.5,
+            fire_essence: 0.5,
+            water_essence: 0.5,
+            air_essence: 0.5
         };
+        
+        // Variable reward system (dopamine maximization)
+        const bonusRoll = Math.random();
+        let bonusMultiplier = 1.0;
+        let bonusType = null;
+        
+        if (bonusRoll < 0.05) {
+            // 5% chance for 2x-5x bonus (jackpot)
+            bonusMultiplier = 2.0 + Math.random() * 3.0; // 2.0 to 5.0
+            bonusType = 'jackpot';
+        } else if (bonusRoll < 0.15) {
+            // 10% chance for 1.5x bonus
+            bonusMultiplier = 1.5;
+            bonusType = 'bonus';
+        }
         
         // Apply click upgrades
         let clickAdditive = 0.0;
@@ -323,8 +467,11 @@ export class GameState {
             }
         }
         
-        // Apply combo and event multipliers
-        const totalMult = clickMult * comboMultiplier * eventMultiplier;
+        // Apply cast speed buffs
+        const castSpeedMult = this.getBuff('cast_speed');
+        
+        // Apply combo, event, and bonus multipliers
+        const totalMult = clickMult * comboMultiplier * eventMultiplier * castSpeedMult * bonusMultiplier;
         
         // Grant ingredients (with additive bonus)
         for (const ingId in baseAmounts) {
@@ -335,6 +482,16 @@ export class GameState {
         // This allows players to eventually unlock AB-producing workstations
         const abPerCast = 0.15 * totalMult;
         this.addAb(abPerCast);
+        
+        // Trigger bonus feedback if applicable
+        if (bonusType && window.triggerBonusFeedback) {
+            window.triggerBonusFeedback(bonusType, bonusMultiplier);
+        }
+        
+        // Track bonus casts for achievements
+        if (bonusMultiplier >= 5.0) {
+            this.lastCastBonus = 5.0;
+        }
         
         // Update coven progress for casting
         this.covenSystem.updateCovenProgress('casting', 1);
@@ -407,7 +564,12 @@ export class GameState {
     
     calculatePrestigeGain() {
         const currentEk = Balance.prestigePointsFor(this.prestigeLifetimeEarned);
-        return Math.max(0, currentEk - this.prestigePoints);
+        const baseGain = Math.max(0, currentEk - this.prestigePoints);
+        
+        // Apply prestige gain buffs
+        const prestigeBuffMult = this.getBuff('prestige_gain');
+        
+        return baseGain * prestigeBuffMult;
     }
     
     ascend() {
@@ -415,6 +577,7 @@ export class GameState {
         if (ekGain <= 0) return;
         
         this.prestigePoints += ekGain;
+        this.prestigeCount++; // Increment prestige count (number of ascensions)
         
         // Reset run
         this.ab = 0.0;
@@ -425,6 +588,7 @@ export class GameState {
         this.activeBuffs = [];
         this.totalTaps = 0;
         this.totalWorkstationsCrafted = 0;
+        this.totalPotionsCrafted = 0;
         
         // Apply prestige start bonuses
         this.applyPrestigeStartBonuses();
@@ -511,7 +675,27 @@ export class GameState {
             if (outputId === "ab") {
                 this.addAb(recipe.outputs[outputId]);
             } else {
-                this.addIngredient(outputId, recipe.outputs[outputId]);
+                // Check if this is a potion that should be consumed immediately
+                const potionIds = ['production_elixir', 'haste_potion', 'ab_amplifier', 
+                                   'mega_production_elixir', 'speed_essence', 'ab_turbo_charge', 'rare_catalyst',
+                                   'ultimate_production_elixir', 'quantum_speed_boost', 'ab_overdrive', 
+                                   'master_catalyst', 'prestige_boost',
+                                   'infinity_production_elixir', 'void_speed_surge', 'ab_infinity_boost', 
+                                   'infinity_catalyst', 'prestige_mastery'];
+                
+                if (potionIds.includes(outputId)) {
+                    // Potions activate immediately on craft (don't add to inventory)
+                    const effect = this.getPotionEffect(outputId);
+                    if (effect) {
+                        for (let i = 0; i < recipe.outputs[outputId]; i++) {
+                            this.addBuff(effect.type, effect.value, effect.duration);
+                            this.totalPotionsCrafted++; // Track potion crafting
+                        }
+                    }
+                } else {
+                    // Regular ingredients go to inventory
+                    this.addIngredient(outputId, recipe.outputs[outputId]);
+                }
             }
         }
         
@@ -532,14 +716,19 @@ export class GameState {
                 prestige: {
                     points: this.prestigePoints,
                     lifetimeEarned: this.prestigeLifetimeEarned,
-                    bonuses: { ...this.prestigeBonuses }
+                    bonuses: { ...this.prestigeBonuses },
+                    count: this.prestigeCount
                 },
                 experiments: {
                     discovered: [...this.discoveredRecipes]
                 },
                 stats: {
                     totalTaps: this.totalTaps,
-                    totalWorkstationsCrafted: this.totalWorkstationsCrafted
+                    totalWorkstationsCrafted: this.totalWorkstationsCrafted,
+                    totalPotionsCrafted: this.totalPotionsCrafted
+                },
+                milestones: {
+                    unlocked: Array.from(this.unlockedMilestones)
                 },
                 coven: this.covenSystem.saveCovenData(),
                 timestamp: Date.now() / 1000,
@@ -583,6 +772,7 @@ export class GameState {
             this.prestigePoints = prestigeData.points || 0;
             this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
             this.prestigeBonuses = prestigeData.bonuses || {};
+            this.prestigeCount = prestigeData.count || 0;
             
             const experimentsData = data.experiments || {};
             this.discoveredRecipes = experimentsData.discovered || [];
@@ -590,6 +780,15 @@ export class GameState {
             const stats = data.stats || {};
             this.totalTaps = stats.totalTaps || 0;
             this.totalWorkstationsCrafted = stats.totalWorkstationsCrafted || 0;
+            this.totalPotionsCrafted = stats.totalPotionsCrafted || 0;
+            
+            // Load unlocked milestones
+            const milestonesData = data.milestones || {};
+            if (milestonesData.unlocked && Array.isArray(milestonesData.unlocked)) {
+                this.unlockedMilestones = new Set(milestonesData.unlocked);
+            } else {
+                this.unlockedMilestones = new Set();
+            }
             
             // Load coven data
             this.covenSystem.loadCovenData(data.coven);

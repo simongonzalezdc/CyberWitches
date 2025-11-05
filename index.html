@@ -16,23 +16,28 @@
             </div>
             <div class="hud-controls">
                 <button id="auto-cast-toggle" class="btn-secondary">Auto: OFF</button>
-                <button id="cast-button" class="btn-cast">✨ Cast</button>
+                <button id="cast-button" class="btn-cast"><span class="css-icon-sparkle"></span> Cast</button>
             </div>
         </div>
     </div>
 
     <!-- Main Game Area -->
     <div class="main-game">
+        <!-- Particle Effects Canvas -->
+        <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none;"></canvas>
+        
         <!-- Tab Navigation -->
         <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="workstations">🏭 Workstations</button>
-            <button class="tab-btn" data-tab="inscriptions">📜 Inscriptions</button>
-            <button class="tab-btn" data-tab="inventory">🎒 Inventory</button>
-            <button class="tab-btn" data-tab="experiment">🔬 Experiment</button>
-            <button class="tab-btn" data-tab="dailies">📅 Dailies</button>
-            <button class="tab-btn" data-tab="coven">🔮 Coven</button>
-            <button class="tab-btn" data-tab="boons">⭐ Boons</button>
-            <button class="tab-btn" data-tab="stats">📊 Stats</button>
+            <button class="tab-btn active" data-tab="workstations"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
+            <button class="tab-btn" data-tab="inscriptions"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
+            <button class="tab-btn" data-tab="inventory"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
+            <button class="tab-btn" data-tab="experiment"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
+            <button class="tab-btn" data-tab="dailies"><span class="tab-icon tab-icon-dailies">●</span> Dailies</button>
+            <button class="tab-btn" data-tab="coven"><span class="tab-icon tab-icon-coven">★</span> Coven</button>
+            <button class="tab-btn" data-tab="boons"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
+            <button class="tab-btn" data-tab="meditation"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
+            <button class="tab-btn" data-tab="stats"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
+            <button class="tab-btn" data-tab="settings"><span class="tab-icon tab-icon-settings">⚙</span> Settings</button>
         </div>
 
         <!-- Tab Content -->
@@ -54,7 +59,7 @@
 
             <!-- Experiment Tab -->
             <div id="experiment-tab" class="tab-panel">
-                <button id="experiment-button" class="btn-primary">🔬 Try Experiment</button>
+                <button id="experiment-button" class="btn-primary">Try Experiment</button>
                 <div id="experiment-result" class="result-box"></div>
                 <div id="recipe-list" class="content-list"></div>
             </div>
@@ -77,9 +82,81 @@
                 <div id="boon-list" class="content-list"></div>
             </div>
 
+            <!-- Meditation Tab -->
+            <div id="meditation-tab" class="tab-panel">
+                <div class="meditation-header">
+                    <div class="meditation-currency">
+                        <span id="focus-display">Focus: 0</span>
+                        <span id="focusps-display">0 Focus/s</span>
+                    </div>
+                    <div class="meditation-health">
+                        <span>Tranquility: </span>
+                        <span id="tranquility-display">100</span> / <span id="tranquility-max-display">100</span>
+                    </div>
+                    <div class="meditation-wave">
+                        <span>Wave: </span>
+                        <span id="wave-display">0</span>
+                    </div>
+                </div>
+                <div class="meditation-controls">
+                    <button id="start-meditation-button" class="btn-primary">Start Meditation</button>
+                    <button id="end-meditation-button" class="btn-secondary" style="display: none;">End Meditation</button>
+                </div>
+                <div class="meditation-main">
+                    <div class="meditation-grid-container">
+                        <canvas id="meditation-canvas"></canvas>
+                    </div>
+                    <div class="meditation-sidebar">
+                        <div class="tower-selection">
+                            <h3>Towers</h3>
+                            <div id="tower-list" class="tower-list"></div>
+                        </div>
+                        <div class="meditation-inventory">
+                            <h3>Meditation Inventory</h3>
+                            <div id="meditation-inventory-list" class="meditation-inventory-list"></div>
+                        </div>
+                        <div class="meditation-upgrades">
+                            <h3>Meditation Upgrades</h3>
+                            <div id="meditation-upgrade-list" class="meditation-upgrade-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stats Tab -->
             <div id="stats-tab" class="tab-panel">
                 <div id="stats-content" class="content-list"></div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-panel">
+                <div class="settings-content">
+                    <h2 class="settings-header"><span class="tab-icon tab-icon-settings css-icon-settings"></span> Settings</h2>
+                    
+                    <!-- Design Tier Settings -->
+                    <div class="settings-section">
+                        <h3>Design Tier</h3>
+                        <p>Current Tier: <span id="current-tier-display">0</span></p>
+                        <select id="tier-selector" class="settings-select">
+                            <option value="0">Tier 0: Minimal</option>
+                            <option value="1">Tier 1: Basic Color</option>
+                            <option value="2">Tier 2: Sound Effects</option>
+                            <option value="3">Tier 3: Full Graphics</option>
+                            <option value="4">Tier 4: Music</option>
+                        </select>
+                        <p class="settings-note">You can only select tiers you've unlocked</p>
+                    </div>
+
+                    <!-- Reset Progress Section -->
+                    <div class="settings-section settings-section-danger">
+                        <h3><span class="settings-icon settings-icon-warning css-icon-warning"></span> Danger Zone</h3>
+                        <p class="settings-warning">The following actions cannot be undone!</p>
+                        <button id="reset-all-progress-button" class="btn-danger">
+                            <span class="settings-icon settings-icon-reset css-icon-reset"></span> Reset All Progress
+                        </button>
+                        <p class="settings-note">This will permanently delete all your game progress, including prestige points and achievements.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

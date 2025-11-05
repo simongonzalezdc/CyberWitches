@@ -104,6 +104,76 @@ export class DailyRituals {
                         }
                     }
                 }
+                // For earn_ab tasks
+                else if (conditionType === "earn_ab") {
+                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    this.taskProgress[task.id] = value;
+                    if (this.onTaskProgressUpdated) {
+                        this.onTaskProgressUpdated(task.id, value, target);
+                    }
+                    
+                    if (value >= target) {
+                        if (this.onTaskCompleted) this.onTaskCompleted(task.id);
+                    }
+                }
+                // For discover_recipe tasks
+                else if (conditionType === "discover_recipe") {
+                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    this.taskProgress[task.id] = value;
+                    if (this.onTaskProgressUpdated) {
+                        this.onTaskProgressUpdated(task.id, value, target);
+                    }
+                    
+                    if (value >= target) {
+                        if (this.onTaskCompleted) this.onTaskCompleted(task.id);
+                    }
+                }
+                // For craft_potion tasks
+                else if (conditionType === "craft_potion") {
+                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    this.taskProgress[task.id] = value;
+                    if (this.onTaskProgressUpdated) {
+                        this.onTaskProgressUpdated(task.id, value, target);
+                    }
+                    
+                    if (value >= target) {
+                        if (this.onTaskCompleted) this.onTaskCompleted(task.id);
+                    }
+                }
+                // For meditation tasks
+                else if (conditionType === "meditation_waves") {
+                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    this.taskProgress[task.id] = value;
+                    if (this.onTaskProgressUpdated) {
+                        this.onTaskProgressUpdated(task.id, value, target);
+                    }
+                    
+                    if (value >= target) {
+                        if (this.onTaskCompleted) this.onTaskCompleted(task.id);
+                    }
+                }
+                else if (conditionType === "meditation_towers") {
+                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    this.taskProgress[task.id] = value;
+                    if (this.onTaskProgressUpdated) {
+                        this.onTaskProgressUpdated(task.id, value, target);
+                    }
+                    
+                    if (value >= target) {
+                        if (this.onTaskCompleted) this.onTaskCompleted(task.id);
+                    }
+                }
+                else if (conditionType === "earn_focus") {
+                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    this.taskProgress[task.id] = value;
+                    if (this.onTaskProgressUpdated) {
+                        this.onTaskProgressUpdated(task.id, value, target);
+                    }
+                    
+                    if (value >= target) {
+                        if (this.onTaskCompleted) this.onTaskCompleted(task.id);
+                    }
+                }
             }
         }
     }
@@ -127,7 +197,8 @@ export class DailyRituals {
                 this.gameState.addAb(task.rewardValue);
                 break;
             case "buff":
-                this.gameState.addBuff(task.buffMultiplier, task.rewardValue);
+                // Buff type: 'production' for production bonuses, duration in seconds
+                this.gameState.addBuff('production', task.buffMultiplier, task.rewardValue);
                 break;
             case "ek_frag":
                 this.grantEkFragments(Math.floor(task.rewardValue));

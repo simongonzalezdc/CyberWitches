@@ -94,6 +94,11 @@ export function animateNumber(element, startValue, endValue, duration = 500) {
  * @param {string} color - Color of particle
  */
 export function createParticle(x, y, text, color = '#FF2DAA') {
+    // Check if we're on Tier 0 (no animations allowed)
+    if (window.designTierSystem && window.designTierSystem.getCurrentTier() === 0) {
+        return; // Don't create particles on Tier 0
+    }
+    
     // Use object pooling for particles to reduce GC pressure
     const particle = document.createElement('div');
     

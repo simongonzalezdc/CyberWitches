@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #1a1a2a;
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: #2a2a3a;
+            border-radius: 10px;
+            border: 2px solid #444;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #ff6666;
+        }
+        .success {
+            color: #4caf50;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reset Game Progress</h1>
+        <p>This will clear all saved game data and start you fresh.</p>
+        <button onclick="resetGame()">Reset All Game Data</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function resetGame() {
+            try {
+                // Clear all localStorage
+                localStorage.clear();
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                
+                // Clear IndexedDB if it exists
+                if ('indexedDB' in window) {
+                    indexedDB.databases().then(databases => {
+                        databases.forEach(db => {
+                            indexedDB.deleteDatabase(db.name);
+                        });
+                    });
+                }
+                
+                document.getElementById('result').innerHTML = 
+                    '<div class="success">✓ Game data cleared! Redirecting to game...</div>';
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<div style="color: #ff4444;">Error: ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-reset on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                resetGame();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
