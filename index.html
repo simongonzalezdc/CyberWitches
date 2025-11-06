@@ -86,12 +86,15 @@
                 <span class="element-icon abps-icon">⚡</span>
                 <span class="element-amount" id="abps-display">0.0 AB/s</span>
             </div>
-            <div class="hud-controls">
-                <button id="cast-button" class="btn-cast">
-                    <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
-                    <span class="css-icon-sparkle"></span> Cast
-                </button>
-            </div>
+                <div class="hud-controls">
+                    <button id="cast-button" class="btn-cast">
+                        <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
+                        <span class="css-icon-sparkle"></span> Cast
+                    </button>
+                    <button id="settings-quick-button" class="btn-secondary" aria-label="Open Settings" title="Settings (Ctrl+,)">
+                        <span class="tab-icon tab-icon-settings">⚙</span>
+                    </button>
+                </div>
         </div>
     </div>
 
@@ -102,16 +105,16 @@
         
         <!-- Tab Navigation -->
         <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="workstations"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
-            <button class="tab-btn" data-tab="inscriptions"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
-            <button class="tab-btn" data-tab="inventory"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
-            <button class="tab-btn" data-tab="experiment"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
-            <button class="tab-btn" data-tab="dailies"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
+            <button class="tab-btn active" data-tab="workstations" title="Workstations - Craft and manage production buildings" aria-label="Workstations tab"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
+            <button class="tab-btn" data-tab="inscriptions" title="Inscriptions - Purchase permanent upgrades" aria-label="Inscriptions tab"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
+            <button class="tab-btn" data-tab="inventory" title="Inventory - View your collected ingredients" aria-label="Inventory tab"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
+            <button class="tab-btn" data-tab="experiment" title="Experiment - Discover new recipes through experimentation" aria-label="Experiment tab"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
+            <button class="tab-btn" data-tab="dailies" title="Rituals - Complete daily tasks for rewards" aria-label="Rituals tab"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
             <!-- Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
-            <button class="tab-btn" data-tab="boons"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
-            <button class="tab-btn" data-tab="meditation"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
-            <button class="tab-btn" data-tab="stats"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
-            <button class="tab-btn" data-tab="settings"><span class="tab-icon tab-icon-settings">⚙</span> Settings</button>
+            <button class="tab-btn" data-tab="boons" title="Boons - Purchase powerful permanent bonuses with Eldritch Keys" aria-label="Boons tab"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
+            <button class="tab-btn" data-tab="meditation" title="Meditation - Defend against waves in this tower defense mini-game" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
+            <button class="tab-btn" data-tab="stats" title="Stats - View your game statistics and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
+            <button class="tab-btn" data-tab="settings" title="Settings - Configure game options and preferences" aria-label="Settings tab"><span class="tab-icon tab-icon-settings">⚙</span> Settings</button>
         </div>
 
         <!-- Tab Content -->
@@ -221,9 +224,32 @@
                         <p class="settings-note">You can only select tiers you've unlocked</p>
                     </div>
 
-                    <!-- Audio Volume Settings -->
-                    <div class="settings-section">
-                        <h3>Audio Volume</h3>
+                        <!-- Sustainable Design Settings -->
+                        <div class="settings-section" id="sustainable-design-section">
+                            <h3>Energy & Performance</h3>
+                            <div class="setting-item">
+                                <label class="setting-label">
+                                    <input type="checkbox" id="low-power-mode-toggle" class="setting-checkbox">
+                                    <span>Low Power Mode</span>
+                                </label>
+                                <p class="settings-note">Reduces animations and effects to save battery</p>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label" for="animation-quality-select">
+                                    Animation Quality:
+                                </label>
+                                <select id="animation-quality-select" class="settings-select">
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                                <p class="settings-note">Lower quality uses less battery</p>
+                            </div>
+                        </div>
+
+                        <!-- Audio Volume Settings -->
+                        <div class="settings-section">
+                            <h3>Audio Volume</h3>
                         
                         <!-- Sound Effects Volume (Tier 2+) -->
                         <div class="volume-control">
@@ -304,6 +330,34 @@
     <div id="notifications-container"></div>
 
     <!-- Scripts -->
+    <script type="module" src="js/loadingState.js"></script>
+    <script type="module" src="js/accessibility.js"></script>
+    <script type="module" src="js/errorRecovery.js"></script>
+    <script type="module" src="js/privacyControls.js"></script>
+    <script type="module" src="js/searchFilter.js"></script>
+    <script type="module" src="js/progressIndicators.js"></script>
+    <script type="module" src="js/featureIndicators.js"></script>
+    <script type="module" src="js/sustainableDesign.js"></script>
+    <script type="module" src="js/browserNavigation.js"></script>
+    <script type="module" src="js/mobileNavigation.js"></script>
+    <script type="module" src="js/mobilePerformance.js"></script>
+    <script type="module" src="js/errorReporting.js"></script>
+    <script type="module" src="js/domOptimization.js"></script>
+    <script type="module" src="js/memoryLeakFix.js"></script>
+    <script type="module" src="js/lazyAssetLoading.js"></script>
+    <script type="module" src="js/animationOptimization.js"></script>
+    <script type="module" src="js/questSystem.js"></script>
+    <script type="module" src="js/playerAnalytics.js"></script>
+    <script type="module" src="js/balanceAnalytics.js"></script>
+    <script type="module" src="js/pwaFeatures.js"></script>
+    <script type="module" src="js/tutorial.js"></script>
+    <script type="module" src="js/balanceTesting.js"></script>
+    <script type="module" src="js/codeOrganization.js"></script>
+    <script type="module" src="js/coreWebVitals.js"></script>
+    <script type="module" src="js/progressionAnalysis.js"></script>
+    <script type="module" src="js/economyBalancing.js"></script>
+    <script type="module" src="js/feedbackLoops.js"></script>
+    <script type="module" src="js/codeDuplication.js"></script>
     <script type="module" src="js/game.js"></script>
 </body>
 </html>

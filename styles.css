@@ -21,11 +21,19 @@
     --bg-card: #1F1F3A;
     --bg-card-hover: #252540;
     
-    /* Text Colors */
+    /* Text Colors - WCAG AA Compliant */
     --text: #FFFFFF;
     --text-bright: #FFFFFF;
-    --text-dim: #AAAAAA;
-    --text-muted: #666666;
+    --text-dim: #CCCCCC; /* Improved from #AAAAAA for better contrast */
+    --text-muted: #999999; /* Improved from #666666 for better contrast */
+    
+    /* Error Colors - WCAG AA Compliant */
+    --error: #FF6B6B; /* Improved contrast */
+    --error-bg: #4A1F1F;
+    
+    /* Success Colors - WCAG AA Compliant */
+    --success-text: #3CE3C5;
+    --success-bg: #1A3A35;
     
     /* Border & Shadow */
     --border: #333366;
@@ -43,6 +51,15 @@
     --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Spacing Scale - Standardized */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --spacing-2xl: 32px;
+    --spacing-3xl: 48px;
 }
 
 /* Reset & Base Styles */
@@ -228,7 +245,7 @@ body::after {
     top: 0;
     left: 250px;
     right: 0;
-    padding: 8px 0;
+    padding: var(--spacing-sm, 8px) 0;
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
@@ -258,13 +275,13 @@ body::after {
     align-items: center;
     max-width: 1400px;
     margin: 0 auto;
-    gap: 20px;
+    gap: var(--spacing-xl, 24px);
 }
 
 .currency-display {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     font-family: 'Orbitron', monospace;
 }
 
@@ -314,7 +331,7 @@ body::after {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    padding: var(--spacing-lg, 16px);
     border-bottom: 2px solid var(--border);
     background: var(--bg-light);
 }
@@ -324,6 +341,8 @@ body::after {
     color: var(--primary);
     font-size: 1.25rem;
     font-weight: 700;
+    /* Visual hierarchy - larger, bolder */
+    text-shadow: 0 0 10px var(--primary-glow);
 }
 
 .sidebar-toggle {
@@ -359,13 +378,13 @@ body::after {
 .sidebar-content {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
+    padding: var(--spacing-lg, 16px);
 }
 
 .sidebar-content .element-counters {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-md, 12px);
     margin: 0;
 }
 
@@ -373,10 +392,10 @@ body::after {
     background: var(--bg-light);
     border: 2px solid var(--border);
     border-radius: 8px;
-    padding: 12px;
+    padding: var(--spacing-md, 12px);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--spacing-md, 12px);
     transition: all 0.2s;
     margin: 0;
     min-width: auto;
@@ -412,8 +431,8 @@ body::after {
 
 /* Sidebar Section Separator */
 .sidebar-section {
-    margin-top: 16px;
-    padding-top: 16px;
+    margin-top: var(--spacing-lg, 16px);
+    padding-top: var(--spacing-lg, 16px);
     border-top: 2px solid var(--border);
 }
 
@@ -429,7 +448,7 @@ body::after {
     margin-top: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     max-height: 200px;
     overflow-y: auto;
     padding-right: 4px;
@@ -496,10 +515,10 @@ body::after {
     background: var(--bg-light);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 8px 12px;
+    padding: var(--spacing-sm, 8px) var(--spacing-md, 12px);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     font-size: 0.85rem;
     opacity: 0;
     transform: translateX(-10px);
@@ -556,7 +575,7 @@ body::after {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     flex-shrink: 1;
     min-width: 0;
     margin-left: 8px;
@@ -567,8 +586,8 @@ body::after {
 .element-counter {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
+    gap: var(--spacing-xs, 4px);
+    padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -662,17 +681,20 @@ body::after {
 
 .hud-controls {
     display: flex;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     align-items: center;
     flex-shrink: 0;
     margin-left: 24px;
 }
 
 /* Enhanced Buttons */
+/* WCAG AA Compliant Button Styles - Minimum 44x44px touch targets */
 button,
 .btn-primary,
 .btn-secondary,
 .btn-cast {
+    min-height: 44px; /* WCAG AA minimum touch target size */
+    min-width: 44px;
     padding: 10px 16px;
     border: none;
     border-radius: 12px;
@@ -906,15 +928,15 @@ button::before {
 .tabs-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 30px;
+    gap: var(--spacing-md, 12px);
+    margin-bottom: var(--spacing-xl, 24px);
     margin-top: 0; /* Ensure it starts right below HUD */
     justify-content: center;
-    padding: 10px;
+    padding: var(--spacing-sm, 8px);
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border-radius: 16px;
+    border-radius: var(--spacing-lg, 16px);
     border: 1px solid var(--glass-border);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     position: relative;
@@ -934,11 +956,11 @@ button::before {
 }
 
 .tab-btn {
-    padding: 18px 32px;
+    padding: var(--spacing-lg, 16px) var(--spacing-2xl, 32px);
     background: transparent;
     color: var(--text-dim);
     border: 2px solid transparent;
-    border-radius: 12px;
+    border-radius: var(--spacing-md, 12px);
     font-size: 18px;
     font-weight: 600;
     font-family: 'Rajdhani', sans-serif;
@@ -948,11 +970,42 @@ button::before {
     z-index: 10;
     pointer-events: auto;
     overflow: hidden;
-    min-height: 50px;
+    min-height: 50px; /* WCAG AA compliant - above 44px minimum */
+    min-width: 44px; /* WCAG AA compliant touch target */
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+}
+
+/* Visual Hierarchy: Primary Tabs (Workstations, Inscriptions) - More Prominent */
+.tab-btn[data-tab="workstations"],
+.tab-btn[data-tab="inscriptions"] {
+    font-size: 19px;
+    font-weight: 700;
+    padding: var(--spacing-lg, 16px) var(--spacing-2xl, 32px);
+}
+
+.tab-btn[data-tab="workstations"] .tab-icon,
+.tab-btn[data-tab="inscriptions"] .tab-icon {
+    font-size: 1.3em;
+}
+
+/* Visual Hierarchy: Secondary Tabs - Standard Size */
+.tab-btn[data-tab="inventory"],
+.tab-btn[data-tab="experiment"],
+.tab-btn[data-tab="dailies"] {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Visual Hierarchy: Tertiary Tabs - Slightly Smaller */
+.tab-btn[data-tab="boons"],
+.tab-btn[data-tab="meditation"],
+.tab-btn[data-tab="stats"],
+.tab-btn[data-tab="settings"] {
+    font-size: 17px;
+    font-weight: 600;
 }
 
 .tab-btn::before {
@@ -995,18 +1048,22 @@ button::before {
     will-change: auto;
 }
 
-/* Tab Icons - Styled Unicode Symbols */
+/* Tab Icons - Standardized Icon System */
 .tab-icon {
     display: inline-block;
     font-size: 1.2em;
     line-height: 1;
-    margin-right: 8px;
+    margin-right: var(--spacing-sm, 8px);
     vertical-align: middle;
     font-family: 'Orbitron', sans-serif;
     font-weight: 700;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     animation: iconFloat 3s ease-in-out infinite;
+    /* Standardized icon styling */
+    width: 1.2em;
+    height: 1.2em;
+    text-align: center;
 }
 
 /* Workstations - Gear icon - Neon Cyan */
@@ -1268,11 +1325,11 @@ button::before {
 .content-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 18px;
+    gap: var(--spacing-lg, 16px);
     max-height: 80vh;
     overflow-y: auto;
     overflow-x: hidden; /* Prevent horizontal overflow */
-    padding: 20px;
+    padding: var(--spacing-xl, 24px);
     position: relative;
     z-index: 1;
     pointer-events: auto;
@@ -1324,7 +1381,7 @@ button::before {
     
     .sidebar-content .element-counter {
         padding: 10px;
-        gap: 8px;
+        gap: var(--spacing-sm, 8px);
     }
     
     .sidebar-content .element-label {
@@ -1428,7 +1485,7 @@ button::before {
     grid-column: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     min-width: 0; /* Allow grid item to shrink */
     overflow: hidden; /* Prevent overflow */
     width: 100%;
@@ -1439,7 +1496,7 @@ button::before {
     grid-column: 2;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     min-width: 0; /* Allow grid item to shrink */
     overflow: hidden; /* Prevent overflow */
     width: 100%;
@@ -1588,7 +1645,7 @@ button::before {
     line-height: 1.2;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--spacing-xs, 4px);
 }
 
 .card-description {
@@ -1600,7 +1657,7 @@ button::before {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1705,7 +1762,7 @@ button::before {
 }
 
 .recipe-item {
-    padding: 6px 10px;
+    padding: var(--spacing-xs, 4px) var(--spacing-sm, 8px);
     margin: 4px 0;
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.3);
@@ -1762,7 +1819,7 @@ button::before {
 
 .button-row {
     display: flex;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     margin-top: 10px;
     flex-wrap: wrap;
     position: relative;
@@ -1982,7 +2039,7 @@ button::before {
 
 /* Compact spacing when achievement notifications are present */
 #notifications-container:has(.achievement-notification) {
-    gap: 6px;
+    gap: var(--spacing-xs, 4px);
 }
 
 .notification {
@@ -2009,7 +2066,7 @@ button::before {
     padding: 10px 16px;
     min-width: 250px;
     font-size: 14px;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
 }
 
 .notification.notification-success.achievement-notification .achievement-scene {
@@ -2267,7 +2324,7 @@ button::before {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: var(--spacing-sm, 8px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2409,24 +2466,41 @@ button::before {
         padding: 15px 10px;
     }
     
+    /* Hide tabs nav on mobile - use hamburger menu instead */
     .tabs-nav {
-        flex-direction: column;
-        padding: 8px;
+        display: none !important;
     }
     
-    .tab-btn {
-        width: 100%;
+    /* Show hamburger menu on mobile */
+    .mobile-hamburger {
+        display: block !important;
+    }
+    
+    /* Make sidebar collapsible by default on mobile */
+    .sidebar {
+        transform: translateX(calc(-100% + 50px));
+    }
+    
+    /* Optimize HUD for mobile */
+    .hud {
+        padding: 10px;
+        position: relative;
     }
     
     .hud-content {
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
+    }
+    
+    .tab-btn {
+        width: 100%;
+        min-height: 60px; /* Larger touch targets on mobile */
     }
     
     .element-counters {
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(2, 1fr);
-        gap: 6px;
+        gap: var(--spacing-xs, 4px);
     }
     
     .element-counter {
@@ -2460,6 +2534,106 @@ button::before {
     .notification {
         min-width: 250px;
     }
+}
+
+/* Tutorial Overlay Styles */
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    pointer-events: auto;
+}
+
+.tutorial-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.tutorial-tooltip {
+    position: absolute;
+    background: var(--bg-card);
+    border: 2px solid var(--primary);
+    border-radius: var(--spacing-lg, 16px);
+    padding: var(--spacing-xl, 24px);
+    max-width: 400px;
+    z-index: 10001;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.tutorial-tooltip h3 {
+    margin: 0 0 var(--spacing-md, 12px) 0;
+    color: var(--primary);
+}
+
+.tutorial-tooltip p {
+    margin: 0 0 var(--spacing-lg, 16px) 0;
+    color: var(--text);
+}
+
+.tutorial-buttons {
+    display: flex;
+    gap: var(--spacing-md, 12px);
+    justify-content: flex-end;
+}
+
+/* Balance Test Panel Styles */
+.balance-test-panel {
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text);
+}
+
+.balance-test-panel h3 {
+    margin: 0 0 var(--spacing-lg, 16px) 0;
+    color: var(--primary);
+}
+
+.balance-test-panel button {
+    display: block;
+    width: 100%;
+    margin-bottom: var(--spacing-sm, 8px);
+    padding: var(--spacing-md, 12px);
+    background: var(--bg-light);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.balance-test-panel button:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--primary);
+}
+
+.test-result {
+    margin-top: var(--spacing-lg, 16px);
+    padding: var(--spacing-md, 12px);
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.test-result h4 {
+    margin: 0 0 var(--spacing-sm, 8px) 0;
+    color: var(--secondary);
+}
+
+.test-result pre {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 /* Reduced Motion Support */

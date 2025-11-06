@@ -119,6 +119,12 @@ export class GameState {
         }
     }
     
+    /**
+     * Calculate total production from all workstations
+     * @param {number} delta - Time delta in seconds
+     * @param {number} eventMultiplier - Event multiplier for production (default: 1.0)
+     * @returns {Object} Total output per resource type
+     */
     calculateTotalProduction(delta, eventMultiplier = 1.0) {
         const totalOutput = {};
         
@@ -182,6 +188,11 @@ export class GameState {
         return totalOutput;
     }
     
+    /**
+     * Get production multiplier for a specific workstation
+     * @param {string} workstationId - ID of the workstation
+     * @returns {number} Total production multiplier
+     */
     getProductionMultiplier(workstationId) {
         let mult = 1.0;
         
@@ -235,11 +246,20 @@ export class GameState {
         return mult;
     }
     
+    /**
+     * Get AB production per second
+     * @param {number} eventMultiplier - Event multiplier for production (default: 1.0)
+     * @returns {number} AB per second
+     */
     getAbPerSecond(eventMultiplier = 1.0) {
         const production = this.calculateTotalProduction(1.0, eventMultiplier);
         return production.ab || 0.0;
     }
     
+    /**
+     * Update active buffs and remove expired ones
+     * @param {number} delta - Time delta in seconds
+     */
     updateBuffs(delta) {
         for (let i = this.activeBuffs.length - 1; i >= 0; i--) {
             this.activeBuffs[i].remaining -= delta;
@@ -742,10 +762,19 @@ export class GameState {
                 // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
                 coven: null, // this.covenSystem ? this.covenSystem.saveCovenData() : null,
                 timestamp: Date.now() / 1000,
-                version: "2.0" // Updated version for coven features
+                version: "2.1" // Updated version for save data validation
             };
             
-            localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
+            // Validate save data before saving
+            if (!this.validateSaveData(saveData)) {
+                console.error('Save data validation failed!', saveData);
+                handleError(new Error('Save data validation failed'), 'save', true);
+                return;
+            }
+            
+            // Compress save data before storing
+            const compressedData = this.compressSaveData(saveData);
+            localStorage.setItem('cyberWitchesSave', compressedData);
             this.lastSaveTime = Date.now() / 1000;
         } catch (error) {
             handleError(error, 'save', true);
@@ -760,11 +789,41 @@ export class GameState {
             const saveDataStr = localStorage.getItem('cyberWitchesSave');
             if (!saveDataStr) return;
             
-            const data = JSON.parse(saveDataStr);
+            let data;
+            try {
+                data = JSON.parse(saveDataStr);
+                
+                // Check for save conflicts (multiple saves)
+                this.checkSaveConflicts();
+            } catch (parseError) {
+                console.error('Failed to parse save data:', parseError);
+                handleError(parseError, 'load', true);
+                // Try to create backup before clearing
+                try {
+                    localStorage.setItem('cyberWitchesSave_backup_' + Date.now(), saveDataStr);
+                } catch (e) {
+                    console.error('Failed to create backup:', e);
+                }
+                return;
+            }
+            
+            // Migrate save data if needed
+            if (data.version && this.migrateSaveData) {
+                if (!this.migrateSaveData(data)) {
+                    console.warn('Save data migration failed, starting fresh');
+                    return;
+                }
+            }
             
             // Validate save data structure
             if (!this.validateSaveData(data)) {
                 console.warn('Invalid save data detected, starting fresh');
+                // Create backup before clearing
+                try {
+                    localStorage.setItem('cyberWitchesSave_backup_' + Date.now(), saveDataStr);
+                } catch (e) {
+                    console.error('Failed to create backup:', e);
+                }
                 return;
             }
             
@@ -910,6 +969,13 @@ export class GameState {
             return false;
         }
         
+        // Check version exists and is valid
+        if (!data.version || typeof data.version !== 'string') {
+            console.warn('Save data missing version, attempting migration');
+            // Try to migrate old save data
+            return this.migrateSaveData(data);
+        }
+        
         // Validate numeric values
         const numericFields = ['ab', 'abTotal', 'timestamp'];
         for (const field of numericFields) {
@@ -935,6 +1001,81 @@ export class GameState {
         }
         
         return true;
+    }
+    
+    /**
+     * Migrate save data from older versions
+     * @param {Object} data - Save data to migrate
+     * @returns {boolean} - Whether migration was successful
+     */
+    migrateSaveData(data) {
+        try {
+            // Add version if missing
+            if (!data.version) {
+                data.version = "2.0";
+            }
+            
+            // Migrate from version 1.0 to 2.0
+            if (data.version === "1.0" || parseFloat(data.version) < 2.0) {
+                // Ensure all required fields exist
+                if (!data.inventory) data.inventory = {};
+                if (!data.workstations) data.workstations = {};
+                if (!data.upgrades) data.upgrades = {};
+                if (!data.prestige) data.prestige = { points: 0, lifetimeEarned: 0.0, bonuses: {}, count: 0 };
+                if (!data.experiments) data.experiments = { discovered: [] };
+                if (!data.stats) data.stats = { totalTaps: 0, totalWorkstationsCrafted: 0, totalPotionsCrafted: 0 };
+                if (!data.milestones) data.milestones = { unlocked: [] };
+                
+                data.version = "2.0";
+            }
+            
+            // Migrate to version 2.1 (add validation)
+            if (data.version === "2.0") {
+                data.version = "2.1";
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Save data migration failed:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Compress save data to reduce size
+     * @param {Object} data - Save data to compress
+     * @returns {string} Compressed save data
+     */
+    compressSaveData(data) {
+        // Remove unnecessary data
+        const compressed = {
+            ab: data.ab,
+            abTotal: data.abTotal,
+            inventory: data.inventory,
+            workstations: data.workstations,
+            upgrades: data.upgrades,
+            prestige: data.prestige,
+            experiments: data.experiments,
+            stats: data.stats,
+            milestones: data.milestones,
+            timestamp: data.timestamp,
+            version: data.version
+        };
+        
+        // Remove zero values to save space
+        Object.keys(compressed.inventory).forEach(key => {
+            if (compressed.inventory[key] === 0) {
+                delete compressed.inventory[key];
+            }
+        });
+        
+        Object.keys(compressed.workstations).forEach(key => {
+            if (compressed.workstations[key] === 0) {
+                delete compressed.workstations[key];
+            }
+        });
+        
+        return JSON.stringify(compressed);
     }
     
     /**
@@ -999,6 +1140,50 @@ export class GameState {
             console.log(`Cleaned up ${removedCount} deprecated/invalid ingredients from inventory`);
             // Save after cleanup
             this.saveGameState();
+        }
+    }
+    
+    /**
+     * Check for save conflicts
+     */
+    checkSaveConflicts() {
+        // Check for multiple save files
+        const saveKeys = Object.keys(localStorage).filter(key => 
+            key.startsWith('cyberWitchesSave')
+        );
+        
+        if (saveKeys.length > 1) {
+            console.warn('Multiple save files detected. Using most recent.');
+            
+            // Get most recent save
+            let mostRecent = null;
+            let mostRecentTime = 0;
+            
+            saveKeys.forEach(key => {
+                try {
+                    const saveData = JSON.parse(localStorage.getItem(key));
+                    const timestamp = saveData.timestamp || 0;
+                    if (timestamp > mostRecentTime) {
+                        mostRecentTime = timestamp;
+                        mostRecent = key;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse save:', key, e);
+                }
+            });
+            
+            // Use most recent save
+            if (mostRecent && mostRecent !== 'cyberWitchesSave') {
+                const saveData = localStorage.getItem(mostRecent);
+                localStorage.setItem('cyberWitchesSave', saveData);
+            }
+            
+            // Clean up old saves
+            saveKeys.forEach(key => {
+                if (key !== 'cyberWitchesSave' && key !== mostRecent) {
+                    localStorage.removeItem(key);
+                }
+            });
         }
     }
 }

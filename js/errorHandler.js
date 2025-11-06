@@ -59,6 +59,11 @@ export function handleError(error, context = 'unknown', showToUser = false, cate
     if (showToUser && typeof window !== 'undefined' && window.showNotification) {
         const userMessage = formatUserMessage(errorEntry);
         window.showNotification(userMessage, 'error');
+        
+        // Announce to screen readers
+        if (typeof window.announceToScreenReader === 'function') {
+            window.announceToScreenReader(userMessage, 'assertive');
+        }
     }
     
     // Report critical errors
@@ -119,25 +124,59 @@ function logError(errorEntry) {
  * @private
  */
 function formatUserMessage(errorEntry) {
-    // Provide user-friendly messages for common errors
+    // Provide user-friendly messages for common errors with recovery suggestions
     const userMessages = {
-        'Storage quota exceeded': 'Storage is full. Please clear some data or try again later.',
-        'Network error': 'Connection problem. Please check your internet connection.',
-        'Permission denied': 'Permission denied. Please check your browser settings.',
-        'Invalid parameters': 'Invalid input. Please check your input and try again.',
-        'Failed to fetch': 'Failed to load data. Please refresh the page.',
-        'Timeout': 'Operation timed out. Please try again.'
+        'Storage quota exceeded': {
+            message: 'Storage is full. Please clear some data or try again later.',
+            recovery: 'Try clearing your browser cache or deleting old saves.'
+        },
+        'Network error': {
+            message: 'Connection problem. Please check your internet connection.',
+            recovery: 'Check your internet connection and try again.'
+        },
+        'Permission denied': {
+            message: 'Permission denied. Please check your browser settings.',
+            recovery: 'Enable storage permissions in your browser settings.'
+        },
+        'Invalid parameters': {
+            message: 'Invalid input. Please check your input and try again.',
+            recovery: 'Please verify your input and try again.'
+        },
+        'Failed to fetch': {
+            message: 'Failed to load data. Please refresh the page.',
+            recovery: 'Refresh the page or check your internet connection.'
+        },
+        'Timeout': {
+            message: 'Operation timed out. Please try again.',
+            recovery: 'The operation took too long. Please try again.'
+        },
+        'Save data validation failed': {
+            message: 'Save data is corrupted. Attempting to restore from backup...',
+            recovery: 'Your game will attempt to recover from a backup.'
+        },
+        'JSON': {
+            message: 'Data format error. Attempting to fix...',
+            recovery: 'The game will try to repair your save data.'
+        }
     };
     
     // Check for common error patterns
-    for (const [pattern, message] of Object.entries(userMessages)) {
+    for (const [pattern, info] of Object.entries(userMessages)) {
         if (errorEntry.message.toLowerCase().includes(pattern.toLowerCase())) {
-            return message;
+            return info.message + (info.recovery ? ` ${info.recovery}` : '');
         }
     }
     
-    // Default message with context
-    return `Error in ${errorEntry.context}: ${errorEntry.message}`;
+    // Context-specific messages
+    if (errorEntry.context === 'save') {
+        return 'Failed to save game. Your progress may not be saved. Please try again.';
+    }
+    if (errorEntry.context === 'load') {
+        return 'Failed to load game. Attempting to restore from backup...';
+    }
+    
+    // Default message with context (simplified for users)
+    return `An error occurred in ${errorEntry.context}. Please try again or refresh the page.`;
 }
 
 /**
@@ -386,4 +425,5 @@ export function monitorPerformance(operation, fn) {
         
         throw error;
     }
+}
 }

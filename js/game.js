@@ -15,6 +15,34 @@ import { audioSystem } from './audioSystem.js';
 import { VirtualWorkstationList, VirtualUpgradeList, VirtualAchievementList } from './virtualScroll.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { debounce, throttle, deepClone, formatWithCommas, clamp, lerp, inRange, randomInt, randomFloat, randomChoice, shuffle, isEmpty, capitalize, secondsToTime, calculatePercentage, isMobile, isTouchDevice, getPixelRatio, createElement, batchDOMUpdate, setLocalStorage, getLocalStorage, removeLocalStorage, clearLocalStorage, isInViewport, scrollIntoView, addEventListener, PerformanceMonitor } from './commonUtils.js';
+import loadingStateManager from './loadingState.js';
+import accessibilityManager from './accessibility.js';
+import errorRecoveryManager from './errorRecovery.js';
+import privacyManager from './privacyControls.js';
+import searchFilterManager from './searchFilter.js';
+import progressIndicatorManager from './progressIndicators.js';
+import featureIndicatorManager from './featureIndicators.js';
+import sustainableDesignManager from './sustainableDesign.js';
+import browserNavigationManager from './browserNavigation.js';
+import mobileNavigationManager from './mobileNavigation.js';
+import mobilePerformanceManager from './mobilePerformance.js';
+import errorReportingManager from './errorReporting.js';
+import domOptimizationManager from './domOptimization.js';
+import memoryLeakPreventionManager from './memoryLeakFix.js';
+import lazyAssetLoadingManager from './lazyAssetLoading.js';
+import animationOptimizationManager from './animationOptimization.js';
+import questSystem from './questSystem.js';
+import playerAnalyticsManager from './playerAnalytics.js';
+import balanceAnalyticsManager from './balanceAnalytics.js';
+import pwaFeaturesManager from './pwaFeatures.js';
+import TutorialSystem from './tutorial.js';
+import BalanceTestingFramework from './balanceTesting.js';
+import { CodeOrganization, GAME_CONSTANTS, MAGIC_NUMBERS } from './codeOrganization.js';
+import coreWebVitalsOptimizer from './coreWebVitals.js';
+import ProgressionAnalysis from './progressionAnalysis.js';
+import EconomyBalancing from './economyBalancing.js';
+import FeedbackLoopManager from './feedbackLoops.js';
+import CodeDuplicationDetector from './codeDuplication.js';
 
 /**
  * Animate number with custom formatter (for element counters with 1 decimal)
@@ -894,6 +922,26 @@ function initUI() {
     comboSystem = new ComboSystem();
     eventSystem = new EventSystem(gameState);
     
+    // Initialize tutorial system
+    tutorialSystem = new TutorialSystem(gameState);
+    window.tutorialSystem = tutorialSystem;
+    
+    // Initialize balance testing framework
+    balanceTestingFramework = new BalanceTestingFramework(gameState);
+    window.balanceTestingFramework = balanceTestingFramework;
+    
+    // Initialize progression analysis
+    progressionAnalysis = new ProgressionAnalysis(gameState);
+    window.progressionAnalysis = progressionAnalysis;
+    
+    // Initialize economy balancing
+    economyBalancing = new EconomyBalancing(gameState);
+    window.economyBalancing = economyBalancing;
+    
+    // Initialize feedback loop manager
+    feedbackLoopManager = new FeedbackLoopManager(gameState);
+    window.feedbackLoopManager = feedbackLoopManager;
+    
     // Initialize design tier system (Feature 2: Progressive Design Revelation)
     designTierSystem = new DesignTierSystem(gameState);
     designTierSystem.applyTier(designTierSystem.getCurrentTier()).catch(err => console.error('Error applying initial tier:', err));
@@ -979,7 +1027,7 @@ function initUI() {
     }
     
     // Check for tier unlocks periodically (optimized: check every 10 seconds)
-    setInterval(() => {
+    const tierUnlockInterval = setInterval(() => {
         if (designTierSystem && gameState) {
             try {
                 designTierSystem.checkTierUnlocks();
@@ -988,6 +1036,11 @@ function initUI() {
             }
         }
     }, 10000); // Check every 10 seconds (optimized from 5 seconds)
+    
+    // Track interval for cleanup
+    if (memoryLeakPreventionManager) {
+        memoryLeakPreventionManager.trackInterval(tierUnlockInterval);
+    }
     
     // Also check tier unlocks on key events for immediate feedback
     const checkTierUnlocksOnEvent = () => {
@@ -1112,6 +1165,34 @@ function initUI() {
     // Make resetAllProgress globally accessible for debugging
     window.resetAllProgress = resetAllProgress;
     
+    // Settings quick button in HUD
+    const settingsQuickButton = document.getElementById('settings-quick-button');
+    if (settingsQuickButton) {
+        settingsQuickButton.addEventListener('click', () => {
+            switchTab('settings');
+            // Announce to screen readers
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Settings tab opened', 'polite');
+            }
+        });
+    }
+    
+    // Keyboard shortcut for settings (Ctrl+,)
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+            e.preventDefault();
+            switchTab('settings');
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Settings tab opened', 'polite');
+            }
+        }
+    });
+    
+    // Initialize feature indicators
+    if (featureIndicatorManager) {
+        featureIndicatorManager.updateIndicators();
+    }
+    
     // Add fallback handlers for meditation buttons (in case meditationUI isn't initialized yet)
     const startMeditationButton = document.getElementById('start-meditation-button');
     const endMeditationButton = document.getElementById('end-meditation-button');
@@ -1211,6 +1292,18 @@ function initUI() {
                 const eventMult = eventSystem && eventSystem.hasEventEffect('double_casts') ? 2.0 : 1.0;
                 
                 gameState.cast(comboMult, eventMult);
+                
+                // Track analytics
+                if (playerAnalyticsManager && playerAnalyticsManager.enabled) {
+                    playerAnalyticsManager.trackAction('cast', {
+                        taps: gameState.totalTaps
+                    });
+                }
+                
+                // Update quest progress
+                if (questSystem) {
+                    questSystem.updateQuestProgress('first_cast', gameState.totalTaps);
+                }
                 
                 // Play cast sound (throttled for auto mode)
                 if (window.audioSystem && window.audioSystem.playSound) {
@@ -1375,9 +1468,17 @@ function initUI() {
                         if (handler) handler();
                     }
                 }, 500);
+                
+                // Track interval for cleanup
+                if (memoryLeakPreventionManager) {
+                    memoryLeakPreventionManager.trackInterval(autoCastInterval);
+                }
             } else {
                 if (autoCastInterval) {
                     clearInterval(autoCastInterval);
+                    if (memoryLeakPreventionManager) {
+                        memoryLeakPreventionManager.clearTrackedInterval(autoCastInterval);
+                    }
                     autoCastInterval = null;
                 }
             }
@@ -1712,6 +1813,26 @@ function initUI() {
     gameState.start();
     dailyRituals.init();
     
+    // Initialize tutorial system (will auto-start if needed)
+    if (tutorialSystem) {
+        // Tutorial will check if it should start automatically
+    }
+    
+    // Initialize progression analysis
+    if (progressionAnalysis) {
+        // Progression analysis starts automatically
+    }
+    
+    // Initialize economy balancing
+    if (economyBalancing) {
+        // Economy balancing starts automatically
+    }
+    
+    // Initialize feedback loop manager
+    if (feedbackLoopManager) {
+        // Feedback loop manager starts automatically
+    }
+    
     // Force visibility of main game area
     const mainGame = document.querySelector('.main-game');
     if (mainGame) {
@@ -1760,7 +1881,7 @@ function initUI() {
     
     // Update ABPS every second with animation (optimized)
     let previousAbps = 0;
-    updateIntervals.push(setInterval(() => {
+    const abpsInterval = setInterval(() => {
         if (abpsDisplay && gameState) {
             // Get event multiplier for display
             let eventMult = 1.0;
@@ -1786,10 +1907,16 @@ function initUI() {
                 previousAbps = abps;
             }
         }
-    }, 1000));
+    }, 1000);
+    
+    // Track interval for cleanup
+    if (memoryLeakPreventionManager) {
+        memoryLeakPreventionManager.trackInterval(abpsInterval);
+    }
+    updateIntervals.push(abpsInterval);
     
     // Check for achievements periodically (optimized)
-    updateIntervals.push(setInterval(() => {
+    const achievementInterval = setInterval(() => {
         if (achievements) {
             const newAchievements = achievements.checkAchievements();
             for (const achievement of newAchievements) {
@@ -1812,26 +1939,50 @@ function initUI() {
                 }
             }
         }
-    }, 1000));
+    }, 1000);
+    
+    // Track interval for cleanup
+    if (memoryLeakPreventionManager) {
+        memoryLeakPreventionManager.trackInterval(achievementInterval);
+    }
+    updateIntervals.push(achievementInterval);
     
     // Check for random events (optimized)
-    updateIntervals.push(setInterval(() => {
+    const eventInterval = setInterval(() => {
         if (eventSystem) {
             eventSystem.checkForEvents();
             eventSystem.updateEvents(0.1);
             updateActiveEvents();
         }
-    }, 1000));
+    }, 1000);
+    
+    // Track interval for cleanup
+    if (memoryLeakPreventionManager) {
+        memoryLeakPreventionManager.trackInterval(eventInterval);
+    }
+    updateIntervals.push(eventInterval);
     
     // Update combo display (optimized) - reduced frequency to prevent flickering
-    updateIntervals.push(setInterval(() => {
+    const comboInterval = setInterval(() => {
         updateComboDisplay();
-    }, 500));
+    }, 500);
+    
+    // Track interval for cleanup
+    if (memoryLeakPreventionManager) {
+        memoryLeakPreventionManager.trackInterval(comboInterval);
+    }
+    updateIntervals.push(comboInterval);
     
     // Update element counters live (optimized) - update every second
-    updateIntervals.push(setInterval(() => {
+    const elementCounterInterval = setInterval(() => {
         updateElementCounters();
-    }, 1000));
+    }, 1000);
+    
+    // Track interval for cleanup
+    if (memoryLeakPreventionManager) {
+        memoryLeakPreventionManager.trackInterval(elementCounterInterval);
+    }
+    updateIntervals.push(elementCounterInterval);
     
     // Modify game tick to include event multipliers
     const originalTick = gameState.tick;
@@ -2062,6 +2213,11 @@ function initUI() {
 
 function switchTab(tabName) {
     console.log('switchTab called with:', tabName);
+    
+    // Update browser history if browser navigation manager is available
+    if (browserNavigationManager) {
+        browserNavigationManager.switchToTab(tabName);
+    }
     if (!tabButtons || !tabPanes) {
         console.error('Tab buttons or panes not found!', { tabButtons: !!tabButtons, tabPanes: !!tabPanes });
         return;
@@ -2274,6 +2430,53 @@ function updateWorkstationsTab() {
         height: containerComputed.height,
         minHeight: containerComputed.minHeight
     });
+    
+    // Create search/filter UI if it doesn't exist
+    if (searchFilterManager) {
+        searchFilterManager.createSearchUI('workstations-tab', 'workstation-list', (item, filters, searchTerm) => {
+            // Filter logic for workstations
+            let show = true;
+            
+            // Check if affordable
+            if (filters.affordable) {
+                const wsId = item.getAttribute('data-ws-id');
+                if (wsId) {
+                    const prod = PRODUCERS.find(p => p.id === wsId);
+                    if (prod) {
+                        const owned = gameState.workstations[wsId] || 0;
+                        const recipe = getScaledRecipe(prod.recipe, owned, prod.growth);
+                        if (!gameState.canAfford(recipe)) {
+                            show = false;
+                        }
+                    }
+                }
+            }
+            
+            // Check if owned
+            if (filters.owned) {
+                const wsId = item.getAttribute('data-ws-id');
+                if (wsId) {
+                    const owned = gameState.workstations[wsId] || 0;
+                    if (owned === 0) {
+                        show = false;
+                    }
+                }
+            }
+            
+            // Check if unowned
+            if (filters.unowned) {
+                const wsId = item.getAttribute('data-ws-id');
+                if (wsId) {
+                    const owned = gameState.workstations[wsId] || 0;
+                    if (owned > 0) {
+                        show = false;
+                    }
+                }
+            }
+            
+            return show;
+        });
+    }
     
     // Filter unlocked workstations
     const unlockedWorkstations = PRODUCERS.filter(prod => gameState.ab >= prod.unlockAtAb);
@@ -4304,6 +4507,54 @@ function updateSettingsTab() {
     // Initialize volume sliders
     initializeVolumeSliders();
     
+    // Initialize sustainable design settings
+    if (sustainableDesignManager) {
+        const lowPowerToggle = document.getElementById('low-power-mode-toggle');
+        const animationQualitySelect = document.getElementById('animation-quality-select');
+        
+        if (lowPowerToggle) {
+            const settings = sustainableDesignManager.getSettings();
+            lowPowerToggle.checked = settings.lowPowerMode;
+            lowPowerToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    sustainableDesignManager.enableLowPowerMode();
+                } else {
+                    sustainableDesignManager.disableLowPowerMode();
+                }
+            });
+        }
+        
+        if (animationQualitySelect) {
+            const settings = sustainableDesignManager.getSettings();
+            animationQualitySelect.value = settings.animationQuality;
+            animationQualitySelect.addEventListener('change', (e) => {
+                sustainableDesignManager.setAnimationQuality(e.target.value);
+            });
+        }
+        
+        // Mobile performance mode toggle
+        if (mobilePerformanceManager && (isMobile || window.innerWidth <= 768)) {
+            const mobilePerfSetting = document.getElementById('mobile-performance-setting');
+            const mobilePerfToggle = document.getElementById('mobile-performance-mode-toggle');
+            
+            if (mobilePerfSetting) {
+                mobilePerfSetting.style.display = 'block';
+            }
+            
+            if (mobilePerfToggle) {
+                const perfMode = mobilePerformanceManager.getPerformanceMode();
+                mobilePerfToggle.checked = perfMode === 'low';
+                mobilePerfToggle.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        mobilePerformanceManager.enablePerformanceMode();
+                    } else {
+                        mobilePerformanceManager.disablePerformanceMode();
+                    }
+                });
+            }
+        }
+    }
+    
     // Show tier selector after first ascension (prestigeCount >= 1)
     const tierSelector = document.getElementById('tier-selector');
     if (tierSelector) {
@@ -4360,33 +4611,130 @@ function updateSettingsTab() {
 /**
  * Reset all game progress
  */
+/**
+ * Show confirmation dialog for destructive actions
+ * @param {string} title - Dialog title
+ * @param {string} message - Dialog message
+ * @param {string} confirmText - Text to type for confirmation
+ * @returns {Promise<boolean>} - Whether user confirmed
+ */
+function showDestructiveConfirmation(title, message, confirmText = 'RESET') {
+    return new Promise((resolve) => {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+        
+        // Create modal content
+        const modal = document.createElement('div');
+        modal.className = 'destructive-confirmation-modal';
+        modal.style.cssText = 'background: var(--bg-card); border: 2px solid var(--error, #FF4444); border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);';
+        
+        modal.innerHTML = `
+            <h2 style="color: var(--error, #FF4444); margin-bottom: 16px; font-size: 24px;">${title}</h2>
+            <p style="color: var(--text); margin-bottom: 20px; line-height: 1.6;">${message}</p>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text); margin-bottom: 8px; font-weight: 600;">
+                    Type "${confirmText}" to confirm:
+                </label>
+                <input type="text" id="destructive-confirm-input" 
+                    style="width: 100%; padding: 12px; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-size: 16px;"
+                    autocomplete="off" spellcheck="false">
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="destructive-confirm-cancel" class="btn-secondary" style="padding: 12px 24px;">Cancel</button>
+                <button id="destructive-confirm-ok" class="btn-danger" style="padding: 12px 24px;" disabled>Confirm</button>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        const input = modal.querySelector('#destructive-confirm-input');
+        const cancelBtn = modal.querySelector('#destructive-confirm-cancel');
+        const okBtn = modal.querySelector('#destructive-confirm-ok');
+        
+        // Enable OK button when text matches
+        input.addEventListener('input', (e) => {
+            okBtn.disabled = e.target.value !== confirmText;
+        });
+        
+        // Handle Enter key
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !okBtn.disabled) {
+                okBtn.click();
+            }
+        });
+        
+        // Focus input
+        input.focus();
+        
+        // Cancel handler
+        cancelBtn.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            resolve(false);
+        });
+        
+        // Confirm handler
+        okBtn.addEventListener('click', () => {
+            if (input.value === confirmText) {
+                document.body.removeChild(overlay);
+                resolve(true);
+            }
+        });
+        
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+                resolve(false);
+            }
+        });
+        
+        // Close on Escape
+        const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+                document.body.removeChild(overlay);
+                document.removeEventListener('keydown', escapeHandler);
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    });
+}
+
 function resetAllProgress() {
     console.log('resetAllProgress called');
     
-    if (!confirm('⚠️ WARNING: This will permanently delete ALL your game progress!\n\nThis includes:\n- All currency and ingredients\n- All workstations and upgrades\n- All prestige points and bonuses\n- All achievements\n- All milestones\n- Everything!\n\nThis action CANNOT be undone!\n\nAre you ABSOLUTELY sure?')) {
-        console.log('Reset cancelled by user (first confirmation)');
-        return;
-    }
-    
-    // Double confirmation - use confirm instead of prompt (prompt() is blocked in some browsers)
-    if (!confirm('⚠️ FINAL WARNING!\n\nYou are about to PERMANENTLY DELETE everything!\n\nThis is your LAST chance to cancel.\n\nClick OK to proceed with reset, or Cancel to keep your progress.')) {
-        console.log('Reset cancelled by user (second confirmation)');
-        if (window.showNotification) {
-            window.showNotification('Reset cancelled. Your progress is safe.', 'info');
+    // Show confirmation dialog
+    showDestructiveConfirmation(
+        '⚠️ Reset All Progress',
+        'This will permanently delete ALL your game progress, including:\n\n• All currency and ingredients\n• All workstations and upgrades\n• All prestige points and bonuses\n• All achievements and milestones\n• Everything!\n\nThis action CANNOT be undone!',
+        'RESET'
+    ).then((confirmed) => {
+        if (!confirmed) {
+            console.log('Reset cancelled by user');
+            if (window.showNotification) {
+                window.showNotification('Reset cancelled. Your progress is safe.', 'info');
+            }
+            return;
         }
-        return;
-    }
     
-    console.log('Reset confirmed, proceeding with reset...');
-    
-    // Clear all localStorage FIRST
-    localStorage.clear();
-    
-    // Also clear sessionStorage
-    sessionStorage.clear();
-    
-    // Reset all game state
-    if (gameState) {
+        console.log('Reset confirmed, proceeding with reset...');
+        
+        // Show loading state
+        if (window.showLoadingState) {
+            window.showLoadingState('Resetting game...');
+        }
+        
+        // Clear all localStorage FIRST
+        localStorage.clear();
+        
+        // Also clear sessionStorage
+        sessionStorage.clear();
+        
+        // Reset all game state
+        if (gameState) {
         // Reset game state to initial values
         gameState.ab = 0.0;
         gameState.abTotalEarned = 0.0; // Ensure this is reset
@@ -4557,6 +4905,11 @@ function initAutoSave() {
             gameState.saveGameState();
         }
     }, autoSaveInterval);
+    
+    // Track interval for cleanup
+    if (memoryLeakPreventionManager) {
+        memoryLeakPreventionManager.trackInterval(autoSaveTimer);
+    }
 }
 
 /**
@@ -4610,6 +4963,14 @@ let notificationSoundThrottle = 500; // Only play notification sound every 500ms
 function showNotification(message, type = 'info') {
     // Remove emojis if tier < 3
     message = stripEmojisIfLowTier(message);
+    
+    // Track analytics if enabled
+    if (playerAnalyticsManager && playerAnalyticsManager.enabled) {
+        playerAnalyticsManager.track('notification_shown', {
+            type,
+            message: message.substring(0, 50) // Truncate for privacy
+        });
+    }
     
     // Rate limiting
     const now = Date.now();

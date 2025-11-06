@@ -1,0 +1,213 @@
+/**
+ * Feature Indicators System
+ * Provides visual indicators for locked/hidden features
+ */
+
+class FeatureIndicatorManager {
+    constructor() {
+        this.lockedFeatures = new Map();
+        this.init();
+    }
+    
+    init() {
+        // Set up indicators for locked features
+        this.setupTabIndicators();
+        this.setupWorkstationIndicators();
+        this.setupUpgradeIndicators();
+    }
+    
+    /**
+     * Mark feature as locked
+     * @param {string} featureId - Feature ID
+     * @param {string} unlockCondition - Unlock condition text
+     * @param {Function} checkUnlocked - Function to check if feature is unlocked
+     */
+    registerLockedFeature(featureId, unlockCondition, checkUnlocked) {
+        this.lockedFeatures.set(featureId, {
+            unlockCondition,
+            checkUnlocked,
+            isUnlocked: false
+        });
+    }
+    
+    /**
+     * Add lock indicator to element
+     * @param {HTMLElement} element - Element to add indicator to
+     * @param {string} unlockCondition - Unlock condition text
+     * @param {boolean} isLocked - Whether feature is currently locked
+     */
+    addLockIndicator(element, unlockCondition, isLocked = true) {
+        if (!element) return;
+        
+        // Remove existing indicator
+        const existing = element.querySelector('.lock-indicator');
+        if (existing) {
+            existing.remove();
+        }
+        
+        if (!isLocked) {
+            // Remove lock class if unlocked
+            element.classList.remove('locked');
+            return;
+        }
+        
+        // Add lock class
+        element.classList.add('locked');
+        
+        // Create lock indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'lock-indicator';
+        indicator.style.cssText = `
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text, #FFFFFF);
+            font-size: 16px;
+            z-index: 10;
+        `;
+        indicator.innerHTML = '🔒';
+        indicator.setAttribute('aria-label', `Locked: ${unlockCondition}`);
+        indicator.setAttribute('title', `Unlocks at: ${unlockCondition}`);
+        
+        // Add tooltip
+        indicator.addEventListener('mouseenter', () => {
+            this.showTooltip(indicator, unlockCondition);
+        });
+        
+        indicator.addEventListener('mouseleave', () => {
+            this.hideTooltip();
+        });
+        
+        // Make element position relative if not already
+        const position = window.getComputedStyle(element).position;
+        if (position === 'static') {
+            element.style.position = 'relative';
+        }
+        
+        element.appendChild(indicator);
+    }
+    
+    /**
+     * Show tooltip
+     * @param {HTMLElement} element - Element to show tooltip for
+     * @param {string} text - Tooltip text
+     */
+    showTooltip(element, text) {
+        // Remove existing tooltip
+        const existing = document.querySelector('.feature-tooltip');
+        if (existing) {
+            existing.remove();
+        }
+        
+        const tooltip = document.createElement('div');
+        tooltip.className = 'feature-tooltip';
+        tooltip.textContent = text;
+        tooltip.style.cssText = `
+            position: absolute;
+            background: var(--bg-card, #1a1a2e);
+            border: 2px solid var(--primary, #FF2DAA);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text, #FFFFFF);
+            font-size: 14px;
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(tooltip);
+        
+        // Position tooltip
+        const rect = element.getBoundingClientRect();
+        tooltip.style.left = `${rect.right + 10}px`;
+        tooltip.style.top = `${rect.top}px`;
+    }
+    
+    /**
+     * Hide tooltip
+     */
+    hideTooltip() {
+        const tooltip = document.querySelector('.feature-tooltip');
+        if (tooltip) {
+            tooltip.remove();
+        }
+    }
+    
+    /**
+     * Setup tab indicators for locked tabs
+     */
+    setupTabIndicators() {
+        // Check for locked tabs (Meditation, Boons unlock after prestige)
+        if (window.gameState) {
+            const prestigeCount = window.gameState.prestigeCount || 0;
+            
+            // Meditation tab unlocks at prestige 1
+            const meditationTab = document.querySelector('[data-tab="meditation"]');
+            if (meditationTab) {
+                if (prestigeCount < 1) {
+                    this.addLockIndicator(meditationTab, 'Prestige 1', true);
+                } else {
+                    this.addLockIndicator(meditationTab, '', false);
+                }
+            }
+            
+            // Boons tab unlocks at prestige 1
+            const boonsTab = document.querySelector('[data-tab="boons"]');
+            if (boonsTab) {
+                if (prestigeCount < 1) {
+                    this.addLockIndicator(boonsTab, 'Prestige 1', true);
+                } else {
+                    this.addLockIndicator(boonsTab, '', false);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Setup workstation indicators
+     */
+    setupWorkstationIndicators() {
+        // This will be called when workstations are displayed
+        // Implementation in game.js
+    }
+    
+    /**
+     * Setup upgrade indicators
+     */
+    setupUpgradeIndicators() {
+        // This will be called when upgrades are displayed
+        // Implementation in game.js
+    }
+    
+    /**
+     * Update all indicators
+     */
+    updateIndicators() {
+        this.setupTabIndicators();
+        this.setupWorkstationIndicators();
+        this.setupUpgradeIndicators();
+    }
+}
+
+// Create global instance
+const featureIndicatorManager = new FeatureIndicatorManager();
+
+// Global functions for compatibility
+window.addLockIndicator = (element, unlockCondition, isLocked) => {
+    featureIndicatorManager.addLockIndicator(element, unlockCondition, isLocked);
+};
+
+window.updateFeatureIndicators = () => {
+    featureIndicatorManager.updateIndicators();
+};
+
+export default featureIndicatorManager;
+
