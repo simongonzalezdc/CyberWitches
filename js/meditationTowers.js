@@ -391,7 +391,7 @@ export class MeditationTowers {
     }
     
     /**
-     * Draw distractions
+     * Draw distractions - different shape and color from towers
      */
     drawDistractions() {
         for (const dist of this.meditationState.distractions) {
@@ -399,14 +399,14 @@ export class MeditationTowers {
             
             const x = dist.x * this.cellSize;
             const y = dist.y * this.cellSize;
-            const radius = this.cellSize * 0.25;
+            const size = this.cellSize * 0.25; // Size for square/diamond
             
             // Draw health bar
             const healthPercent = dist.health / dist.maxHealth;
             const barWidth = this.cellSize * 0.6;
             const barHeight = 4;
             const barX = x - barWidth / 2;
-            const barY = y - radius - 10;
+            const barY = y - size - 10;
             
             // Background
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
@@ -416,25 +416,45 @@ export class MeditationTowers {
             this.ctx.fillStyle = healthPercent > 0.5 ? 'rgba(0, 255, 0, 0.8)' : healthPercent > 0.25 ? 'rgba(255, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
             this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
             
-            // Draw distraction circle
-            const tierColor = this.getTierColor(dist.tier);
-            this.ctx.fillStyle = tierColor;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, radius, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            // Draw border
-            this.ctx.strokeStyle = tierColor;
+            // Draw distraction as a diamond/square shape (different from tower circles)
+            // Use red/orange color scheme to distinguish from towers
+            const distractionColor = this.getDistractionColor(dist.tier);
+            this.ctx.fillStyle = distractionColor;
+            this.ctx.strokeStyle = distractionColor;
             this.ctx.lineWidth = 2;
-            this.ctx.stroke();
             
-            // Draw distraction icon
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            this.ctx.font = `${radius * 0.5}px Arial`;
+            // Draw diamond shape (rotated square)
+            this.ctx.save();
+            this.ctx.translate(x, y);
+            this.ctx.rotate(Math.PI / 4); // Rotate 45 degrees
+            this.ctx.beginPath();
+            this.ctx.rect(-size / 2, -size / 2, size, size);
+            this.ctx.fill();
+            this.ctx.stroke();
+            this.ctx.restore();
+            
+            // Draw distraction icon (X symbol) on top
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            this.ctx.font = `${size * 0.6}px Arial`;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText('✗', x, y);
         }
+    }
+    
+    /**
+     * Get distraction color (different from tower colors - red/orange theme)
+     */
+    getDistractionColor(tier) {
+        // Use red/orange color scheme to distinguish from towers
+        const colors = {
+            0: 'rgba(255, 100, 100, 0.9)',   // Red
+            1: 'rgba(255, 150, 50, 0.9)',    // Orange
+            2: 'rgba(255, 200, 0, 0.9)',     // Amber/Yellow-orange
+            3: 'rgba(255, 100, 150, 0.9)',   // Pink-red
+            4: 'rgba(200, 50, 50, 0.9)'      // Dark red
+        };
+        return colors[tier] || colors[0];
     }
     
     /**

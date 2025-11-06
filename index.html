@@ -13,6 +13,10 @@
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
 </head>
 <body>
+    <!-- Night Sky Stars Background -->
+    <div id="night-sky-stars" class="night-sky-stars"></div>
+    <!-- Floating Sparkles Canvas -->
+    <canvas id="sparkle-canvas" class="sparkle-canvas"></canvas>
     <!-- HUD - Top Bar -->
     <div class="hud">
         <div class="hud-content">
@@ -50,7 +54,7 @@
                 </div>
             </div>
             <div class="hud-controls">
-                <button id="auto-cast-toggle" class="btn-secondary">Auto: OFF</button>
+                <button id="auto-cast-toggle" class="btn-secondary" style="display: none;">Auto: OFF</button>
                 <button id="cast-button" class="btn-cast">
                     <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
                     <span class="css-icon-sparkle"></span> Cast
@@ -70,8 +74,8 @@
             <button class="tab-btn" data-tab="inscriptions"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
             <button class="tab-btn" data-tab="inventory"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
             <button class="tab-btn" data-tab="experiment"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
-            <button class="tab-btn" data-tab="dailies"><span class="tab-icon tab-icon-dailies">●</span> Dailies</button>
-            <button class="tab-btn" data-tab="coven"><span class="tab-icon tab-icon-coven">★</span> Coven</button>
+            <button class="tab-btn" data-tab="dailies"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
+            <!-- Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
             <button class="tab-btn" data-tab="boons"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
             <button class="tab-btn" data-tab="meditation"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
             <button class="tab-btn" data-tab="stats"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
@@ -102,15 +106,15 @@
                 <div id="recipe-list" class="content-list"></div>
             </div>
 
-            <!-- Dailies Tab -->
+            <!-- Rituals Tab -->
             <div id="dailies-tab" class="tab-panel">
                 <div id="task-list" class="content-list"></div>
             </div>
 
-            <!-- Coven Tab -->
-            <div id="coven-tab" class="tab-panel">
+            <!-- Coven Tab - Archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
+            <!-- <div id="coven-tab" class="tab-panel">
                 <div id="coven-content" class="content-list"></div>
-            </div>
+            </div> -->
 
             <!-- Boons Tab -->
             <div id="boons-tab" class="tab-panel">

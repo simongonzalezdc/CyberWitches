@@ -10,7 +10,7 @@ export class AchievementSystem {
     
     initializeAchievements() {
         this.achievements = [
-            // Early game achievements
+            // Early game achievements - adjusted to prevent too-quick unlocks
             {
                 id: 'first_cast',
                 name: 'First Spell',
@@ -33,10 +33,24 @@ export class AchievementSystem {
                 reward: { type: 'ab', amount: 50 }
             },
             {
+                id: 'ten_casts',
+                name: 'Decade of Spells',
+                description: 'Cast 10 spells',
+                condition: () => this.gameState.totalTaps >= 10,
+                reward: { type: 'ab', amount: 20 }
+            },
+            {
                 id: 'hundred_casts',
                 name: 'Century of Spells',
                 description: 'Cast 100 spells',
                 condition: () => this.gameState.totalTaps >= 100,
+                reward: { type: 'ab', amount: 100 }
+            },
+            {
+                id: 'fifty_ab',
+                name: 'Half Century of Power',
+                description: 'Reach 50 AB',
+                condition: () => this.gameState.ab >= 50,
                 reward: { type: 'ab', amount: 100 }
             },
             {
@@ -56,10 +70,24 @@ export class AchievementSystem {
             
             // Mid game achievements
             {
+                id: 'five_workstations',
+                name: 'Growing Production',
+                description: 'Craft 5 workstations',
+                condition: () => this.gameState.totalWorkstationsCrafted >= 5,
+                reward: { type: 'ab', amount: 200 }
+            },
+            {
                 id: 'ten_workstations',
                 name: 'Industrial Scale',
                 description: 'Craft 10 workstations',
                 condition: () => this.gameState.totalWorkstationsCrafted >= 10,
+                reward: { type: 'ab', amount: 500 }
+            },
+            {
+                id: 'five_hundred_ab',
+                name: 'Half Thousand Power',
+                description: 'Reach 500 AB',
+                condition: () => this.gameState.ab >= 500,
                 reward: { type: 'ab', amount: 500 }
             },
             {
@@ -70,6 +98,13 @@ export class AchievementSystem {
                 reward: { type: 'ab', amount: 1000 }
             },
             {
+                id: 'three_workstation_types',
+                name: 'Diverse Start',
+                description: 'Own 3 different workstation types',
+                condition: () => Object.keys(this.gameState.workstations).length >= 3,
+                reward: { type: 'ab', amount: 300 }
+            },
+            {
                 id: 'five_workstation_types',
                 name: 'Diverse Production',
                 description: 'Own 5 different workstation types',
@@ -77,10 +112,24 @@ export class AchievementSystem {
                 reward: { type: 'ab', amount: 500 }
             },
             {
+                id: 'five_hundred_casts',
+                name: 'Half Millennium of Spells',
+                description: 'Cast 500 spells',
+                condition: () => this.gameState.totalTaps >= 500,
+                reward: { type: 'ab', amount: 1000 }
+            },
+            {
                 id: 'thousand_casts',
                 name: 'Millennium of Spells',
                 description: 'Cast 1000 spells',
                 condition: () => this.gameState.totalTaps >= 1000,
+                reward: { type: 'ab', amount: 2000 }
+            },
+            {
+                id: 'five_upgrades',
+                name: 'Apprentice Inscriber',
+                description: 'Purchase 5 upgrades',
+                condition: () => Object.keys(this.gameState.upgradesOwned).length >= 5,
                 reward: { type: 'ab', amount: 2000 }
             },
             {
@@ -91,8 +140,15 @@ export class AchievementSystem {
                 reward: { type: 'ab', amount: 5000 }
             },
             {
-                id: 'five_discoveries',
+                id: 'three_discoveries',
                 name: 'Experienced Alchemist',
+                description: 'Discover 3 recipes',
+                condition: () => this.gameState.discoveredRecipes.length >= 3,
+                reward: { type: 'ab', amount: 1000 }
+            },
+            {
+                id: 'five_discoveries',
+                name: 'Master Alchemist',
                 description: 'Discover 5 recipes',
                 condition: () => this.gameState.discoveredRecipes.length >= 5,
                 reward: { type: 'ab', amount: 2000 }

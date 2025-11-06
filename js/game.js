@@ -408,6 +408,11 @@ function defineGlobalFunctions() {
             if (achievements && typeof achievements.checkAchievements === 'function') {
                 const newAchievements = achievements.checkAchievements();
                 for (const achievement of newAchievements) {
+                    // Play achievement sound
+                    if (window.audioSystem && window.audioSystem.playSound) {
+                        window.audioSystem.playSound('achievement');
+                    }
+                    
                     if (typeof showNotification === 'function') {
                         showNotification(`Achievement: ${achievement.name}!`, 'success');
                     }
@@ -434,6 +439,10 @@ function defineGlobalFunctions() {
     window.claimTask = (taskId) => {
         if (!dailyRituals) return;
         if (dailyRituals.claimTask(taskId)) {
+            // Play daily complete sound
+            if (window.audioSystem && window.audioSystem.playSound) {
+                window.audioSystem.playSound('daily_complete');
+            }
             if (typeof updateDailiesTab === 'function') {
                 updateDailiesTab();
             }
@@ -453,7 +462,8 @@ function defineGlobalFunctions() {
         }
     };
     
-    // Coven-related global functions
+    // Coven-related global functions - Archived for future development - see ARCHIVED_COVEN_FEATURES.md
+    /*
     window.createCoven = () => {
         if (!gameState || !gameState.covenSystem) {
             if (typeof showNotification === 'function') {
@@ -487,7 +497,7 @@ function defineGlobalFunctions() {
             if (descInput) descInput.value = '';
             if (typeof updateCovenTab === 'function') updateCovenTab();
             if (typeof showNotification === 'function') {
-                showNotification(`🔮 Created coven: ${name}!`, 'success');
+                showNotification(`Created coven: ${name}!`, 'success');
             }
         } else {
             if (typeof showNotification === 'function') {
@@ -525,7 +535,7 @@ function defineGlobalFunctions() {
             codeInput.value = '';
             if (typeof updateCovenTab === 'function') updateCovenTab();
             if (typeof showNotification === 'function') {
-                showNotification('🔮 Joined coven!', 'success');
+                showNotification('Joined coven!', 'success');
             }
         } else {
             if (typeof showNotification === 'function') {
@@ -552,16 +562,275 @@ function defineGlobalFunctions() {
             }
         }
     };
+    */
     
-    window.toggleCovenSection = (sectionId) => {
-        const section = document.getElementById(sectionId);
-        if (section) {
-            const isVisible = section.style.display !== 'none';
-            section.style.display = isVisible ? 'none' : 'block';
+    // window.toggleCovenSection = (sectionId) => {
+    //     const section = document.getElementById(sectionId);
+    //     if (section) {
+    //         const isVisible = section.style.display !== 'none';
+    //         section.style.display = isVisible ? 'none' : 'block';
+    //     }
+    // };
+    
+    console.log('Global functions defined and attached to window');
+    
+    // Performance monitoring utility
+    window.checkMemoryUsage = () => {
+        if (performance.memory) {
+            const used = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
+            const total = (performance.memory.totalJSHeapSize / 1048576).toFixed(2);
+            const limit = (performance.memory.jsHeapSizeLimit / 1048576).toFixed(2);
+            const percentage = ((performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit) * 100).toFixed(1);
+            
+            console.log('📊 Memory Usage:');
+            console.log(`  Used: ${used} MB`);
+            console.log(`  Total: ${total} MB`);
+            console.log(`  Limit: ${limit} MB`);
+            console.log(`  Usage: ${percentage}%`);
+            
+            // Check device memory if available
+            if (navigator.deviceMemory) {
+                console.log(`  Device Memory: ${navigator.deviceMemory} GB`);
+            }
+            
+            return {
+                used: parseFloat(used),
+                total: parseFloat(total),
+                limit: parseFloat(limit),
+                percentage: parseFloat(percentage)
+            };
+        } else {
+            console.log('⚠️ Memory API not available in this browser');
+            return null;
         }
     };
     
-    console.log('Global functions defined and attached to window');
+    // Performance info utility
+    window.getPerformanceInfo = () => {
+        const info = {
+            memory: window.checkMemoryUsage(),
+            fps: fps || 60,
+            frameTime: (1000 / (fps || 60)).toFixed(2) + 'ms',
+            activeAnimations: {
+                sparkles: document.getElementById('sparkle-canvas') ? 'Active' : 'Inactive',
+                particles: document.getElementById('particle-canvas')?.style.display !== 'none' ? 'Active' : 'Inactive'
+            }
+        };
+        
+        console.log('📈 Performance Info:');
+        console.table(info);
+        return info;
+    };
+}
+
+/**
+ * Initialize background sparkles for night sky effect
+ * Optimized for performance with visibility detection and cleanup
+ */
+function initBackgroundSparkles() {
+    // Prevent double initialization
+    const sparkleCanvas = document.getElementById('sparkle-canvas');
+    if (sparkleCanvas && sparkleCanvas.dataset.initialized === 'true') {
+        return; // Already initialized
+    }
+    try {
+        const canvas = document.getElementById('sparkle-canvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+    
+    // Performance optimization: reduce sparkle count on mobile/low-end devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const sparkleCount = isMobile ? 15 : 25; // Reduced from 30
+    
+    // Set canvas size with debounced resize
+    let resizeTimeout = null;
+    const resizeCanvas = () => {
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Reinitialize sparkles if they go off-screen
+            sparkles.forEach(sparkle => {
+                if (sparkle.x > canvas.width) sparkle.x = canvas.width * Math.random();
+                if (sparkle.y > canvas.height) sparkle.y = canvas.height * Math.random();
+            });
+        }, 250); // Debounce resize
+    };
+    resizeCanvas();
+    const resizeHandler = resizeCanvas;
+    window.addEventListener('resize', resizeHandler);
+    
+    // Store cleanup function
+    window._backgroundSparklesCleanup = () => {
+        window.removeEventListener('resize', resizeHandler);
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    };
+    
+    // Sparkle particles
+    const sparkles = [];
+    
+    // Create sparkles
+    for (let i = 0; i < sparkleCount; i++) {
+        sparkles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 1.5 + 0.5,
+            speed: Math.random() * 0.3 + 0.1,
+            angle: Math.random() * Math.PI * 2,
+            twinkle: Math.random() * Math.PI * 2,
+            color: [
+                { r: 255, g: 255, b: 255 }, // White
+                { r: 255, g: 45, b: 170 },  // Pink
+                { r: 34, g: 227, b: 255 },  // Cyan
+                { r: 255, g: 219, b: 110 }, // Yellow
+                { r: 60, g: 227, b: 197 }   // Teal
+            ][Math.floor(Math.random() * 5)],
+            opacity: Math.random() * 0.5 + 0.3
+        });
+    }
+    
+    // Animation state
+    let lastTime = performance.now();
+    let animationFrameId = null;
+    let isPaused = false;
+    let frameSkip = 0; // Skip frames for performance
+    const targetFPS = 30; // Target 30 FPS for background animation (less than 60)
+    const frameInterval = 1000 / targetFPS;
+    let lastFrameTime = 0;
+    
+    // Visibility detection - pause when tab is not visible
+    const handleVisibilityChange = () => {
+        isPaused = document.hidden;
+        if (!isPaused && !animationFrameId) {
+            lastTime = performance.now();
+            animate();
+        }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Store visibility cleanup
+    const originalCleanup = window._backgroundSparklesCleanup;
+    window._backgroundSparklesCleanup = () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        if (originalCleanup) originalCleanup();
+    };
+    
+    // Optimized animation loop with frame skipping
+    function animate(currentTime) {
+        if (isPaused) {
+            animationFrameId = null;
+            return;
+        }
+        
+        const elapsed = currentTime - lastFrameTime;
+        
+        // Skip frames to maintain target FPS
+        if (elapsed < frameInterval) {
+            animationFrameId = requestAnimationFrame(animate);
+            return;
+        }
+        
+        lastFrameTime = currentTime - (elapsed % frameInterval);
+        // Ensure deltaTime is valid and capped (handle first frame and large jumps)
+        let deltaTime = currentTime - lastTime;
+        if (isNaN(deltaTime) || deltaTime <= 0 || deltaTime > 100) {
+            deltaTime = 16; // Default to ~60fps frame time (16ms)
+        }
+        lastTime = currentTime;
+        
+        // Clear canvas with fade effect (optimized - use globalAlpha instead of rgba)
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(10, 10, 15, 0.15)'; // Slightly more opaque for better fade
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Optimize: batch draw operations
+        ctx.globalCompositeOperation = 'lighter'; // Additive blending for sparkles
+        
+        // Update and draw sparkles
+        sparkles.forEach(sparkle => {
+            // Update position
+            sparkle.x += Math.cos(sparkle.angle) * sparkle.speed;
+            sparkle.y += Math.sin(sparkle.angle) * sparkle.speed;
+            
+            // Wrap around edges
+            if (sparkle.x < 0) sparkle.x = canvas.width;
+            if (sparkle.x > canvas.width) sparkle.x = 0;
+            if (sparkle.y < 0) sparkle.y = canvas.height;
+            if (sparkle.y > canvas.height) sparkle.y = 0;
+            
+            // Update twinkle (ensure it stays in valid range)
+            if (isNaN(sparkle.twinkle)) sparkle.twinkle = 0;
+            sparkle.twinkle += deltaTime * 0.002;
+            // Keep twinkle in reasonable range to prevent overflow
+            if (sparkle.twinkle > Math.PI * 4) sparkle.twinkle -= Math.PI * 4;
+            
+            // Ensure sparkle.opacity is valid
+            if (isNaN(sparkle.opacity) || !sparkle.opacity) {
+                sparkle.opacity = 0.5; // Default opacity
+            }
+            
+            // Calculate opacity with validation
+            const twinkleOpacity = Math.sin(sparkle.twinkle) * 0.3 + 0.7;
+            let currentOpacity = sparkle.opacity * twinkleOpacity;
+            
+            // Clamp opacity to valid range [0, 1] and ensure it's a number
+            if (isNaN(currentOpacity) || !isFinite(currentOpacity)) {
+                currentOpacity = 0.5; // Default fallback
+            }
+            currentOpacity = Math.max(0, Math.min(1, currentOpacity));
+            
+            // Optimized drawing: use simple circles instead of gradients for better performance
+            // Only use gradient for larger sparkles
+            if (sparkle.size > 1.2) {
+                // Use gradient for larger sparkles
+                const gradient = ctx.createRadialGradient(
+                    sparkle.x, sparkle.y, 0,
+                    sparkle.x, sparkle.y, sparkle.size * 3
+                );
+                gradient.addColorStop(0, `rgba(${sparkle.color.r}, ${sparkle.color.g}, ${sparkle.color.b}, ${currentOpacity})`);
+                gradient.addColorStop(0.5, `rgba(${sparkle.color.r}, ${sparkle.color.g}, ${sparkle.color.b}, ${currentOpacity * 0.5})`);
+                gradient.addColorStop(1, `rgba(${sparkle.color.r}, ${sparkle.color.g}, ${sparkle.color.b}, 0)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(sparkle.x, sparkle.y, sparkle.size * 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw bright center (always)
+            ctx.fillStyle = `rgba(${sparkle.color.r}, ${sparkle.color.g}, ${sparkle.color.b}, ${currentOpacity})`;
+            ctx.beginPath();
+            ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        
+        ctx.globalCompositeOperation = 'source-over';
+        
+        animationFrameId = requestAnimationFrame(animate);
+    }
+    
+    // Start animation
+    if (!document.hidden) {
+        lastTime = performance.now();
+        animate();
+    }
+    
+    // Mark as initialized
+    if (sparkleCanvas) {
+        sparkleCanvas.dataset.initialized = 'true';
+    }
+    
+    } catch (error) {
+        console.error('Error initializing background sparkles:', error);
+        // Don't break game initialization if sparkles fail
+        if (typeof window._backgroundSparklesCleanup === 'function') {
+            delete window._backgroundSparklesCleanup;
+        }
+    }
 }
 
 /**
@@ -631,7 +900,7 @@ function initUI() {
     
     // Initialize design tier system (Feature 2: Progressive Design Revelation)
     designTierSystem = new DesignTierSystem(gameState);
-    designTierSystem.applyTier(designTierSystem.getCurrentTier());
+    designTierSystem.applyTier(designTierSystem.getCurrentTier()).catch(err => console.error('Error applying initial tier:', err));
     window.designTierSystem = designTierSystem; // Make globally accessible
     window.achievements = achievements; // Make achievements accessible for design tier system
     window.particleEffects = particleEffects; // Make particle effects accessible globally
@@ -647,20 +916,52 @@ function initUI() {
                 try {
                     await window.audioSystem.audioContext.resume();
                     console.log('Audio context unlocked on user interaction');
-                    // If on Tier 4, restart music after unlocking
-                    if (designTierSystem.getCurrentTier() >= 4 && window.audioSystem.musicEnabled) {
-                        window.audioSystem.startMusic();
+                    
+                    // If we're at Tier 2+, ensure sound effects are enabled
+                    const currentTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
+                    if (currentTier >= 2 && window.audioSystem.enableSoundEffects) {
+                        await window.audioSystem.enableSoundEffects();
+                        console.log('Sound effects enabled after user interaction for Tier', currentTier);
+                    }
+                    
+                    // If on Tier 4, ensure music is enabled and start it
+                    if (currentTier >= 4) {
+                        console.log('Tier 4 detected - ensuring music is enabled and starting...');
+                        if (!window.audioSystem.musicEnabled) {
+                            await window.audioSystem.enableMusic();
+                        }
+                        // Always try to start music after user interaction (browser autoplay policy)
+                        if (window.audioSystem.musicEnabled) {
+                            await window.audioSystem.startMusic();
+                        }
                     }
                 } catch (error) {
                     console.error('Failed to unlock audio:', error);
                 }
+            } else {
+                // Audio context already running, but check if we need to enable sounds
+                const currentTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
+                
+                // If Tier 2+ and sound effects not enabled, enable them
+                if (currentTier >= 2 && window.audioSystem.enableSoundEffects && !window.audioSystem.soundEffectsEnabled) {
+                    await window.audioSystem.enableSoundEffects();
+                    console.log('Sound effects enabled (audio context already running) for Tier', currentTier);
+                }
+                
+                // If Tier 4 and music not playing, start it
+                if (currentTier >= 4 && window.audioSystem.musicEnabled) {
+                    if (window.audioSystem.musicNodes.length === 0) {
+                        console.log('Tier 4 detected - audio context running but music not playing, starting music...');
+                        await window.audioSystem.startMusic();
+                    }
+                }
             }
         }
     };
-    // Unlock audio on any user interaction
-    document.addEventListener('click', unlockAudio, { once: true });
-    document.addEventListener('touchstart', unlockAudio, { once: true });
-    document.addEventListener('keydown', unlockAudio, { once: true });
+    // Unlock audio on any user interaction (not just once, in case audio context gets suspended)
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('keydown', unlockAudio);
     
     // Initialize particle system if canvas exists
     const particleCanvas = document.getElementById('particle-canvas');
@@ -673,12 +974,50 @@ function initUI() {
         }
     }
     
-    // Check for tier unlocks periodically
+    // Make initBackgroundSparkles globally accessible for tier unlocks
+    window.initBackgroundSparkles = initBackgroundSparkles;
+    
+    // Initialize background sparkles only for Tier 3+ (animations enabled)
+    if (designTierSystem.getCurrentTier() >= 3) {
+        initBackgroundSparkles();
+    }
+    
+    // Check for tier unlocks periodically (optimized: check every 10 seconds)
     setInterval(() => {
         if (designTierSystem && gameState) {
-            designTierSystem.checkTierUnlocks();
+            try {
+                designTierSystem.checkTierUnlocks();
+            } catch (error) {
+                console.error('Error checking tier unlocks:', error);
+            }
         }
-    }, 5000); // Check every 5 seconds
+    }, 10000); // Check every 10 seconds (optimized from 5 seconds)
+    
+    // Also check tier unlocks on key events for immediate feedback
+    const checkTierUnlocksOnEvent = () => {
+        if (designTierSystem && gameState) {
+            try {
+                designTierSystem.checkTierUnlocks();
+            } catch (error) {
+                console.error('Error checking tier unlocks:', error);
+            }
+        }
+    };
+    
+    // Check tier unlocks when AB changes significantly (achievement milestones)
+    // Hook into addAb to check on AB changes
+    if (gameState && gameState.addAb) {
+        const originalAddAb = gameState.addAb.bind(gameState);
+        gameState.addAb = function(amount) {
+            const result = originalAddAb(amount);
+            // Check unlocks on AB milestones (1,000, 10,000, 100,000, 1,000,000)
+            const ab = this.ab || 0;
+            if (ab >= 1000 && ab < 10000 || ab >= 10000 && ab < 100000 || ab >= 100000 && ab < 1000000 || ab >= 1000000) {
+                checkTierUnlocksOnEvent();
+            }
+            return result;
+        };
+    }
     
     // Initialize meditation systems only after first ascension
     if (gameState.prestigeCount >= 1) {
@@ -706,6 +1045,10 @@ function initUI() {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                // Play click sound for tab switch
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    window.audioSystem.playSound('click', { volume: 0.2 });
+                }
                 const tabName = button.dataset.tab;
                 switchTab(tabName);
             });
@@ -961,14 +1304,48 @@ function initUI() {
         console.error('Cast button not found in DOM');
     }
     
-    // Auto-cast toggle
+    // Auto-cast toggle - only visible at Tier 4+
     const autoCastToggle = document.getElementById('auto-cast-toggle');
     let autoCastEnabled = false;
     let autoCastInterval = null;
     window.autoCastEnabled = () => autoCastEnabled; // Make accessible for sound throttling
     
+    // Function to update auto button visibility based on tier
+    const updateAutoButtonVisibility = () => {
+        if (autoCastToggle && designTierSystem) {
+            const currentTier = designTierSystem.getCurrentTier();
+            if (currentTier >= 4) {
+                // Show auto button at Tier 4+
+                autoCastToggle.style.display = 'block';
+                autoCastToggle.style.visibility = 'visible';
+                autoCastToggle.style.opacity = '1';
+            } else {
+                // Hide auto button below Tier 4
+                autoCastToggle.style.display = 'none';
+                autoCastToggle.style.visibility = 'hidden';
+                autoCastToggle.style.opacity = '0';
+                // Also disable auto-cast if it was enabled
+                if (autoCastEnabled) {
+                    autoCastEnabled = false;
+                    if (autoCastInterval) {
+                        clearInterval(autoCastInterval);
+                        autoCastInterval = null;
+                    }
+                }
+            }
+        }
+    };
+    
+    // Initialize visibility based on current tier
+    updateAutoButtonVisibility();
+    
     if (autoCastToggle) {
         autoCastToggle.addEventListener('click', () => {
+            // Double-check tier before allowing auto-cast
+            if (designTierSystem && designTierSystem.getCurrentTier() < 4) {
+                return; // Don't allow auto-cast below Tier 4
+            }
+            
             autoCastEnabled = !autoCastEnabled;
             autoCastToggle.textContent = `Auto: ${autoCastEnabled ? 'ON' : 'OFF'}`;
             autoCastToggle.style.background = autoCastEnabled ? 'var(--success)' : 'transparent';
@@ -990,14 +1367,56 @@ function initUI() {
         });
     }
     
+    // Listen for tier changes to update button visibility
+    // Check periodically and on tier unlock events
+    if (designTierSystem) {
+        // Check visibility whenever tier unlocks
+        const originalUnlockTier = designTierSystem.unlockTier.bind(designTierSystem);
+        designTierSystem.unlockTier = function(tier) {
+            originalUnlockTier(tier);
+            // Update auto button visibility when tier unlocks
+            setTimeout(updateAutoButtonVisibility, 100); // Small delay to ensure tier is applied
+        };
+        
+        // Also check periodically in case tier changes externally
+        setInterval(() => {
+            updateAutoButtonVisibility();
+        }, 2000); // Check every 2 seconds
+    }
+    
     // Prestige modal
     const ascendButton = document.getElementById('ascend-button');
     if (ascendButton) {
-        ascendButton.addEventListener('click', () => {
+        ascendButton.addEventListener('click', async () => {
             if (gameState) {
                 const oldPrestigeCount = gameState.prestigeCount;
                 gameState.ascend();
                 if (prestigeModal) prestigeModal.classList.remove('active');
+                
+                // Play level up sound for prestige/ascension
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    window.audioSystem.playSound('level_up');
+                }
+                
+                // Reset design tiers to tier 1 when ascending
+                if (designTierSystem) {
+                    try {
+                        await designTierSystem.resetToTier1();
+                        console.log('Design tiers reset to tier 1 after ascend');
+                    } catch (error) {
+                        console.error('Error resetting design tiers after ascend:', error);
+                    }
+                }
+                
+                // Check tier unlocks after prestige (prestige count changed)
+                // This will re-unlock tiers based on new game state
+                if (designTierSystem) {
+                    try {
+                        designTierSystem.checkTierUnlocks();
+                    } catch (error) {
+                        console.error('Error checking tier unlocks after prestige:', error);
+                    }
+                }
                 
                 // If this is the first ascension, initialize meditation
                 if (oldPrestigeCount === 0 && gameState.prestigeCount >= 1) {
@@ -1017,6 +1436,9 @@ function initUI() {
                         window.showNotification('Meditation unlocked!', 'success');
                     }
                 }
+                
+                // Update settings tab to show tier selector after first ascension
+                updateSettingsTab();
                 
                 updateAllUI();
             }
@@ -1356,6 +1778,15 @@ function initUI() {
             for (const achievement of newAchievements) {
                 showNotification(`Achievement: ${achievement.name}!`, 'success');
                 
+                // Check tier unlocks after achievement is unlocked
+                if (designTierSystem) {
+                    try {
+                        designTierSystem.checkTierUnlocks();
+                    } catch (error) {
+                        console.error('Error checking tier unlocks after achievement:', error);
+                    }
+                }
+                
                 // Announce to screen reader
                 if (window.Accessibility) {
                     window.Accessibility.announceGameEvent('achievement_unlocked', {
@@ -1609,7 +2040,7 @@ function switchTab(tabName) {
         btn.classList.toggle('active', isActive);
     });
     
-    // Check if we're switching away from meditation tab (for music mode switching)
+    // Check if we're switching away from meditation tab
     const wasMeditationActive = document.getElementById('meditation-tab')?.classList.contains('active');
     const isMeditationActive = tabName === 'meditation';
     
@@ -1635,26 +2066,8 @@ function switchTab(tabName) {
         console.log(`Tab panel ${pane.id} isActive:`, isActive, 'has active class:', pane.classList.contains('active'), 'display:', pane.style.display);
     });
     
-    // Switch music mode based on meditation tab state (only at Tier 4)
-    if (window.audioSystem && window.audioSystem.musicEnabled) {
-        const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-        // Only switch music modes if at Tier 4 (where music is enabled)
-        if (currentTier >= 4) {
-            if (isMeditationActive && window.audioSystem.currentMusicMode !== 'meditation') {
-                // Switching to meditation tab - switch to meditation music
-                window.audioSystem.stopMusic();
-                setTimeout(() => {
-                    window.audioSystem.startMusic(); // Will use meditation music
-                }, 100);
-            } else if (!isMeditationActive && wasMeditationActive && window.audioSystem.currentMusicMode === 'meditation') {
-                // Switching away from meditation tab - switch back to normal music
-                window.audioSystem.stopMusic();
-                setTimeout(() => {
-                    window.audioSystem.startMusic(); // Will use normal music
-                }, 100);
-            }
-        }
-    }
+    // Music continues playing normally (no mode switching needed)
+    // Meditation tab now uses the same tier 4 music as the rest of the game
     
     // Ensure all non-active tabs are properly hidden
     tabPanes.forEach(pane => {
@@ -1710,18 +2123,11 @@ function switchTab(tabName) {
         case 'dailies':
             updateDailiesTab();
             break;
-        case 'coven':
-            console.log('Updating coven tab content...');
-            updateCovenTab();
-            // Force container visibility after update
-            setTimeout(() => {
-                const container = document.getElementById('coven-content');
-                if (container) {
-                    container.style.cssText = 'display: flex !important; flex-direction: column !important; gap: 15px !important; max-height: 70vh !important; overflow-y: auto !important; padding: 10px !important; position: relative !important; z-index: 10 !important; pointer-events: auto !important; visibility: visible !important; opacity: 1 !important; width: 100% !important;';
-                    console.log('Coven content container forced visible, children:', container.children.length);
-                }
-            }, 100);
-            break;
+        // Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md
+        // case 'coven':
+        //     console.log('Updating coven tab content...');
+        //     updateCovenTab();
+        //     break;
         case 'boons':
             // Check if boons is unlocked (after first ascension)
             if (gameState && gameState.prestigeCount < 1) {
@@ -3263,48 +3669,80 @@ function updateStatsTab() {
     container.style.opacity = '1';
     container.innerHTML = '';
     
-    // Stats section
+    // Stats section with two-column layout
     const statsCard = document.createElement('div');
     statsCard.className = 'card';
     statsCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
     statsCard.innerHTML = '<div class="card-title">Game Statistics</div>';
     
-    const stats = [
+    // Create stats container with grid layout
+    const statsContainer = document.createElement('div');
+    statsContainer.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px;';
+    
+    // Split stats into two columns
+    const leftColumnStats = [
         { label: 'Total Casts', value: gameState.totalTaps },
-        { label: 'Workstations Crafted', value: gameState.totalWorkstationsCrafted },
         { label: 'Total AB Earned', value: formatShort(gameState.abTotalEarned) },
-        { label: 'Current AB', value: formatShort(gameState.ab) },
         { label: 'AB Per Second', value: formatShort(gameState.getAbPerSecond()) },
-        { label: 'Prestige Points', value: gameState.prestigePoints },
         { label: 'Recipes Discovered', value: gameState.discoveredRecipes.length },
-        { label: 'Max Combo', value: comboSystem ? comboSystem.maxCombo : 0 },
         { label: 'Achievements', value: `${achievements.getUnlockedCount()}/${achievements.getTotalCount()}` }
+    ];
+    
+    const rightColumnStats = [
+        { label: 'Workstations Crafted', value: gameState.totalWorkstationsCrafted },
+        { label: 'Current AB', value: formatShort(gameState.ab) },
+        { label: 'Prestige Points', value: gameState.prestigePoints },
+        { label: 'Max Combo', value: comboSystem ? comboSystem.maxCombo : 0 }
     ];
     
     // Add meditation production bonus if meditation is unlocked
     if (window.meditationState && typeof window.meditationState.getMeditationProductionBonus === 'function') {
         const meditationBonus = window.meditationState.getMeditationProductionBonus();
         const bonusPercent = ((meditationBonus - 1.0) * 100).toFixed(1);
-        stats.push({ 
+        rightColumnStats.push({ 
             label: '🧘 Meditation Production Bonus', 
             value: `+${bonusPercent}%`,
             style: 'color: var(--success); font-weight: bold;'
         });
     }
     
-    for (const stat of stats) {
+    // Create left column
+    const leftColumn = document.createElement('div');
+    leftColumn.style.cssText = 'display: flex; flex-direction: column; gap: 10px;';
+    for (const stat of leftColumnStats) {
         const item = document.createElement('div');
         if (stat.style) {
             item.style.cssText = stat.style;
         }
         item.className = 'card-section';
+        item.style.cssText += 'margin-bottom: 0;';
         item.innerHTML = `
             <div class="card-label">${stat.label}</div>
-            <div class="card-value">${stat.value}</div>
+            <div class="card-value" style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${stat.value}</div>
         `;
-        statsCard.appendChild(item);
+        leftColumn.appendChild(item);
     }
     
+    // Create right column
+    const rightColumn = document.createElement('div');
+    rightColumn.style.cssText = 'display: flex; flex-direction: column; gap: 10px;';
+    for (const stat of rightColumnStats) {
+        const item = document.createElement('div');
+        if (stat.style) {
+            item.style.cssText = stat.style;
+        }
+        item.className = 'card-section';
+        item.style.cssText += 'margin-bottom: 0;';
+        item.innerHTML = `
+            <div class="card-label">${stat.label}</div>
+            <div class="card-value" style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${stat.value}</div>
+        `;
+        rightColumn.appendChild(item);
+    }
+    
+    statsContainer.appendChild(leftColumn);
+    statsContainer.appendChild(rightColumn);
+    statsCard.appendChild(statsContainer);
     container.appendChild(statsCard);
     
     // Achievements section
@@ -3315,7 +3753,7 @@ function updateStatsTab() {
     
     const achievementsList = document.createElement('div');
     achievementsList.className = 'content-list';
-    achievementsList.style.cssText = 'display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto;';
+    achievementsList.style.cssText = 'display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; padding-right: 20px; padding-left: 20px; padding-top: 20px; padding-bottom: 20px; width: 100%; box-sizing: border-box;';
     
     // Destroy existing virtual list if it exists
     if (virtualAchievementList) {
@@ -3377,12 +3815,12 @@ function updateStatsTab() {
             const unlocked = achievements.unlockedAchievements?.has(achievement.id) || false;
             const item = document.createElement('div');
             item.className = 'card-section';
-            item.style.cssText = `padding: 10px; border-radius: 6px; background: ${unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)'}; margin-bottom: 10px; position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;`;
+            item.style.cssText = `padding: 10px; border-radius: 6px; background: ${unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)'}; margin-bottom: 10px; position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; box-sizing: border-box;`;
             item.innerHTML = `
-                <div class="card-label" style="color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'};">
+                <div class="card-label" style="color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'}; word-wrap: break-word; overflow-wrap: break-word;">
                     ${unlocked ? '✓' : '○'} ${achievement.name || 'Unknown Achievement'}
                 </div>
-                <div class="card-description" style="font-size: 12px;">${achievement.description || 'No description'}</div>
+                <div class="card-description" style="font-size: 12px; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${achievement.description || 'No description'}</div>
             `;
             achievementsList.appendChild(item);
         });
@@ -3536,8 +3974,12 @@ function updateCovenTab() {
             const isCurrentPlayer = member.id === currentPlayerId;
             const memberItem = document.createElement('div');
             memberItem.className = 'card-section';
+            // Only show emojis if tier >= 3
+            const currentTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
+            const leaderEmoji = currentTier >= 3 ? '👑' : '';
+            const memberEmoji = currentTier >= 3 ? '🔮' : '';
             memberItem.innerHTML = `
-                <div class="card-label">${member.name} ${isCurrentPlayer ? '(You)' : ''} ${member.isLeader ? '👑' : '🔮'}</div>
+                <div class="card-label">${member.name} ${isCurrentPlayer ? '(You)' : ''} ${member.isLeader ? leaderEmoji : memberEmoji}</div>
                 <div class="card-description">
                     <span class="contribution-label">Contribution:</span>
                     <span class="contribution-value">${formatShort(member.contribution)}</span>
@@ -3647,10 +4089,14 @@ function updateCovenMembers() {
         const joinedDate = new Date(member.joinedAt).toLocaleDateString();
         const isCurrentPlayer = member.id === currentPlayerId;
         
+        // Only show emojis if tier >= 3
+        const currentTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
+        const leaderText = currentTier >= 3 ? '👑 Coven Leader' : 'Coven Leader';
+        const memberText = currentTier >= 3 ? '🔮 Coven Member' : 'Coven Member';
         memberCard.innerHTML = `
             <div class="member-info">
                 <div class="member-name">${member.name} ${isCurrentPlayer ? '(You)' : ''}</div>
-                <div class="member-role">${member.isLeader ? '👑 Coven Leader' : '🔮 Coven Member'}</div>
+                <div class="member-role">${member.isLeader ? leaderText : memberText}</div>
             </div>
             <div class="member-stats">
                 <div class="member-contribution">
@@ -3768,17 +4214,56 @@ function updateSettingsTab() {
         currentTierDisplay.textContent = designTierSystem.getCurrentTier();
     }
     
-    // Update tier selector
+    // Show tier selector after first ascension (prestigeCount >= 1)
     const tierSelector = document.getElementById('tier-selector');
     if (tierSelector) {
-        tierSelector.value = designTierSystem.getCurrentTier().toString();
+        const hasAscended = gameState.prestigeCount >= 1;
         
-        // Disable locked tiers
-        const unlockedTiers = designTierSystem.getUnlockedTiers();
-        Array.from(tierSelector.options).forEach(option => {
-            const tier = parseInt(option.value, 10);
-            option.disabled = !unlockedTiers.includes(tier);
-        });
+        if (hasAscended) {
+            // Show the tier selector
+            tierSelector.style.display = 'block';
+            
+            // Show the label if it exists
+            const tierSelectorLabel = tierSelector.previousElementSibling;
+            if (tierSelectorLabel && tierSelectorLabel.textContent.includes('Tier')) {
+                tierSelectorLabel.style.display = 'block';
+            }
+            
+            // Show the parent container if it exists
+            const tierSelectorContainer = tierSelector.closest('.settings-section, .card-section, .form-group');
+            if (tierSelectorContainer) {
+                tierSelectorContainer.style.display = 'block';
+            }
+            
+            // Update tier selector options based on unlocked tiers
+            const unlockedTiers = designTierSystem.getUnlockedTiers();
+            Array.from(tierSelector.options).forEach(option => {
+                const tier = parseInt(option.value, 10);
+                option.disabled = !unlockedTiers.includes(tier);
+            });
+            
+            // Set current tier value
+            tierSelector.value = designTierSystem.getCurrentTier().toString();
+            
+            console.log('Tier selector enabled after ascension. Current tier:', designTierSystem.getCurrentTier(), 'Unlocked tiers:', unlockedTiers);
+        } else {
+            // Hide the tier selector until first ascension
+            tierSelector.style.display = 'none';
+            
+            // Also hide the label if it exists
+            const tierSelectorLabel = tierSelector.previousElementSibling;
+            if (tierSelectorLabel && tierSelectorLabel.textContent.includes('Tier')) {
+                tierSelectorLabel.style.display = 'none';
+            }
+            
+            // Hide the parent container if it exists
+            const tierSelectorContainer = tierSelector.closest('.settings-section, .card-section, .form-group');
+            if (tierSelectorContainer) {
+                tierSelectorContainer.style.display = 'none';
+            }
+            
+            console.log('Tier selector hidden until first ascension. Prestige count:', gameState.prestigeCount);
+        }
     }
 }
 
@@ -3804,14 +4289,17 @@ function resetAllProgress() {
     
     console.log('Reset confirmed, proceeding with reset...');
     
-    // Clear all localStorage
+    // Clear all localStorage FIRST
     localStorage.clear();
+    
+    // Also clear sessionStorage
+    sessionStorage.clear();
     
     // Reset all game state
     if (gameState) {
         // Reset game state to initial values
         gameState.ab = 0.0;
-        gameState.abTotalEarned = 0.0;
+        gameState.abTotalEarned = 0.0; // Ensure this is reset
         gameState.inventory = {};
         gameState.workstations = {};
         gameState.upgradesOwned = {};
@@ -3826,7 +4314,40 @@ function resetAllProgress() {
         gameState.totalPotionsCrafted = 0;
         gameState.unlockedMilestones = new Set();
         
-        // Save empty state
+        // Force save with empty state - ensure abTotal is explicitly set to 0
+        const saveData = {
+            ab: 0.0,
+            abTotal: 0.0, // Explicitly set abTotal to 0
+            inventory: {},
+            workstations: {},
+            upgrades: {},
+            prestige: {
+                points: 0,
+                lifetimeEarned: 0.0,
+                bonuses: {},
+                count: 0
+            },
+            experiments: {
+                discovered: []
+            },
+            stats: {
+                totalTaps: 0,
+                totalWorkstationsCrafted: 0,
+                totalPotionsCrafted: 0
+            },
+            milestones: {
+                unlocked: []
+            },
+            coven: gameState.covenSystem ? gameState.covenSystem.saveCovenData() : null,
+            timestamp: Date.now() / 1000,
+            version: "2.0"
+        };
+        
+        // Save directly to localStorage to ensure it's saved
+        localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
+        console.log('Reset save data written to localStorage with abTotal: 0');
+        
+        // Also call saveGameState to ensure consistency
         gameState.saveGameState();
     }
     
@@ -3837,6 +4358,11 @@ function resetAllProgress() {
         designTierSystem.applyTier(0);
         designTierSystem.saveTier();
     }
+    
+    // Also reset any other systems that might have abTotalEarned
+    // Ensure all localStorage keys are cleared (including any that might be cached)
+    // Clear sessionStorage as well
+    sessionStorage.clear();
     
     // Reset combo system
     if (comboSystem) {
@@ -3956,6 +4482,29 @@ function setAutoSaveInterval(interval) {
 let notificationQueue = [];
 let isShowingNotification = false;
 let maxNotificationsPerSecond = 3;
+
+/**
+ * Remove emojis from text if tier < 3
+ * @param {string} text - Text that may contain emojis
+ * @returns {string} - Text without emojis if tier < 3, otherwise original text
+ */
+function stripEmojisIfLowTier(text) {
+    if (!text || typeof text !== 'string') return text;
+    
+    // Check current tier
+    const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+    
+    // If tier < 3, remove emojis
+    if (currentTier < 3) {
+        // Remove common emoji characters (Unicode ranges for emojis)
+        // This regex removes emojis while preserving HTML tags
+        return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F1E0}-\u{1F1FF}]/gu, '')
+            .replace(/\s+/g, ' ') // Clean up extra spaces
+            .trim();
+    }
+    
+    return text;
+}
 let notificationCount = 0;
 let lastNotificationReset = Date.now();
 
@@ -3969,6 +4518,9 @@ let notificationSoundThrottle = 500; // Only play notification sound every 500ms
  * @param {string} type - Notification type
  */
 function showNotification(message, type = 'info') {
+    // Remove emojis if tier < 3
+    message = stripEmojisIfLowTier(message);
+    
     // Rate limiting
     const now = Date.now();
     if (now - lastNotificationReset > 1000) {
@@ -3984,11 +4536,22 @@ function showNotification(message, type = 'info') {
     
     notificationCount++;
     
-    // Play notification sound (throttled to prevent spam)
+    // Play appropriate sound based on notification type (throttled to prevent spam)
     if (window.audioSystem && window.audioSystem.playSound) {
         const now = Date.now();
         if (now - lastNotificationSoundTime >= notificationSoundThrottle) {
-            window.audioSystem.playSound('notification', { volume: 0.3 });
+            if (type === 'error') {
+                window.audioSystem.playSound('error', { volume: 0.3 });
+            } else if (type === 'success') {
+                // Don't play success sound here - achievement/level_up sounds are played separately
+                // Only play if it's not an achievement notification (those have their own sound)
+                if (!message.includes('Achievement')) {
+                    window.audioSystem.playSound('success', { volume: 0.3 });
+                }
+            } else {
+                // Info type - play notification sound
+                window.audioSystem.playSound('notification', { volume: 0.3 });
+            }
             lastNotificationSoundTime = now;
         }
     }
@@ -4008,6 +4571,7 @@ function createNotificationElement(message, type) {
     
     // Add achievement unlock scene for achievement notifications
     if (type === 'success' && message.includes('Achievement')) {
+        notification.classList.add('achievement-notification');
         notification.innerHTML = `
             <img src="images/achievements/achievement-unlock-scene.png" alt="Achievement Unlocked" class="achievement-scene">
             <span>${message}</span>
@@ -4264,7 +4828,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Starting game initialization...');
         initUI();
         console.log('UI initialized successfully');
-        initCovenSystem();
+        // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
+        // initCovenSystem();
         console.log('Game fully initialized');
         
         // Double-check modals after init
@@ -4342,7 +4907,7 @@ function initCovenSystem() {
     covenSystem.onMemberJoined = (member) => {
         console.log('Member joined:', member.name);
         updateCovenTab();
-        showNotification(`🔮 ${member.name} joined coven!`, 'info');
+        showNotification(`${member.name} joined coven!`, 'info');
     };
     
     covenSystem.onMemberLeft = (member) => {
@@ -4446,6 +5011,12 @@ function cleanup() {
     if (autoSaveTimer) {
         clearInterval(autoSaveTimer);
         autoSaveTimer = null;
+    }
+    
+    // Cleanup background sparkles
+    if (typeof window._backgroundSparklesCleanup === 'function') {
+        window._backgroundSparklesCleanup();
+        delete window._backgroundSparklesCleanup;
     }
     
     // Save game state before cleanup

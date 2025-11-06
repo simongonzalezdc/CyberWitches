@@ -15,7 +15,14 @@ export class DesignTierSystem {
      * Check if a tier should be unlocked based on game state
      */
     checkTierUnlocks() {
-        const ab = this.gameState.ab;
+        // Add error handling for gameState
+        if (!this.gameState) {
+            console.error('DesignTierSystem: gameState is not available');
+            return;
+        }
+        
+        // Add null checks with defaults
+        const ab = this.gameState.ab || 0;
         // Get achievement count from the achievement system if available
         // Use getUnlockedCount() instead of getUnlockedAchievements() which doesn't exist
         const unlockedCount = window.achievements && typeof window.achievements.getUnlockedCount === 'function' 
@@ -24,31 +31,31 @@ export class DesignTierSystem {
         // Prestige count - actual number of ascensions (prestige completions)
         const prestigeCount = this.gameState.prestigeCount || 0;
         
-        // Tier 1: First achievement or 100 AB
+        // Tier 1: Multiple achievements (3+) or 1,000 AB (mid-game milestone)
         if (!this.unlockedTiers.has(1)) {
-            if (unlockedCount > 0 || ab >= 100) {
-                this.unlockTier(1);
+            if (unlockedCount >= 3 || ab >= 1000) {
+                this.unlockTier(1).catch(err => console.error('Error unlocking tier 1:', err));
             }
         }
         
-        // Tier 2: First prestige or 1000 AB
+        // Tier 2: More achievements (6+) or 10,000 AB (late-game milestone)
         if (!this.unlockedTiers.has(2)) {
-            if (prestigeCount >= 1 || ab >= 1000) {
-                this.unlockTier(2);
+            if (unlockedCount >= 6 || ab >= 10000) {
+                this.unlockTier(2).catch(err => console.error('Error unlocking tier 2:', err));
             }
         }
         
-        // Tier 3: Second prestige or 10,000 AB
+        // Tier 3: Even more achievements (9+) or 100,000 AB (requires significant progression)
         if (!this.unlockedTiers.has(3)) {
-            if (prestigeCount >= 2 || ab >= 10000) {
-                this.unlockTier(3);
+            if (unlockedCount >= 9 || ab >= 100000) {
+                this.unlockTier(3).catch(err => console.error('Error unlocking tier 3:', err));
             }
         }
         
-        // Tier 4: Third prestige or 100,000 AB
+        // Tier 4: Most achievements (12+) or 1,000,000 AB (end-game milestone)
         if (!this.unlockedTiers.has(4)) {
-            if (prestigeCount >= 3 || ab >= 100000) {
-                this.unlockTier(4);
+            if (unlockedCount >= 12 || ab >= 1000000) {
+                this.unlockTier(4).catch(err => console.error('Error unlocking tier 4:', err));
             }
         }
     }
@@ -56,14 +63,28 @@ export class DesignTierSystem {
     /**
      * Unlock a tier and apply its effects
      */
-    unlockTier(tier) {
+    async unlockTier(tier) {
         if (this.unlockedTiers.has(tier)) return;
         
         this.unlockedTiers.add(tier);
         this.currentTier = Math.max(this.currentTier, tier);
-        this.applyTier(tier);
+        await this.applyTier(tier);
         this.saveTier();
         this.showUnlockNotification(tier);
+        
+        // Initialize background sparkles when Tier 3 is unlocked
+        if (tier >= 3 && typeof window.initBackgroundSparkles === 'function') {
+            const sparkleCanvas = document.getElementById('sparkle-canvas');
+            if (sparkleCanvas && !sparkleCanvas.dataset.initialized) {
+                try {
+                    window.initBackgroundSparkles();
+                    sparkleCanvas.dataset.initialized = 'true';
+                    console.log('Background sparkles initialized on Tier 3 unlock');
+                } catch (error) {
+                    console.error('Error initializing background sparkles on tier unlock:', error);
+                }
+            }
+        }
     }
     
     /**
@@ -87,7 +108,7 @@ export class DesignTierSystem {
                 this.applyTier1();
                 break;
             case 2:
-                this.applyTier2();
+                await this.applyTier2();
                 break;
             case 3:
                 this.applyTier3();
@@ -175,7 +196,7 @@ export class DesignTierSystem {
         }
     }
     
-    applyTier2() {
+    async applyTier2() {
         // Tier 2 looks exactly like Tier 1 (basic color CLI) but with sound effects
         // Simply call applyTier1() to get all the visual settings, then enable sound
         this.applyTier1();
@@ -187,7 +208,16 @@ export class DesignTierSystem {
         
         // Enable sound effects (the only difference from Tier 1)
         if (window.audioSystem) {
-            window.audioSystem.enableSoundEffects();
+            await window.audioSystem.enableSoundEffects();
+            console.log('Tier 2 sound effects enabled');
+            
+            // Test sound to verify it's working (after a short delay to ensure audio context is ready)
+            setTimeout(() => {
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    const played = window.audioSystem.playSound('click', { volume: 0.5 });
+                    console.log('Tier 2 test sound played:', played);
+                }
+            }, 500);
         }
     }
     
@@ -253,16 +283,35 @@ export class DesignTierSystem {
             await window.audioSystem.enableMusic();
             console.log('applyTier4: Music enabled');
             
-            // If audio context is suspended, try to resume it
-            if (window.audioSystem.audioContext && window.audioSystem.audioContext.state === 'suspended') {
-                try {
-                    await window.audioSystem.audioContext.resume();
-                    console.log('applyTier4: Audio context resumed');
-                    // Restart music after resuming
-                    await window.audioSystem.startMusic();
-                } catch (error) {
-                    console.error('applyTier4: Failed to resume audio context:', error);
-                    // Music will start when user interacts with page
+            // Ensure audio context is running
+            if (window.audioSystem.audioContext) {
+                if (window.audioSystem.audioContext.state === 'suspended') {
+                    try {
+                        await window.audioSystem.audioContext.resume();
+                        console.log('applyTier4: Audio context resumed');
+                    } catch (error) {
+                        console.error('applyTier4: Failed to resume audio context:', error);
+                    }
+                }
+                
+                // Always try to start music after enabling (enableMusic should call startMusic, but ensure it happens)
+                // Check if music is actually playing
+                if (window.audioSystem.audioContext.state === 'running') {
+                    try {
+                        // If music nodes aren't playing, start music
+                        if (window.audioSystem.musicNodes.length === 0) {
+                            console.log('applyTier4: Starting music (no nodes playing)...');
+                            await window.audioSystem.startMusic();
+                        } else {
+                            console.log('applyTier4: Music already playing (', window.audioSystem.musicNodes.length, 'nodes)');
+                        }
+                    } catch (error) {
+                        console.error('applyTier4: Failed to start music:', error);
+                        // Music will start when user interacts with page (browser autoplay policy)
+                        console.log('applyTier4: Music will start on user interaction');
+                    }
+                } else {
+                    console.log('applyTier4: Audio context not running, music will start on user interaction');
                 }
             }
         }
@@ -346,6 +395,27 @@ export class DesignTierSystem {
      */
     getUnlockedTiers() {
         return Array.from(this.unlockedTiers);
+    }
+    
+    /**
+     * Reset tiers to tier 1 (called when ascending)
+     */
+    async resetToTier1() {
+        console.log('Resetting design tiers to tier 1 after ascend...');
+        
+        // Reset unlocked tiers to only tier 0 and tier 1
+        this.unlockedTiers = new Set([0, 1]);
+        
+        // Set current tier to 1
+        this.currentTier = 1;
+        
+        // Apply tier 1 settings
+        await this.applyTier(1);
+        
+        // Save the reset state
+        this.saveTier();
+        
+        console.log('Design tiers reset to tier 1. Unlocked tiers:', Array.from(this.unlockedTiers));
     }
     
     /**

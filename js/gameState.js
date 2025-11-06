@@ -1,7 +1,8 @@
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { Balance } from './utils.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
-import { CovenSystem } from './covenSystem.js';
+// Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
+// import { CovenSystem } from './covenSystem.js';
 
 /**
  * Game State Manager - Manages all game state and logic
@@ -50,8 +51,9 @@ export class GameState {
         this.tickInterval = null;
         this.lastTickTime = Date.now();
         
-        // Coven System
-        this.covenSystem = new CovenSystem(this);
+        // Coven System - Archived for future development - see ARCHIVED_COVEN_FEATURES.md
+        // this.covenSystem = new CovenSystem(this);
+        this.covenSystem = null; // Placeholder to prevent errors
         
         // Callbacks
         this.onAbChanged = null;
@@ -171,10 +173,11 @@ export class GameState {
         }
         
         // Apply coven production bonus if in a coven
-        if (totalOutput.ab && this.covenSystem.isInCoven()) {
-            const covenBonus = this.covenSystem.getCovenProductionBonus();
-            totalOutput.ab *= covenBonus;
-        }
+        // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
+        // if (totalOutput.ab && this.covenSystem && this.covenSystem.isInCoven()) {
+        //     const covenBonus = this.covenSystem.getCovenProductionBonus();
+        //     totalOutput.ab *= covenBonus;
+        // }
         
         return totalOutput;
     }
@@ -497,8 +500,9 @@ export class GameState {
             this.lastCastBonus = 5.0;
         }
         
+        // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
         // Update coven progress for casting
-        this.covenSystem.updateCovenProgress('casting', 1);
+        // if (this.covenSystem) this.covenSystem.updateCovenProgress('casting', 1);
     }
     
     craftWorkstation(wsId, amount = 1) {
@@ -524,8 +528,9 @@ export class GameState {
         if (successCount > 0) {
             if (this.onWorkstationCrafted) this.onWorkstationCrafted(wsId, this.workstations[wsId]);
             
+            // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
             // Update coven progress for crafting
-            this.covenSystem.updateCovenProgress('crafting', successCount);
+            // if (this.covenSystem) this.covenSystem.updateCovenProgress('crafting', successCount);
             
             return true;
         }
@@ -734,7 +739,8 @@ export class GameState {
                 milestones: {
                     unlocked: Array.from(this.unlockedMilestones)
                 },
-                coven: this.covenSystem.saveCovenData(),
+                // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
+                coven: null, // this.covenSystem ? this.covenSystem.saveCovenData() : null,
                 timestamp: Date.now() / 1000,
                 version: "2.0" // Updated version for coven features
             };
@@ -797,8 +803,9 @@ export class GameState {
                 this.unlockedMilestones = new Set();
             }
             
+            // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
             // Load coven data
-            this.covenSystem.loadCovenData(data.coven);
+            // if (this.covenSystem && data.coven) this.covenSystem.loadCovenData(data.coven);
             
             // Apply offline progress
             if (elapsed > 0) {
@@ -823,8 +830,9 @@ export class GameState {
             this.addAb(offlineAb);
             this.batchUpdate('welcomeBack', elapsedSeconds, offlineAb);
             
+            // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
             // Update coven progress for offline production
-            this.covenSystem.updateCovenProgress('production', offlineAb, 'ab');
+            // if (this.covenSystem) this.covenSystem.updateCovenProgress('production', offlineAb, 'ab');
         }
     }
     

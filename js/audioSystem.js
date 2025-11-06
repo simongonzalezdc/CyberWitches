@@ -47,7 +47,7 @@ export class AudioSystem {
         // Music state
         this.musicNodes = []; // Store active music oscillator nodes
         this.musicGainNodes = []; // Store gain nodes for music layers
-        this.currentMusicMode = 'normal'; // 'normal' or 'meditation'
+        this.currentMusicMode = 'normal'; // Always uses normal tier 4 music
         this.musicTierMonitor = null; // Interval for monitoring tier
         
         // Performance settings
@@ -190,9 +190,9 @@ export class AudioSystem {
                 loop: false
             },
             {
-                id: 'ritual_complete',
-                name: 'Ritual Complete',
-                url: this.generateRitualSound(),
+                id: 'daily_complete',
+                name: 'Daily Complete',
+                url: this.generateDailyCompleteSound(),
                 volume: 0.5, // Increased overall volume
                 loop: false
             },
@@ -200,6 +200,13 @@ export class AudioSystem {
                 id: 'craft',
                 name: 'Craft',
                 url: this.generateCraftSound(),
+                volume: 0.4, // Increased overall volume
+                loop: false
+            },
+            {
+                id: 'success',
+                name: 'Success',
+                url: this.generateSuccessSound(),
                 volume: 0.4, // Increased overall volume
                 loop: false
             }
@@ -236,9 +243,10 @@ export class AudioSystem {
             // Strong noise transient at start (like drum hit)
             const noise = i < 8 ? (Math.random() * 2 - 1) * 0.5 * (1 - t * 8) : 0;
             
-            // Percussive character (G3 to C5 range)
-            const freq1 = 196.00; // G3 (minimum)
-            const freq2 = 392.00; // G4 (octave)
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // C4 (261.63Hz) and G4 (392Hz) for click sound
+            const freq1 = 261.63; // C4 (matches tier 4 music)
+            const freq2 = 392.00; // G4 (matches tier 4 music)
             
             const sample = (
                 Math.sin(2 * Math.PI * freq1 * t) * 0.3 +
@@ -277,8 +285,9 @@ export class AudioSystem {
             // Strong noise transient at start (drum hit character)
             const noise = i < 25 ? (Math.random() * 2 - 1) * 0.4 * (1 - t * 25) : 0;
             
-            // Use discrete pentatonic notes: G3, A3, C4, D4 (no sweep, no dissonance, G3-C5 range)
-            const pentatonicNotes = [196.00, 220.00, 261.63, 293.66]; // G3, A3, C4, D4
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // C4, D4, E4, G4 progression for cast sound
+            const pentatonicNotes = [261.63, 293.66, 329.63, 392.00]; // C4, D4, E4, G4
             const noteIndex = Math.min(Math.floor(t * 8), pentatonicNotes.length - 1);
             const freq1 = pentatonicNotes[noteIndex];
             const freq2 = Math.min(freq1 * 2, 523.25); // Octave, capped at C5
@@ -325,36 +334,43 @@ export class AudioSystem {
             // Percussive drum-like hits with ascending tones
             let sample = 0;
             
-            // First hit: G3 (196Hz) - like a low tom
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // Ascending progression: C4, D4, E4, G4, A4, C5
+            // First hit: C4 (261.63Hz)
             if (t < 0.15) {
-                const freq1 = 196.00; // G3
-                const octave1 = Math.min(freq1 * 2, 523.25); // G4, capped at C5
+                const freq1 = 261.63; // C4
+                const octave1 = Math.min(freq1 * 2, 523.25); // C5, capped at C5
                 sample += Math.sin(2 * Math.PI * freq1 * t) * 0.3;
                 sample += Math.sin(2 * Math.PI * octave1 * t) * 0.1;
             }
             
-            // Second hit: A3 (220Hz) - mid tom
+            // Second hit: D4 (293.66Hz)
             if (t >= 0.08 && t < 0.25) {
-                const freq2 = 220.00; // A3
-                const octave2 = Math.min(freq2 * 2, 523.25); // A4, capped at C5
+                const freq2 = 293.66; // D4
+                const octave2 = Math.min(freq2 * 2, 523.25); // D5, capped at C5 (will cap)
                 sample += Math.sin(2 * Math.PI * freq2 * (t - 0.08)) * 0.3;
                 sample += Math.sin(2 * Math.PI * octave2 * (t - 0.08)) * 0.1;
             }
             
-            // Third hit: C4 (261.63Hz) - higher tom
+            // Third hit: E4 (329.63Hz)
             if (t >= 0.15 && t < 0.35) {
-                const freq3 = 261.63; // C4
-                const octave3 = Math.min(freq3 * 2, 523.25); // C5, capped at C5
+                const freq3 = 329.63; // E4
+                const octave3 = 523.25; // C5 (capped)
                 sample += Math.sin(2 * Math.PI * freq3 * (t - 0.15)) * 0.3;
                 sample += Math.sin(2 * Math.PI * octave3 * (t - 0.15)) * 0.1;
             }
             
-            // Final hit: C5 (523.25Hz) - highest
+            // Final hit: A4 (440Hz) then C5 (523.25Hz)
             if (t >= 0.25) {
-                const freq4 = 523.25; // C5
-                const localT = t - 0.25;
-                sample += Math.sin(2 * Math.PI * freq4 * localT) * 0.35;
-                // No octave for C5 (would exceed range)
+                if (t < 0.5) {
+                    const freq4 = 440.00; // A4
+                    const localT = t - 0.25;
+                    sample += Math.sin(2 * Math.PI * freq4 * localT) * 0.3;
+                } else {
+                    const freq5 = 523.25; // C5
+                    const localT = t - 0.5;
+                    sample += Math.sin(2 * Math.PI * freq5 * localT) * 0.35;
+                }
             }
             
             sample += noise;
@@ -391,14 +407,15 @@ export class AudioSystem {
             // Strong noise transient at start (drum hit character)
             const noise = i < 40 ? (Math.random() * 2 - 1) * 0.4 * (1 - t * 40) : 0;
             
-            // Fast percussive drum hits using pentatonic scale: G3, A3, C4, D4, E4 (G3-C5 range)
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // Fast percussive drum hits: C4, D4, E4, G4, A4
             const noteIndex = Math.floor(t * 12) % 5;
             const frequencies = [
-                196.00,   // G3 - like a low kick
-                220.00,   // A3
-                261.63,   // C4
+                261.63,   // C4 - like a low kick
                 293.66,   // D4
-                329.63    // E4 - highest
+                329.63,   // E4
+                392.00,   // G4
+                440.00    // A4 - highest
             ];
             
             const frequency = frequencies[noteIndex];
@@ -445,8 +462,9 @@ export class AudioSystem {
             // Strong noise transient at start (drum hit character)
             const noise = i < 12 ? (Math.random() * 2 - 1) * 0.5 * (1 - t * 12) : 0;
             
-            // Use discrete pentatonic notes: G3, A3, C4 (no sweep, no dissonance, G3-C5 range)
-            const pentatonicNotes = [196.00, 220.00, 261.63]; // G3, A3, C4
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // C4, D4, G4 progression for purchase sound
+            const pentatonicNotes = [261.63, 293.66, 392.00]; // C4, D4, G4
             const noteIndex = Math.min(Math.floor(t * 12), pentatonicNotes.length - 1);
             const freq1 = pentatonicNotes[noteIndex];
             const freq2 = Math.min(freq1 * 2, 523.25); // Octave, capped at C5
@@ -489,7 +507,8 @@ export class AudioSystem {
             // Strong noise transient at start (drum hit character)
             const noise = i < 20 ? (Math.random() * 2 - 1) * 0.4 * (1 - t * 20) : 0;
             
-            // Use pentatonic notes descending: E4, D4, C4 (no dissonance, G3-C5 range)
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // Descending: E4, D4, C4 for error sound
             const pentatonicNotes = [329.63, 293.66, 261.63]; // E4, D4, C4
             const noteIndex = Math.min(Math.floor(t * 10), pentatonicNotes.length - 1);
             const frequency = pentatonicNotes[noteIndex];
@@ -530,58 +549,14 @@ export class AudioSystem {
             // Strong noise transient at start (drum hit character)
             const noise = i < 8 ? (Math.random() * 2 - 1) * 0.5 * (1 - t * 8) : 0;
             
-            // G4 (392 Hz) - mid pitched like tom
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // G4 (392Hz) and A4 (440Hz) for notification sound
             const freq1 = 392.00; // G4
-            const freq2 = 523.25; // C5 (octave/higher note)
+            const freq2 = 440.00; // A4 (matches tier 4 music better)
             
             // Percussive drum-like sound
             const sample = (
                 Math.sin(2 * Math.PI * freq1 * t) * 0.3 +
-                Math.sin(2 * Math.PI * freq2 * t) * 0.15 +
-                noise
-            ) * envelope;
-            
-            channelData[i] = sample;
-        }
-        
-        return this.bufferToDataUrl(buffer);
-    }
-    
-    /**
-     * Generate a ritual complete sound using Web Audio API
-     * @returns {string} Data URL for ritual sound
-     * @private
-     */
-    generateRitualSound() {
-        if (!this.isInitialized) {
-            return '';
-        }
-        
-        const sampleRate = this.audioContext.sampleRate;
-        const duration = 0.7; // 700ms - longer for satisfaction
-        const numSamples = sampleRate * duration;
-        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
-        
-        // Generate drum-like percussive ritual - like a tom with sweep
-        const channelData = buffer.getChannelData(0);
-        for (let i = 0; i < numSamples; i++) {
-            const t = i / sampleRate;
-            
-            // Very sharp percussive envelope: instant attack, very quick decay
-            const envelope = Math.exp(-t * 8) * (1 - Math.exp(-t * 180));
-            
-            // Strong noise transient at start (drum hit character)
-            const noise = i < 50 ? (Math.random() * 2 - 1) * 0.35 * (1 - t * 50) : 0;
-            
-            // Use pentatonic notes ascending: G3, A3, C4, D4 (no sweep, no dissonance, G3-C5 range)
-            const pentatonicNotes = [196.00, 220.00, 261.63, 293.66]; // G3, A3, C4, D4
-            const noteIndex = Math.min(Math.floor(t * 6), pentatonicNotes.length - 1);
-            const baseFreq = pentatonicNotes[noteIndex];
-            const freq2 = Math.min(baseFreq * 2, 523.25); // Octave, capped at C5
-            
-            // Percussive drum-like sound
-            const sample = (
-                Math.sin(2 * Math.PI * baseFreq * t) * 0.35 +
                 Math.sin(2 * Math.PI * freq2 * t) * 0.15 +
                 noise
             ) * envelope;
@@ -618,8 +593,9 @@ export class AudioSystem {
             // Strong noise transient at start (drum hit character)
             const noise = i < 20 ? (Math.random() * 2 - 1) * 0.4 * (1 - t * 20) : 0;
             
-            // Use discrete pentatonic notes: G3, A3, C4, D4 (no sweep, no dissonance, G3-C5 range)
-            const pentatonicNotes = [196.00, 220.00, 261.63, 293.66]; // G3, A3, C4, D4
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // C4, D4, E4, G4 progression for craft sound
+            const pentatonicNotes = [261.63, 293.66, 329.63, 392.00]; // C4, D4, E4, G4
             const noteIndex = Math.min(Math.floor(t * 10), pentatonicNotes.length - 1);
             const baseFreq = pentatonicNotes[noteIndex];
             const freq2 = Math.min(baseFreq * 2, 523.25); // Octave, capped at C5
@@ -628,6 +604,98 @@ export class AudioSystem {
             const sample = (
                 Math.sin(2 * Math.PI * baseFreq * t) * 0.35 +
                 Math.sin(2 * Math.PI * freq2 * t) * 0.15 +
+                noise
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a daily complete sound using Web Audio API
+     * @returns {string} Data URL for daily complete sound
+     * @private
+     */
+    generateDailyCompleteSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.5; // 500ms - satisfying completion sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate drum-like percussive daily complete - like a tom with ascending progression
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Very sharp percussive envelope: instant attack, very quick decay
+            const envelope = Math.exp(-t * 10) * (1 - Math.exp(-t * 180));
+            
+            // Strong noise transient at start (drum hit character)
+            const noise = i < 30 ? (Math.random() * 2 - 1) * 0.35 * (1 - t * 30) : 0;
+            
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // C4, D4, E4, G4 ascending progression
+            const pentatonicNotes = [261.63, 293.66, 329.63, 392.00]; // C4, D4, E4, G4
+            const noteIndex = Math.min(Math.floor(t * 8), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            const freq2 = Math.min(baseFreq * 2, 523.25); // Octave, capped at C5
+            
+            // Percussive drum-like sound
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.35 +
+                Math.sin(2 * Math.PI * freq2 * t) * 0.15 +
+                noise
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a success sound using Web Audio API
+     * @returns {string} Data URL for success sound
+     * @private
+     */
+    generateSuccessSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.35; // 350ms - quick success confirmation
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate drum-like percussive success - like a snare with ascending tone
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Very sharp percussive envelope: instant attack, very quick decay
+            const envelope = Math.exp(-t * 18) * (1 - Math.exp(-t * 220));
+            
+            // Strong noise transient at start (drum hit character)
+            const noise = i < 15 ? (Math.random() * 2 - 1) * 0.45 * (1 - t * 15) : 0;
+            
+            // Use pentatonic scale matching tier 4 music: C, D, E, G, A
+            // C4, D4, G4 progression for success sound
+            const pentatonicNotes = [261.63, 293.66, 392.00]; // C4, D4, G4
+            const noteIndex = Math.min(Math.floor(t * 10), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            const freq2 = Math.min(baseFreq * 2, 523.25); // Octave, capped at C5
+            
+            // Percussive drum-like sound
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.32 +
+                Math.sin(2 * Math.PI * freq2 * t) * 0.18 +
                 noise
             ) * envelope;
             
@@ -758,16 +826,48 @@ export class AudioSystem {
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
         if (currentTier < 2) {
             // Sound effects are only available from Tier 2 onwards
+            console.log('playSound: Tier too low, current tier:', currentTier);
             return false;
         }
         
         // Also check the soundEffectsEnabled flag
         if (!this.soundEffectsEnabled) {
+            console.log('playSound: Sound effects not enabled');
             return false;
         }
         
-        if (!this.isAudioSupported || this.isMuted) {
+        if (!this.isAudioSupported) {
+            console.log('playSound: Audio not supported');
             return false;
+        }
+        
+        if (this.isMuted) {
+            console.log('playSound: Audio is muted');
+            return false;
+        }
+        
+        // Ensure audio context exists and is initialized
+        if (!this.audioContext) {
+            console.warn('playSound: Audio context not initialized');
+            this.initializeAudio();
+            if (!this.audioContext) {
+                return false;
+            }
+        }
+        
+        // Ensure audio context is running (try to resume if suspended)
+        if (this.audioContext.state === 'suspended') {
+            // Try to resume (may require user interaction)
+            this.audioContext.resume().then(() => {
+                console.log('Audio context resumed in playSound');
+                // Retry playing the sound after resume
+                setTimeout(() => {
+                    this.playSound(soundId, options);
+                }, 100);
+            }).catch(err => {
+                console.warn('Could not resume audio context:', err);
+            });
+            return false; // Return false for now, will retry after resume
         }
         
         try {
@@ -788,19 +888,21 @@ export class AudioSystem {
             
             // Check if music is playing - if so, use Web Audio API for better integration
             const musicIsPlaying = this.musicEnabled && this.musicNodes.length > 0;
+            const tier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+            const autoTightMode = tier >= 4 && typeof window.autoCastEnabled === 'function' && window.autoCastEnabled();
             
             // Calculate base volume first
             let baseVolume = (options.volume || sound.volume) * this.sfxVolume * this.masterVolume;
             if (musicIsPlaying) {
                 // Reduce sound effect volume when music is playing to blend better, but keep them audible
-                baseVolume *= 0.35; // 35% volume when music is active - louder than before
+                baseVolume *= autoTightMode ? 0.4 : 0.35; // Slightly louder when tightly integrated
             }
             
             // Quantize to rhythm when music is playing
             if (musicIsPlaying && typeof Tone !== 'undefined' && Tone.Transport.state === 'started') {
-                // Calculate quantized time - align to nearest 16th note (16n) for percussive feel
+                // Calculate quantized time - align to musical grid
                 const now = Tone.Transport.seconds;
-                const subdivision = '16n'; // 16th note subdivision for tight rhythm
+                const subdivision = autoTightMode ? '8n' : '16n'; // tighter (on-beat) when auto is ON
                 const subdivisionTime = Tone.Time(subdivision).toSeconds();
                 
                 // Calculate next quantized beat
@@ -811,6 +913,15 @@ export class AudioSystem {
                 // Schedule the sound to play at the quantized time
                 Tone.Transport.schedule((time) => {
                     this.playQuantizedSound(sound, soundId, options, baseVolume);
+                    // If tightly integrated, add a light click accent on the music typingBeat to glue layers
+                    try {
+                        if (autoTightMode && this.toneMusic && this.toneMusic.typingBeat) {
+                            const glueNote = 'C5';
+                            this.toneMusic.typingBeat.triggerAttackRelease(glueNote, '64n', time);
+                        }
+                    } catch (_) {
+                        // no-op if typingBeat not available
+                    }
                 }, `+${quantizedDelay}`);
                 
                 return true; // Sound will be handled by scheduling
@@ -1177,23 +1288,55 @@ export class AudioSystem {
      * Enable sound effects (for design tier system)
      * This ensures sound effects are enabled when Tier 2 is unlocked
      */
-    enableSoundEffects() {
+    async enableSoundEffects() {
         this.soundEffectsEnabled = true;
+        console.log('enableSoundEffects called - enabling sound effects');
+        
+        // Ensure audio context is resumed (required by browsers)
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            try {
+                await this.audioContext.resume();
+                console.log('Audio context resumed for sound effects');
+            } catch (error) {
+                console.error('Failed to resume audio context:', error);
+                handleError(error, 'resumeAudioContextForSFX');
+            }
+        }
+        
         // Unlock audio if needed (required for browser autoplay policies)
         if (this.audioUnlockRequired) {
-            this.unlockAudio();
+            await this.unlockAudio();
         }
+        
         // Ensure we're not muted
         if (this.isMuted) {
             this.isMuted = false;
             this.saveMutedStatus();
+            console.log('Unmuted audio for sound effects');
         }
+        
         // Ensure SFX volume is set
         if (this.sfxVolume === 0) {
             this.sfxVolume = 0.5;
             this.saveSfxVolume();
+            console.log('SFX volume set to 0.5');
         }
-        console.log('Sound effects enabled');
+        
+        // Ensure master volume is set
+        if (this.masterVolume === 0) {
+            this.masterVolume = 0.5;
+            this.saveMasterVolume();
+            console.log('Master volume set to 0.5');
+        }
+        
+        console.log('Sound effects enabled - state:', {
+            soundEffectsEnabled: this.soundEffectsEnabled,
+            isMuted: this.isMuted,
+            sfxVolume: this.sfxVolume,
+            masterVolume: this.masterVolume,
+            audioContextState: this.audioContext ? this.audioContext.state : 'no context',
+            isInitialized: this.isInitialized
+        });
     }
     
     /**
@@ -1320,9 +1463,9 @@ export class AudioSystem {
             }
         }
         
-        // Don't start if already playing (but allow mode switching)
-        if (this.musicNodes.length > 0 && this.currentMusicMode === 'meditation') {
-            console.log('Meditation music already playing');
+        // Don't start if already playing
+        if (this.musicNodes.length > 0) {
+            console.log('Music already playing');
             return;
         }
         
@@ -1343,22 +1486,10 @@ export class AudioSystem {
         }
         
         try {
-            // Check if meditation tab is active OR meditation session is active for mellow music mode (only at Tier 4)
-            const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-            const meditationTab = document.getElementById('meditation-tab');
-            const isMeditationTabActive = meditationTab && meditationTab.classList.contains('active');
-            const isMeditationSessionActive = window.meditationState && window.meditationState.activeSession;
-            
-            // Only use meditation music if at Tier 4 and (meditation tab is active OR meditation session is active)
-            if (currentTier >= 4 && (isMeditationTabActive || isMeditationSessionActive)) {
-                this.currentMusicMode = 'meditation';
-                this.createMeditationMusic();
-                console.log('Meditation music started successfully (tab active:', isMeditationTabActive, 'session active:', isMeditationSessionActive, ')');
-            } else {
-                this.currentMusicMode = 'normal';
-                this.createAmbientMusic();
-                console.log('Normal music started successfully');
-            }
+            // Always use normal tier 4 music
+            this.currentMusicMode = 'normal';
+            this.createAmbientMusic();
+            console.log('Music started successfully');
         } catch (error) {
             console.error('Error starting music:', error);
             handleError(error, 'startMusic');
@@ -1403,49 +1534,139 @@ export class AudioSystem {
         if (this.toneMusic) {
             try {
                 // Stop all Tone.js components
-                // Stop loops
-                if (this.toneMusic.bassLoop) this.toneMusic.bassLoop.stop();
-                if (this.toneMusic.midLoop) this.toneMusic.midLoop.stop();
-                if (this.toneMusic.sparkleLoop) this.toneMusic.sparkleLoop.stop();
-                if (this.toneMusic.typingLoop) this.toneMusic.typingLoop.stop();
-                if (this.toneMusic.meditationBassLoop) this.toneMusic.meditationBassLoop.stop();
-                if (this.toneMusic.softPadLoop) this.toneMusic.softPadLoop.stop();
-                
-                // Stop LFOs
-                if (this.toneMusic.bassLFO) this.toneMusic.bassLFO.stop();
-                
-                // Release all notes from synths (PolySynth and MonoSynth have releaseAll)
-                if (this.toneMusic.bassPad && typeof this.toneMusic.bassPad.releaseAll === 'function') {
-                    this.toneMusic.bassPad.releaseAll();
+                // Stop loops first (before disposing synths)
+                if (this.toneMusic.bassLoop) {
+                    try {
+                        this.toneMusic.bassLoop.stop();
+                        this.toneMusic.bassLoop.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
                 }
-                if (this.toneMusic.midPad && typeof this.toneMusic.midPad.releaseAll === 'function') {
-                    this.toneMusic.midPad.releaseAll();
+                if (this.toneMusic.midLoop) {
+                    try {
+                        this.toneMusic.midLoop.stop();
+                        this.toneMusic.midLoop.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
                 }
-                // Note: typingBeat is a MonoSynth, not a PolySynth, so it might not have releaseAll
-                // Just try to stop it if it exists
-                if (this.toneMusic.typingBeat) {
-                    if (typeof this.toneMusic.typingBeat.releaseAll === 'function') {
-                        this.toneMusic.typingBeat.releaseAll();
-                    } else {
-                        // If it's a MonoSynth, try to release any active notes manually
-                        try {
-                            this.toneMusic.typingBeat.triggerRelease();
-                        } catch (e) {
-                            // Ignore if it doesn't work
-                        }
+                if (this.toneMusic.sparkleLoop) {
+                    try {
+                        this.toneMusic.sparkleLoop.stop();
+                        this.toneMusic.sparkleLoop.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.typingLoop) {
+                    try {
+                        this.toneMusic.typingLoop.stop();
+                        this.toneMusic.typingLoop.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
                     }
                 }
                 
-                // Dispose effects
-                if (this.toneMusic.delay) this.toneMusic.delay.dispose();
-                if (this.toneMusic.reverb) this.toneMusic.reverb.dispose();
-                if (this.toneMusic.masterVol) this.toneMusic.masterVol.dispose();
+                // Stop LFOs
+                if (this.toneMusic.bassLFO) {
+                    try {
+                        this.toneMusic.bassLFO.stop();
+                        this.toneMusic.bassLFO.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
                 
-                // Dispose synths
-                if (this.toneMusic.bassPad) this.toneMusic.bassPad.dispose();
-                if (this.toneMusic.midPad) this.toneMusic.midPad.dispose();
-                if (this.toneMusic.softPad) this.toneMusic.softPad.dispose();
-                if (this.toneMusic.typingBeat) this.toneMusic.typingBeat.dispose();
+                // Clear any pending chord triggers
+                
+                // Release all notes from synths (PolySynth and MonoSynth have releaseAll)
+                if (this.toneMusic.bassPad && typeof this.toneMusic.bassPad.releaseAll === 'function') {
+                    try {
+                        this.toneMusic.bassPad.releaseAll();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.midPad && typeof this.toneMusic.midPad.releaseAll === 'function') {
+                    try {
+                        this.toneMusic.midPad.releaseAll();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.softPad && typeof this.toneMusic.softPad.releaseAll === 'function') {
+                    try {
+                        this.toneMusic.softPad.releaseAll();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                // Note: typingBeat is a MonoSynth, not a PolySynth, so it might not have releaseAll
+                if (this.toneMusic.typingBeat) {
+                    try {
+                        if (typeof this.toneMusic.typingBeat.releaseAll === 'function') {
+                            this.toneMusic.typingBeat.releaseAll();
+                        } else {
+                            this.toneMusic.typingBeat.triggerRelease();
+                        }
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                
+                // Dispose effects (with error handling)
+                if (this.toneMusic.delay) {
+                    try {
+                        this.toneMusic.delay.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.reverb) {
+                    try {
+                        this.toneMusic.reverb.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.masterVol) {
+                    try {
+                        this.toneMusic.masterVol.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                
+                // Dispose synths (with error handling)
+                if (this.toneMusic.bassPad) {
+                    try {
+                        this.toneMusic.bassPad.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.midPad) {
+                    try {
+                        this.toneMusic.midPad.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.softPad) {
+                    try {
+                        this.toneMusic.softPad.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
+                if (this.toneMusic.typingBeat) {
+                    try {
+                        this.toneMusic.typingBeat.dispose();
+                    } catch (e) {
+                        // Ignore if already disposed
+                    }
+                }
                 
                 this.toneMusic = null;
                 console.log('Tone.js music stopped');
@@ -2054,273 +2275,6 @@ export class AudioSystem {
         console.log('Tone context state:', Tone.context.state);
         console.log('Transport state:', Tone.Transport.state);
     }
-    
-    /**
-     * Create mellow meditation music (slower, softer, more ambient)
-     * @private
-     */
-    createMeditationMusic() {
-        console.log('createMeditationMusic called');
-        console.log('Tone.js available:', typeof Tone !== 'undefined');
-        console.log('Current tier:', window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0);
-        console.log('Music enabled:', this.musicEnabled);
-        console.log('Audio context state:', this.audioContext ? this.audioContext.state : 'no context');
-        console.log('Is muted:', this.isMuted);
-        console.log('Music volume:', this.musicVolume);
-        console.log('Master volume:', this.masterVolume);
-        
-        // Check if Tone.js is available
-        if (typeof Tone === 'undefined') {
-            console.warn('Tone.js not available, falling back to normal music');
-            this.createAmbientMusic();
-            return;
-        }
-        
-        try {
-            this.createMeditationMusicWithTone();
-        } catch (error) {
-            console.error('Error creating meditation music with Tone.js:', error);
-            console.error('Error stack:', error.stack);
-            // Fallback to normal music
-            this.createAmbientMusic();
-        }
-    }
-    
-    /**
-     * Create mellow meditation music using Tone.js
-     * @private
-     */
-    createMeditationMusicWithTone() {
-        // Double-check tier before creating music (Tier 4 only)
-        const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-        if (currentTier < 4 || !this.musicEnabled) {
-            console.log('createMeditationMusic: tier check failed', currentTier, this.musicEnabled);
-            return;
-        }
-        
-        // Ensure musicVolume and masterVolume are not zero BEFORE calculating
-        if (this.musicVolume === 0) {
-            console.warn('musicVolume is 0! Setting to 0.5...');
-            this.musicVolume = 0.5;
-        }
-        if (this.masterVolume === 0) {
-            console.warn('masterVolume is 0! Setting to 0.5...');
-            this.masterVolume = 0.5;
-        }
-        
-        const musicVolume = this.musicVolume * this.masterVolume;
-        
-        console.log('Creating mellow meditation music with Tone.js, volume:', musicVolume);
-        
-        // Final check - if still zero, something is wrong
-        if (musicVolume === 0) {
-            console.error('Music volume is still 0 after adjustments! Aborting music creation.');
-            return;
-        }
-        
-        // Start Tone.js if not already started
-        if (Tone.context.state !== 'running') {
-            Tone.start();
-        }
-        
-        // Create a master volume control first
-        const masterVol = new Tone.Volume(musicVolume * 20 - 20).toDestination();
-        
-        // Create extra reverb for meditation (more spacious and ambient)
-        const reverb = new Tone.Reverb({
-            roomSize: 0.95, // Larger room for more spaciousness
-            dampening: 5000 // More dampening for smoother decay
-        }).connect(masterVol);
-        
-        // Generate reverb (async)
-        reverb.generate().then(() => {
-            console.log('Meditation reverb generated');
-        });
-        
-        // Create a longer delay for more ambient atmosphere
-        const delay = new Tone.FeedbackDelay({
-            delayTime: '8n', // Longer delay for meditation
-            feedback: 0.4 // More feedback for more ambient wash
-        }).connect(reverb);
-        
-        // Layer 1: Soft bass pad - very slow, sustained
-        const bassPad = new Tone.PolySynth(Tone.FMSynth, {
-            maxPolyphony: 3,
-            oscillator: {
-                type: 'sine' // Softer sine wave
-            },
-            envelope: {
-                attack: 1.0, // Very slow attack for smoothness
-                decay: 1.0,
-                sustain: 0.8, // Higher sustain for longer notes
-                release: 2.0 // Longer release for ambient fade
-            },
-            modulationIndex: 0.5, // Less modulation for softer sound
-            modulation: {
-                type: 'sine'
-            }
-        }).connect(delay);
-        
-        // Layer 2: Soft pad - very minimal, sparse
-        const softPad = new Tone.PolySynth(Tone.AMSynth, {
-            maxPolyphony: 2, // Fewer notes for simplicity
-            oscillator: {
-                type: 'sine'
-            },
-            envelope: {
-                attack: 2.0, // Very slow attack
-                decay: 1.5,
-                sustain: 0.6,
-                release: 3.0 // Very long release
-            }
-        }).connect(delay);
-        
-        // Simple, slow chord progressions for meditation (only 3 very gentle progressions)
-        let meditationChords = [
-            // Progression 1: Very gentle C, Am
-            [
-                ['C2', 'G2'],
-                ['A2', 'E3']
-            ],
-            // Progression 2: C, G
-            [
-                ['C2', 'G2'],
-                ['G2', 'D3']
-            ],
-            // Progression 3: Am, C
-            [
-                ['A2', 'E3'],
-                ['C2', 'G2']
-            ]
-        ];
-        
-        // Shuffle for variety
-        const shuffleArray = (array) => {
-            const shuffled = [...array];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            return shuffled;
-        };
-        
-        meditationChords = shuffleArray(meditationChords);
-        
-        // Very slow bass pad - change chord every 8 beats (2 bars at slow tempo)
-        let currentMeditationProgression = 0;
-        let meditationChordIndex = 0;
-        let meditationLoopIteration = 0;
-        
-        const meditationBassLoop = new Tone.Loop((time) => {
-            const currentProgression = meditationChords[currentMeditationProgression];
-            // Play every 2nd iteration for sparse but audible rhythm
-            if (meditationLoopIteration % 2 === 0) {
-                const chord = currentProgression[meditationChordIndex % currentProgression.length];
-                console.log('Meditation bass playing chord:', chord, 'at time:', time);
-                bassPad.triggerAttackRelease(chord, '2n', time); // Half note for sustained chords
-                
-                meditationChordIndex++;
-                if (meditationChordIndex % currentProgression.length === 0) {
-                    currentMeditationProgression = (currentMeditationProgression + 1) % meditationChords.length;
-                }
-            }
-            meditationLoopIteration++;
-        }, '2n'); // Every half note, but only plays every 2nd iteration
-        
-        // Very sparse soft pad - plays even less frequently
-        let softPadProgression = 0;
-        let softPadChordIndex = 0;
-        let softPadIteration = 0;
-        
-        const softPadLoop = new Tone.Loop((time) => {
-            const currentProgression = meditationChords[softPadProgression];
-            // Play every 4th iteration for sparse but audible rhythm
-            if (softPadIteration % 4 === 0) {
-                const chord = currentProgression[softPadChordIndex % currentProgression.length];
-                const higherChord = chord.map(note => {
-                    const match = note.match(/([A-G])(\d)/);
-                    if (match) {
-                        return match[1] + (parseInt(match[2]) + 3); // Higher octave
-                    }
-                    return note;
-                });
-                console.log('Meditation soft pad playing chord:', higherChord, 'at time:', time);
-                softPad.triggerAttackRelease(higherChord, '2n', time); // Half note for sustained sound
-                
-                softPadChordIndex++;
-                if (softPadChordIndex % currentProgression.length === 0) {
-                    softPadProgression = (softPadProgression + 1) % meditationChords.length;
-                }
-            }
-            softPadIteration++;
-        }, '2n'); // Every half note, but only plays every 4th iteration
-        
-        // Set volume levels - quieter than normal but still audible for meditation
-        bassPad.volume.value = 8; // Quiet but audible bass
-        softPad.volume.value = 4; // Quiet but audible pad
-        
-        // Set tempo to 80 BPM for meditation (much slower, more mellow)
-        Tone.Transport.bpm.value = 80;
-        console.log('Meditation music BPM set to:', Tone.Transport.bpm.value);
-        
-        // Start Transport
-        if (Tone.Transport.state !== 'started') {
-            Tone.Transport.start();
-            console.log('Tone Transport started for meditation');
-        } else {
-            console.log('Tone Transport already started');
-        }
-        
-        // Start loops immediately (or with small offset for slight variation)
-        const bassOffset = Math.random() * 0.5; // Small random offset
-        const softPadOffset = 1 + Math.random() * 0.5; // Small offset after bass
-        
-        // Start loops immediately (they will wait for Transport to start)
-        meditationBassLoop.start(0); // Start immediately
-        softPadLoop.start(0); // Start immediately
-        
-        console.log('Meditation loops started, bass offset:', bassOffset, 'soft pad offset:', softPadOffset);
-        
-        // Also trigger first chord immediately so music starts right away
-        const firstProgression = meditationChords[0];
-        const firstChord = firstProgression[0];
-        
-        // Trigger first chord immediately (will work once Transport starts)
-        const triggerFirstChord = () => {
-            try {
-                bassPad.triggerAttackRelease(firstChord, '2n', Tone.now());
-                console.log('Meditation music: First chord triggered, chord:', firstChord);
-            } catch (error) {
-                console.error('Error triggering first meditation chord:', error);
-                // Try again after a short delay
-                setTimeout(triggerFirstChord, 100);
-            }
-        };
-        
-        // Trigger immediately and also after Transport starts
-        triggerFirstChord();
-        setTimeout(triggerFirstChord, 200);
-        setTimeout(triggerFirstChord, 500);
-        
-        // Store Tone.js objects for cleanup
-        this.toneMusic = {
-            reverb,
-            masterVol,
-            delay,
-            bassPad,
-            softPad,
-            meditationBassLoop,
-            softPadLoop
-        };
-        
-        // Store references for cleanup
-        this.musicNodes = [bassPad, softPad];
-        this.musicGainNodes = [masterVol];
-        
-        console.log('Mellow meditation music created with Tone.js');
-        console.log('Meditation music volume:', musicVolume, 'BPM:', Tone.Transport.bpm.value);
-    }
-    
     /**
      * Fallback: Create basic ambient music using Web Audio API
      * @private
@@ -2351,12 +2305,14 @@ export class AudioSystem {
             // Use a gentle highpass to avoid clashing with low music frequencies
             const filter = this.audioContext.createBiquadFilter();
             filter.type = 'highpass';
-            filter.frequency.value = 400; // Cut frequencies below 400 Hz (where music drone/pad are)
+            const tier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+            const autoTightMode = tier >= 4 && typeof window.autoCastEnabled === 'function' && window.autoCastEnabled();
+            filter.frequency.value = autoTightMode ? 600 : 400; // Lift cutoff a bit in tight mode for clarity
             filter.Q.value = 0.5; // Gentle slope
             
             // Calculate volume (reduced when music is playing, but louder than before)
             const baseVolume = (options.volume || sound.volume) * this.sfxVolume * this.masterVolume;
-            const harmoniousVolume = baseVolume * 0.35; // 35% volume to blend with music - louder than before
+            const harmoniousVolume = baseVolume * (autoTightMode ? 0.45 : 0.35); // Slightly more forward in tight mode
             
             gainNode.gain.value = harmoniousVolume;
             

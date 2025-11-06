@@ -222,6 +222,7 @@ export class MeditationState {
     
     /**
      * Get path direction from a position using distance-based pathfinding
+     * Only allows cardinal directions (no diagonals) to ensure following the path
      */
     getPathDirection(x, y) {
         // Round to nearest grid position
@@ -268,11 +269,11 @@ export class MeditationState {
         // Get current tile's distance (if not found, it's very far)
         const currentDistance = this.pathDistances.get(currentTileKey) ?? Infinity;
         
-        // Find all adjacent path tiles (within 1.5 tile distance)
+        // Find all adjacent path tiles - ONLY CARDINAL DIRECTIONS (no diagonals)
+        // This ensures distractions follow the path exactly, not cutting corners
         const adjacentTiles = [];
         const directions = [
-            [0, -1], [0, 1], [-1, 0], [1, 0],  // cardinal
-            [-1, -1], [-1, 1], [1, -1], [1, 1] // diagonal
+            [0, -1], [0, 1], [-1, 0], [1, 0]  // cardinal only - no diagonals
         ];
         
         for (const [dx, dy] of directions) {
@@ -324,7 +325,7 @@ export class MeditationState {
         this.tranquility = this.tranquilityMax;
         this.distractions = [];
         
-        // Start meditation music if music is enabled and at Tier 4+
+        // Start music if music is enabled and at Tier 4+ (uses normal tier 4 music)
         if (window.audioSystem) {
             const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
             console.log('Meditation session starting - Current tier:', currentTier);
@@ -338,21 +339,20 @@ export class MeditationState {
                     console.log('Music not enabled, attempting to enable...');
                     window.audioSystem.enableMusic().then(() => {
                         console.log('Music enabled successfully');
-                        // Set music mode to meditation and start music
-                        window.audioSystem.currentMusicMode = 'meditation';
                         window.audioSystem.startMusic().catch(err => {
-                            console.error('Failed to start meditation music:', err);
+                            console.error('Failed to start music:', err);
                         });
                     }).catch(err => {
                         console.error('Failed to enable music:', err);
                     });
                 } else {
-                    // Music is already enabled, just start it
-                    console.log('Music already enabled, starting meditation music...');
-                    window.audioSystem.currentMusicMode = 'meditation';
-                    window.audioSystem.startMusic().catch(err => {
-                        console.error('Failed to start meditation music:', err);
-                    });
+                    // Music is already enabled, just start it (if not already playing)
+                    if (window.audioSystem.musicNodes.length === 0) {
+                        console.log('Music already enabled, starting music...');
+                        window.audioSystem.startMusic().catch(err => {
+                            console.error('Failed to start music:', err);
+                        });
+                    }
                 }
             } else {
                 console.log('Tier too low for music. Current tier:', currentTier, '(need 4+)');
@@ -377,20 +377,8 @@ export class MeditationState {
         this.waveActive = false;
         this.distractions = [];
         
-        // Switch music back to normal mode if meditation music was playing
-        if (window.audioSystem && window.audioSystem.currentMusicMode === 'meditation') {
-            const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-            const meditationTab = document.getElementById('meditation-tab');
-            const isMeditationTabActive = meditationTab && meditationTab.classList.contains('active');
-            
-            // Only switch if meditation tab is no longer active
-            if (!isMeditationTabActive && currentTier >= 4 && window.audioSystem.musicEnabled) {
-                window.audioSystem.currentMusicMode = 'normal';
-                window.audioSystem.startMusic().catch(err => {
-                    console.error('Failed to switch to normal music:', err);
-                });
-            }
-        }
+        // Music continues playing (uses normal tier 4 music)
+        // No need to switch modes anymore
         
         // Calculate rewards based on performance
         this.calculateSessionRewards();
@@ -585,16 +573,27 @@ export class MeditationState {
             const dy = pathDir.nextY - dist.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // If very close to target tile (within 0.2 tiles), snap to it
-            if (distance < 0.2) {
+            // If very close to target tile (within 0.15 tiles), snap to it
+            // Tighter snapping ensures distractions stay on path
+            if (distance < 0.15) {
                 // Snap to target tile
                 dist.x = pathDir.nextX;
                 dist.y = pathDir.nextY;
             } else if (distance > 0.05) {
                 // Move toward next path tile (normalized movement)
-                const moveSpeed = dist.speed * delta * 1.0; // Increased from 0.5 to 1.0
+                // Limit movement speed to prevent overshooting path tiles
+                const moveSpeed = Math.min(dist.speed * delta * 0.8, distance * 0.8); // Slower, more controlled movement
                 dist.x += (dx / distance) * moveSpeed;
                 dist.y += (dy / distance) * moveSpeed;
+                
+                // Ensure we're still on a path tile after movement
+                const currentTileKey = `${Math.round(dist.x)},${Math.round(dist.y)}`;
+                if (!this.pathTiles.has(currentTileKey)) {
+                    // Snap to nearest path tile if we've drifted off
+                    const pathDirCorrected = this.getPathDirection(dist.x, dist.y);
+                    dist.x = pathDirCorrected.nextX;
+                    dist.y = pathDirCorrected.nextY;
+                }
             } else {
                 // Very close but not snapped, snap it
                 dist.x = pathDir.nextX;
