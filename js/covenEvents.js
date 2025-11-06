@@ -434,8 +434,8 @@ export class CovenEventsSystem {
      */
     distributeResourceBundle(tier) {
         const bundles = {
-            basic: { wax_bits: 1000, wick_fiber: 500, crystal_dust: 250, aether_ess: 250 },
-            advanced: { wax_block: 100, braided_wick: 50, shaped_crys: 25, dist_aether: 25 },
+            basic: { crystal_dust: 500, aether_ess: 500, fire_essence: 500, water_essence: 250, air_essence: 250 },
+            advanced: { shaped_crys: 50, dist_aether: 50, dist_fire: 50, dig_candle: 25, crystal_orb: 25 },
             legendary: { sigil_charge: 10, quantum_essence: 5, coven_blessing: 3, eldritch_wax: 2 }
         };
         

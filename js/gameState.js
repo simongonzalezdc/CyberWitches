@@ -419,8 +419,6 @@ export class GameState {
         
         // Base tier-0 ingredients (all 5 alchemical elements)
         const baseAmounts = {
-            wax_bits: 1.0,
-            wick_fiber: 1.0,
             crystal_dust: 0.5,
             aether_ess: 0.5,
             fire_essence: 0.5,

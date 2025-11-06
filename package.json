@@ -12,7 +12,8 @@
     "preview": "npx http-server dist -p 3000 -o",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "optimize:images": "node optimize-backgrounds.js"
   },
   "keywords": [
     "idle",
@@ -22,10 +23,11 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "esbuild": "^0.25.12",
     "http-server": "^14.1.1",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
-    "esbuild": "^0.25.12",
+    "sharp": "^0.34.4",
     "terser": "^5.44.0"
   },
   "jest": {
@@ -38,7 +40,9 @@
       "<rootDir>/tests/setup.js"
     ],
     "testEnvironmentOptions": {
-      "customExportConditions": [""]
+      "customExportConditions": [
+        ""
+      ]
     }
   }
 }

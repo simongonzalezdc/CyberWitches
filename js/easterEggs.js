@@ -144,7 +144,7 @@ export class EasterEggsSystem {
             name: 'Perfect Balance',
             description: 'Own exactly 100 of each basic ingredient for harmony bonus!',
             type: 'combo',
-            trigger: { ingredients: { wax_bits: 100, wick_fiber: 100, crystal_dust: 100, aether_ess: 100 } },
+            trigger: { ingredients: { crystal_dust: 100, aether_ess: 100, fire_essence: 100, water_essence: 100, air_essence: 100 } },
             action: () => this.triggerPerfectBalance(),
             discovered: false,
             discoveryCount: 0,

@@ -7,7 +7,7 @@
 
 import * as esbuild from 'esbuild';
 import { readdir, stat, copyFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -100,6 +100,11 @@ async function buildJavaScript() {
     treeShaking: true,
     platform: 'browser',
     charset: 'utf8',
+    // Remove console logs in production (except console.error)
+    drop: isProduction ? ['console'] : [],
+    // Replace DEBUG constant in debug.js (will replace const DEBUG = ... with const DEBUG = false)
+    // Note: This uses string replacement, so we need to handle it in the build process
+    // For now, we'll use drop: ['console'] to remove console logs in production
   };
   
   // Build each JS file
@@ -113,7 +118,17 @@ async function buildJavaScript() {
         entryPoints: [entryPoint],
         outfile: outfile,
       });
-      console.log(`  ✓ Built ${file}`);
+      
+      // Special handling for debug.js in production
+      if (file === 'debug.js' && isProduction) {
+        let content = readFileSync(outfile, 'utf8');
+        // Replace DEBUG = true with DEBUG = false
+        content = content.replace(/const DEBUG = true;/g, 'const DEBUG = false;');
+        writeFileSync(outfile, content, 'utf8');
+        console.log(`  ✓ Built and optimized ${file} (DEBUG disabled)`);
+      } else {
+        console.log(`  ✓ Built ${file}`);
+      }
     } catch (error) {
       console.error(`  ✗ Error building ${file}:`, error.message);
     }

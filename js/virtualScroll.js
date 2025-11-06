@@ -710,6 +710,18 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                 effectText = `Click ${upgrade.type} +${upgrade.value}`;
             }
             
+            // Check if can afford all materials
+            let canAffordAll = true;
+            if (!owned && upgrade.recipe) {
+                for (const [ingId, amount] of Object.entries(upgrade.recipe)) {
+                    const have = gameStateData.inventory[ingId] || 0;
+                    if (have < amount) {
+                        canAffordAll = false;
+                        break;
+                    }
+                }
+            }
+            
             card.innerHTML = `
                 <div class="card-title">${upgrade.displayName} ${owned ? '✓' : ''}</div>
                 <div class="card-description">${upgrade.description}</div>
@@ -726,14 +738,14 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                         </div>`;
                     }).join('')}
                 </div>
-                <button class="btn-primary" data-action="inscribe" data-upgrade-id="${upgrade.id}" ${owned ? 'disabled' : ''}>
+                <button class="btn-primary" data-action="inscribe" data-upgrade-id="${upgrade.id}" ${owned || !canAffordAll ? 'disabled' : ''}>
                     ${owned ? 'Owned' : 'Inscribe'}
                 </button>
             `;
             
                 // Attach event listener directly instead of using onclick
                 const button = card.querySelector('button[data-action="inscribe"]');
-                if (button && !owned && typeof window.inscribeUpgrade === 'function') {
+                if (button && !owned && canAffordAll && typeof window.inscribeUpgrade === 'function') {
                     button.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();

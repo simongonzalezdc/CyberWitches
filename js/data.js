@@ -2,8 +2,6 @@
 
 export const INGREDIENTS = [
     // Tier 0 - Base ingredients
-    { id: "wax_bits", displayName: "Wax Bits", tier: 0 },
-    { id: "wick_fiber", displayName: "Wick Fiber", tier: 0 },
     { id: "crystal_dust", displayName: "Crystal Dust", tier: 0 },
     { id: "aether_ess", displayName: "Aether Essence", tier: 0 },
     { id: "fire_essence", displayName: "Fire Essence", tier: 0 },
@@ -11,14 +9,12 @@ export const INGREDIENTS = [
     { id: "air_essence", displayName: "Air Essence", tier: 0 },
     
     // Tier 1 - Refined ingredients
-    { id: "wax_block", displayName: "Wax Block", tier: 1 },
-    { id: "braided_wick", displayName: "Braided Wick", tier: 1 },
     { id: "shaped_crys", displayName: "Shaped Crystal", tier: 1 },
     { id: "dist_aether", displayName: "Distilled Aether", tier: 1 },
+    { id: "dist_fire", displayName: "Distilled Fire", tier: 1 },
     { id: "dig_candle", displayName: "Digital Candle", tier: 1 },
     { id: "crystal_orb", displayName: "Crystal Orb", tier: 1 },
     { id: "aether_well", displayName: "Aether Well", tier: 1 },
-    { id: "dist_fire", displayName: "Distilled Fire", tier: 1 },
     { id: "liquid_essence", displayName: "Liquid Essence", tier: 1 },
     { id: "aqua_well", displayName: "Aqua Well", tier: 1 },
     { id: "ethereal_gust", displayName: "Ethereal Gust", tier: 1 },
@@ -61,22 +57,6 @@ export const INGREDIENTS = [
 
 export const PRODUCERS = [
     // Tier 0 - Basic producers
-    {
-        id: "ws_melter",
-        displayName: "Wax Melter",
-        unlockAtAb: 0.0,
-        recipe: { wax_bits: 10 },
-        growth: 1.10,
-        outputs: { wax_block: 0.30 }
-    },
-    {
-        id: "ws_spinner",
-        displayName: "Wick Spinner",
-        unlockAtAb: 0.0,
-        recipe: { wick_fiber: 10 },
-        growth: 1.10,
-        outputs: { braided_wick: 0.30 }
-    },
     {
         id: "ws_shaper",
         displayName: "Crystal Shaper",
@@ -123,7 +103,7 @@ export const PRODUCERS = [
         id: "ws_digcandle_forge",
         displayName: "Digital Candle Forge",
         unlockAtAb: 75.0,
-        recipe: { wax_block: 5, braided_wick: 1, dist_aether: 2 },
+        recipe: { dist_fire: 3, shaped_crys: 2 },
         growth: 1.14,
         outputs: { dig_candle: 0.5 }
     },
@@ -195,9 +175,9 @@ export const PRODUCERS = [
     },
     {
         id: "ws_hexforge",
-        displayName: "Wax Hex Forge",
+        displayName: "Fire Hex Forge",
         unlockAtAb: 50000.0,
-        recipe: { wax_block: 10, shaped_crys: 5, enhanced_candle: 2 },
+        recipe: { dist_fire: 10, shaped_crys: 5, enhanced_candle: 2 },
         growth: 1.19,
         outputs: { wax_hex: 0.5 }
     },
@@ -352,7 +332,7 @@ export const UPGRADES = [
         affects: "global",
         type: "multiplier",
         value: 1.5,
-        recipe: { wax_block: 2, braided_wick: 2, shaped_crys: 1 },
+        recipe: { dist_fire: 2, shaped_crys: 2, dist_aether: 1 },
         unlockAtAb: 0.0
     },
     {
@@ -362,7 +342,7 @@ export const UPGRADES = [
         affects: "click",
         type: "additive",
         value: 1.0,
-        recipe: { wick_fiber: 10 },
+        recipe: { fire_essence: 10 },
         unlockAtAb: 0.0
     },
     {
@@ -372,7 +352,7 @@ export const UPGRADES = [
         affects: "click",
         type: "additive",
         value: 2.0,
-        recipe: { braided_wick: 5, shaped_crys: 2 },
+        recipe: { dist_fire: 5, shaped_crys: 2 },
         unlockAtAb: 500.0
     },
     
@@ -384,7 +364,7 @@ export const UPGRADES = [
         affects: "producer:ws_digcandle_forge",
         type: "multiplier",
         value: 2.0,
-        recipe: { dig_candle: 5, wax_block: 10 },
+        recipe: { dig_candle: 5, dist_fire: 10 },
         unlockAtAb: 200.0
     },
     {
@@ -477,7 +457,7 @@ export const UPGRADES = [
         affects: "global",
         type: "multiplier",
         value: 1.8,
-        recipe: { wax_block: 3, shaped_crys: 2, dist_aether: 2 },
+        recipe: { dist_fire: 3, shaped_crys: 2, dist_aether: 2 },
         unlockAtAb: 500.0
     },
     {
@@ -853,9 +833,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_ingred",
         displayName: "Pocket Satchel",
-        description: "+100 Wax Bits at start per level",
+        description: "+100 Fire Essence at start per level",
         type: "start_ingredient",
-        param: "wax_bits",
+        param: "fire_essence",
         value: 100.0,
         baseCostPp: 6.0,
         costGrowth: 1.5
@@ -863,9 +843,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_ingred_2",
         displayName: "Enchanted Pouch",
-        description: "+1000 Wax Bits at start per level",
+        description: "+1000 Fire Essence at start per level",
         type: "start_ingredient",
-        param: "wax_bits",
+        param: "fire_essence",
         value: 1000.0,
         baseCostPp: 15.0,
         costGrowth: 1.5
@@ -925,17 +905,9 @@ export const DAILY_TASKS_POOL = [
     // Tier 0 - Basic tasks
     {
         id: "d_kindle",
-        displayName: "Kindle the Grid",
-        description: "Craft 3 Wax Melters",
-        condition: "craft:workstation:ws_melter:3",
-        rewardType: "ab",
-        rewardValue: 5000.0
-    },
-    {
-        id: "d_spin",
-        displayName: "Weave the Threads",
-        description: "Craft 3 Wick Spinners",
-        condition: "craft:workstation:ws_spinner:3",
+        displayName: "Kindle the Flame",
+        description: "Craft 3 Fire Stills",
+        condition: "craft:workstation:ws_fire_still:3",
         rewardType: "ab",
         rewardValue: 5000.0
     },
@@ -1248,7 +1220,7 @@ export const MEDITATION_TOWERS = [
         id: "peace_circle",
         displayName: "Peace Circle",
         tier: 0,
-        recipe: { wax_bits: 5, wick_fiber: 5 },
+        recipe: { fire_essence: 10 },
         damage: 10,
         range: 2,
         attackSpeed: 1.0, // attacks per second
@@ -1269,7 +1241,7 @@ export const MEDITATION_TOWERS = [
         id: "tranquility_shrine",
         displayName: "Tranquility Shrine",
         tier: 1,
-        recipe: { wax_block: 3, braided_wick: 2, shaped_crys: 2 },
+        recipe: { dist_fire: 3, dig_candle: 2, shaped_crys: 2 },
         damage: 25,
         range: 3,
         attackSpeed: 1.5,

@@ -11,6 +11,7 @@ import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } fr
 import { formatShort, formatPrecise, formatTimeDuration } from './utils.js';
 import { createParticle, pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
 import { particleEffects } from './particleEffects.js';
+import { audioSystem } from './audioSystem.js';
 import { VirtualWorkstationList, VirtualUpgradeList, VirtualAchievementList } from './virtualScroll.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { debounce, throttle, deepClone, formatWithCommas, clamp, lerp, inRange, randomInt, randomFloat, randomChoice, shuffle, isEmpty, capitalize, secondsToTime, calculatePercentage, isMobile, isTouchDevice, getPixelRatio, createElement, batchDOMUpdate, setLocalStorage, getLocalStorage, removeLocalStorage, clearLocalStorage, isInViewport, scrollIntoView, addEventListener, PerformanceMonitor } from './commonUtils.js';
@@ -66,6 +67,9 @@ let isUpdatingInscriptions = false;
 // Track initialization state to prevent multiple calls
 let uiInitialized = false;
 let updateIntervals = [];
+let allIntervals = []; // Track all intervals for cleanup
+let allTimeouts = []; // Track all timeouts for cleanup
+let autoCastInterval = null; // Track auto-cast interval
 
 // Keyboard shortcuts
 const keyboardShortcuts = {
@@ -144,6 +148,11 @@ function defineGlobalFunctions() {
                     showNotification(`<span class="css-icon-sparkle"></span> Crafted ${gained} ${displayName}!`, 'success');
                 }
                 
+                // Play craft sound for workstation crafting
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    window.audioSystem.playSound('craft');
+                }
+                
                 // Announce to screen reader
                 if (window.Accessibility && typeof window.Accessibility.announceGameEvent === 'function') {
                     window.Accessibility.announceGameEvent('workstation_crafted', {
@@ -189,7 +198,27 @@ function defineGlobalFunctions() {
         console.log('Max count calculated:', maxCount);
         
         if (maxCount > 0) {
-            gameState.craftWorkstation(wsId, maxCount);
+            const oldCount = gameState.workstations[wsId] || 0;
+            const success = gameState.craftWorkstation(wsId, maxCount);
+            
+            if (success) {
+                const newCount = gameState.workstations[wsId] || 0;
+                const gained = newCount - oldCount;
+                
+                // Show notification
+                if (gained > 0) {
+                    const displayName = PRODUCERS.find(p => p.id === wsId)?.displayName || wsId;
+                    if (typeof showNotification === 'function') {
+                        showNotification(`<span class="css-icon-sparkle"></span> Crafted ${gained} ${displayName}!`, 'success');
+                    }
+                }
+                
+                // Play craft sound (same as x1 and x10)
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    window.audioSystem.playSound('craft');
+                }
+            }
+            
             // Refresh virtual scroll if it exists, otherwise update tab
             if (virtualWorkstationList && typeof virtualWorkstationList.refresh === 'function') {
                 console.log('Refreshing virtual scroll after max craft...');
@@ -210,6 +239,11 @@ function defineGlobalFunctions() {
             const displayName = upgrade?.displayName || upgId;
             if (typeof showNotification === 'function') {
                 showNotification(`<span class="css-icon-sparkle"></span> Inscribed ${displayName}!`, 'success');
+            }
+            
+            // Play purchase sound (not throttled - purchases are rare)
+            if (window.audioSystem && window.audioSystem.playSound) {
+                window.audioSystem.playSound('purchase');
             }
             
             // Announce to screen reader
@@ -242,6 +276,12 @@ function defineGlobalFunctions() {
             if (typeof showNotification === 'function') {
                 showNotification('<span class="css-icon-sparkle"></span> Recipe crafted!', 'success');
             }
+            
+            // Play purchase sound (not throttled - purchases are rare)
+            if (window.audioSystem && window.audioSystem.playSound) {
+                window.audioSystem.playSound('purchase');
+            }
+            
             if (typeof updateExperimentTab === 'function') updateExperimentTab();
             if (typeof updateInventoryTab === 'function') updateInventoryTab();
             
@@ -276,6 +316,10 @@ function defineGlobalFunctions() {
     window.purchaseBoon = (bonusId) => {
         if (!gameState) return;
         if (gameState.purchasePrestigeBonus(bonusId)) {
+            // Play purchase sound (not throttled - purchases are rare)
+            if (window.audioSystem && window.audioSystem.playSound) {
+                window.audioSystem.playSound('purchase');
+            }
             if (typeof updateBoonsTab === 'function') {
                 updateBoonsTab();
             }
@@ -437,6 +481,32 @@ function initUI() {
     window.designTierSystem = designTierSystem; // Make globally accessible
     window.achievements = achievements; // Make achievements accessible for design tier system
     window.particleEffects = particleEffects; // Make particle effects accessible globally
+    window.audioSystem = audioSystem; // Make audio system accessible globally
+    
+    // Unlock audio on first user interaction (required by browsers)
+    let audioUnlocked = false;
+    const unlockAudio = async () => {
+        if (audioUnlocked) return;
+        audioUnlocked = true;
+        if (window.audioSystem && window.audioSystem.audioContext) {
+            if (window.audioSystem.audioContext.state === 'suspended') {
+                try {
+                    await window.audioSystem.audioContext.resume();
+                    console.log('Audio context unlocked on user interaction');
+                    // If on Tier 4, restart music after unlocking
+                    if (designTierSystem.getCurrentTier() >= 4 && window.audioSystem.musicEnabled) {
+                        window.audioSystem.startMusic();
+                    }
+                } catch (error) {
+                    console.error('Failed to unlock audio:', error);
+                }
+            }
+        }
+    };
+    // Unlock audio on any user interaction
+    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    document.addEventListener('keydown', unlockAudio, { once: true });
     
     // Initialize particle system if canvas exists
     const particleCanvas = document.getElementById('particle-canvas');
@@ -490,11 +560,11 @@ function initUI() {
     // Settings tab event handlers
     const tierSelector = document.getElementById('tier-selector');
     if (tierSelector && designTierSystem) {
-        tierSelector.addEventListener('change', (e) => {
+        tierSelector.addEventListener('change', async (e) => {
             const selectedTier = parseInt(e.target.value, 10);
             const unlockedTiers = designTierSystem.getUnlockedTiers();
             if (unlockedTiers.includes(selectedTier)) {
-                designTierSystem.setTier(selectedTier);
+                await designTierSystem.setTier(selectedTier);
                 updateSettingsTab(); // Refresh display
                 if (window.showNotification) {
                     window.showNotification(`Design tier set to ${selectedTier}`, 'info');
@@ -548,6 +618,76 @@ function initUI() {
     // Make resetAllProgress globally accessible for debugging
     window.resetAllProgress = resetAllProgress;
     
+    // Add fallback handlers for meditation buttons (in case meditationUI isn't initialized yet)
+    const startMeditationButton = document.getElementById('start-meditation-button');
+    const endMeditationButton = document.getElementById('end-meditation-button');
+    
+    if (startMeditationButton) {
+        // Remove any existing listeners and add our own
+        const newStartButton = startMeditationButton.cloneNode(true);
+        startMeditationButton.parentNode.replaceChild(newStartButton, startMeditationButton);
+        
+        newStartButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Check if meditation is unlocked
+            if (!gameState || gameState.prestigeCount < 1) {
+                if (window.showNotification) {
+                    window.showNotification('Meditation unlocks after your first ascension!', 'error');
+                }
+                return;
+            }
+            
+            // Ensure meditation systems are initialized
+            if (!meditationState) {
+                console.log('Initializing meditation systems from button click...');
+                meditationState = new MeditationState(gameState);
+                meditationState.loadState();
+                meditationState.startTickLoop();
+                meditationUI = new MeditationUI(meditationState, gameState);
+                meditationTowers = new MeditationTowers(meditationState, gameState);
+                meditationUI.init();
+                meditationTowers.init();
+                window.meditationTowers = meditationTowers;
+                window.meditationUI = meditationUI;
+            }
+            
+            // Start meditation session
+            if (meditationState && !meditationState.activeSession) {
+                meditationState.startSession();
+                if (meditationUI) {
+                    meditationUI.updateControls();
+                }
+                if (window.showNotification) {
+                    window.showNotification('Meditation session started!', 'success');
+                }
+            }
+        });
+    }
+    
+    if (endMeditationButton) {
+        // Remove any existing listeners and add our own
+        const newEndButton = endMeditationButton.cloneNode(true);
+        endMeditationButton.parentNode.replaceChild(newEndButton, endMeditationButton);
+        
+        newEndButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // End meditation session
+            if (meditationState && meditationState.activeSession) {
+                meditationState.endSession();
+                if (meditationUI) {
+                    meditationUI.updateControls();
+                }
+                if (window.showNotification) {
+                    window.showNotification('Meditation session ended!', 'info');
+                }
+            }
+        });
+    }
+    
     // Cast button - optimized for responsiveness
     if (castButton) {
         let isProcessing = false;
@@ -577,6 +717,15 @@ function initUI() {
                 const eventMult = eventSystem && eventSystem.hasEventEffect('double_casts') ? 2.0 : 1.0;
                 
                 gameState.cast(comboMult, eventMult);
+                
+                // Play cast sound (throttled for auto mode)
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    // Check if auto mode is on - if so, only play sound every 10 casts
+                    const shouldPlaySound = !autoCastEnabled || (gameState.totalTaps % 10 === 0);
+                    if (shouldPlaySound) {
+                        window.audioSystem.playSound('cast', { volume: autoCastEnabled ? 0.3 : 0.4 });
+                    }
+                }
                 
                 // Check for achievements (debounced)
                 if (typeof debouncedAchievementCheck === 'function') {
@@ -661,6 +810,7 @@ function initUI() {
     const autoCastToggle = document.getElementById('auto-cast-toggle');
     let autoCastEnabled = false;
     let autoCastInterval = null;
+    window.autoCastEnabled = () => autoCastEnabled; // Make accessible for sound throttling
     
     if (autoCastToggle) {
         autoCastToggle.addEventListener('click', () => {
@@ -1225,6 +1375,21 @@ function switchTab(tabName) {
                 return;
             }
             console.log('Updating meditation tab content...');
+            
+            // Ensure meditation systems are initialized
+            if (gameState.prestigeCount >= 1 && !meditationState) {
+                console.log('Initializing meditation systems...');
+                meditationState = new MeditationState(gameState);
+                meditationState.loadState();
+                meditationState.startTickLoop();
+                meditationUI = new MeditationUI(meditationState, gameState);
+                meditationTowers = new MeditationTowers(meditationState, gameState);
+                meditationUI.init();
+                meditationTowers.init();
+                window.meditationTowers = meditationTowers;
+                window.meditationUI = meditationUI;
+            }
+            
             if (meditationUI) {
                 meditationUI.updateAll();
             }
@@ -1811,6 +1976,18 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
                 effectText = `Click ${upgData.type} +${upgData.value}`;
             }
             
+            // Check if can afford all materials
+            let canAffordAll = true;
+            if (!owned && upgData.recipe) {
+                for (const [ingId, amount] of Object.entries(upgData.recipe)) {
+                    const have = gameState.inventory[ingId] || 0;
+                    if (have < amount) {
+                        canAffordAll = false;
+                        break;
+                    }
+                }
+            }
+            
             card.innerHTML = `
                 <div class="card-title">${upgData.displayName} ${owned ? '✓' : ''}</div>
                 <div class="card-description">${upgData.description}</div>
@@ -1829,14 +2006,14 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
                         </div>`;
                     }).join('')}
                 </div>
-                <button class="btn-primary" data-action="inscribe" data-upgrade-id="${upgData.id}" ${owned ? 'disabled' : ''}>
+                <button class="btn-primary" data-action="inscribe" data-upgrade-id="${upgData.id}" ${owned || !canAffordAll ? 'disabled' : ''}>
                     ${owned ? 'Owned' : 'Inscribe'}
                 </button>
             `;
             
             // Attach event listener directly
             const button = card.querySelector('button[data-action="inscribe"]');
-            if (button) {
+            if (button && !owned && canAffordAll) {
                 // Ensure button is clickable
                 button.style.position = 'relative';
                 button.style.zIndex = '100';
@@ -2958,6 +3135,7 @@ function updateDailyProgress(conditionType, param, value) {
 
 // Make globally accessible for meditation system
 window.updateDailyProgress = updateDailyProgress;
+window.updateSettingsTab = updateSettingsTab;
 
 /**
  * Debounced UI update function to prevent excessive DOM manipulations
@@ -3024,6 +3202,10 @@ let maxNotificationsPerSecond = 3;
 let notificationCount = 0;
 let lastNotificationReset = Date.now();
 
+// Sound throttling for notifications
+let lastNotificationSoundTime = 0;
+let notificationSoundThrottle = 500; // Only play notification sound every 500ms
+
 /**
  * Show notification with rate limiting
  * @param {string} message - Notification message
@@ -3044,6 +3226,15 @@ function showNotification(message, type = 'info') {
     }
     
     notificationCount++;
+    
+    // Play notification sound (throttled to prevent spam)
+    if (window.audioSystem && window.audioSystem.playSound) {
+        const now = Date.now();
+        if (now - lastNotificationSoundTime >= notificationSoundThrottle) {
+            window.audioSystem.playSound('notification', { volume: 0.3 });
+            lastNotificationSoundTime = now;
+        }
+    }
     
     // Create and show notification immediately
     createNotificationElement(message, type);
@@ -3453,4 +3644,55 @@ function initCovenSystem() {
             if (e.key === 'Enter') joinCoven();
         });
     }
+}
+
+/**
+ * Cleanup function to clear all intervals and timeouts
+ * Prevents memory leaks and ensures clean shutdown
+ */
+function cleanup() {
+    // Clear all tracked intervals
+    allIntervals.forEach(interval => {
+        if (interval) clearInterval(interval);
+    });
+    allIntervals = [];
+    
+    // Clear all tracked timeouts
+    allTimeouts.forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+    });
+    allTimeouts = [];
+    
+    // Clear update intervals
+    updateIntervals.forEach(interval => {
+        if (interval) clearInterval(interval);
+    });
+    updateIntervals = [];
+    
+    // Clear auto-cast interval
+    if (autoCastInterval) {
+        clearInterval(autoCastInterval);
+        autoCastInterval = null;
+    }
+    
+    // Clear auto-save timer
+    if (autoSaveTimer) {
+        clearInterval(autoSaveTimer);
+        autoSaveTimer = null;
+    }
+    
+    // Save game state before cleanup
+    if (gameState) {
+        try {
+            gameState.saveGameState();
+        } catch (error) {
+            console.error('Error saving game state during cleanup:', error);
+        }
+    }
+}
+
+// Add cleanup listener on page unload
+if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', cleanup);
+    window.addEventListener('pagehide', cleanup);
 }

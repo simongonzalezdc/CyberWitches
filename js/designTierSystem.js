@@ -69,7 +69,7 @@ export class DesignTierSystem {
     /**
      * Apply tier visual and audio settings
      */
-    applyTier(tier) {
+    async applyTier(tier) {
         const body = document.body;
         
         // Remove all tier classes
@@ -93,7 +93,7 @@ export class DesignTierSystem {
                 this.applyTier3();
                 break;
             case 4:
-                this.applyTier4();
+                await this.applyTier4();
                 break;
         }
     }
@@ -120,6 +120,16 @@ export class DesignTierSystem {
             window.particleSystem.disable();
         } else if (window.particleEffects) {
             window.particleEffects.disable();
+        }
+        
+        // Disable sound effects (Tier 0 = no sound)
+        if (window.audioSystem && window.audioSystem.disableSoundEffects) {
+            window.audioSystem.disableSoundEffects();
+        }
+        
+        // Disable music (Tier 0 = no music)
+        if (window.audioSystem && window.audioSystem.disableMusic) {
+            window.audioSystem.disableMusic();
         }
     }
     
@@ -153,22 +163,45 @@ export class DesignTierSystem {
         } else if (window.particleEffects) {
             window.particleEffects.disable();
         }
+        
+        // Disable sound effects (Tier 1 = no sound, only color)
+        if (window.audioSystem && window.audioSystem.disableSoundEffects) {
+            window.audioSystem.disableSoundEffects();
+        }
+        
+        // Disable music (Tier 1 = no music)
+        if (window.audioSystem && window.audioSystem.disableMusic) {
+            window.audioSystem.disableMusic();
+        }
     }
     
     applyTier2() {
-        // Enable sound effects
-        if (window.audioSystem) {
-            window.audioSystem.enableSoundEffects();
+        // Tier 2 looks exactly like Tier 1 (basic color CLI) but with sound effects
+        // Simply call applyTier1() to get all the visual settings, then enable sound
+        this.applyTier1();
+        
+        // Disable music (Tier 2 = sound effects only, no music)
+        if (window.audioSystem && window.audioSystem.disableMusic) {
+            window.audioSystem.disableMusic();
         }
         
-        // Keep particle canvas disabled
-        const particleCanvas = document.getElementById('particle-canvas');
-        if (particleCanvas) {
-            particleCanvas.style.display = 'none';
+        // Enable sound effects (the only difference from Tier 1)
+        if (window.audioSystem) {
+            window.audioSystem.enableSoundEffects();
         }
     }
     
     applyTier3() {
+        // Disable music (Tier 3 = animations + sound effects, no music yet)
+        if (window.audioSystem && window.audioSystem.disableMusic) {
+            window.audioSystem.disableMusic();
+        }
+        
+        // Enable sound effects (Tier 3 includes Tier 2's sound effects)
+        if (window.audioSystem && window.audioSystem.enableSoundEffects) {
+            window.audioSystem.enableSoundEffects();
+        }
+        
         // Enable animations and particle effects
         document.body.classList.add('full-animations');
         
@@ -186,10 +219,52 @@ export class DesignTierSystem {
         }
     }
     
-    applyTier4() {
-        // Enable background music
+    async applyTier4() {
+        // Apply Tier 3 visuals first (animations, particles, sound effects)
+        // But DON'T call applyTier3() because it disables music!
+        // Instead, manually apply Tier 3 features without disabling music
+        
+        // Disable music (but we'll re-enable it right after)
+        // Actually, don't disable - just skip that part
+        // Enable sound effects (Tier 3 includes Tier 2's sound effects)
+        if (window.audioSystem && window.audioSystem.enableSoundEffects) {
+            window.audioSystem.enableSoundEffects();
+        }
+        
+        // Enable animations and particle effects
+        document.body.classList.add('full-animations');
+        
+        // Enable particle canvas
+        const particleCanvas = document.getElementById('particle-canvas');
+        if (particleCanvas) {
+            particleCanvas.style.display = 'block';
+        }
+        
+        // Try multiple possible names for particle system
+        if (window.particleSystem) {
+            window.particleSystem.enable();
+        } else if (window.particleEffects) {
+            window.particleEffects.enable();
+        }
+        
+        // Enable background music (the only difference from Tier 3)
         if (window.audioSystem) {
-            window.audioSystem.enableMusic();
+            console.log('applyTier4: Enabling music...');
+            await window.audioSystem.enableMusic();
+            console.log('applyTier4: Music enabled');
+            
+            // If audio context is suspended, try to resume it
+            if (window.audioSystem.audioContext && window.audioSystem.audioContext.state === 'suspended') {
+                try {
+                    await window.audioSystem.audioContext.resume();
+                    console.log('applyTier4: Audio context resumed');
+                    // Restart music after resuming
+                    await window.audioSystem.startMusic();
+                } catch (error) {
+                    console.error('applyTier4: Failed to resume audio context:', error);
+                    // Music will start when user interacts with page
+                }
+            }
         }
     }
     
@@ -258,10 +333,10 @@ export class DesignTierSystem {
     /**
      * Set tier manually (for settings/preferences)
      */
-    setTier(tier) {
+    async setTier(tier) {
         if (this.unlockedTiers.has(tier)) {
             this.currentTier = tier;
-            this.applyTier(tier);
+            await this.applyTier(tier);
             this.saveTier();
         }
     }
@@ -271,6 +346,62 @@ export class DesignTierSystem {
      */
     getUnlockedTiers() {
         return Array.from(this.unlockedTiers);
+    }
+    
+    /**
+     * Unlock all tiers for testing
+     */
+    async unlockAllTiers() {
+        console.log('Unlocking all tiers...');
+        console.log('Current unlocked tiers before:', Array.from(this.unlockedTiers));
+        
+        // Unlock all tiers (0-4)
+        for (let tier = 0; tier <= 4; tier++) {
+            if (!this.unlockedTiers.has(tier)) {
+                this.unlockedTiers.add(tier);
+                console.log(`Unlocked tier ${tier}`);
+            }
+        }
+        
+        // Set current tier to highest
+        this.currentTier = 4;
+        console.log('Setting current tier to:', this.currentTier);
+        
+        // Apply only the highest tier (4) to ensure all features are enabled
+        // Don't apply all tiers sequentially as that would disable music between tiers
+        await this.applyTier(4);
+        console.log(`Applied tier 4 styling and features (includes all previous tiers)`);
+        
+        // Save the unlocked tiers
+        this.saveTier();
+        console.log('Saved unlocked tiers to localStorage');
+        
+        // Refresh the Settings tab UI if the function exists
+        if (typeof window.updateSettingsTab === 'function') {
+            window.updateSettingsTab();
+            console.log('Updated Settings tab UI');
+        } else {
+            // Try to manually update the tier selector
+            const tierSelector = document.getElementById('tier-selector');
+            if (tierSelector) {
+                const unlockedTiers = Array.from(this.unlockedTiers);
+                Array.from(tierSelector.options).forEach(option => {
+                    const tier = parseInt(option.value, 10);
+                    option.disabled = !unlockedTiers.includes(tier);
+                });
+                tierSelector.value = this.currentTier.toString();
+                console.log('Updated tier selector manually');
+            }
+        }
+        
+        // Show notification
+        if (window.showNotification) {
+            window.showNotification('All design tiers unlocked for testing!', 'success');
+        }
+        
+        console.log('All design tiers unlocked:', Array.from(this.unlockedTiers));
+        console.log('Current tier:', this.currentTier);
+        return true;
     }
 }
 

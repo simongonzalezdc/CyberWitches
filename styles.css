@@ -1698,6 +1698,34 @@ body.tier-0 .tab-icon-experiment .css-icon-lightning {
     text-shadow: none !important;
 }
 
+/* Tier 1 and Tier 2 use colored tab icons but remove glows/text-shadows (CLI-like) */
+body.tier-1 .tab-icon,
+body.tier-1 .tab-icon-workstations,
+body.tier-1 .tab-icon-inscriptions,
+body.tier-1 .tab-icon-inventory,
+body.tier-1 .tab-icon-experiment,
+body.tier-1 .tab-icon-dailies,
+body.tier-1 .tab-icon-coven,
+body.tier-1 .tab-icon-boons,
+body.tier-1 .tab-icon-meditation,
+body.tier-1 .tab-icon-stats,
+body.tier-1 .tab-icon-settings,
+body.tier-2 .tab-icon,
+body.tier-2 .tab-icon-workstations,
+body.tier-2 .tab-icon-inscriptions,
+body.tier-2 .tab-icon-inventory,
+body.tier-2 .tab-icon-experiment,
+body.tier-2 .tab-icon-dailies,
+body.tier-2 .tab-icon-coven,
+body.tier-2 .tab-icon-boons,
+body.tier-2 .tab-icon-meditation,
+body.tier-2 .tab-icon-stats,
+body.tier-2 .tab-icon-settings {
+    /* Keep colors but remove glows/text-shadows for CLI-like appearance */
+    text-shadow: none !important;
+    animation: none !important;
+}
+
 /* Tier 1 - Basic Color (CLI-like) */
 body.tier-1 {
     /* Colors are enabled via CSS variables */
@@ -1905,9 +1933,219 @@ body.tier-1 button {
     animation: none !important;
 }
 
-/* Tier 2 - Sound Effects (same visual as Tier 1) */
+/* Tier 2 - Sound Effects (same visual as Tier 1, just adds sound) */
+/* Tier 2 should look exactly like Tier 1 - no visual changes, only sound enabled */
+/* Use CSS selector to inherit all Tier 1 styles */
+body.tier-2,
+body.tier-2 * {
+    /* Inherit all Tier 1 visual styles - use same rules */
+}
+
 body.tier-2 {
-    /* Same as Tier 1 visually */
+    /* Same as Tier 1 - CLI-like with colors */
+    font-family: 'Courier New', 'Consolas', 'Fira Code', monospace !important;
+    background: #000000 !important;
+    background-image: none !important;
+    color: #FFFFFF !important;
+    /* No transitions or animations on Tier 2 (same as Tier 1) */
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Tier 2 has the same visual rules as Tier 1 - no animations, no glows, no shadows */
+body.tier-2 *,
+body.tier-2 *::before,
+body.tier-2 *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transform: none !important;
+}
+
+/* Buttons: same as Tier 1 - border only, transparent background */
+body.tier-2 .btn-primary,
+body.tier-2 .btn-cast,
+body.tier-2 .btn-secondary,
+body.tier-2 .btn-danger,
+body.tier-2 button {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--primary) !important;
+    color: var(--primary) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+body.tier-2 .btn-cast {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+body.tier-2 .btn-secondary {
+    border-color: var(--secondary) !important;
+    color: var(--secondary) !important;
+}
+
+body.tier-2 .btn-danger {
+    border-color: #FF4444 !important;
+    color: #FF4444 !important;
+}
+
+/* Cards: same as Tier 1 - dark background with border only */
+body.tier-2 .card,
+body.tier-2 .workstation-card,
+body.tier-2 .upgrade-card {
+    background: #000000 !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--border) !important;
+    color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+body.tier-2 .card-section {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Remove purple/pink backgrounds from HUD and tabs on Tier 2 (same as Tier 1) */
+body.tier-2 .hud {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.tier-2 .tabs-nav {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 2px solid var(--border) !important;
+}
+
+body.tier-2 .tab-btn {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+body.tier-2 .tab-btn.active {
+    background: transparent !important;
+    background-image: none !important;
+    border-color: var(--primary) !important;
+}
+
+body.tier-2 .tab-btn::before,
+body.tier-2 .tab-btn::after {
+    display: none !important;
+}
+
+/* Remove any purple/pink backgrounds from all elements on Tier 2 (same as Tier 1) */
+body.tier-2 * {
+    background-image: none !important;
+}
+
+body.tier-2 *[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Specific overrides for common purple backgrounds on Tier 2 (same as Tier 1) */
+body.tier-2 .card-section.full-width,
+body.tier-2 .inscription-bonuses,
+body.tier-2 .card-content-left,
+body.tier-2 .card-content-right {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove purple/pink backgrounds from card sections with borders on Tier 2 (same as Tier 1) */
+body.tier-2 .card-section.full-width[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove any rgba purple backgrounds on Tier 2 (same as Tier 1) */
+body.tier-2 *[style*="rgba(255, 45, 170"],
+body.tier-2 *[style*="rgba(255, 16, 240"],
+body.tier-2 *[style*="#FF2DAA"],
+body.tier-2 *[style*="#FF10F0"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Ensure all purple/pink tinted backgrounds are removed on Tier 2 (same as Tier 1) */
+body.tier-2 .card::before {
+    display: none !important;
+}
+
+body.tier-2 .tab-panel {
+    background: transparent !important;
+}
+
+body.tier-2 .tab-panel.active {
+    background: transparent !important;
+}
+
+/* Remove glass backgrounds that might have purple tint on Tier 2 (same as Tier 1) */
+body.tier-2 [class*="glass"],
+body.tier-2 [style*="backdrop-filter"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Remove background gradients on Tier 2 (same as Tier 1) */
+body.tier-2::before,
+body.tier-2::after {
+    display: none !important;
+}
+
+/* Disable particle canvas on Tier 2 */
+body.tier-2 #particle-canvas {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* No hover effects on Tier 2 (same as Tier 1) */
+body.tier-2 *:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+/* Buttons on hover - keep border, no background change, no animations on Tier 2 (same as Tier 1) */
+body.tier-2 .btn-primary:hover,
+body.tier-2 .btn-cast:hover,
+body.tier-2 .btn-secondary:hover,
+body.tier-2 .btn-danger:hover,
+body.tier-2 button:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* No transitions or animations on Tier 2 (same as Tier 1) */
+body.tier-2 .color-transitions {
+    transition: none !important;
+    animation: none !important;
+}
+
+body.tier-2 .btn-primary,
+body.tier-2 .btn-cast,
+body.tier-2 .btn-secondary,
+body.tier-2 .btn-danger,
+body.tier-2 button {
+    transition: none !important;
+    animation: none !important;
 }
 
 /* Tier 3 - Full Animations */
@@ -1934,6 +2172,133 @@ body.tier-3 .workstation-card:hover {
 /* Tier 4 - Music (same visual as Tier 3) */
 body.tier-4 {
     /* Same as Tier 3 visually */
+}
+
+/* ============================================
+   Background Images (Tier 3+ only)
+   ============================================ */
+
+/* Main Game Background - Only on Tier 3+ */
+body.tier-3::before,
+body.tier-4::before {
+    background-image: 
+        url('images/backgrounds/main-game-bg.png'),
+        radial-gradient(circle at 20% 50%, rgba(255, 45, 170, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(34, 227, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 219, 110, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-dark) 0%, #0F0F1A 25%, #1A1A2A 50%, #0F0F1A 75%, var(--bg-dark) 100%);
+    background-size: 
+        cover,
+        200% 200%,
+        200% 200%,
+        200% 200%,
+        200% 200%;
+    background-position: 
+        center,
+        0% 50%,
+        0% 50%,
+        0% 50%,
+        0% 50%;
+    background-blend-mode: overlay, normal, normal, normal, normal;
+    opacity: 0.8;
+}
+
+/* Tab Panel Backgrounds - Only on Tier 3+ */
+body.tier-3 #workstations-tab.active,
+body.tier-4 #workstations-tab.active {
+    background-image: url('images/backgrounds/tab-workstations-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #inscriptions-tab.active,
+body.tier-4 #inscriptions-tab.active {
+    background-image: url('images/backgrounds/tab-inscriptions-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #experiment-tab.active,
+body.tier-4 #experiment-tab.active {
+    background-image: url('images/backgrounds/tab-experiment-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #coven-tab.active,
+body.tier-4 #coven-tab.active {
+    background-image: url('images/backgrounds/tab-coven-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #boons-tab.active,
+body.tier-4 #boons-tab.active {
+    background-image: url('images/backgrounds/tab-boons-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+/* Meditation Canvas Background - Only on Tier 3+ */
+body.tier-3 #meditation-canvas,
+body.tier-4 #meditation-canvas {
+    background-image: url('images/backgrounds/meditation-canvas-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Ensure tab panels maintain their glass effect on top of backgrounds */
+body.tier-3 .tab-panel.active,
+body.tier-4 .tab-panel.active {
+    position: relative;
+}
+
+body.tier-3 .tab-panel.active::before,
+body.tier-4 .tab-panel.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 24px;
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Ensure content is above background */
+body.tier-3 .tab-panel.active > *,
+body.tier-4 .tab-panel.active > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Explicitly hide background images on Tier 0-2 */
+body.tier-0 .tab-panel.active,
+body.tier-1 .tab-panel.active,
+body.tier-2 .tab-panel.active {
+    background-image: none !important;
+}
+
+body.tier-0 #meditation-canvas,
+body.tier-1 #meditation-canvas,
+body.tier-2 #meditation-canvas {
+    background-image: none !important;
 }
 
 /* Water and Air Element Colors */
