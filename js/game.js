@@ -180,12 +180,10 @@ function defineGlobalFunctions() {
                 pulseElement(buttonElement, 1.1, 200);
             }
             
-            // Show notification
+            // Show notification in sidebar
             if (gained > 0) {
                 const displayName = PRODUCERS.find(p => p.id === wsId)?.displayName || wsId;
-                if (typeof showNotification === 'function') {
-                    showNotification(`<span class="css-icon-sparkle"></span> Crafted ${gained} ${displayName}!`, 'success');
-                }
+                showCraftNotification(`Crafted ${gained} ${displayName}!`, gained);
                 
                 // Play craft sound for workstation crafting
                 if (window.audioSystem && window.audioSystem.playSound) {
@@ -244,12 +242,10 @@ function defineGlobalFunctions() {
                 const newCount = gameState.workstations[wsId] || 0;
                 const gained = newCount - oldCount;
                 
-                // Show notification
+                // Show notification in sidebar
                 if (gained > 0) {
                     const displayName = PRODUCERS.find(p => p.id === wsId)?.displayName || wsId;
-                    if (typeof showNotification === 'function') {
-                        showNotification(`<span class="css-icon-sparkle"></span> Crafted ${gained} ${displayName}!`, 'success');
-                    }
+                    showCraftNotification(`Crafted ${gained} ${displayName}!`, gained);
                 }
                 
                 // Play craft sound (same as x1 and x10)
@@ -1316,7 +1312,7 @@ function initUI() {
             const currentTier = designTierSystem.getCurrentTier();
             if (currentTier >= 4) {
                 // Show auto button at Tier 4+
-                autoCastToggle.style.display = 'block';
+                autoCastToggle.style.display = 'flex';
                 autoCastToggle.style.visibility = 'visible';
                 autoCastToggle.style.opacity = '1';
             } else {
@@ -1331,6 +1327,14 @@ function initUI() {
                         clearInterval(autoCastInterval);
                         autoCastInterval = null;
                     }
+                    // Update status display
+                    const autoStatus = document.getElementById('auto-status');
+                    if (autoStatus) {
+                        autoStatus.textContent = 'OFF';
+                    }
+                    // Update button styling
+                    autoCastToggle.classList.add('auto-disabled');
+                    autoCastToggle.classList.remove('auto-enabled');
                 }
             }
         }
@@ -1347,8 +1351,21 @@ function initUI() {
             }
             
             autoCastEnabled = !autoCastEnabled;
-            autoCastToggle.textContent = `Auto: ${autoCastEnabled ? 'ON' : 'OFF'}`;
-            autoCastToggle.style.background = autoCastEnabled ? 'var(--success)' : 'transparent';
+            
+            // Update sidebar button display
+            const autoStatus = document.getElementById('auto-status');
+            if (autoStatus) {
+                autoStatus.textContent = autoCastEnabled ? 'ON' : 'OFF';
+            }
+            
+            // Update button styling
+            if (autoCastEnabled) {
+                autoCastToggle.classList.add('auto-enabled');
+                autoCastToggle.classList.remove('auto-disabled');
+            } else {
+                autoCastToggle.classList.add('auto-disabled');
+                autoCastToggle.classList.remove('auto-enabled');
+            }
             
             if (autoCastEnabled) {
                 // Auto-cast every 500ms
@@ -1825,6 +1842,24 @@ function initUI() {
         }
         originalTick.call(this, eventMult);
     };
+    
+    // Set up sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebar && sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            // Save sidebar state
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebar_collapsed', isCollapsed.toString());
+        });
+        
+        // Load sidebar state
+        const savedState = localStorage.getItem('sidebar_collapsed');
+        if (savedState === 'true') {
+            sidebar.classList.add('collapsed');
+        }
+    }
     
     // Make showNotification globally available for event system
     window.showNotification = showNotification;
@@ -4200,6 +4235,58 @@ function updateMeditationVisibility() {
 }
 
 /**
+ * Initialize volume sliders
+ */
+function initializeVolumeSliders() {
+    if (!window.audioSystem) {
+        console.warn('audioSystem not available for volume sliders');
+        return;
+    }
+    
+    // Sound Effects Volume Slider (Tier 2+)
+    const sfxVolumeSlider = document.getElementById('sfx-volume-slider');
+    const sfxVolumeValue = document.getElementById('sfx-volume-value');
+    
+    if (sfxVolumeSlider && sfxVolumeValue) {
+        // Set initial value from audioSystem
+        const currentSfxVolume = window.audioSystem.sfxVolume || 1;
+        sfxVolumeSlider.value = currentSfxVolume;
+        sfxVolumeValue.textContent = Math.round(currentSfxVolume * 100) + '%';
+        
+        // Add event listener
+        sfxVolumeSlider.addEventListener('input', (e) => {
+            const volume = parseFloat(e.target.value);
+            window.audioSystem.setSfxVolume(volume);
+            sfxVolumeValue.textContent = Math.round(volume * 100) + '%';
+        });
+    }
+    
+    // Music Volume Slider (Tier 4+)
+    const musicVolumeSlider = document.getElementById('music-volume-slider');
+    const musicVolumeValue = document.getElementById('music-volume-value');
+    
+    if (musicVolumeSlider && musicVolumeValue) {
+        // Set initial value from audioSystem
+        const currentMusicVolume = window.audioSystem.musicVolume || 1;
+        musicVolumeSlider.value = currentMusicVolume;
+        musicVolumeValue.textContent = Math.round(currentMusicVolume * 100) + '%';
+        
+        // Add event listener
+        musicVolumeSlider.addEventListener('input', (e) => {
+            const volume = parseFloat(e.target.value);
+            if (window.audioSystem.setMusicVolume) {
+                window.audioSystem.setMusicVolume(volume);
+            } else {
+                // Fallback if setMusicVolume doesn't exist
+                window.audioSystem.musicVolume = volume;
+                window.audioSystem.saveMusicVolume();
+            }
+            musicVolumeValue.textContent = Math.round(volume * 100) + '%';
+        });
+    }
+}
+
+/**
  * Update settings tab content
  */
 function updateSettingsTab() {
@@ -4213,6 +4300,9 @@ function updateSettingsTab() {
     if (currentTierDisplay) {
         currentTierDisplay.textContent = designTierSystem.getCurrentTier();
     }
+    
+    // Initialize volume sliders
+    initializeVolumeSliders();
     
     // Show tier selector after first ascension (prestigeCount >= 1)
     const tierSelector = document.getElementById('tier-selector');
@@ -4558,6 +4648,56 @@ function showNotification(message, type = 'info') {
     
     // Create and show notification immediately
     createNotificationElement(message, type);
+}
+
+/**
+ * Show craft notification in sidebar
+ * @param {string} message - Notification message
+ * @param {number} amount - Amount crafted
+ */
+function showCraftNotification(message, amount) {
+    const container = document.getElementById('craft-notifications');
+    if (!container) return;
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'craft-notification';
+    notification.innerHTML = `
+        <span class="craft-icon">✨</span>
+        <span class="craft-message">${message}</span>
+    `;
+    
+    // Add to container
+    container.appendChild(notification);
+    
+    // Animate in
+    requestAnimationFrame(() => {
+        notification.classList.add('craft-notification-visible');
+    });
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('craft-notification-visible');
+        notification.classList.add('craft-notification-fade-out');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+    
+    // Limit to 5 notifications max
+    const notifications = container.querySelectorAll('.craft-notification');
+    if (notifications.length > 5) {
+        const oldest = notifications[0];
+        oldest.classList.remove('craft-notification-visible');
+        oldest.classList.add('craft-notification-fade-out');
+        setTimeout(() => {
+            if (oldest.parentNode) {
+                oldest.parentNode.removeChild(oldest);
+            }
+        }, 300);
+    }
 }
 
 /**

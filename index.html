@@ -17,6 +17,65 @@
     <div id="night-sky-stars" class="night-sky-stars"></div>
     <!-- Floating Sparkles Canvas -->
     <canvas id="sparkle-canvas" class="sparkle-canvas"></canvas>
+    <!-- Sidebar for Element Counters (Left Side) -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Elements</h3>
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                <span class="sidebar-toggle-icon">▶</span>
+            </button>
+        </div>
+        <div class="sidebar-content">
+            <div class="element-counters" id="element-counters">
+                <div class="element-counter" data-element="fire" id="element-counter-fire">
+                    <span class="element-icon element-icon-fire">🔥</span>
+                    <span class="element-label">Fire</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="water" id="element-counter-water">
+                    <span class="element-icon element-icon-water">💧</span>
+                    <span class="element-label">Water</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="air" id="element-counter-air">
+                    <span class="element-icon element-icon-air">💨</span>
+                    <span class="element-label">Air</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="crystal" id="element-counter-crystal">
+                    <span class="element-icon element-icon-crystal">💎</span>
+                    <span class="element-label">Crystal</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="aether" id="element-counter-aether">
+                    <span class="element-icon element-icon-aether">✨</span>
+                    <span class="element-label">Aether</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="focus" id="element-counter-focus">
+                    <span class="element-icon element-icon-focus">🧘</span>
+                    <span class="element-label">Focus</span>
+                    <span class="element-amount">0</span>
+                </div>
+            </div>
+            
+            <!-- Craft Notifications Area -->
+            <div class="sidebar-section">
+                <h4 class="sidebar-section-title">Recent Crafts</h4>
+                <div class="craft-notifications" id="craft-notifications"></div>
+            </div>
+            
+            <!-- Auto Mode Toggle -->
+            <div class="sidebar-section">
+                <button id="auto-cast-toggle" class="sidebar-auto-toggle" style="display: none;">
+                    <span class="auto-icon">⚡</span>
+                    <span class="auto-label">Auto Mode</span>
+                    <span class="auto-status" id="auto-status">OFF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- HUD - Top Bar -->
     <div class="hud">
         <div class="hud-content">
@@ -27,34 +86,7 @@
                 <span class="element-icon abps-icon">⚡</span>
                 <span class="element-amount" id="abps-display">0.0 AB/s</span>
             </div>
-            <div class="element-counters" id="element-counters">
-                <div class="element-counter" data-element="fire" id="element-counter-fire">
-                    <span class="element-icon element-icon-fire">🔥</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="water" id="element-counter-water">
-                    <span class="element-icon element-icon-water">💧</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="air" id="element-counter-air">
-                    <span class="element-icon element-icon-air">💨</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="crystal" id="element-counter-crystal">
-                    <span class="element-icon element-icon-crystal">💎</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="aether" id="element-counter-aether">
-                    <span class="element-icon element-icon-aether">✨</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="focus" id="element-counter-focus">
-                    <span class="element-icon element-icon-focus">🧘</span>
-                    <span class="element-amount">0</span>
-                </div>
-            </div>
             <div class="hud-controls">
-                <button id="auto-cast-toggle" class="btn-secondary" style="display: none;">Auto: OFF</button>
                 <button id="cast-button" class="btn-cast">
                     <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
                     <span class="css-icon-sparkle"></span> Cast
@@ -187,6 +219,49 @@
                             <option value="4">Tier 4: Music</option>
                         </select>
                         <p class="settings-note">You can only select tiers you've unlocked</p>
+                    </div>
+
+                    <!-- Audio Volume Settings -->
+                    <div class="settings-section">
+                        <h3>Audio Volume</h3>
+                        
+                        <!-- Sound Effects Volume (Tier 2+) -->
+                        <div class="volume-control">
+                            <label class="volume-label" for="sfx-volume-slider">
+                                Sound Effects Volume (Tier 2+)
+                            </label>
+                            <div class="volume-slider-container">
+                                <input 
+                                    type="range" 
+                                    id="sfx-volume-slider" 
+                                    class="volume-slider" 
+                                    min="0" 
+                                    max="1" 
+                                    step="0.05" 
+                                    value="1"
+                                >
+                                <span class="volume-value" id="sfx-volume-value">100%</span>
+                            </div>
+                        </div>
+
+                        <!-- Music Volume (Tier 4+) -->
+                        <div class="volume-control">
+                            <label class="volume-label" for="music-volume-slider">
+                                Music Volume (Tier 4+)
+                            </label>
+                            <div class="volume-slider-container">
+                                <input 
+                                    type="range" 
+                                    id="music-volume-slider" 
+                                    class="volume-slider" 
+                                    min="0" 
+                                    max="1" 
+                                    step="0.05" 
+                                    value="1"
+                                >
+                                <span class="volume-value" id="music-volume-value">100%</span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Reset Progress Section -->

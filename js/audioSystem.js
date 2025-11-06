@@ -1285,6 +1285,38 @@ export class AudioSystem {
     }
     
     /**
+     * Set music volume
+     * @param {number} volume - Volume level (0-1)
+     */
+    setMusicVolume(volume) {
+        this.musicVolume = Math.max(0, Math.min(1, volume));
+        this.saveMusicVolume();
+        
+        // Apply volume to currently playing music
+        if (this.musicGainNodes && this.musicGainNodes.length > 0) {
+            const musicVolume = this.musicVolume * this.masterVolume;
+            // Update Web Audio API gain nodes if they exist
+            for (const gainNode of this.musicGainNodes) {
+                if (gainNode && gainNode.gain) {
+                    gainNode.gain.value = musicVolume;
+                }
+            }
+        }
+        
+        // Update Tone.js master volume if it exists
+        if (this.toneMusic && this.toneMusic.masterVol && window.Tone) {
+            const musicVolume = this.musicVolume * this.masterVolume;
+            this.toneMusic.masterVol.volume.value = musicVolume * 20 - 20; // Convert 0-1 to dB
+        }
+        
+        // Also check if masterVol is stored directly
+        if (this.masterVol && window.Tone) {
+            const musicVolume = this.musicVolume * this.masterVolume;
+            this.masterVol.volume.value = musicVolume * 20 - 20; // Convert 0-1 to dB
+        }
+    }
+    
+    /**
      * Enable sound effects (for design tier system)
      * This ensures sound effects are enabled when Tier 2 is unlocked
      */
