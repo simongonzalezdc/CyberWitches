@@ -736,6 +736,12 @@ export class GameState {
      */
     saveGameState() {
         try {
+            // Show loading state if available
+            let loadingId = null;
+            if (window.showLoadingState) {
+                loadingId = window.showLoadingState('Saving game...');
+            }
+            
             const saveData = {
                 ab: this.ab,
                 abTotal: this.abTotalEarned,
@@ -776,7 +782,16 @@ export class GameState {
             const compressedData = this.compressSaveData(saveData);
             localStorage.setItem('cyberWitchesSave', compressedData);
             this.lastSaveTime = Date.now() / 1000;
+            
+            // Hide loading state
+            if (loadingId && window.hideLoadingState) {
+                window.hideLoadingState(loadingId);
+            }
         } catch (error) {
+            // Hide loading state on error
+            if (window.hideLoadingState) {
+                window.hideLoadingState();
+            }
             handleError(error, 'save', true);
         }
     }
@@ -786,8 +801,20 @@ export class GameState {
      */
     loadGameState() {
         try {
+            // Show loading state if available
+            let loadingId = null;
+            if (window.showLoadingState) {
+                loadingId = window.showLoadingState('Loading game...');
+            }
+            
             const saveDataStr = localStorage.getItem('cyberWitchesSave');
-            if (!saveDataStr) return;
+            if (!saveDataStr) {
+                // Hide loading state if no save data
+                if (loadingId && window.hideLoadingState) {
+                    window.hideLoadingState(loadingId);
+                }
+                return;
+            }
             
             let data;
             try {
@@ -872,7 +899,16 @@ export class GameState {
             }
             
             this.lastSaveTime = Date.now() / 1000;
+            
+            // Hide loading state
+            if (loadingId && window.hideLoadingState) {
+                window.hideLoadingState(loadingId);
+            }
         } catch (error) {
+            // Hide loading state on error
+            if (window.hideLoadingState) {
+                window.hideLoadingState();
+            }
             handleError(error, 'load', true);
         }
     }

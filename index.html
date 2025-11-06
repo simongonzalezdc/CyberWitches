@@ -73,6 +73,14 @@
                     <span class="auto-status" id="auto-status">OFF</span>
                 </button>
             </div>
+            
+            <!-- Settings Button -->
+            <div class="sidebar-section">
+                <button id="settings-quick-button" class="sidebar-settings-button" aria-label="Open Settings" title="Settings (Ctrl+,)">
+                    <span class="settings-icon">⚙</span>
+                    <span class="settings-label">Settings</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -90,9 +98,6 @@
                     <button id="cast-button" class="btn-cast">
                         <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
                         <span class="css-icon-sparkle"></span> Cast
-                    </button>
-                    <button id="settings-quick-button" class="btn-secondary" aria-label="Open Settings" title="Settings (Ctrl+,)">
-                        <span class="tab-icon tab-icon-settings">⚙</span>
                     </button>
                 </div>
         </div>
@@ -114,7 +119,6 @@
             <button class="tab-btn" data-tab="boons" title="Boons - Purchase powerful permanent bonuses with Eldritch Keys" aria-label="Boons tab"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
             <button class="tab-btn" data-tab="meditation" title="Meditation - Defend against waves in this tower defense mini-game" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
             <button class="tab-btn" data-tab="stats" title="Stats - View your game statistics and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
-            <button class="tab-btn" data-tab="settings" title="Settings - Configure game options and preferences" aria-label="Settings tab"><span class="tab-icon tab-icon-settings">⚙</span> Settings</button>
         </div>
 
         <!-- Tab Content -->
@@ -290,6 +294,18 @@
                         </div>
                     </div>
 
+                    <!-- Tutorial Section -->
+                    <div class="settings-section">
+                        <h3><span class="settings-icon">📚</span> Tutorial</h3>
+                        <p class="settings-note">Learn the basics of the game with an interactive tutorial.</p>
+                        <button id="start-tutorial-button" class="btn-primary">
+                            <span class="settings-icon">▶</span> Start Tutorial
+                        </button>
+                        <button id="reset-tutorial-button" class="btn-secondary" style="margin-top: 8px;">
+                            <span class="settings-icon">🔄</span> Reset Tutorial
+                        </button>
+                    </div>
+
                     <!-- Reset Progress Section -->
                     <div class="settings-section settings-section-danger">
                         <h3><span class="settings-icon settings-icon-warning css-icon-warning"></span> Danger Zone</h3>
@@ -334,9 +350,9 @@
     <script type="module" src="js/accessibility.js"></script>
     <script type="module" src="js/errorRecovery.js"></script>
     <script type="module" src="js/privacyControls.js"></script>
-    <script type="module" src="js/searchFilter.js"></script>
     <script type="module" src="js/progressIndicators.js"></script>
     <script type="module" src="js/featureIndicators.js"></script>
+    <script type="module" src="js/customTooltips.js"></script>
     <script type="module" src="js/sustainableDesign.js"></script>
     <script type="module" src="js/browserNavigation.js"></script>
     <script type="module" src="js/mobileNavigation.js"></script>

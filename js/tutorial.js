@@ -59,9 +59,15 @@ class TutorialSystem {
      * Check if tutorial should start
      */
     shouldStartTutorial() {
+        // Check if tutorial was already completed
+        const tutorialCompleted = localStorage.getItem('tutorialCompleted') === 'true';
+        if (tutorialCompleted) {
+            return false;
+        }
+        
         // Start if no steps completed and game is new
         return this.completedSteps.size === 0 && 
-               (!this.gameState || this.gameState.totalTaps === 0);
+               (!this.gameState || (this.gameState.totalTaps === 0 && this.gameState.abTotalEarned === 0));
     }
     
     /**
@@ -287,6 +293,9 @@ class TutorialSystem {
         });
         this.saveProgress();
         
+        // Mark tutorial as completed in localStorage
+        localStorage.setItem('tutorialCompleted', 'true');
+        
         if (window.showNotification) {
             window.showNotification('Tutorial completed!', 'success');
         }
@@ -308,6 +317,7 @@ class TutorialSystem {
         this.currentStep = 0;
         this.completedSteps.clear();
         localStorage.removeItem('tutorialProgress');
+        localStorage.removeItem('tutorialCompleted');
     }
 }
 

@@ -3,6 +3,9 @@
  * Provides visual indicators for locked/hidden features
  */
 
+// Import custom tooltip manager (will be available globally)
+// const customTooltipManager = window.customTooltipManager || null;
+
 class FeatureIndicatorManager {
     constructor() {
         this.lockedFeatures = new Map();
@@ -152,9 +155,22 @@ class FeatureIndicatorManager {
             // Meditation tab unlocks at prestige 1
             const meditationTab = document.querySelector('[data-tab="meditation"]');
             if (meditationTab) {
+                // Show tab instead of hiding it
+                meditationTab.style.display = '';
+                meditationTab.removeAttribute('style');
+                
                 if (prestigeCount < 1) {
-                    this.addLockIndicator(meditationTab, 'Prestige 1', true);
+                    meditationTab.classList.add('locked');
+                    meditationTab.setAttribute('data-unlock-condition', 'Prestige 1');
+                    const previewText = 'Meditation - Unlocks at Prestige 1\n\nPreview: Defend against waves in this tower defense mini-game. Earn Focus currency and unlock meditation upgrades. Gain production bonuses that apply to your main game!';
+                    meditationTab.setAttribute('title', previewText);
+                    if (window.addTooltip) {
+                        window.addTooltip(meditationTab, previewText, 'top', true);
+                    }
+                    this.addLockIndicator(meditationTab, 'Unlocks at Prestige 1', true);
                 } else {
+                    meditationTab.classList.remove('locked');
+                    meditationTab.removeAttribute('data-unlock-condition');
                     this.addLockIndicator(meditationTab, '', false);
                 }
             }
@@ -162,9 +178,22 @@ class FeatureIndicatorManager {
             // Boons tab unlocks at prestige 1
             const boonsTab = document.querySelector('[data-tab="boons"]');
             if (boonsTab) {
+                // Show tab instead of hiding it
+                boonsTab.style.display = '';
+                boonsTab.removeAttribute('style');
+                
                 if (prestigeCount < 1) {
-                    this.addLockIndicator(boonsTab, 'Prestige 1', true);
+                    boonsTab.classList.add('locked');
+                    boonsTab.setAttribute('data-unlock-condition', 'Prestige 1');
+                    const previewText = 'Boons - Unlocks at Prestige 1\n\nPreview: Purchase powerful permanent bonuses with Eldritch Keys (EK). These bonuses persist across all ascensions and make future runs faster!';
+                    boonsTab.setAttribute('title', previewText);
+                    if (window.addTooltip) {
+                        window.addTooltip(boonsTab, previewText, 'top', true);
+                    }
+                    this.addLockIndicator(boonsTab, 'Unlocks at Prestige 1', true);
                 } else {
+                    boonsTab.classList.remove('locked');
+                    boonsTab.removeAttribute('data-unlock-condition');
                     this.addLockIndicator(boonsTab, '', false);
                 }
             }

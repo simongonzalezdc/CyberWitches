@@ -13,7 +13,7 @@ export const ErrorSeverity = {
 // Error categories
 export const ErrorCategory = {
     GAME_STATE: 'gameState',
-    COVEN_SYSTEM: 'covenSystem',
+    // COVEN_SYSTEM: 'covenSystem', // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
     SAVE_LOAD: 'saveLoad',
     UI: 'ui',
     NETWORK: 'network',
@@ -425,5 +425,4 @@ export function monitorPerformance(operation, fn) {
         
         throw error;
     }
-}
 }

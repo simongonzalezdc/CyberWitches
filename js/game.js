@@ -19,9 +19,9 @@ import loadingStateManager from './loadingState.js';
 import accessibilityManager from './accessibility.js';
 import errorRecoveryManager from './errorRecovery.js';
 import privacyManager from './privacyControls.js';
-import searchFilterManager from './searchFilter.js';
 import progressIndicatorManager from './progressIndicators.js';
 import featureIndicatorManager from './featureIndicators.js';
+import customTooltipManager from './customTooltips.js';
 import sustainableDesignManager from './sustainableDesign.js';
 import browserNavigationManager from './browserNavigation.js';
 import mobileNavigationManager from './mobileNavigation.js';
@@ -97,6 +97,11 @@ let meditationState;
 let meditationUI;
 let meditationTowers;
 let designTierSystem;
+let tutorialSystem;
+let balanceTestingFramework;
+let progressionAnalysis;
+let economyBalancing;
+let feedbackLoopManager;
 
 // UI Elements (will be set after DOM loads)
 let abDisplay;
@@ -145,10 +150,9 @@ const keyboardShortcuts = {
     '3': () => switchTab('inventory'),
     '4': () => switchTab('experiment'),
     '5': () => switchTab('dailies'),
-    '6': () => switchTab('coven'),
-    '7': () => switchTab('boons'),
-    '8': () => switchTab('meditation'),
-    '9': () => switchTab('stats'),
+    '6': () => switchTab('boons'),
+    '7': () => switchTab('meditation'),
+    '8': () => switchTab('stats'),
     ' ': () => {
         if (castButton) {
             const handler = castButton.onclick;
@@ -486,115 +490,7 @@ function defineGlobalFunctions() {
         }
     };
     
-    // Coven-related global functions - Archived for future development - see ARCHIVED_COVEN_FEATURES.md
-    /*
-    window.createCoven = () => {
-        if (!gameState || !gameState.covenSystem) {
-            if (typeof showNotification === 'function') {
-                showNotification('Coven system not available', 'error');
-            }
-            return;
-        }
-        
-        const nameInput = document.getElementById('coven-name-input');
-        const descInput = document.getElementById('coven-desc-input');
-        
-        if (!nameInput) {
-            if (typeof showNotification === 'function') {
-                showNotification('Coven name input not found', 'error');
-            }
-            return;
-        }
-        
-        const name = nameInput.value.trim();
-        const description = descInput ? descInput.value.trim() : '';
-        
-        if (!name) {
-            if (typeof showNotification === 'function') {
-                showNotification('Please enter a coven name', 'error');
-            }
-            return;
-        }
-        
-        if (gameState.covenSystem.createCoven(name, description)) {
-            nameInput.value = '';
-            if (descInput) descInput.value = '';
-            if (typeof updateCovenTab === 'function') updateCovenTab();
-            if (typeof showNotification === 'function') {
-                showNotification(`Created coven: ${name}!`, 'success');
-            }
-        } else {
-            if (typeof showNotification === 'function') {
-                showNotification('Failed to create coven', 'error');
-            }
-        }
-    };
-    
-    window.joinCoven = () => {
-        if (!gameState || !gameState.covenSystem) {
-            if (typeof showNotification === 'function') {
-                showNotification('Coven system not available', 'error');
-            }
-            return;
-        }
-        
-        const codeInput = document.getElementById('coven-code-input');
-        if (!codeInput) {
-            if (typeof showNotification === 'function') {
-                showNotification('Coven code input not found', 'error');
-            }
-            return;
-        }
-        
-        const covenCode = codeInput.value.trim();
-        
-        if (!covenCode) {
-            if (typeof showNotification === 'function') {
-                showNotification('Please enter a coven code', 'error');
-            }
-            return;
-        }
-        
-        if (gameState.covenSystem.joinCoven(covenCode)) {
-            codeInput.value = '';
-            if (typeof updateCovenTab === 'function') updateCovenTab();
-            if (typeof showNotification === 'function') {
-                showNotification('Joined coven!', 'success');
-            }
-        } else {
-            if (typeof showNotification === 'function') {
-                showNotification('Failed to join coven', 'error');
-            }
-        }
-    };
-    
-    window.leaveCoven = () => {
-        if (!gameState || !gameState.covenSystem) return;
-        
-        // Confirm before leaving coven
-        if (confirm('Are you sure you want to leave your coven?')) {
-            if (gameState.covenSystem.leaveCoven()) {
-                if (typeof updateCovenTab === 'function') updateCovenTab();
-                if (typeof showNotification === 'function') {
-                    showNotification('Left coven', 'info');
-                }
-            } else {
-                // Handle error case when leaveCoven() returns false
-                if (typeof showNotification === 'function') {
-                    showNotification('Failed to leave coven', 'error');
-                }
-            }
-        }
-    };
-    */
-    
-    // window.toggleCovenSection = (sectionId) => {
-    //     const section = document.getElementById(sectionId);
-    //     if (section) {
-    //         const isVisible = section.style.display !== 'none';
-    //         section.style.display = isVisible ? 'none' : 'block';
-    //     }
-    // };
+    // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
     
     console.log('Global functions defined and attached to window');
     
@@ -879,6 +775,10 @@ function initUI() {
     abpsDisplay = document.getElementById('abps-display');
     castButton = document.getElementById('cast-button');
     
+    // Auto-cast state (needs to be in function scope for closure)
+    let autoCastEnabled = false;
+    let autoCastInterval = null;
+    
     // Query for tab buttons - try both class names for compatibility
     tabButtons = document.querySelectorAll('.tab-btn');
     if (tabButtons.length === 0) {
@@ -917,6 +817,7 @@ function initUI() {
     
     // Initialize game state
     gameState = new GameState();
+    gameState.start(); // Start the game tick loop
     dailyRituals = new DailyRituals(gameState);
     achievements = new AchievementSystem(gameState);
     comboSystem = new ComboSystem();
@@ -929,7 +830,7 @@ function initUI() {
     // Initialize quest system (already initialized as singleton, but ensure it's accessible)
     if (questSystem) {
         window.questSystem = questSystem;
-        questSystem.init(); // Ensure it's initialized
+        // Don't call init() again - it's already called in the constructor
     }
     
     // Initialize balance testing framework
@@ -1171,7 +1072,7 @@ function initUI() {
     // Make resetAllProgress globally accessible for debugging
     window.resetAllProgress = resetAllProgress;
     
-    // Settings quick button in HUD
+    // Settings quick button in sidebar
     const settingsQuickButton = document.getElementById('settings-quick-button');
     if (settingsQuickButton) {
         settingsQuickButton.addEventListener('click', () => {
@@ -1401,8 +1302,6 @@ function initUI() {
     
     // Auto-cast toggle - only visible at Tier 4+
     const autoCastToggle = document.getElementById('auto-cast-toggle');
-    let autoCastEnabled = false;
-    let autoCastInterval = null;
     window.autoCastEnabled = () => autoCastEnabled; // Make accessible for sound throttling
     
     // Function to update auto button visibility based on tier
@@ -1512,10 +1411,37 @@ function initUI() {
     const ascendButton = document.getElementById('ascend-button');
     if (ascendButton) {
         ascendButton.addEventListener('click', async () => {
-            if (gameState) {
+            if (!gameState) return;
+            
+            // Show confirmation dialog
+            const prestigeGain = gameState.calculatePrestigeGain();
+            const confirmed = await showDestructiveConfirmation(
+                '⚡ Ascend',
+                `Are you sure you want to ascend?\n\nYou will gain ${prestigeGain.toFixed(2)} Eldritch Keys (EK).\n\nYou will lose:\n• All AB and ingredients\n• All workstations\n• All upgrades (except prestige bonuses)\n\nYou will keep:\n• Prestige points (Eldritch Keys)\n• Prestige bonuses (Boons)\n• Discovered recipes\n• Achievements\n• Design tier unlocks`,
+                'ASCEND'
+            );
+            
+            if (!confirmed) {
+                if (window.showNotification) {
+                    window.showNotification('Ascension cancelled.', 'info');
+                }
+                return;
+            }
+            
+            // Show loading state
+            if (window.showLoadingState) {
+                window.showLoadingState('Ascending...');
+            }
+            
+            try {
                 const oldPrestigeCount = gameState.prestigeCount;
                 gameState.ascend();
                 if (prestigeModal) prestigeModal.classList.remove('active');
+                
+                // Hide loading state
+                if (window.hideLoadingState) {
+                    window.hideLoadingState();
+                }
                 
                 // Play level up sound for prestige/ascension
                 if (window.audioSystem && window.audioSystem.playSound) {
@@ -1565,6 +1491,16 @@ function initUI() {
                 updateSettingsTab();
                 
                 updateAllUI();
+            } catch (error) {
+                // Hide loading state on error
+                if (window.hideLoadingState) {
+                    window.hideLoadingState();
+                }
+                console.error('Error during ascension:', error);
+                handleError(error, 'ascension', true);
+                if (window.showNotification) {
+                    window.showNotification('An error occurred during ascension. Please try again.', 'error');
+                }
             }
         });
     }
@@ -2117,12 +2053,6 @@ function initUI() {
             } else if (action === 'inscribe' && upgradeId && typeof window.inscribeUpgrade === 'function') {
                 window.inscribeUpgrade(upgradeId, button);
                 handled = true;
-            } else if (action === 'create-coven' && typeof window.createCoven === 'function') {
-                window.createCoven();
-                handled = true;
-            } else if (action === 'join-coven' && typeof window.joinCoven === 'function') {
-                window.joinCoven();
-                handled = true;
             }
             
             if (handled) {
@@ -2219,6 +2149,17 @@ function initUI() {
 
 function switchTab(tabName) {
     console.log('switchTab called with:', tabName);
+    
+    // Check if tab is locked
+    const tabButton = Array.from(tabButtons || []).find(btn => btn.dataset.tab === tabName);
+    if (tabButton && tabButton.classList.contains('locked')) {
+        // Show notification that tab is locked
+        const unlockCondition = tabButton.getAttribute('data-unlock-condition') || 'Prestige 1';
+        if (window.showNotification) {
+            window.showNotification(`This tab is locked. Unlocks at: ${unlockCondition}`, 'info');
+        }
+        return;
+    }
     
     // Update browser history if browser navigation manager is available
     if (browserNavigationManager) {
@@ -2437,53 +2378,6 @@ function updateWorkstationsTab() {
         minHeight: containerComputed.minHeight
     });
     
-    // Create search/filter UI if it doesn't exist
-    if (searchFilterManager) {
-        searchFilterManager.createSearchUI('workstations-tab', 'workstation-list', (item, filters, searchTerm) => {
-            // Filter logic for workstations
-            let show = true;
-            
-            // Check if affordable
-            if (filters.affordable) {
-                const wsId = item.getAttribute('data-ws-id');
-                if (wsId) {
-                    const prod = PRODUCERS.find(p => p.id === wsId);
-                    if (prod) {
-                        const owned = gameState.workstations[wsId] || 0;
-                        const recipe = getScaledRecipe(prod.recipe, owned, prod.growth);
-                        if (!gameState.canAfford(recipe)) {
-                            show = false;
-                        }
-                    }
-                }
-            }
-            
-            // Check if owned
-            if (filters.owned) {
-                const wsId = item.getAttribute('data-ws-id');
-                if (wsId) {
-                    const owned = gameState.workstations[wsId] || 0;
-                    if (owned === 0) {
-                        show = false;
-                    }
-                }
-            }
-            
-            // Check if unowned
-            if (filters.unowned) {
-                const wsId = item.getAttribute('data-ws-id');
-                if (wsId) {
-                    const owned = gameState.workstations[wsId] || 0;
-                    if (owned > 0) {
-                        show = false;
-                    }
-                }
-            }
-            
-            return show;
-        });
-    }
-    
     // Filter unlocked workstations
     const unlockedWorkstations = PRODUCERS.filter(prod => gameState.ab >= prod.unlockAtAb);
     console.log('Unlocked workstations:', unlockedWorkstations.length, 'of', PRODUCERS.length, 'total');
@@ -2623,6 +2517,11 @@ function getInscriptionBonusRates(prodData, owned, inscriptionMult) {
  * @param {number} tier - Tier number (0-5)
  * @returns {Object} Tier symbol and style information
  */
+/**
+ * Get tier symbol and styling information
+ * @param {number} tier - Item tier (0-5)
+ * @returns {Object} Tier style object
+ */
 function getTierSymbol(tier) {
     const tierStyles = {
         0: { 
@@ -2672,6 +2571,62 @@ function getTierSymbol(tier) {
 }
 
 /**
+ * Get tier-appropriate styling based on current design tier
+ * @param {number} itemTier - The tier of the item (0-5)
+ * @returns {Object} Styling object with color, textShadow, boxShadow, transition, etc.
+ */
+function getTierAppropriateStyle(itemTier) {
+    const currentDesignTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
+    const tierSymbol = getTierSymbol(itemTier);
+    
+    // Tier 0: Monochrome, no shadows, no transitions
+    if (currentDesignTier === 0) {
+        return {
+            color: '#FFFFFF',
+            textShadow: 'none',
+            boxShadow: 'none',
+            borderGlow: '#FFFFFF',
+            gradient: '#FFFFFF',
+            transition: 'none',
+            fontFamily: "'Courier New', monospace",
+            hasGlow: false,
+            hasShadows: false,
+            hasTransitions: false
+        };
+    }
+    
+    // Tier 1-2: Colors but no shadows/glows, no transitions
+    if (currentDesignTier <= 2) {
+        return {
+            color: tierSymbol.color,
+            textShadow: 'none',
+            boxShadow: 'none',
+            borderGlow: tierSymbol.color,
+            gradient: tierSymbol.color,
+            transition: 'none',
+            fontFamily: "'Orbitron', sans-serif",
+            hasGlow: false,
+            hasShadows: false,
+            hasTransitions: false
+        };
+    }
+    
+    // Tier 3-4: Full effects (colors, shadows, glows, transitions)
+    return {
+        color: tierSymbol.color,
+        textShadow: `0 0 8px ${tierSymbol.color}, 0 0 12px ${tierSymbol.glow}`,
+        boxShadow: `0 2px 8px rgba(0, 0, 0, 0.3), 0 0 12px ${tierSymbol.glow}`,
+        borderGlow: tierSymbol.borderGlow,
+        gradient: tierSymbol.gradient,
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        fontFamily: "'Orbitron', sans-serif",
+        hasGlow: true,
+        hasShadows: true,
+        hasTransitions: true
+    };
+}
+
+/**
  * Get tier for a workstation based on its position in PRODUCERS array
  * Tier 0: indices 0-4, Tier 1: 5-9, Tier 2: 10-14, Tier 3: 15-19, Tier 4: 20-24, Tier 5: 25+
  */
@@ -2703,6 +2658,8 @@ function getUpgradeTier(upgData) {
 
 // Traditional rendering function (used for small lists or as fallback)
 function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
+    // Clear only cards, preserve search/filter UI
+    const searchContainer = container.parentElement?.querySelector('.search-filter-container');
     container.innerHTML = '';
     
     if (unlockedWorkstations.length === 0) {
@@ -2735,9 +2692,10 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             
             // Add tier header with tier symbol
             const tierSymbol = getTierSymbol(tier);
+            const tierStyle = getTierAppropriateStyle(tier);
             const tierHeader = document.createElement('div');
             tierHeader.className = 'tier-header';
-            tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierSymbol.color}; text-shadow: 0 0 10px ${tierSymbol.glow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>${tierNames[tier]} Workstations`;
+            tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>${tierNames[tier]} Workstations`;
             container.appendChild(tierHeader);
             
             // Render workstations for this tier
@@ -2760,6 +2718,12 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             
             const card = document.createElement('div');
             card.className = 'card';
+            card.setAttribute('data-ws-id', prodData.id);
+            if (owned > 0) {
+                card.classList.add('owned');
+            } else {
+                card.classList.add('unowned');
+            }
             card.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
             
             // Build inscription bonus display (compact 2-column layout)
@@ -2981,9 +2945,10 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
         
         // Add tier header with tier symbol
         const tierSymbol = getTierSymbol(tier);
+        const tierStyle = getTierAppropriateStyle(tier);
         const tierHeader = document.createElement('div');
         tierHeader.className = 'tier-header';
-        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierSymbol.color}; text-shadow: 0 0 10px ${tierSymbol.glow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>Tier ${tier} Inscriptions`;
+        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>Tier ${tier} Inscriptions`;
         container.appendChild(tierHeader);
         
         // Render upgrades for this tier
@@ -3127,17 +3092,17 @@ function updateInventoryTab() {
         return;
     }
     
-    // Ensure container is visible
-    container.style.display = 'flex';
-    container.style.flexDirection = 'column';
-    container.style.gap = '15px';
+    // Ensure container is visible - use grid layout for compact display
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+    container.style.gap = '8px';
     container.style.visibility = 'visible';
     container.style.opacity = '1';
     container.innerHTML = '';
     
     if (!gameState.inventory || Object.keys(gameState.inventory).length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+            <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; grid-column: 1 / -1;">
                 <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
                 <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">Your inventory is empty. Start crafting to collect items!</p>
             </div>
@@ -3180,16 +3145,40 @@ function updateInventoryTab() {
     // Batch DOM updates for better performance
     const fragment = document.createDocumentFragment();
     
-    // Create header card
+    // Create compact header card
+    const currentDesignTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
+    const isTier0 = currentDesignTier === 0;
+    const isTier1Or2 = currentDesignTier <= 2;
+    
     const headerCard = document.createElement('div');
     headerCard.className = 'card inventory-header';
-    headerCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
+    headerCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; grid-column: 1 / -1; padding: 12px 16px;';
+    
+    if (isTier0) {
+        // Tier 0: Monochrome, no gradients, no shadows
     headerCard.innerHTML = `
-        <div class="card-title" style="font-size: 24px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 28px; filter: drop-shadow(0 0 8px var(--primary));">◈</span> Inventory
+            <div class="card-title" style="font-size: 18px; color: #FFFFFF; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                <span style="font-size: 20px;">◈</span> Inventory
         </div>
-        <div class="card-description" style="font-size: 14px;">Total Items: ${items.length} • Total Value: ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))}</div>
+            <div class="card-description" style="font-size: 12px; color: #FFFFFF;">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
+        `;
+    } else if (isTier1Or2) {
+        // Tier 1-2: Colors but no gradients/shadows
+        headerCard.innerHTML = `
+            <div class="card-title" style="font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                <span style="font-size: 20px;">◈</span> Inventory
+            </div>
+            <div class="card-description" style="font-size: 12px;">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
+        `;
+    } else {
+        // Tier 3-4: Full effects (gradients and shadows)
+        headerCard.innerHTML = `
+            <div class="card-title" style="font-size: 18px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                <span style="font-size: 20px; filter: drop-shadow(0 0 6px var(--primary));">◈</span> Inventory
+            </div>
+            <div class="card-description" style="font-size: 12px;">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
     `;
+    }
     fragment.appendChild(headerCard);
     
     // Create items grouped by tier with enhanced visuals
@@ -3198,43 +3187,79 @@ function updateInventoryTab() {
             continue;
         }
         
-        // Add tier header with tier symbol
+        // Add compact tier header with tier symbol
         const tierSymbol = getTierSymbol(tier);
+        const tierStyle = getTierAppropriateStyle(tier);
+        tierStyle.symbol = tierSymbol.symbol; // Ensure symbol is available
+        
         const tierHeader = document.createElement('div');
         tierHeader.className = 'tier-header';
-        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierSymbol.color}; text-shadow: 0 0 10px ${tierSymbol.glow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>Tier ${tier} Ingredients`;
+        tierHeader.style.cssText = 'grid-column: 1 / -1; padding: 6px 12px; font-size: 13px; font-weight: 600; margin-top: 4px;';
+        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 6px; font-size: 16px;">${tierSymbol.symbol}</span>Tier ${tier}`;
         fragment.appendChild(tierHeader);
-        
-        // Use centralized tier style
-        const tierStyle = tierSymbol;
-        tierStyle.symbol = tierSymbol.symbol; // Ensure symbol is available
         
         // Create items for this tier
         for (const item of itemsByTier[tier]) {
             const percentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
             const cardId = `inventory-item-${item.id}`;
             
+            // Check current design tier for restrictions
+            const currentDesignTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
+            const isTier0 = currentDesignTier === 0;
+            const isTier1Or2 = currentDesignTier <= 2;
+            
             const card = document.createElement('div');
             card.className = 'card inventory-item';
             card.setAttribute('data-tier', tier);
             card.setAttribute('data-item-id', item.id);
+            
+            // Apply tier-appropriate styling
+            if (isTier0) {
+                // Tier 0: Strictly monochrome, no shadows, no transitions
             card.style.cssText = `
                 position: relative; 
                 z-index: 1; 
                 pointer-events: auto; 
                 visibility: visible; 
                 display: block;
-                border: 2px solid ${tierStyle.borderGlow};
+                    border: 1px solid #FFFFFF;
+                    background: #000000;
+                    box-shadow: none;
+                    transition: none;
+                    overflow: hidden;
+                `;
+            } else if (isTier1Or2) {
+                // Tier 1-2: Colors but no shadows/glows, no transitions
+                card.style.cssText = `
+                    position: relative; 
+                    z-index: 1; 
+                    pointer-events: auto; 
+                    visibility: visible; 
+                    display: block;
+                    border: 1px solid ${tierStyle.borderGlow};
+                    background: #000000;
+                    box-shadow: none;
+                    transition: none;
+                    overflow: hidden;
+                `;
+            } else {
+                // Tier 3-4: Full effects (colors, shadows, glows, transitions)
+                card.style.cssText = `
+                    position: relative; 
+                    z-index: 1; 
+                    pointer-events: auto; 
+                    visibility: visible; 
+                    display: block;
+                    border: 1px solid ${tierStyle.borderGlow};
                 background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
-                box-shadow: 
-                    0 4px 20px rgba(0, 0, 0, 0.4),
-                    0 0 20px ${tierStyle.glow},
-                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: ${tierStyle.boxShadow}, inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                    transition: ${tierStyle.transition};
                 overflow: hidden;
             `;
+            }
             
-            // Add shimmer overlay
+            // Add shimmer overlay (only for tier 3+)
+            if (!isTier0 && !isTier1Or2) {
             const shimmer = document.createElement('div');
             shimmer.className = 'inventory-shimmer';
             shimmer.style.cssText = `
@@ -3249,9 +3274,10 @@ function updateInventoryTab() {
                 z-index: 1;
             `;
             card.appendChild(shimmer);
+            }
             
-            // Add pulsing glow for high tiers (using dark background to maintain consistency)
-            if (tier >= 3) {
+            // Add pulsing glow for high tiers (only for tier 3+)
+            if (!isTier0 && !isTier1Or2 && tier >= 3) {
                 const pulseGlow = document.createElement('div');
                 pulseGlow.className = 'inventory-pulse-glow';
                 pulseGlow.style.cssText = `
@@ -3272,64 +3298,107 @@ function updateInventoryTab() {
             
             const contentDiv = document.createElement('div');
             contentDiv.className = 'inventory-item-content';
-            contentDiv.style.cssText = 'position: relative; z-index: 2; padding: 20px;';
+            contentDiv.style.cssText = 'position: relative; z-index: 2; padding: 10px 12px;';
+            
+            // Apply tier-appropriate content styling
+            if (isTier0) {
+                // Tier 0: Monochrome, no shadows, no animations
             contentDiv.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span class="inventory-icon tier-icon-${tier}" style="font-size: 32px; color: ${tierStyle.color}; text-shadow: 0 0 10px ${tierStyle.color}, 0 0 20px ${tierStyle.glow}; animation: iconFloat ${2 + tier * 0.5}s ease-in-out infinite; display: inline-block; line-height: 1;">${tierStyle.symbol}</span>
-                        <div>
-                            <div class="card-label" style="font-size: 18px; font-weight: 700; color: ${tierStyle.color}; text-shadow: 0 0 10px ${tierStyle.glow}; font-family: 'Orbitron', sans-serif;">${item.displayName}</div>
-                            <div class="card-description" style="font-size: 12px; color: var(--text-dim); margin-top: 2px;">Tier ${tier} • ${item.id}</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 20px; color: #FFFFFF; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div style="min-width: 0; flex: 1;">
+                                <div class="card-label" style="font-size: 14px; font-weight: 600; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.displayName}</div>
+                                <div class="card-description" style="font-size: 10px; color: #FFFFFF; margin-top: 1px; opacity: 0.7;">T${tier}</div>
                         </div>
                     </div>
-                    <div class="inventory-amount" style="font-size: 22px; font-weight: 700; color: ${tierStyle.color}; text-shadow: 0 0 15px ${tierStyle.glow}; font-family: 'Orbitron', monospace; min-width: 80px; text-align: right;">
+                        <div class="inventory-amount" style="font-size: 16px; font-weight: 700; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; margin-left: 8px; flex-shrink: 0;">
                         ${formatShort(item.amount)}
                     </div>
                 </div>
-                <div class="progress-bar-container" style="width: 100%; height: 12px; background: rgba(0, 0, 0, 0.5); border-radius: 8px; overflow: hidden; position: relative; margin-top: 8px; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);">
-                    <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: ${tierStyle.gradient}; border-radius: 8px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px ${tierStyle.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.2); position: relative; overflow: hidden;">
-                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent); animation: shimmer 2s infinite;"></div>
+                    <div class="progress-bar-container" style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 4px; overflow: hidden; position: relative; margin-top: 4px; box-shadow: none;">
+                        <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: #FFFFFF; border-radius: 4px; transition: none; box-shadow: none; position: relative; overflow: hidden;">
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-dim);">
-                    <span>${percentage.toFixed(1)}% of max</span>
-                    <span style="opacity: 0.6;">${formatShort(item.amount)} total</span>
+                `;
+            } else if (isTier1Or2) {
+                // Tier 1-2: Colors but no shadows/glows, no transitions
+                contentDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 20px; color: ${tierStyle.color}; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div style="min-width: 0; flex: 1;">
+                                <div class="card-label" style="font-size: 14px; font-weight: 600; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.displayName}</div>
+                                <div class="card-description" style="font-size: 10px; color: var(--text-dim); margin-top: 1px; opacity: 0.7;">T${tier}</div>
+                            </div>
+                        </div>
+                        <div class="inventory-amount" style="font-size: 16px; font-weight: 700; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', monospace; margin-left: 8px; flex-shrink: 0;">
+                            ${formatShort(item.amount)}
+                        </div>
+                    </div>
+                    <div class="progress-bar-container" style="width: 100%; height: 6px; background: rgba(0, 0, 0, 0.5); border-radius: 4px; overflow: hidden; position: relative; margin-top: 4px; box-shadow: none;">
+                        <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: ${tierStyle.gradient}; border-radius: 4px; transition: none; box-shadow: none; position: relative; overflow: hidden;">
+                        </div>
                 </div>
             `;
+            } else {
+                // Tier 3-4: Full effects (colors, shadows, glows, transitions)
+                contentDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 20px; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div style="min-width: 0; flex: 1;">
+                                <div class="card-label" style="font-size: 14px; font-weight: 600; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.displayName}</div>
+                                <div class="card-description" style="font-size: 10px; color: var(--text-dim); margin-top: 1px; opacity: 0.7;">T${tier}</div>
+                            </div>
+                        </div>
+                        <div class="inventory-amount" style="font-size: 16px; font-weight: 700; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', monospace; margin-left: 8px; flex-shrink: 0;">
+                            ${formatShort(item.amount)}
+                        </div>
+                    </div>
+                    <div class="progress-bar-container" style="width: 100%; height: 6px; background: rgba(0, 0, 0, 0.5); border-radius: 4px; overflow: hidden; position: relative; margin-top: 4px; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);">
+                        <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: ${tierStyle.gradient}; border-radius: 4px; transition: ${tierStyle.transition}; box-shadow: ${tierStyle.boxShadow}, inset 0 1px 0 rgba(255, 255, 255, 0.2); position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); animation: shimmer 2s infinite;"></div>
+                        </div>
+                    </div>
+                `;
+            }
             
             card.appendChild(contentDiv);
             
-            // Add hover effect listener
+            // Add hover effect listener (only for tier 3+)
+            if (!isTier0 && !isTier1Or2) {
+                const tierSymbolData = getTierSymbol(tier);
             card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-4px) scale(1.02)';
+                    card.style.transform = 'translateY(-2px) scale(1.01)';
                 card.style.boxShadow = `
-                    0 8px 30px rgba(0, 0, 0, 0.5),
-                    0 0 40px ${tierStyle.glow},
-                    inset 0 1px 0 rgba(255, 255, 255, 0.2)
+                        0 4px 12px rgba(0, 0, 0, 0.4),
+                        0 0 20px ${tierSymbolData.glow},
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15)
                 `;
-                card.style.borderColor = tierStyle.color;
+                    card.style.borderColor = tierSymbolData.color;
             });
             
             card.addEventListener('mouseleave', () => {
                 card.style.transform = 'translateY(0) scale(1)';
-                card.style.boxShadow = `
-                    0 4px 20px rgba(0, 0, 0, 0.4),
-                    0 0 20px ${tierStyle.glow},
-                    inset 0 1px 0 rgba(255, 255, 255, 0.1)
-                `;
+                    card.style.boxShadow = tierStyle.boxShadow + ', inset 0 1px 0 rgba(255, 255, 255, 0.1)';
                 card.style.borderColor = tierStyle.borderGlow;
             });
+            }
             
-            // Add click effect
+            // Add click effect (only for tier 3+ - particle effects)
+            if (!isTier0 && !isTier1Or2 && typeof createParticle === 'function') {
             card.addEventListener('click', () => {
                 const rect = card.getBoundingClientRect();
+                    const tierSymbolData = getTierSymbol(tier);
                 createParticle(
                     rect.left + rect.width / 2,
                     rect.top + rect.height / 2,
                     tierStyle.symbol,
-                    tierStyle.color
+                        tierSymbolData.color
                 );
             });
+            }
             
             fragment.appendChild(card);
         }
@@ -4057,6 +4126,30 @@ function updateStatsTab() {
         achievementsArray.forEach(achievement => {
             if (!achievement) return;
             const unlocked = achievements.unlockedAchievements?.has(achievement.id) || false;
+            
+            // Calculate progress if achievement has progress tracking
+            let progressHTML = '';
+            if (!unlocked && achievement.checkProgress && typeof achievement.checkProgress === 'function') {
+                try {
+                    const progress = achievement.checkProgress(gameState);
+                    if (progress && progress.current !== undefined && progress.target !== undefined) {
+                        const percentage = Math.min(100, Math.round((progress.current / progress.target) * 100));
+                        progressHTML = `
+                            <div class="achievement-progress" style="margin-top: 8px;">
+                                <div class="progress-bar-container" style="width: 100%; height: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; overflow: hidden;">
+                                    <div class="progress-bar" style="width: ${percentage}%; height: 100%; background: var(--primary, #FF2DAA); transition: width 0.3s;"></div>
+                                </div>
+                                <div class="progress-text" style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">
+                                    ${progress.current} / ${progress.target} (${percentage}%)
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    console.warn('Error calculating achievement progress:', e);
+                }
+            }
+            
             const item = document.createElement('div');
             item.className = 'card-section';
             item.style.cssText = `padding: 10px; border-radius: 6px; background: ${unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)'}; margin-bottom: 10px; position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; box-sizing: border-box;`;
@@ -4065,6 +4158,7 @@ function updateStatsTab() {
                     ${unlocked ? '✓' : '○'} ${achievement.name || 'Unknown Achievement'}
                 </div>
                 <div class="card-description" style="font-size: 12px; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${achievement.description || 'No description'}</div>
+                ${progressHTML}
             `;
             achievementsList.appendChild(item);
         });
@@ -4079,282 +4173,29 @@ function updateStatsTab() {
 
 /**
  * Update coven tab with current coven information
+ * Archived for future development - see ARCHIVED_COVEN_FEATURES.md
  */
 function updateCovenTab() {
-    console.log('updateCovenTab called, gameState exists:', !!gameState, 'covenSystem exists:', !!gameState?.covenSystem);
-    if (!gameState || !gameState.covenSystem) {
-        console.error('Coven system not initialized');
-        const container = document.getElementById('coven-content');
-        if (container) {
-            container.innerHTML = '<div class="card"><div class="card-title">Coven System</div><div class="card-description">Coven system not available</div></div>';
-            container.style.display = 'flex';
-            container.style.flexDirection = 'column';
-            container.style.gap = '15px';
-            container.style.visibility = 'visible';
-            container.style.opacity = '1';
-        }
+    // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
         return;
-    }
-    
-    const container = document.getElementById('coven-content');
-    if (!container) {
-        console.error('coven-content container not found!');
-        return;
-    }
-    console.log('coven-content container found, updating content...');
-    
-    // Ensure container is visible
-    container.style.display = 'flex';
-    container.style.flexDirection = 'column';
-    container.style.gap = '15px';
-    container.style.visibility = 'visible';
-    container.style.opacity = '1';
-    container.innerHTML = '';
-    
-    const covenSystem = gameState.covenSystem;
-    const isInCoven = covenSystem.isInCoven();
-    
-    // Create coven status card
-    const statusCard = document.createElement('div');
-    statusCard.className = 'card';
-    statusCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
-    
-    if (isInCoven) {
-        const coven = covenSystem.getCurrentCoven();
-        const bonus = covenSystem.getCovenProductionBonus();
-        const expPercent = (coven.experience / coven.experienceToNext) * 100;
-        
-        statusCard.innerHTML = `
-            <div class="card-title">${coven.name}</div>
-            <div class="card-description">${coven.description}</div>
-            <div class="card-section">
-                <div class="card-label">Level: ${coven.level}</div>
-                <div class="card-label">Members: ${coven.members.length}</div>
-                <div class="card-label">Production Bonus: +${Math.floor((bonus - 1) * 100)}%</div>
-                <div class="card-label">Experience: ${Math.floor(coven.experience)} / ${coven.experienceToNext} XP</div>
-            </div>
-        `;
-    } else {
-        statusCard.innerHTML = `
-            <div class="card-title">Create or Join a Coven</div>
-            <div class="card-description">Join forces with other Cyber Witches to unlock powerful bonuses!</div>
-            <div class="card-section">
-                <div class="card-label">Coven Name:</div>
-                <input type="text" id="coven-name-input" placeholder="Enter coven name" maxlength="50" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); color: var(--text);">
-                <div class="card-label">Description (optional):</div>
-                <textarea id="coven-desc-input" placeholder="Describe your coven" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); resize: vertical; min-height: 60px; color: var(--text);"></textarea>
-            </div>
-            <div class="button-row">
-                <button class="btn-primary" id="create-coven-button-inline" data-action="create-coven">Create Coven</button>
-            </div>
-            <div class="card-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
-                <div class="card-label">Join Coven by Code:</div>
-                <input type="text" id="coven-code-input" placeholder="Enter coven code" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); color: var(--text);">
-            </div>
-            <div class="button-row">
-                <button class="btn-primary" id="join-coven-button-inline" data-action="join-coven">Join Coven</button>
-            </div>
-        `;
-        
-        // Add enter key support for input fields
-        setTimeout(() => {
-            const nameInput = document.getElementById('coven-name-input');
-            const descInput = document.getElementById('coven-desc-input');
-            const codeInput = document.getElementById('coven-code-input');
-            
-            if (nameInput) {
-                nameInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (typeof window.createCoven === 'function') {
-                            window.createCoven();
-                        }
-                    }
-                });
-            }
-            
-            if (descInput) {
-                descInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (typeof window.createCoven === 'function') {
-                            window.createCoven();
-                        }
-                    }
-                });
-            }
-            
-            if (codeInput) {
-                codeInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (typeof window.joinCoven === 'function') {
-                            window.joinCoven();
-                        }
-                    }
-                });
-            }
-        }, 0);
-    }
-    
-    container.appendChild(statusCard);
-    
-    // Add member list if in coven
-    if (isInCoven) {
-        const membersCard = document.createElement('div');
-        membersCard.className = 'card';
-        membersCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
-        membersCard.innerHTML = '<div class="card-title">Members</div>';
-        
-        const coven = covenSystem.getCurrentCoven();
-        const currentPlayerId = covenSystem.playerId;
-        const sortedMembers = [...coven.members].sort((a, b) => {
-            if (a.isLeader && !b.isLeader) return -1;
-            if (!a.isLeader && b.isLeader) return 1;
-            return b.contribution - a.contribution;
-        });
-        
-        sortedMembers.forEach(member => {
-            const isCurrentPlayer = member.id === currentPlayerId;
-            const memberItem = document.createElement('div');
-            memberItem.className = 'card-section';
-            // Only show emojis if tier >= 3
-            const currentTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
-            const leaderEmoji = currentTier >= 3 ? '👑' : '';
-            const memberEmoji = currentTier >= 3 ? '🔮' : '';
-            memberItem.innerHTML = `
-                <div class="card-label">${member.name} ${isCurrentPlayer ? '(You)' : ''} ${member.isLeader ? leaderEmoji : memberEmoji}</div>
-                <div class="card-description">
-                    <span class="contribution-label">Contribution:</span>
-                    <span class="contribution-value">${formatShort(member.contribution)}</span>
-                </div>
-            `;
-            membersCard.appendChild(memberItem);
-        });
-        
-        container.appendChild(membersCard);
-        
-        // Add leave button
-        const leaveButton = document.createElement('button');
-        leaveButton.className = 'btn-secondary';
-        leaveButton.textContent = 'Leave Coven';
-        leaveButton.id = 'leave-coven-button-inline';
-        leaveButton.style.position = 'relative';
-        leaveButton.style.zIndex = '100';
-        leaveButton.style.pointerEvents = 'auto';
-        leaveButton.style.cursor = 'pointer';
-        leaveButton.style.visibility = 'visible';
-        leaveButton.style.display = 'inline-block';
-        leaveButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Leave coven button clicked (inline)');
-            if (typeof window.leaveCoven === 'function') {
-                window.leaveCoven();
-            }
-        });
-        container.appendChild(leaveButton);
-    }
-    
-    console.log('Coven tab updated, container children:', container.children.length);
 }
 
 /**
  * Update coven rituals display
+ * Archived for future development - see ARCHIVED_COVEN_FEATURES.md
  */
 function updateCovenRituals() {
-    if (!gameState || !gameState.covenSystem || !gameState.covenSystem.isInCoven()) {
+    // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
         return;
-    }
-    
-    const ritualList = document.getElementById('ritual-list');
-    const coven = gameState.covenSystem.getCurrentCoven();
-    
-    ritualList.innerHTML = '';
-    
-    // Batch DOM updates for better performance
-    const fragment = document.createDocumentFragment();
-    
-    for (const ritual of coven.activeRituals) {
-        const ritualCard = document.createElement('div');
-        ritualCard.className = `ritual-card ${ritual.completedAt > 0 ? 'completed' : ''}`;
-        
-        const progressPercent = (ritual.progress / ritual.maxProgress) * 100;
-        
-        ritualCard.innerHTML = `
-            <div class="ritual-title">${ritual.name}</div>
-            <div class="ritual-description">${ritual.description}</div>
-            <div class="ritual-progress">
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${Math.min(100, progressPercent)}%"></div>
-                </div>
-                <div class="progress-text">${Math.floor(ritual.progress)} / ${ritual.maxProgress}</div>
-            </div>
-            <div class="ritual-rewards">
-                <div class="ritual-reward">+${ritual.rewards.experience} XP</div>
-                <div class="ritual-reward">+${Math.floor(ritual.rewards.covenBonus * 100)}% Bonus</div>
-            </div>
-        `;
-        
-        fragment.appendChild(ritualCard);
-    }
-    
-    ritualList.appendChild(fragment);
 }
 
 /**
  * Update coven members display
+ * Archived for future development - see ARCHIVED_COVEN_FEATURES.md
  */
 function updateCovenMembers() {
-    if (!gameState || !gameState.covenSystem || !gameState.covenSystem.isInCoven()) {
+    // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
         return;
-    }
-    
-    const memberList = document.getElementById('member-list');
-    const coven = gameState.covenSystem.getCurrentCoven();
-    const currentPlayerId = gameState.covenSystem.playerId;
-    
-    memberList.innerHTML = '';
-    
-    // Sort members: leader first, then by contribution
-    const sortedMembers = [...coven.members].sort((a, b) => {
-        if (a.isLeader && !b.isLeader) return -1;
-        if (!a.isLeader && b.isLeader) return 1;
-        return b.contribution - a.contribution;
-    });
-    
-    // Batch DOM updates for better performance
-    const fragment = document.createDocumentFragment();
-    
-    for (const member of sortedMembers) {
-        const memberCard = document.createElement('div');
-        memberCard.className = 'member-card';
-        
-        const joinedDate = new Date(member.joinedAt).toLocaleDateString();
-        const isCurrentPlayer = member.id === currentPlayerId;
-        
-        // Only show emojis if tier >= 3
-        const currentTier = designTierSystem ? designTierSystem.getCurrentTier() : 0;
-        const leaderText = currentTier >= 3 ? '👑 Coven Leader' : 'Coven Leader';
-        const memberText = currentTier >= 3 ? '🔮 Coven Member' : 'Coven Member';
-        memberCard.innerHTML = `
-            <div class="member-info">
-                <div class="member-name">${member.name} ${isCurrentPlayer ? '(You)' : ''}</div>
-                <div class="member-role">${member.isLeader ? leaderText : memberText}</div>
-            </div>
-            <div class="member-stats">
-                <div class="member-contribution">
-                    <span class="contribution-label">Contribution:</span>
-                    <span class="contribution-value">${formatShort(member.contribution)}</span>
-                </div>
-                <div class="member-joined">Joined: ${joinedDate}</div>
-            </div>
-        `;
-        
-        fragment.appendChild(memberCard);
-    }
-    
-    memberList.appendChild(fragment);
 }
 
 function updateAllUI() {
@@ -4363,7 +4204,7 @@ function updateAllUI() {
     updateInventoryTab();
     updateExperimentTab();
     updateDailiesTab();
-    updateCovenTab();
+    // updateCovenTab(); // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
     updateBoonsTab();
     updateStatsTab();
     updateMeditationVisibility(); // Update meditation tab visibility
@@ -4612,6 +4453,35 @@ function updateSettingsTab() {
             console.log('Tier selector hidden until first ascension. Prestige count:', gameState.prestigeCount);
         }
     }
+    
+    // Initialize tutorial buttons (only once, check if already initialized)
+    const startTutorialButton = document.getElementById('start-tutorial-button');
+    const resetTutorialButton = document.getElementById('reset-tutorial-button');
+    
+    if (startTutorialButton && !startTutorialButton.hasAttribute('data-tutorial-listener-added')) {
+        startTutorialButton.setAttribute('data-tutorial-listener-added', 'true');
+        startTutorialButton.addEventListener('click', () => {
+            if (tutorialSystem) {
+                tutorialSystem.startTutorial();
+            } else if (window.startTutorial) {
+                window.startTutorial();
+            }
+        });
+    }
+    
+    if (resetTutorialButton && !resetTutorialButton.hasAttribute('data-tutorial-listener-added')) {
+        resetTutorialButton.setAttribute('data-tutorial-listener-added', 'true');
+        resetTutorialButton.addEventListener('click', () => {
+            if (tutorialSystem) {
+                tutorialSystem.reset();
+                if (window.showNotification) {
+                    window.showNotification('Tutorial reset. It will start automatically on next game load.', 'info');
+                }
+            } else if (window.resetTutorial) {
+                window.resetTutorial();
+            }
+        });
+    }
 }
 
 /**
@@ -4782,7 +4652,7 @@ function resetAllProgress() {
             milestones: {
                 unlocked: []
             },
-            coven: gameState.covenSystem ? gameState.covenSystem.saveCovenData() : null,
+            // coven: null, // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
             timestamp: Date.now() / 1000,
             version: "2.0"
         };
@@ -4840,6 +4710,7 @@ function resetAllProgress() {
     setTimeout(() => {
         location.reload();
     }, 1000);
+    }); // Close .then() callback
 }
 
 // Note: Global functions are now defined in defineGlobalFunctions() 
@@ -5335,6 +5206,32 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Starting game initialization...');
         initUI();
         console.log('UI initialized successfully');
+        
+        // Verify buttons are clickable
+        const castBtn = document.getElementById('cast-button');
+        if (castBtn) {
+            console.log('Cast button found:', {
+                hasListeners: castBtn.onclick !== null,
+                disabled: castBtn.disabled,
+                pointerEvents: window.getComputedStyle(castBtn).pointerEvents,
+                zIndex: window.getComputedStyle(castBtn).zIndex
+            });
+        } else {
+            console.error('Cast button NOT found in DOM!');
+        }
+        
+        // Verify tab buttons
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        console.log(`Found ${tabBtns.length} tab buttons`);
+        tabBtns.forEach((btn, i) => {
+            console.log(`Tab button ${i}:`, {
+                id: btn.id,
+                dataset: btn.dataset.tab,
+                hasListeners: btn.onclick !== null,
+                disabled: btn.disabled
+            });
+        });
+        
         // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
         // initCovenSystem();
         console.log('Game fully initialized');
@@ -5362,8 +5259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         
-        // Check if cast button exists and is clickable
-        const castBtn = document.getElementById('cast-button');
+        // Check if cast button exists and is clickable (reuse castBtn variable)
         if (castBtn) {
             const btnComputed = window.getComputedStyle(castBtn);
             console.log('Cast button check:', {
@@ -5391,98 +5287,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /**
  * Initialize coven system event handlers
+ * Archived for future development - see ARCHIVED_COVEN_FEATURES.md
  */
 function initCovenSystem() {
-    if (!gameState || !gameState.covenSystem) {
-        console.error('Coven system not available');
+    // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
         return;
-    }
-    
-    const covenSystem = gameState.covenSystem;
-    
-    // Set up coven system callbacks
-    covenSystem.onCovenJoined = (coven) => {
-        console.log('Joined coven:', coven.name);
-        updateCovenTab();
-    };
-    
-    covenSystem.onCovenLeft = (coven) => {
-        console.log('Left coven:', coven.name);
-        updateCovenTab();
-    };
-    
-    covenSystem.onMemberJoined = (member) => {
-        console.log('Member joined:', member.name);
-        updateCovenTab();
-        showNotification(`${member.name} joined coven!`, 'info');
-    };
-    
-    covenSystem.onMemberLeft = (member) => {
-        console.log('Member left:', member.name);
-        updateCovenTab();
-        showNotification(`${member.name} left coven`, 'info');
-    };
-    
-    covenSystem.onRitualProgress = (ritual) => {
-        updateCovenTab();
-    };
-    
-    covenSystem.onRitualCompleted = (ritual) => {
-        showNotification(`<span class="css-icon-celebration"></span> Ritual completed: ${ritual.name}!`, 'success');
-        updateCovenTab();
-    };
-    
-    covenSystem.onCovenLevelUp = (newLevel) => {
-        showNotification(`<span class="css-icon-celebration"></span> Coven reached level ${newLevel}!`, 'success');
-        updateCovenTab();
-    };
-    
-    // Set up event listeners for coven UI elements
-    const createButton = document.getElementById('create-coven-button');
-    const joinButton = document.getElementById('join-coven-button');
-    const leaveButton = document.getElementById('leave-coven-button');
-    const membersButton = document.getElementById('coven-members-button');
-    
-    if (createButton) {
-        createButton.addEventListener('click', createCoven);
-    }
-    
-    if (joinButton) {
-        joinButton.addEventListener('click', joinCoven);
-    }
-    
-    if (leaveButton) {
-        leaveButton.addEventListener('click', leaveCoven);
-    }
-    
-    if (membersButton) {
-        membersButton.addEventListener('click', () => {
-            toggleCovenSection('coven-members');
-        });
-    }
-    
-    // Add enter key support for input fields
-    const nameInput = document.getElementById('coven-name-input');
-    const descInput = document.getElementById('coven-desc-input');
-    const codeInput = document.getElementById('coven-code-input');
-    
-    if (nameInput) {
-        nameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') createCoven();
-        });
-    }
-    
-    if (descInput) {
-        descInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') createCoven();
-        });
-    }
-    
-    if (codeInput) {
-        codeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinCoven();
-        });
-    }
 }
 
 /**

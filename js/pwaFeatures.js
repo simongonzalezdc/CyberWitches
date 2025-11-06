@@ -35,7 +35,7 @@ class PWAFeaturesManager {
     async registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register('/service-worker.js');
+                const registration = await navigator.serviceWorker.register('/sw.js');
                 this.serviceWorker = registration;
                 console.log('Service Worker registered:', registration);
             } catch (error) {

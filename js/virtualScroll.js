@@ -578,6 +578,18 @@ export class VirtualWorkstationList extends VirtualScrollManager {
         const formatShortFn = window.formatShort || ((n) => n.toFixed(2));
         const INGREDIENTS_REF = window.INGREDIENTS || [];
         
+        // Add tooltip to workstation card
+        const tooltipText = `${workstation.displayName}\n\nProduces:\n${Object.entries(workstation.outputs).map(([id, rate]) => {
+            const ingredient = INGREDIENTS_REF.find(ing => ing.id === id);
+            const displayName = ingredient?.displayName || id;
+            return `• ${formatPreciseFn(rate, 2)}/s ${displayName}`;
+        }).join('\n')}\n\n${workstation.description || 'A workstation that produces resources.'}`;
+        
+        if (window.addTooltip && customTooltipManager) {
+            // Tooltip will be added after card is appended to DOM
+            card.setAttribute('data-tooltip-text', tooltipText);
+        }
+        
         card.innerHTML = `
             <div class="card-title">${workstation.displayName}</div>
             <div class="card-description">⚙️ Owned: ${owned}</div>
@@ -633,6 +645,17 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 }
             });
         });
+        
+        // Add tooltip after card is created
+        if (window.addTooltip && card.getAttribute('data-tooltip-text')) {
+            const tooltipText = card.getAttribute('data-tooltip-text');
+            // Use setTimeout to ensure card is in DOM before adding tooltip
+            setTimeout(() => {
+                if (window.addTooltip) {
+                    window.addTooltip(card, tooltipText, 'top', true);
+                }
+            }, 100);
+        }
         
         return card;
     }

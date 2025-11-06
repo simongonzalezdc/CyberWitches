@@ -2024,13 +2024,24 @@ export class AudioSystem {
         // Use Tone.Loop with a custom callback to handle chord arrays properly
         let chordIndex = 0;
         let loopIteration = 0; // Track loop iterations separately from chord index
+        let lastBassTime = 0; // Track last trigger time to prevent duplicate triggers
         const bassLoop = new Tone.Loop((time) => {
+            // Ensure time is strictly greater than previous time
+            if (time <= lastBassTime) {
+                time = lastBassTime + 0.001; // Add small offset to ensure strict increase
+            }
+            lastBassTime = time;
+            
             const currentProgression = chordProgressions[currentProgressionIndex];
             // Only play every other loop iteration to create rhythm breaks
             if (loopIteration % 2 === 0) {
                 const chord = currentProgression[chordIndex % currentProgression.length];
-                console.log('Bass loop playing chord:', chord, 'from progression', currentProgressionIndex, 'at time:', time);
-                bassPad.triggerAttackRelease(chord, '4n', time); // Longer duration: quarter note for sustained bass
+                try {
+                    console.log('Bass loop playing chord:', chord, 'from progression', currentProgressionIndex, 'at time:', time);
+                    bassPad.triggerAttackRelease(chord, '4n', time); // Longer duration: quarter note for sustained bass
+                } catch (error) {
+                    console.warn('Error triggering bass pad:', error);
+                }
                 
                 // Only advance chord index when we actually play
                 chordIndex++;
@@ -2056,7 +2067,14 @@ export class AudioSystem {
         let midLoopIteration = 0; // Track loop iterations separately from chord index
         let midProgressionIndex = 2; // Start with a different progression for variety
         let midProgressionChangeCounter = 0;
+        let lastMidTime = 0; // Track last trigger time to prevent duplicate triggers
         const midLoop = new Tone.Loop((time) => {
+            // Ensure time is strictly greater than previous time
+            if (time <= lastMidTime) {
+                time = lastMidTime + 0.001; // Add small offset to ensure strict increase
+            }
+            lastMidTime = time;
+            
             const currentProgression = chordProgressions[midProgressionIndex];
             // Only play on odd loop iterations to offset from bass and create rhythm breaks
             if (midLoopIteration % 2 === 1) {
@@ -2068,8 +2086,12 @@ export class AudioSystem {
                     }
                     return note;
                 });
-                console.log('Mid loop playing chord:', higherChord, 'from progression', midProgressionIndex, 'at time:', time);
-                midPad.triggerAttackRelease(higherChord, '16n', time); // Very short duration: 16th note to reduce overlap
+                try {
+                    console.log('Mid loop playing chord:', higherChord, 'from progression', midProgressionIndex, 'at time:', time);
+                    midPad.triggerAttackRelease(higherChord, '16n', time); // Very short duration: 16th note to reduce overlap
+                } catch (error) {
+                    console.warn('Error triggering mid pad:', error);
+                }
                 
                 // Only advance chord index when we actually play
                 midChordIndex++;
@@ -2122,13 +2144,24 @@ export class AudioSystem {
         let sparkleNoteIndex = Math.floor(Math.random() * startSparkleMelody.length);
         
         // Convert to Loop for proper quantization with finer granularity (16th note)
+        let lastSparkleTime = 0; // Track last trigger time to prevent duplicate triggers
         const sparkleLoop = new Tone.Loop((time) => {
+            // Ensure time is strictly greater than previous time
+            if (time <= lastSparkleTime) {
+                time = lastSparkleTime + 0.001; // Add small offset to ensure strict increase
+            }
+            lastSparkleTime = time;
+            
             const currentMelody = shuffledSparkleMelodies[sparkleMelodyIndex];
             const note = currentMelody[sparkleNoteIndex % currentMelody.length];
             
             if (note !== null) {
-                console.log('Sparkle playing note:', note, 'from pattern', sparkleMelodyIndex, 'at time:', time);
-                sparkle.triggerAttackRelease(note, '32n', time); // Shorter duration: 32nd note for crisper sparkle
+                try {
+                    console.log('Sparkle playing note:', note, 'from pattern', sparkleMelodyIndex, 'at time:', time);
+                    sparkle.triggerAttackRelease(note, '32n', time); // Shorter duration: 32nd note for crisper sparkle
+                } catch (error) {
+                    console.warn('Error triggering sparkle:', error);
+                }
             }
             
             sparkleNoteIndex++;
@@ -2165,12 +2198,23 @@ export class AudioSystem {
         let typingPatternIndex = 0;
         let typingIndex = 0;
         let typingCycleCount = 0;
+        let lastTypingTime = 0; // Track last trigger time to prevent duplicate triggers
         const typingLoop = new Tone.Loop((time) => {
+            // Ensure time is strictly greater than previous time
+            if (time <= lastTypingTime) {
+                time = lastTypingTime + 0.001; // Add small offset to ensure strict increase
+            }
+            lastTypingTime = time;
+            
             const currentPattern = typingPatterns[typingPatternIndex];
             const note = currentPattern[typingIndex % currentPattern.length];
             if (note !== null) {
-                console.log('Typing beat playing note:', note, 'from pattern', typingPatternIndex, 'at time:', time);
-                typingBeat.triggerAttackRelease(note, '64n', time); // Even shorter click for more percussive sound
+                try {
+                    console.log('Typing beat playing note:', note, 'from pattern', typingPatternIndex, 'at time:', time);
+                    typingBeat.triggerAttackRelease(note, '64n', time); // Even shorter click for more percussive sound
+                } catch (error) {
+                    console.warn('Error triggering typing beat:', error);
+                }
             }
             typingIndex++;
             // Change pattern every 8 cycles for variety

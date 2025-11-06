@@ -218,8 +218,21 @@ class BalanceTestingFramework {
      */
     calculateNextCost(producer, owned) {
         if (!producer.recipe || !producer.growth) return 0;
-        const baseCost = producer.recipe.ab || 0;
-        return Math.ceil(baseCost * Math.pow(producer.growth, owned));
+        
+        // Calculate scaled recipe using the same logic as gameState
+        const scaledRecipe = {};
+        for (const ingId in producer.recipe) {
+            const baseCost = producer.recipe[ingId];
+            scaledRecipe[ingId] = Math.ceil(baseCost * Math.pow(producer.growth, owned));
+        }
+        
+        // Sum all ingredient costs to get total recipe cost
+        let totalCost = 0;
+        for (const ingId in scaledRecipe) {
+            totalCost += scaledRecipe[ingId];
+        }
+        
+        return totalCost;
     }
     
     /**

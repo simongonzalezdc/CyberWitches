@@ -108,7 +108,17 @@ class BalanceAnalyticsManager {
             if (owned > 0) {
                 // Calculate next cost
                 const nextCost = this.calculateNextCost(prod, owned);
-                const scaling = nextCost / (prod.recipe.ab || 1);
+                
+                // Calculate base cost (sum of base recipe ingredients)
+                let baseCost = 0;
+                if (prod.recipe) {
+                    for (const ingId in prod.recipe) {
+                        baseCost += prod.recipe[ingId];
+                    }
+                }
+                
+                // Calculate scaling ratio (next cost / base cost)
+                const scaling = baseCost > 0 ? nextCost / baseCost : 0;
                 scalingData.push({ id: prod.id, scaling });
             }
         });
@@ -166,15 +176,27 @@ class BalanceAnalyticsManager {
      * Calculate next cost
      * @param {Object} producer - Producer object
      * @param {number} owned - Currently owned count
-     * @returns {number} Next cost
+     * @returns {number} Next cost (sum of all ingredient amounts in scaled recipe)
      */
     calculateNextCost(producer, owned) {
         if (!producer.recipe || !producer.growth) {
             return 0;
         }
         
-        const baseCost = producer.recipe.ab || 0;
-        return Math.ceil(baseCost * Math.pow(producer.growth, owned));
+        // Calculate scaled recipe using the same logic as gameState
+        const scaledRecipe = {};
+        for (const ingId in producer.recipe) {
+            const baseCost = producer.recipe[ingId];
+            scaledRecipe[ingId] = Math.ceil(baseCost * Math.pow(producer.growth, owned));
+        }
+        
+        // Sum all ingredient costs to get total recipe cost
+        let totalCost = 0;
+        for (const ingId in scaledRecipe) {
+            totalCost += scaledRecipe[ingId];
+        }
+        
+        return totalCost;
     }
     
     /**
