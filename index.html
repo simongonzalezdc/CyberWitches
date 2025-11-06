@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A magical idle game about casting spells and building workstations">
+    <meta name="theme-color" content="#FF2DAA">
     <title>Cyber Witches: Idle Coven</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <!-- Tone.js for better ambient music -->
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
 </head>
@@ -14,11 +18,43 @@
         <div class="hud-content">
             <div class="currency-display">
                 <span id="ab-display">AB: 0</span>
-                <span id="abps-display">0 AB/s</span>
+            </div>
+            <div class="element-counter abps-counter" id="abps-counter">
+                <span class="element-icon abps-icon">⚡</span>
+                <span class="element-amount" id="abps-display">0.0 AB/s</span>
+            </div>
+            <div class="element-counters" id="element-counters">
+                <div class="element-counter" data-element="fire" id="element-counter-fire">
+                    <span class="element-icon element-icon-fire">🔥</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="water" id="element-counter-water">
+                    <span class="element-icon element-icon-water">💧</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="air" id="element-counter-air">
+                    <span class="element-icon element-icon-air">💨</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="crystal" id="element-counter-crystal">
+                    <span class="element-icon element-icon-crystal">💎</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="aether" id="element-counter-aether">
+                    <span class="element-icon element-icon-aether">✨</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" data-element="focus" id="element-counter-focus">
+                    <span class="element-icon element-icon-focus">🧘</span>
+                    <span class="element-amount">0</span>
+                </div>
             </div>
             <div class="hud-controls">
                 <button id="auto-cast-toggle" class="btn-secondary">Auto: OFF</button>
-                <button id="cast-button" class="btn-cast"><span class="css-icon-sparkle"></span> Cast</button>
+                <button id="cast-button" class="btn-cast">
+                    <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
+                    <span class="css-icon-sparkle"></span> Cast
+                </button>
             </div>
         </div>
     </div>

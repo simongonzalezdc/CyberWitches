@@ -122,6 +122,7 @@ export class MeditationUI {
         this.updateMeditationInventory();
         this.updateMeditationUpgrades();
         this.updateControls();
+        this.updateProductionBonus();
     }
     
     /**
@@ -363,6 +364,55 @@ export class MeditationUI {
             this.startButton.style.display = 'inline-block';
             this.endButton.style.display = 'none';
         }
+    }
+    
+    /**
+     * Update meditation production bonus display
+     */
+    updateProductionBonus() {
+        if (!this.meditationState) return;
+        
+        // Find or create production bonus display element
+        let bonusDisplay = document.getElementById('meditation-production-bonus');
+        if (!bonusDisplay) {
+            // Create bonus display in meditation sidebar
+            const sidebar = document.querySelector('.meditation-sidebar');
+            if (sidebar) {
+                bonusDisplay = document.createElement('div');
+                bonusDisplay.id = 'meditation-production-bonus';
+                bonusDisplay.className = 'meditation-stats-card card';
+                bonusDisplay.style.cssText = 'margin-top: 20px; padding: 15px;';
+                sidebar.insertBefore(bonusDisplay, sidebar.firstChild);
+            } else {
+                return; // Sidebar not found
+            }
+        }
+        
+        // Calculate bonus
+        const bonus = this.meditationState.getMeditationProductionBonus();
+        const bonusPercent = ((bonus - 1.0) * 100).toFixed(1);
+        
+        // Get contributions
+        const focusContribution = Math.min(this.meditationState.focusTotalEarned / 10000, 0.5);
+        const wavesContribution = Math.min(this.meditationState.totalWavesCompleted / 500, 0.25);
+        const distractionsContribution = Math.min(this.meditationState.totalDistractionsKilled / 10000, 0.1);
+        const sessionsContribution = Math.min(this.meditationState.totalSessionsCompleted / 1000, 0.05);
+        
+        // Update display
+        bonusDisplay.innerHTML = `
+            <div class="card-title" style="color: var(--success);">🧘 Meditation Production Bonus</div>
+            <div class="card-section" style="margin-top: 10px;">
+                <div class="card-label" style="font-size: 18px; font-weight: bold; color: var(--secondary);">
+                    +${bonusPercent}% Production
+                </div>
+                <div class="card-description" style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
+                    <div>Focus: +${(focusContribution * 100).toFixed(1)}%</div>
+                    <div>Waves: +${(wavesContribution * 100).toFixed(1)}%</div>
+                    <div>Distractions: +${(distractionsContribution * 100).toFixed(1)}%</div>
+                    <div>Sessions: +${(sessionsContribution * 100).toFixed(1)}%</div>
+                </div>
+            </div>
+        `;
     }
 }
 

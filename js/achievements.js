@@ -186,6 +186,62 @@ export class AchievementSystem {
                 description: 'Own all workstation types',
                 condition: () => Object.keys(this.gameState.workstations).length >= 17,
                 reward: { type: 'ab', amount: 1000000 }
+            },
+            
+            // Focus-related achievements
+            {
+                id: 'first_focus_mill',
+                name: 'Focus Mill',
+                description: 'Craft your first Focus Mill',
+                condition: () => this.gameState.workstations?.ws_focus_mill?.count > 0,
+                reward: { type: 'ab', amount: 5000 }
+            },
+            {
+                id: 'hundred_focus',
+                name: 'Focus Accumulator',
+                description: 'Produce 100 Focus',
+                condition: () => (this.gameState.inventory?.focus || 0) + (this.gameState.totalFocusProduced || 0) >= 100,
+                reward: { type: 'ab', amount: 10000 }
+            },
+            {
+                id: 'thousand_focus',
+                name: 'Focus Master',
+                description: 'Produce 1000 Focus',
+                condition: () => (this.gameState.inventory?.focus || 0) + (this.gameState.totalFocusProduced || 0) >= 1000,
+                reward: { type: 'ab', amount: 50000 }
+            },
+            {
+                id: 'all_focus_mills',
+                name: 'Focus Mastery',
+                description: 'Own all 4 Focus Mills (Tier 2, 3, 4, and 5)',
+                condition: () => {
+                    return this.gameState.workstations?.ws_focus_mill?.count > 0 &&
+                           this.gameState.workstations?.ws_focus_mill_t3?.count > 0 &&
+                           this.gameState.workstations?.ws_focus_mill_t4?.count > 0 &&
+                           this.gameState.workstations?.ws_focus_mill_t5?.count > 0;
+                },
+                reward: { type: 'ab', amount: 100000 }
+            },
+            {
+                id: 'focus_upgrade',
+                name: 'Focus Enhancement',
+                description: 'Purchase Focus Amplification upgrade',
+                condition: () => this.gameState.upgradesOwned?.u_focus_production_1 === true,
+                reward: { type: 'ab', amount: 20000 }
+            },
+            {
+                id: 'focus_experiment',
+                name: 'Focus Experimenter',
+                description: 'Discover Focus Elixir recipe',
+                condition: () => this.gameState.discoveredRecipes?.includes('focus_elixir'),
+                reward: { type: 'ab', amount: 25000 }
+            },
+            {
+                id: 'ten_thousand_focus',
+                name: 'Focus Transcendence',
+                description: 'Produce 10000 Focus',
+                condition: () => (this.gameState.inventory?.focus || 0) + (this.gameState.totalFocusProduced || 0) >= 10000,
+                reward: { type: 'ab', amount: 500000 }
             }
         ];
     }

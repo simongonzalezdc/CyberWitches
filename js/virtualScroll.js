@@ -382,22 +382,27 @@ export class VirtualWorkstationList extends VirtualScrollManager {
             card.innerHTML = `
                 <div class="card-title">${workstation.displayName}</div>
                 <div class="card-description">⚙️ Owned: ${owned}</div>
-                <div class="card-section">
-                    <div class="card-label">Produces:</div>
-                    ${Object.entries(workstation.outputs).map(([id, rate]) => 
-                        `<div class="card-value">${rate.toFixed(2)}/s ${id}</div>`
-                    ).join('')}
+                <div class="card-content-left">
+                    <div class="card-section">
+                        <div class="card-label">Produces:</div>
+                        ${Object.entries(workstation.outputs).map(([id, rate]) => 
+                            `<div class="card-value">${rate.toFixed(2)}/s ${id}</div>`
+                        ).join('')}
+                    </div>
                 </div>
-                <div class="card-section">
-                    <div class="card-label">Recipe for next:</div>
-                    ${Object.entries(recipe).map(([ingId, amount]) => {
-                        const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
-                        const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
-                        const canAfford = have >= amount;
-                        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                            ${ingId}: ${formatShortFn(have)} / ${formatShortFn(amount)}
-                        </div>`;
-                    }).join('')}
+                <div class="card-content-right">
+                    <div class="card-section">
+                        <div class="card-label">Recipe for next:</div>
+                        ${Object.entries(recipe).map(([ingId, amount]) => {
+                            const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
+                            const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
+                            const canAfford = have >= amount;
+                            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+                                <span class="recipe-label">${ingId}:</span>
+                                <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
+                            </div>`;
+                        }).join('')}
+                    </div>
                 </div>
                 <div class="button-row">
                     <button class="btn-primary ${canAfford1 ? '' : 'btn-disabled'}" data-action="craft" data-ws-id="${workstation.id}" data-amount="1" ${canAfford1 ? '' : 'disabled'}>Craft x1</button>
@@ -409,18 +414,29 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 // Attach event listeners directly instead of using onclick
                 const buttons = card.querySelectorAll('button[data-action]');
                 buttons.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
+                    // Remove any existing listeners to prevent duplicates
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    
+                    newBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        const action = btn.dataset.action;
-                        const wsId = btn.dataset.wsId;
                         
-                        console.log('Button clicked:', { action, wsId, amount: btn.dataset.amount });
+                        // Mark button as handled to prevent fallback handler from firing
+                        newBtn.dataset.handled = 'true';
+                        setTimeout(() => {
+                            delete newBtn.dataset.handled;
+                        }, 100);
+                        
+                        const action = newBtn.dataset.action;
+                        const wsId = newBtn.dataset.wsId;
+                        
+                        console.log('Button clicked:', { action, wsId, amount: newBtn.dataset.amount });
                         
                         if (action === 'craft' && typeof window.craftWorkstation === 'function') {
-                            const amount = parseInt(btn.dataset.amount, 10) || 1;
+                            const amount = parseInt(newBtn.dataset.amount, 10) || 1;
                             console.log('Calling craftWorkstation with:', { wsId, amount });
-                            window.craftWorkstation(wsId, amount, btn);
+                            window.craftWorkstation(wsId, amount, newBtn);
                         } else if (action === 'craft-max' && typeof window.craftWorkstationMax === 'function') {
                             console.log('Calling craftWorkstationMax with:', { wsId });
                             window.craftWorkstationMax(wsId);
@@ -586,7 +602,8 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                         const ingredient = INGREDIENTS_REF.find(ing => ing.id === ingId);
                         const displayName = ingredient?.displayName || ingId;
                         return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                            ${displayName}: ${formatShortFn(have)} / ${formatShortFn(amount)}
+                            <span class="recipe-label">${displayName}:</span>
+                            <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                         </div>`;
                     }).join('')}
                 </div>
@@ -734,7 +751,8 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                         const have = gameStateData.inventory[ingId] || 0;
                         const canAfford = have >= amount;
                         return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                            ${ingId}: ${formatShortFn(have)} / ${formatShortFn(amount)}
+                            <span class="recipe-label">${ingId}:</span>
+                            <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                         </div>`;
                     }).join('')}
                 </div>
@@ -834,7 +852,8 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                     const have = gameState.inventory[ingId] || 0;
                     const canAfford = have >= amount;
                     return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                        ${ingId}: ${formatShort(have)} / ${formatShort(amount)}
+                        <span class="recipe-label">${ingId}:</span>
+                        <span class="recipe-numbers">${formatShort(have)} / ${formatShort(amount)}</span>
                     </div>`;
                 }).join('')}
             </div>

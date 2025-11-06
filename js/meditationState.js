@@ -19,10 +19,13 @@ export class MeditationState {
         this.tranquility = 100.0;
         this.tranquilityMax = 100.0;
         
-        // Grid system (8x8 grid)
-        this.gridSize = 8;
-        this.grid = []; // Array of {x, y, tower: null or tower object}
+        // Grid system (16x16 grid for higher resolution)
+        this.gridSize = 16;
+        this.grid = []; // Array of {x, y, tower: null or tower object, isPath: false}
         this.towers = []; // Array of placed towers
+        this.path = []; // Array of path tiles {x, y, nextX, nextY} for pathfinding
+        this.pathTiles = new Set(); // Set of path tile coordinates as strings "x,y"
+        this.pathDistances = new Map(); // Map of path tile distances from center: "x,y" -> distance
         
         // Wave system
         this.currentWave = 0;
@@ -41,6 +44,11 @@ export class MeditationState {
         // Meditation upgrades
         this.meditationUpgrades = {};
         
+        // Meditation statistics (for production bonus)
+        this.totalWavesCompleted = 0;
+        this.totalDistractionsKilled = 0;
+        this.totalSessionsCompleted = 0;
+        
         // Tick timer
         this.tickInterval = null;
         this.lastTickTime = Date.now();
@@ -54,6 +62,7 @@ export class MeditationState {
         
         // Initialize grid
         this.initializeGrid();
+        this.initializePath();
     }
     
     /**
@@ -66,10 +75,240 @@ export class MeditationState {
                 this.grid.push({
                     x: x,
                     y: y,
-                    tower: null
+                    tower: null,
+                    isPath: false
                 });
             }
         }
+    }
+    
+    /**
+     * Initialize maze-like path from edges to center
+     */
+    initializePath() {
+        this.path = [];
+        this.pathTiles = new Set();
+        
+        const centerX = Math.floor(this.gridSize / 2);
+        const centerY = Math.floor(this.gridSize / 2);
+        
+        // Create multiple paths from different edges to center
+        // Top-left entry
+        this.addPathSegment(0, 0, 3, 0);
+        this.addPathSegment(3, 0, 3, 3);
+        this.addPathSegment(3, 3, centerX, 3);
+        this.addPathSegment(centerX, 3, centerX, centerY);
+        
+        // Top-right entry
+        this.addPathSegment(this.gridSize - 1, 0, this.gridSize - 4, 0);
+        this.addPathSegment(this.gridSize - 4, 0, this.gridSize - 4, 3);
+        this.addPathSegment(this.gridSize - 4, 3, centerX, 3);
+        
+        // Bottom-left entry
+        this.addPathSegment(0, this.gridSize - 1, 3, this.gridSize - 1);
+        this.addPathSegment(3, this.gridSize - 1, 3, this.gridSize - 4);
+        this.addPathSegment(3, this.gridSize - 4, centerX, this.gridSize - 4);
+        this.addPathSegment(centerX, this.gridSize - 4, centerX, centerY);
+        
+        // Bottom-right entry
+        this.addPathSegment(this.gridSize - 1, this.gridSize - 1, this.gridSize - 4, this.gridSize - 1);
+        this.addPathSegment(this.gridSize - 4, this.gridSize - 1, this.gridSize - 4, this.gridSize - 4);
+        this.addPathSegment(this.gridSize - 4, this.gridSize - 4, centerX, this.gridSize - 4);
+        
+        // Add horizontal connecting paths
+        this.addPathSegment(3, 6, centerX, 6);
+        this.addPathSegment(centerX, 6, this.gridSize - 4, 6);
+        this.addPathSegment(3, 9, centerX, 9);
+        this.addPathSegment(centerX, 9, this.gridSize - 4, 9);
+        
+        // Add vertical connecting paths
+        this.addPathSegment(6, 3, 6, centerY);
+        this.addPathSegment(6, centerY, 6, this.gridSize - 4);
+        this.addPathSegment(9, 3, 9, centerY);
+        this.addPathSegment(9, centerY, 9, this.gridSize - 4);
+        
+        // Mark path tiles in grid
+        for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+                const gridIndex = y * this.gridSize + x;
+                if (this.pathTiles.has(`${x},${y}`)) {
+                    this.grid[gridIndex].isPath = true;
+                }
+            }
+        }
+        
+        // Calculate distances from center using BFS
+        this.calculatePathDistances();
+    }
+    
+    /**
+     * Calculate distance from center for each path tile using BFS
+     */
+    calculatePathDistances() {
+        this.pathDistances.clear();
+        
+        const centerX = Math.floor(this.gridSize / 2);
+        const centerY = Math.floor(this.gridSize / 2);
+        const centerKey = `${centerX},${centerY}`;
+        
+        // Initialize: center has distance 0
+        if (this.pathTiles.has(centerKey)) {
+            this.pathDistances.set(centerKey, 0);
+        }
+        
+        // BFS queue: [x, y, distance]
+        const queue = [[centerX, centerY, 0]];
+        const visited = new Set([centerKey]);
+        
+        // Directions: up, down, left, right, and diagonals
+        const directions = [
+            [0, -1], [0, 1], [-1, 0], [1, 0],  // cardinal
+            [-1, -1], [-1, 1], [1, -1], [1, 1] // diagonal
+        ];
+        
+        while (queue.length > 0) {
+            const [x, y, dist] = queue.shift();
+            
+            // Check all adjacent tiles
+            for (const [dx, dy] of directions) {
+                const nx = x + dx;
+                const ny = y + dy;
+                const neighborKey = `${nx},${ny}`;
+                
+                // Skip if out of bounds or not a path tile
+                if (nx < 0 || nx >= this.gridSize || ny < 0 || ny >= this.gridSize) continue;
+                if (!this.pathTiles.has(neighborKey)) continue;
+                if (visited.has(neighborKey)) continue;
+                
+                // Calculate distance (Manhattan distance for cardinal, slightly more for diagonal)
+                const distance = dist + (Math.abs(dx) + Math.abs(dy) === 2 ? 1.5 : 1);
+                
+                // Add to visited and queue
+                visited.add(neighborKey);
+                this.pathDistances.set(neighborKey, distance);
+                queue.push([nx, ny, distance]);
+            }
+        }
+        
+        console.log(`Calculated distances for ${this.pathDistances.size} path tiles`);
+    }
+    
+    /**
+     * Add a path segment from start to end
+     */
+    addPathSegment(startX, startY, endX, endY) {
+        const dx = endX > startX ? 1 : (endX < startX ? -1 : 0);
+        const dy = endY > startY ? 1 : (endY < startY ? -1 : 0);
+        
+        let x = startX;
+        let y = startY;
+        
+        while (x !== endX || y !== endY) {
+            this.pathTiles.add(`${x},${y}`);
+            
+            // Add to path array with next direction
+            const nextX = x + dx;
+            const nextY = y + dy;
+            this.path.push({ x, y, nextX, nextY });
+            
+            if (x !== endX) x += dx;
+            if (y !== endY) y += dy;
+        }
+        
+        // Add final tile
+        this.pathTiles.add(`${endX},${endY}`);
+        this.path.push({ x: endX, y: endY, nextX: endX, nextY: endY });
+    }
+    
+    /**
+     * Get path direction from a position using distance-based pathfinding
+     */
+    getPathDirection(x, y) {
+        // Round to nearest grid position
+        const gridX = Math.round(x);
+        const gridY = Math.round(y);
+        
+        // Clamp to grid bounds
+        const clampedX = Math.max(0, Math.min(this.gridSize - 1, gridX));
+        const clampedY = Math.max(0, Math.min(this.gridSize - 1, gridY));
+        
+        const centerX = Math.floor(this.gridSize / 2);
+        const centerY = Math.floor(this.gridSize / 2);
+        
+        // Check if at center
+        if (clampedX === centerX && clampedY === centerY) {
+            return { nextX: centerX, nextY: centerY };
+        }
+        
+        // Find current position's nearest path tile
+        let currentTile = null;
+        let currentTileKey = `${clampedX},${clampedY}`;
+        
+        if (this.pathTiles.has(currentTileKey)) {
+            currentTile = { x: clampedX, y: clampedY };
+        } else {
+            // Not on path, find nearest path tile
+            let nearestDist = Infinity;
+            for (const tileStr of this.pathTiles) {
+                const [tx, ty] = tileStr.split(',').map(Number);
+                const dist = Math.abs(tx - clampedX) + Math.abs(ty - clampedY);
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    currentTile = { x: tx, y: ty };
+                    currentTileKey = tileStr;
+                }
+            }
+            
+            // If no path tile found, return center
+            if (!currentTile) {
+                return { nextX: centerX, nextY: centerY };
+            }
+        }
+        
+        // Get current tile's distance (if not found, it's very far)
+        const currentDistance = this.pathDistances.get(currentTileKey) ?? Infinity;
+        
+        // Find all adjacent path tiles (within 1.5 tile distance)
+        const adjacentTiles = [];
+        const directions = [
+            [0, -1], [0, 1], [-1, 0], [1, 0],  // cardinal
+            [-1, -1], [-1, 1], [1, -1], [1, 1] // diagonal
+        ];
+        
+        for (const [dx, dy] of directions) {
+            const nx = currentTile.x + dx;
+            const ny = currentTile.y + dy;
+            const neighborKey = `${nx},${ny}`;
+            
+            // Skip if out of bounds
+            if (nx < 0 || nx >= this.gridSize || ny < 0 || ny >= this.gridSize) continue;
+            
+            // Check if it's a path tile
+            if (this.pathTiles.has(neighborKey)) {
+                const neighborDistance = this.pathDistances.get(neighborKey) ?? Infinity;
+                
+                // Only consider tiles that are closer to center (or same distance if at center)
+                if (neighborDistance < currentDistance || (neighborDistance === 0 && currentDistance === 0)) {
+                    adjacentTiles.push({
+                        x: nx,
+                        y: ny,
+                        distance: neighborDistance
+                    });
+                }
+            }
+        }
+        
+        // If no valid adjacent tiles, stay put (shouldn't happen, but safety check)
+        if (adjacentTiles.length === 0) {
+            return { nextX: currentTile.x, nextY: currentTile.y };
+        }
+        
+        // Choose the adjacent tile with the lowest distance (closest to center)
+        const bestTile = adjacentTiles.reduce((best, tile) => {
+            return tile.distance < best.distance ? tile : best;
+        });
+        
+        return { nextX: bestTile.x, nextY: bestTile.y };
     }
     
     /**
@@ -84,6 +323,43 @@ export class MeditationState {
         this.currentWave = 0;
         this.tranquility = this.tranquilityMax;
         this.distractions = [];
+        
+        // Start meditation music if music is enabled and at Tier 4+
+        if (window.audioSystem) {
+            const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+            console.log('Meditation session starting - Current tier:', currentTier);
+            console.log('Music enabled:', window.audioSystem.musicEnabled);
+            console.log('Audio context state:', window.audioSystem.audioContext ? window.audioSystem.audioContext.state : 'no context');
+            console.log('Is muted:', window.audioSystem.isMuted);
+            
+            if (currentTier >= 4) {
+                // If music is not enabled, try to enable it
+                if (!window.audioSystem.musicEnabled) {
+                    console.log('Music not enabled, attempting to enable...');
+                    window.audioSystem.enableMusic().then(() => {
+                        console.log('Music enabled successfully');
+                        // Set music mode to meditation and start music
+                        window.audioSystem.currentMusicMode = 'meditation';
+                        window.audioSystem.startMusic().catch(err => {
+                            console.error('Failed to start meditation music:', err);
+                        });
+                    }).catch(err => {
+                        console.error('Failed to enable music:', err);
+                    });
+                } else {
+                    // Music is already enabled, just start it
+                    console.log('Music already enabled, starting meditation music...');
+                    window.audioSystem.currentMusicMode = 'meditation';
+                    window.audioSystem.startMusic().catch(err => {
+                        console.error('Failed to start meditation music:', err);
+                    });
+                }
+            } else {
+                console.log('Tier too low for music. Current tier:', currentTier, '(need 4+)');
+            }
+        } else {
+            console.warn('Audio system not available');
+        }
         
         // Start wave after a delay
         setTimeout(() => {
@@ -100,6 +376,21 @@ export class MeditationState {
         this.activeSession = false;
         this.waveActive = false;
         this.distractions = [];
+        
+        // Switch music back to normal mode if meditation music was playing
+        if (window.audioSystem && window.audioSystem.currentMusicMode === 'meditation') {
+            const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+            const meditationTab = document.getElementById('meditation-tab');
+            const isMeditationTabActive = meditationTab && meditationTab.classList.contains('active');
+            
+            // Only switch if meditation tab is no longer active
+            if (!isMeditationTabActive && currentTier >= 4 && window.audioSystem.musicEnabled) {
+                window.audioSystem.currentMusicMode = 'normal';
+                window.audioSystem.startMusic().catch(err => {
+                    console.error('Failed to switch to normal music:', err);
+                });
+            }
+        }
         
         // Calculate rewards based on performance
         this.calculateSessionRewards();
@@ -148,8 +439,9 @@ export class MeditationState {
             
             // Check if wave is complete
             if (this.distractions.length === 0 && this.nextSpawnTime > now + 5000) {
-                // Wave complete, start next wave after delay
+                // Wave complete
                 this.waveActive = false;
+                this.totalWavesCompleted++;
                 setTimeout(() => {
                     this.startWave();
                 }, 3000);
@@ -190,27 +482,52 @@ export class MeditationState {
         
         const distractionData = availableDistractions[Math.floor(Math.random() * availableDistractions.length)];
         
-        // Spawn at random edge
-        const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
-        let x, y;
+        // Spawn at random path entry point (edge of path)
+        // Find all path tiles on the edges
+        const edgePathTiles = [];
+        for (const tileStr of this.pathTiles) {
+            const [tx, ty] = tileStr.split(',').map(Number);
+            if (tx === 0 || tx === this.gridSize - 1 || ty === 0 || ty === this.gridSize - 1) {
+                edgePathTiles.push({ x: tx, y: ty });
+            }
+        }
         
-        switch (edge) {
-            case 0: // top
-                x = Math.floor(Math.random() * this.gridSize);
-                y = 0;
-                break;
-            case 1: // right
-                x = this.gridSize - 1;
-                y = Math.floor(Math.random() * this.gridSize);
-                break;
-            case 2: // bottom
-                x = Math.floor(Math.random() * this.gridSize);
-                y = this.gridSize - 1;
-                break;
-            case 3: // left
-                x = 0;
-                y = Math.floor(Math.random() * this.gridSize);
-                break;
+        let x, y;
+        if (edgePathTiles.length === 0) {
+            // Fallback: use corners and find nearest path tile
+            const entryPoints = [
+                { x: 0, y: 0 },
+                { x: this.gridSize - 1, y: 0 },
+                { x: 0, y: this.gridSize - 1 },
+                { x: this.gridSize - 1, y: this.gridSize - 1 }
+            ];
+            const entryPoint = entryPoints[Math.floor(Math.random() * entryPoints.length)];
+            
+            // Find nearest path tile
+            let nearestPath = null;
+            let minDist = Infinity;
+            for (const tileStr of this.pathTiles) {
+                const [tx, ty] = tileStr.split(',').map(Number);
+                const dist = Math.abs(tx - entryPoint.x) + Math.abs(ty - entryPoint.y);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearestPath = { x: tx, y: ty };
+                }
+            }
+            
+            if (nearestPath) {
+                x = nearestPath.x;
+                y = nearestPath.y;
+            } else {
+                // Last resort: use entry point (shouldn't happen)
+                x = entryPoint.x;
+                y = entryPoint.y;
+            }
+        } else {
+            // Pick a random edge path tile
+            const randomTile = edgePathTiles[Math.floor(Math.random() * edgePathTiles.length)];
+            x = randomTile.x;
+            y = randomTile.y;
         }
         
         // Scale health and rewards with wave
@@ -242,19 +559,15 @@ export class MeditationState {
      * Update distractions movement and health
      */
     updateDistractions(delta) {
+        const centerX = this.gridSize / 2 - 0.5;
+        const centerY = this.gridSize / 2 - 0.5;
+        
         for (let i = this.distractions.length - 1; i >= 0; i--) {
             const dist = this.distractions[i];
             
-            // Move toward center
-            const dx = dist.targetX - dist.x;
-            const dy = dist.targetY - dist.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 0.1) {
-                dist.x += (dx / distance) * dist.speed * delta * 0.5;
-                dist.y += (dy / distance) * dist.speed * delta * 0.5;
-                dist.progress = 1.0 - (distance / (this.gridSize / 2));
-            } else {
+            // Check if reached center
+            const distToCenter = Math.sqrt((dist.x - centerX) ** 2 + (dist.y - centerY) ** 2);
+            if (distToCenter < 0.5) {
                 // Reached center, deal damage to tranquility
                 this.tranquility = Math.max(0, this.tranquility - dist.damage);
                 if (this.onTranquilityChanged) {
@@ -265,6 +578,52 @@ export class MeditationState {
                 this.distractions.splice(i, 1);
                 continue;
             }
+            
+            // Follow path using distance-based pathfinding
+            const pathDir = this.getPathDirection(dist.x, dist.y);
+            const dx = pathDir.nextX - dist.x;
+            const dy = pathDir.nextY - dist.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // If very close to target tile (within 0.2 tiles), snap to it
+            if (distance < 0.2) {
+                // Snap to target tile
+                dist.x = pathDir.nextX;
+                dist.y = pathDir.nextY;
+            } else if (distance > 0.05) {
+                // Move toward next path tile (normalized movement)
+                const moveSpeed = dist.speed * delta * 1.0; // Increased from 0.5 to 1.0
+                dist.x += (dx / distance) * moveSpeed;
+                dist.y += (dy / distance) * moveSpeed;
+            } else {
+                // Very close but not snapped, snap it
+                dist.x = pathDir.nextX;
+                dist.y = pathDir.nextY;
+            }
+            
+            // Safety check: if stuck at edge, snap to nearest path tile
+            const isOnEdge = dist.x === 0 || dist.x === this.gridSize - 1 || dist.y === 0 || dist.y === this.gridSize - 1;
+            if (isOnEdge && !this.pathTiles.has(`${Math.round(dist.x)},${Math.round(dist.y)}`)) {
+                // Find nearest path tile and snap to it
+                let nearestPath = null;
+                let minDist = Infinity;
+                for (const tile of this.path) {
+                    const distToTile = Math.abs(tile.x - dist.x) + Math.abs(tile.y - dist.y);
+                    if (distToTile < minDist) {
+                        minDist = distToTile;
+                        nearestPath = tile;
+                    }
+                }
+                if (nearestPath && minDist < 2) {
+                    dist.x = nearestPath.x;
+                    dist.y = nearestPath.y;
+                }
+            }
+            
+            // Calculate progress to center
+            const currentDistToCenter = Math.sqrt((dist.x - centerX) ** 2 + (dist.y - centerY) ** 2);
+            const maxDistToCenter = Math.sqrt((this.gridSize / 2) ** 2 + (this.gridSize / 2) ** 2);
+            dist.progress = 1.0 - (currentDistToCenter / maxDistToCenter);
             
             // Check if health <= 0
             if (dist.health <= 0) {
@@ -285,6 +644,9 @@ export class MeditationState {
      * Grant reward for killing a distraction
      */
     grantDistractionReward(distraction) {
+        // Track statistics
+        this.totalDistractionsKilled++;
+        
         // Grant focus
         if (distraction.reward.focus) {
             this.addFocus(distraction.reward.focus);
@@ -378,6 +740,11 @@ export class MeditationState {
         
         const gridIndex = gridY * this.gridSize + gridX;
         const cell = this.grid[gridIndex];
+        
+        // Check if cell is a path tile (can't place towers on path)
+        if (cell.isPath) {
+            return false;
+        }
         
         // Check if cell is occupied
         if (cell.tower) {
@@ -516,6 +883,35 @@ export class MeditationState {
     }
     
     /**
+     * Get meditation production bonus for main game
+     * This is a special bonus that can ONLY be obtained through meditation
+     * Scales with meditation progress: focus earned, waves completed, distractions killed, sessions
+     * @returns {number} Production multiplier (1.0 = no bonus)
+     */
+    getMeditationProductionBonus() {
+        // Base bonus: 1.0 (no bonus)
+        let bonus = 1.0;
+        
+        // Focus contribution (major): 1% per 100 focus earned (capped at 50% = 1.5x)
+        const focusContribution = Math.min(this.focusTotalEarned / 10000, 0.5); // 10,000 focus = 50% bonus
+        
+        // Waves contribution (medium): 0.5% per wave completed (capped at 25% = 1.25x)
+        const wavesContribution = Math.min(this.totalWavesCompleted / 500, 0.25); // 500 waves = 25% bonus
+        
+        // Distractions contribution (small): 0.1% per 100 distractions killed (capped at 10% = 1.1x)
+        const distractionsContribution = Math.min(this.totalDistractionsKilled / 10000, 0.1); // 10,000 distractions = 10% bonus
+        
+        // Sessions contribution (tiny): 0.05% per session completed (capped at 5% = 1.05x)
+        const sessionsContribution = Math.min(this.totalSessionsCompleted / 1000, 0.05); // 1,000 sessions = 5% bonus
+        
+        // Total bonus: 1.0 + all contributions (max 1.9x = 90% bonus)
+        bonus = 1.0 + focusContribution + wavesContribution + distractionsContribution + sessionsContribution;
+        
+        // Cap at 2.0x (100% bonus) maximum
+        return Math.min(bonus, 2.0);
+    }
+    
+    /**
      * Get tower damage multiplier from upgrades
      */
     getTowerDamageMultiplier() {
@@ -617,7 +1013,11 @@ export class MeditationState {
                 id: t.id,
                 gridX: t.gridX,
                 gridY: t.gridY
-            }))
+            })),
+            // Save meditation statistics for production bonus
+            totalWavesCompleted: this.totalWavesCompleted,
+            totalDistractionsKilled: this.totalDistractionsKilled,
+            totalSessionsCompleted: this.totalSessionsCompleted
         };
         
         localStorage.setItem('meditationState', JSON.stringify(state));

@@ -1,242 +1,98 @@
 # Cyber Witches: Idle Coven
 
-A magical idle game where you build a coven of witches, craft mystical workstations, and cast powerful spells to accumulate arcane resources.
+A magical idle game about casting spells and building workstations.
 
-## 🎮 Features
+## Quick Start
 
-### Core Gameplay
-- **Idle Resource Generation**: Accumulate Arcane Bits (AB) automatically and through spell casting
-- **Workstation Crafting**: Build and upgrade mystical workstations to boost production
-- **Ingredient System**: Collect and combine magical ingredients for advanced crafting
-- **Prestige System**: Ascend to gain Eldritch Keys (EK) for permanent bonuses
-- **Experiment System**: Discover hidden recipes through magical experimentation
-- **Achievement System**: Unlock achievements with unique rewards
-- **Daily Tasks**: Complete challenges for bonus rewards
-
-### Enhanced Social Features
-- **Coven System**: Create or join covens with other players
-- **Coven Achievements**: Collaborative achievements with coven-wide rewards
-- **Special Events**: Time-limited events and competitions
-- **Social Leaderboards**: Compete with other players and covens
-- **Coven Chat**: Communicate with coven members through simulated chat
-- **Collaborative Rituals**: Work together to complete powerful rituals
-
-### Advanced Systems
-- **Cloud Save Integration**: Save progress to the cloud with conflict resolution
-- **Analytics System**: Privacy-compliant gameplay analytics
-- **Particle Effects**: Visual feedback for actions and achievements
-- **Audio System**: Immersive sound effects with toggle controls
-- **Celebration Animations**: Spectacular animations for achievements
-- **Easter Eggs**: Discover hidden features and secrets
-- **Performance Monitoring**: FPS counter and optimization suggestions
-- **Debug Mode**: Development tools for testing and debugging
-
-### Technical Features
-- **Responsive Design**: Optimized for desktop and mobile devices
-- **Virtual Scrolling**: Efficient rendering of large lists
-- **Error Handling**: Comprehensive error tracking and recovery
-- **Accessibility**: Full keyboard navigation and screen reader support
-- **Progressive Web App**: Installable on supported devices
-- **Offline Support**: Continue earning resources when away
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- JavaScript enabled
-- Internet connection (for cloud features)
-
-### Quick Start
-1. Open the game in your browser
-2. Click the "✨ Cast" button to start generating resources
-3. Craft your first workstation to increase production
-4. Join or create a coven to unlock social features
-5. Complete achievements and discover hidden secrets
-
-## 📖 Screenshots
-
-### Gameplay
-![Gameplay Screenshot](docs/images/gameplay.png)
-*Main gameplay interface showing workstations, resources, and spell casting*
-
-### Coven System
-![Coven System Screenshot](docs/images/coven-system.png)
-*Coven management interface with member list, rituals, and achievements*
-
-### Achievements
-![Achievements Screenshot](docs/images/achievements.png)
-*Achievement interface showing progress and rewards*
-
-### Events
-![Events Screenshot](docs/images/events.png)
-*Special events interface with competitions and limited-time activities*
-
-## 🛠️ Development
-
-### Tech Stack
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Build Tools**: Webpack, Babel, ESLint
-- **Testing**: Jest, Cypress
-- **Deployment**: Static hosting (Netlify, Vercel), Node.js server, Docker
-
-### Project Structure
-```
-cyber-witches/
-├── docs/                 # Documentation
-├── js/                   # JavaScript modules
-│   ├── gameState.js      # Core game state
-│   ├── covenSystem.js    # Coven management
-│   ├── achievements.js    # Achievement system
-│   ├── covenEvents.js    # Event system
-│   ├── covenChat.js      # Chat system
-│   ├── socialLeaderboards.js # Leaderboards
-│   ├── particleEffects.js # Particle effects
-│   ├── audioSystem.js     # Audio system
-│   ├── celebrationAnimations.js # Celebrations
-│   ├── easterEggs.js    # Easter eggs
-│   ├── performanceMonitor.js # Performance monitoring
-│   ├── cloudSave.js      # Cloud save
-│   ├── analytics.js       # Analytics
-│   ├── errorHandler.js    # Error handling
-│   ├── animations.js      # Animation utilities
-│   ├── virtualScroll.js  # Virtual scrolling
-│   ├── commonUtils.js    # Common utilities
-│   └── data.js          # Game data
-├── tests/                # Test files
-├── index.html            # Main HTML file
-├── manifest.json         # PWA manifest
-└── package.json          # NPM configuration
-```
-
-### Local Development
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/cyber-witches.git
-   cd cyber-witches
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm start
-   ```
-
-4. **Open in browser**
-   Navigate to `http://localhost:3000`
-
-### Running Tests
-
+### Development
 ```bash
-# Run all tests
-npm test
-
-# Run specific test suites
-npm run test:unit
-npm run test:integration
-npm run test:e2e
+npm install
+npm start
 ```
 
-### Building for Production
-
+### Production Build
 ```bash
-# Build for production
-npm run build
-
-# Analyze bundle size
-npm run analyze
+npm run build:prod
 ```
 
-## 📚 Documentation
+The built files will be in the `dist/` folder, ready for deployment.
 
-- [API Documentation](docs/API.md) - Comprehensive API reference
-- [Implementation Guide](cyber_witches_implementation_guide.md) - Development guide
-- [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
-- [Image Requirements](IMAGE_REQUIREMENTS.md) - Asset specifications
+## Deployment
 
-## 🌐 Deployment
+See [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) for detailed deployment instructions.
 
-### Static Hosting
+Quick deployment steps:
+1. Build: `npm run build:prod`
+2. Upload `dist/` folder contents to your web server
+3. Configure server to serve `index.html` for all routes (SPA)
 
-The game can be deployed to any static hosting service:
+## Features
 
-1. **Build the project**
-   ```bash
-   npm run build
-   ```
+- ✨ Manual and automatic spell casting
+- 🏭 Workstation crafting and automation
+- 📜 Upgrade system with inscriptions
+- 🔬 Experimentation to discover recipes
+- ⚡ Prestige system for permanent bonuses
+- 🏆 Achievement system
+- 📅 Daily rituals
+- 🔮 Coven system
+- 🧘 Meditation mini-game
+- 🎵 Procedural ambient music (Tier 4+)
+- 🔊 Sound effects (Tier 2+)
+- 📱 Progressive Web App (PWA) support
+- ♿ Accessibility features
 
-2. **Deploy the `dist` folder** to your hosting provider
+## Technology Stack
 
-### Server Deployment
+- **Frontend**: Vanilla JavaScript (ES2023 modules)
+- **Build Tool**: esbuild
+- **Audio**: Tone.js
+- **Styling**: CSS3 with CSS variables
+- **PWA**: Service Worker + Web App Manifest
 
-For a Node.js server deployment:
+## Project Structure
 
-1. **Install dependencies**
-   ```bash
-   npm install --production
-   ```
+```
+CyberWitches/
+├── index.html          # Main HTML file
+├── styles.css          # Main stylesheet
+├── manifest.json       # PWA manifest
+├── sw.js              # Service worker
+├── js/                # JavaScript modules
+├── images/            # Game images
+├── icons/             # PWA icons
+├── dist/              # Production build output
+└── docs/              # Documentation
+```
 
-2. **Start the server**
-   ```bash
-   npm run start:prod
-   ```
+## Development
 
-### Docker Deployment
+### Available Scripts
 
-1. **Build the Docker image**
-   ```bash
-   docker build -t cyber-witches .
-   ```
+- `npm start` - Start development server
+- `npm run build` - Build for development
+- `npm run build:prod` - Build for production
+- `npm test` - Run tests
+- `npm run optimize:images` - Optimize images
 
-2. **Run the container**
-   ```bash
-   docker run -p 3000:3000 cyber-witches
-   ```
+### Design Tiers
 
-## 🤝 Contributing
+The game uses a progressive design tier system that reveals features as players progress:
 
-We welcome contributions to Cyber Witches: Idle Coven! Please follow these guidelines:
+- **Tier 0**: Minimal UI (text only)
+- **Tier 1**: Basic color
+- **Tier 2**: Sound effects
+- **Tier 3**: Full graphics
+- **Tier 4**: Music
 
-### Code Style
-- Use ESLint configuration
-- Follow existing code patterns
-- Add comments for complex logic
-- Use meaningful variable names
+## Documentation
 
-### Pull Request Process
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+- [GAME_MANUAL.md](./GAME_MANUAL.md) - Complete game manual
+- [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) - Deployment guide
+- [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) - Deployment checklist
+- [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) - Comprehensive deployment guide
+- [docs/API.md](./docs/API.md) - API documentation
 
-### Bug Reports
-- Use the issue tracker
-- Provide detailed reproduction steps
-- Include browser and OS information
-- Add screenshots if applicable
+## License
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🔗 Links
-
-- **Play Game**: [https://cyberwitches.game](https://cyberwitches.game)
-- **GitHub Repository**: [https://github.com/your-username/cyber-witches](https://github.com/your-username/cyber-witches)
-- **Discord Community**: [https://discord.gg/cyberwitches](https://discord.gg/cyberwitches)
-- **Wiki**: [https://github.com/your-username/cyber-witches/wiki](https://github.com/your-username/cyber-witches/wiki)
-
-## 🙏 Acknowledgments
-
-- Thanks to all contributors who have helped make this game possible
-- Inspired by classic idle games and modern incremental games
-- Special thanks to the Cyber Witches community for feedback and suggestions
-
----
-
-**Made with ❤️ by the Cyber Witches development team**
+MIT

@@ -20,6 +20,26 @@ export function formatPrecise(value, decimals = 2) {
     return value.toFixed(decimals);
 }
 
+/**
+ * Format number with 1 decimal place (for element counters)
+ */
+export function formatOneDecimal(value) {
+    if (value < 1000) {
+        return value.toFixed(1);
+    }
+    
+    const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"];
+    let tier = 0;
+    let num = value;
+    
+    while (num >= 1000 && tier < suffixes.length - 1) {
+        num /= 1000;
+        tier++;
+    }
+    
+    return num.toFixed(1) + suffixes[tier];
+}
+
 export function formatTimeDuration(seconds) {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds - hrs * 3600) / 60);

@@ -47,6 +47,8 @@ export class AudioSystem {
         // Music state
         this.musicNodes = []; // Store active music oscillator nodes
         this.musicGainNodes = []; // Store gain nodes for music layers
+        this.currentMusicMode = 'normal'; // 'normal' or 'meditation'
+        this.musicTierMonitor = null; // Interval for monitoring tier
         
         // Performance settings
         this.maxConcurrentSounds = 8;
@@ -57,6 +59,9 @@ export class AudioSystem {
         
         // Load default sounds
         this.loadDefaultSounds();
+        
+        // Start tier monitoring to ensure tiers 0-3 NEVER have music
+        this.startTierMonitoring();
         
         // Listen for visibility changes to pause/resume audio
         document.addEventListener('visibilitychange', () => {
@@ -1046,6 +1051,37 @@ export class AudioSystem {
     }
     
     /**
+     * Start tier monitoring to ensure tiers 0-3 NEVER have music
+     * @private
+     */
+    startTierMonitoring() {
+        // Clear any existing monitor
+        if (this.musicTierMonitor) {
+            clearInterval(this.musicTierMonitor);
+        }
+        
+        // Check every second to ensure music is disabled for tiers 0-3
+        this.musicTierMonitor = setInterval(() => {
+            const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+            
+            // STRICT: Tiers 0-3 must NEVER have music
+            if (currentTier < 4) {
+                if (this.musicEnabled) {
+                    console.warn('Tier', currentTier, 'detected with music enabled - forcing disable');
+                    this.musicEnabled = false;
+                    this.stopMusic();
+                }
+                
+                // Double-check: if music nodes exist, stop them
+                if (this.musicNodes.length > 0 || this.musicGainNodes.length > 0) {
+                    console.warn('Tier', currentTier, 'detected with music nodes active - stopping music');
+                    this.stopMusic();
+                }
+            }
+        }, 1000); // Check every second
+    }
+    
+    /**
      * Handle visibility change events
      * @private
      */
@@ -1172,8 +1208,18 @@ export class AudioSystem {
     /**
      * Enable music (for design tier system)
      * This ensures music is enabled when Tier 4 is unlocked
+     * ONLY works at Tier 4 - tiers 0-3 must NEVER have music
      */
     async enableMusic() {
+        // STRICT CHECK: Only enable music at Tier 4
+        const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        if (currentTier < 4) {
+            console.warn('enableMusic called but tier is', currentTier, '- music only available at Tier 4');
+            this.musicEnabled = false;
+            this.stopMusic(); // Ensure music is stopped
+            return;
+        }
+        
         this.musicEnabled = true;
         console.log('enableMusic called - unlocking audio and starting music');
         
@@ -1235,18 +1281,48 @@ export class AudioSystem {
     /**
      * Start playing procedural ambient music
      * Creates layered ambient loops using Web Audio API
+     * STRICT: Only works at Tier 4 - tiers 0-3 must NEVER have music
      */
     async startMusic() {
-        // Check if music is enabled and tier allows it
+        console.log('🎵 startMusic called');
+        console.log('🎵 Current tier:', window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0);
+        console.log('🎵 Music enabled:', this.musicEnabled);
+        console.log('🎵 Music nodes length:', this.musicNodes.length);
+        console.log('🎵 Is initialized:', this.isInitialized);
+        console.log('🎵 Audio context:', !!this.audioContext);
+        console.log('🎵 Audio context state:', this.audioContext ? this.audioContext.state : 'no context');
+        console.log('🎵 Is muted:', this.isMuted);
+        console.log('🎵 Current music mode:', this.currentMusicMode);
+        console.log('🎵 Music volume:', this.musicVolume);
+        console.log('🎵 Master volume:', this.masterVolume);
+        
+        // STRICT CHECK: Only allow music at Tier 4
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-        if (currentTier < 4 || !this.musicEnabled) {
-            console.log('Music not starting - tier:', currentTier, 'enabled:', this.musicEnabled);
+        if (currentTier < 4) {
+            console.log('❌ Music not starting - tier:', currentTier, '(music only available at Tier 4)');
+            this.musicEnabled = false; // Force disable if tier < 4
+            this.stopMusic(); // Ensure any playing music is stopped
             return;
         }
         
-        // Don't start if already playing
-        if (this.musicNodes.length > 0) {
-            console.log('Music already playing');
+        if (!this.musicEnabled) {
+            console.log('Music not starting - music disabled. Attempting to enable...');
+            // Try to enable music if at Tier 4
+            if (currentTier >= 4) {
+                await this.enableMusic();
+                if (!this.musicEnabled) {
+                    console.log('Failed to enable music');
+                    return;
+                }
+            } else {
+                this.stopMusic(); // Ensure any playing music is stopped
+                return;
+            }
+        }
+        
+        // Don't start if already playing (but allow mode switching)
+        if (this.musicNodes.length > 0 && this.currentMusicMode === 'meditation') {
+            console.log('Meditation music already playing');
             return;
         }
         
@@ -1267,9 +1343,22 @@ export class AudioSystem {
         }
         
         try {
-            // Create layered ambient music
-            this.createAmbientMusic();
-            console.log('Music started successfully');
+            // Check if meditation tab is active OR meditation session is active for mellow music mode (only at Tier 4)
+            const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+            const meditationTab = document.getElementById('meditation-tab');
+            const isMeditationTabActive = meditationTab && meditationTab.classList.contains('active');
+            const isMeditationSessionActive = window.meditationState && window.meditationState.activeSession;
+            
+            // Only use meditation music if at Tier 4 and (meditation tab is active OR meditation session is active)
+            if (currentTier >= 4 && (isMeditationTabActive || isMeditationSessionActive)) {
+                this.currentMusicMode = 'meditation';
+                this.createMeditationMusic();
+                console.log('Meditation music started successfully (tab active:', isMeditationTabActive, 'session active:', isMeditationSessionActive, ')');
+            } else {
+                this.currentMusicMode = 'normal';
+                this.createAmbientMusic();
+                console.log('Normal music started successfully');
+            }
         } catch (error) {
             console.error('Error starting music:', error);
             handleError(error, 'startMusic');
@@ -1278,8 +1367,15 @@ export class AudioSystem {
     
     /**
      * Stop playing music
+     * STRICT: Also checks tier and ensures tiers 0-3 NEVER have music
      */
     stopMusic() {
+        // STRICT CHECK: If tier < 4, always ensure music is disabled
+        const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        if (currentTier < 4) {
+            this.musicEnabled = false; // Force disable
+        }
+        
         console.log('stopMusic called - stopping all music nodes');
         console.trace('stopMusic call stack:'); // Debug: show where stopMusic was called from
         
@@ -1307,17 +1403,49 @@ export class AudioSystem {
         if (this.toneMusic) {
             try {
                 // Stop all Tone.js components
+                // Stop loops
                 if (this.toneMusic.bassLoop) this.toneMusic.bassLoop.stop();
                 if (this.toneMusic.midLoop) this.toneMusic.midLoop.stop();
-                if (this.toneMusic.sparklePattern) this.toneMusic.sparklePattern.stop();
+                if (this.toneMusic.sparkleLoop) this.toneMusic.sparkleLoop.stop();
                 if (this.toneMusic.typingLoop) this.toneMusic.typingLoop.stop();
+                if (this.toneMusic.meditationBassLoop) this.toneMusic.meditationBassLoop.stop();
+                if (this.toneMusic.softPadLoop) this.toneMusic.softPadLoop.stop();
+                
+                // Stop LFOs
                 if (this.toneMusic.bassLFO) this.toneMusic.bassLFO.stop();
-                if (this.toneMusic.bassPad) this.toneMusic.bassPad.releaseAll();
-                if (this.toneMusic.midPad) this.toneMusic.midPad.releaseAll();
-                if (this.toneMusic.typingBeat) this.toneMusic.typingBeat.releaseAll();
+                
+                // Release all notes from synths (PolySynth and MonoSynth have releaseAll)
+                if (this.toneMusic.bassPad && typeof this.toneMusic.bassPad.releaseAll === 'function') {
+                    this.toneMusic.bassPad.releaseAll();
+                }
+                if (this.toneMusic.midPad && typeof this.toneMusic.midPad.releaseAll === 'function') {
+                    this.toneMusic.midPad.releaseAll();
+                }
+                // Note: typingBeat is a MonoSynth, not a PolySynth, so it might not have releaseAll
+                // Just try to stop it if it exists
+                if (this.toneMusic.typingBeat) {
+                    if (typeof this.toneMusic.typingBeat.releaseAll === 'function') {
+                        this.toneMusic.typingBeat.releaseAll();
+                    } else {
+                        // If it's a MonoSynth, try to release any active notes manually
+                        try {
+                            this.toneMusic.typingBeat.triggerRelease();
+                        } catch (e) {
+                            // Ignore if it doesn't work
+                        }
+                    }
+                }
+                
+                // Dispose effects
                 if (this.toneMusic.delay) this.toneMusic.delay.dispose();
                 if (this.toneMusic.reverb) this.toneMusic.reverb.dispose();
                 if (this.toneMusic.masterVol) this.toneMusic.masterVol.dispose();
+                
+                // Dispose synths
+                if (this.toneMusic.bassPad) this.toneMusic.bassPad.dispose();
+                if (this.toneMusic.midPad) this.toneMusic.midPad.dispose();
+                if (this.toneMusic.softPad) this.toneMusic.softPad.dispose();
+                if (this.toneMusic.typingBeat) this.toneMusic.typingBeat.dispose();
                 
                 this.toneMusic = null;
                 console.log('Tone.js music stopped');
@@ -1448,8 +1576,8 @@ export class AudioSystem {
         
         // Create a reverb for ambient atmosphere
         const reverb = new Tone.Reverb({
-            roomSize: 0.9,
-            dampening: 3000
+            roomSize: 0.7, // Reduced from 0.9 for less reverb
+            dampening: 2000 // Reduced from 3000ms for shorter decay
         }).connect(masterVol);
         
         // Generate reverb (async, but we'll start it)
@@ -1533,6 +1661,16 @@ export class AudioSystem {
                 Q: 3 // Sharper filter for more definition
             }
         }).connect(delay);
+        
+        // Helper function to shuffle arrays (Fisher-Yates algorithm)
+        const shuffleArray = (array) => {
+            const shuffled = [...array]; // Create a copy
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        };
         
         // Create multiple musical chord progressions using only pentatonic notes (C, D, E, G, A)
         // All chords use only pentatonic notes for zero dissonance
@@ -1657,8 +1795,7 @@ export class AudioSystem {
             
             loopIteration++;
         }, '2n'); // Slower interval: half note (slower rhythm) for bass
-        bassLoop.start(0);
-        console.log('Bass loop started');
+        // Don't start yet - will be scheduled after Transport starts
         
         // Create a loop for mid pad (higher octave, different timing, different progression offset)
         // Add rhythm breaks - play on odd positions to offset from bass
@@ -1697,42 +1834,64 @@ export class AudioSystem {
             
             midLoopIteration++;
         }, '8n'); // Longer interval: 8th note to create more gaps
-        midLoop.start('4n'); // Offset by 4 beats (half a bar) to alternate with bass
-        console.log('Mid loop started');
+        // Don't start yet - will be scheduled after Transport starts
         
         // Create multiple melodic patterns for sparkle using pentatonic scale: C, D, E, G, A (no dissonance)
-        // Rotate between patterns for variety
+        // Using 16th note granularity (16 slots per beat) for finer quantization
+        // More interesting and varied patterns with rhythmic complexity
         const sparkleMelodies = [
-            // Pattern 1: Ascending arpeggio
-            [null, null, 'C6', null, null, null, 'E6', null, null, null, null, 'G6', null, null, null, null, null, null, 'C7', null, null, null, null, null, 'G6', null, null, 'E6', null, null, null, null, 'C6', null, null, null, null, null, null, null],
-            // Pattern 2: Descending melody
-            [null, null, 'C7', null, null, 'G6', null, null, null, 'E6', null, null, null, null, 'C6', null, null, null, null, null, 'E6', null, null, 'G6', null, null, null, 'C6', null, null, null, null, null, null, null, null],
-            // Pattern 3: Jumping pattern
-            [null, null, null, 'C6', null, null, null, null, 'G6', null, null, null, 'C6', null, null, null, null, 'E6', null, null, null, null, null, 'C7', null, null, null, 'G6', null, null, null, null, 'C6', null, null, null, null],
-            // Pattern 4: Rhythmic clusters
-            [null, null, 'C6', null, 'E6', null, 'G6', null, null, null, null, 'C7', null, null, null, null, null, 'G6', null, 'E6', null, 'C6', null, null, null, null, null, null, null, null, null, null, null, null, null],
-            // Pattern 5: Sparse high notes
-            [null, null, null, null, 'C7', null, null, null, null, null, null, null, null, 'G6', null, null, null, null, null, null, null, 'C7', null, null, null, null, null, null, null, 'E6', null, null, null, null, null, null, null]
+            // Pattern 1: Ascending arpeggio with rhythmic variation
+            [null, null, 'C6', null, null, 'D6', null, 'E6', null, null, null, 'G6', null, 'A6', null, null, 'C7', null, null, 'G6', null, 'E6', null, null, 'D6', null, 'C6', null, null, null, null, null],
+            // Pattern 2: Descending melody with syncopation
+            [null, 'C7', null, null, 'A6', null, 'G6', null, null, null, 'E6', null, null, 'D6', null, 'C6', null, null, null, null, 'E6', null, 'G6', null, null, 'A6', null, null, 'C6', null, null, null],
+            // Pattern 3: Jumping pattern with wide intervals
+            [null, null, null, 'C6', null, null, null, null, 'G6', null, null, 'C6', null, null, 'E6', null, null, null, null, 'C7', null, null, null, 'G6', null, null, 'E6', null, null, 'C6', null, null],
+            // Pattern 4: Rhythmic clusters with fast runs
+            [null, 'C6', null, 'D6', null, 'E6', null, 'G6', null, null, null, 'A6', null, 'C7', null, null, null, null, 'G6', null, 'E6', null, 'D6', null, 'C6', null, null, null, null, null, null, null],
+            // Pattern 5: Sparse high notes with melodic leaps
+            [null, null, null, null, 'C7', null, null, null, null, null, null, null, 'A6', null, null, 'G6', null, null, null, null, 'C7', null, null, null, null, 'E6', null, null, null, null, null, null],
+            // Pattern 6: Cascading pattern (new)
+            ['C6', null, 'D6', null, 'E6', null, null, 'G6', null, 'A6', null, null, 'C7', null, null, null, null, 'G6', null, 'E6', null, 'D6', null, 'C6', null, null, null, null, null, null, null, null],
+            // Pattern 7: Rhythmic staccato bursts (new)
+            [null, null, null, 'C6', null, null, 'E6', null, null, null, 'G6', null, null, null, null, null, 'A6', null, 'C7', null, null, null, null, 'G6', null, null, 'E6', null, null, 'C6', null, null],
+            // Pattern 8: Melodic phrase with syncopation (new)
+            [null, null, 'C6', null, null, null, 'D6', null, 'E6', null, null, 'G6', null, null, null, null, 'C7', null, null, null, 'G6', null, 'E6', null, null, 'D6', null, null, 'C6', null, null, null]
         ];
-        let sparkleMelodyIndex = 0;
+        
+        // Shuffle sparkle melodies for different combinations each time
+        const shuffledSparkleMelodies = shuffleArray(sparkleMelodies);
+        
+        // Randomize starting sparkle melody pattern
+        let sparkleMelodyIndex = Math.floor(Math.random() * shuffledSparkleMelodies.length);
         let sparkleCycleCount = 0;
-        const sparklePattern = new Tone.Pattern((time, note) => {
+        // Randomize starting position in sparkle pattern
+        const startSparkleMelody = shuffledSparkleMelodies[sparkleMelodyIndex];
+        let sparkleNoteIndex = Math.floor(Math.random() * startSparkleMelody.length);
+        
+        // Convert to Loop for proper quantization with finer granularity (16th note)
+        const sparkleLoop = new Tone.Loop((time) => {
+            const currentMelody = shuffledSparkleMelodies[sparkleMelodyIndex];
+            const note = currentMelody[sparkleNoteIndex % currentMelody.length];
+            
             if (note !== null) {
                 console.log('Sparkle playing note:', note, 'from pattern', sparkleMelodyIndex, 'at time:', time);
-                sparkle.triggerAttackRelease(note, '16n', time); // Shorter duration: 16th note
+                sparkle.triggerAttackRelease(note, '32n', time); // Shorter duration: 32nd note for crisper sparkle
             }
+            
+            sparkleNoteIndex++;
+            
             // Change pattern every 4 cycles for variety
-            sparkleCycleCount++;
-            if (sparkleCycleCount >= 4) {
-                sparkleCycleCount = 0;
-                sparkleMelodyIndex = (sparkleMelodyIndex + 1) % sparkleMelodies.length;
-                sparklePattern.values = sparkleMelodies[sparkleMelodyIndex];
-                console.log('Sparkle switching to pattern', sparkleMelodyIndex);
+            if (sparkleNoteIndex % currentMelody.length === 0) {
+                sparkleCycleCount++;
+                if (sparkleCycleCount >= 4) {
+                    sparkleCycleCount = 0;
+                    sparkleMelodyIndex = (sparkleMelodyIndex + 1) % shuffledSparkleMelodies.length;
+                    console.log('Sparkle switching to pattern', sparkleMelodyIndex);
+                }
             }
-        }, sparkleMelodies[0]);
-        sparklePattern.interval = '8n'; // Faster interval: 8th note
-        sparklePattern.start('1n'); // Offset by 1 beat to avoid simultaneous starts
-        console.log('Sparkle pattern started');
+        }, '16n'); // Finer granularity: 16th note (1/16 beat) for more precise quantization
+        
+        // Don't start yet - will be scheduled after Transport starts
         
         // Create multiple typing/clicky beat patterns - light rhythmic clicks like typing
         // Use pentatonic notes in G3-C5 range for harmony, rotate patterns for variety
@@ -1770,43 +1929,105 @@ export class AudioSystem {
                 console.log('Typing beat switching to pattern', typingPatternIndex);
             }
         }, '8n'); // Every 8th note
-        typingLoop.start(0); // Start immediately (no offset)
-        typingBeat.volume.value = -12; // Much louder typing sound (was -17, originally -20)
-        console.log('Typing beat started at volume:', typingBeat.volume.value, 'dB');
+        // Don't start yet - will be scheduled after Transport starts
         
-        // Set volume levels for each layer (increased overall)
-        bassPad.volume.value = 2; // Bass pad - louder
-        midPad.volume.value = -2; // Mid pad - louder
-        sparkle.volume.value = -12; // Sparkle - louder
+        // Set initial volumes to very low for fade-in effect
+        // Target volumes (will be reached after fade-in)
+        const targetVolumes = {
+            bassPad: 2,      // Bass pad target
+            midPad: -2,      // Mid pad target
+            sparkle: -20,    // Sparkle target
+            typingBeat: -12  // Typing beat target
+        };
+        
+        // Start all volumes at very low (-60 dB) for smooth fade-in
+        bassPad.volume.value = -60;
+        midPad.volume.value = -60;
+        sparkle.volume.value = -60;
+        typingBeat.volume.value = -60;
+        
+        // Get current Transport time for scheduling fades
+        const now = Tone.Transport.now();
+        const fadeInDuration = 3; // 3 seconds for fade-in
+        
+        // Schedule smooth fade-ins for each layer with staggered timing
+        // Bass pad fades in first (0 seconds)
+        bassPad.volume.setValueAtTime(-60, now);
+        bassPad.volume.linearRampToValueAtTime(targetVolumes.bassPad, now + fadeInDuration);
+        
+        // Mid pad fades in after 1 second
+        midPad.volume.setValueAtTime(-60, now);
+        midPad.volume.linearRampToValueAtTime(-60, now + 1);
+        midPad.volume.linearRampToValueAtTime(targetVolumes.midPad, now + 1 + fadeInDuration);
+        
+        // Sparkle fades in after 2 seconds
+        sparkle.volume.setValueAtTime(-60, now);
+        sparkle.volume.linearRampToValueAtTime(-60, now + 2);
+        sparkle.volume.linearRampToValueAtTime(targetVolumes.sparkle, now + 2 + fadeInDuration);
+        
+        // Typing beat fades in after 1.5 seconds
+        typingBeat.volume.setValueAtTime(-60, now);
+        typingBeat.volume.linearRampToValueAtTime(-60, now + 1.5);
+        typingBeat.volume.linearRampToValueAtTime(targetVolumes.typingBeat, now + 1.5 + fadeInDuration);
+        
+        console.log('Volume fade-ins scheduled:', {
+            bassPad: '0s → 3s',
+            midPad: '1s → 4s',
+            sparkle: '2s → 5s',
+            typingBeat: '1.5s → 4.5s'
+        });
         
         // Add slow LFO for movement on the bass pad
+        // LFO modulates around the target volume (2 dB) with ±1 dB variation
+        // The LFO outputs values that are added to the base volume
+        // Start LFO after fade-in completes (3 seconds) to avoid interference
         const bassLFO = new Tone.LFO({
             frequency: 0.1,
-            min: -10,
-            max: -6
+            min: -1,  // Relative to target: oscillates 2±1 dB (1-3 dB range)
+            max: 1
         }).connect(bassPad.volume);
-        bassLFO.start();
-        console.log('Bass LFO started');
+        // Delay LFO start until after fade-in completes
+        setTimeout(() => {
+            bassLFO.start();
+            console.log('Bass LFO started after fade-in');
+        }, 3000); // Start after 3 seconds (when fade-in completes)
         
-        // Start Transport to play sequences (REQUIRED for Tone.Sequence to work!)
-        if (Tone.Transport.state !== 'started') {
-            Tone.Transport.start();
-            console.log('Tone Transport started');
-        } else {
-            console.log('Tone Transport already started');
+        // Set tempo to 110 BPM (10 BPM lower than default 120)
+        Tone.Transport.bpm.value = 110;
+        console.log('Tone Transport BPM set to:', Tone.Transport.bpm.value);
+        
+        // Stop and reset Transport to ensure clean start timing
+        if (Tone.Transport.state === 'started') {
+            Tone.Transport.stop();
+            Tone.Transport.cancel();
+            console.log('Transport stopped and cancelled');
         }
         
-        // Schedule staggered initial playback to avoid all notes at once
-        Tone.Transport.schedule((time) => {
-            console.log('Transport callback at time:', time);
-            // Only trigger bass power chord - let loops handle timing with longer duration
-            bassPad.triggerAttackRelease(['C2', 'G2'], '4n', time);
-            // Also trigger typing beat immediately for testing
-            typingBeat.triggerAttackRelease('G4', '64n', time);
-            console.log('Initial typing beat triggered at time:', time);
-        }, 0);
-        // Mid pad starts later via loop offset
-        // Sparkle starts later via loop offset
+        // Reset Transport position to 0 for clean start
+        Tone.Transport.position = 0;
+        
+        // Start Transport to play sequences (REQUIRED for Tone.Sequence to work!)
+        Tone.Transport.start();
+        console.log('Tone Transport started at position 0');
+        
+        // Schedule all loops to start at their staggered times
+        // Using time strings makes them relative to Transport position
+        // Since Transport position is reset to 0, these will be relative to beat 0
+        bassLoop.start('0'); // Start immediately at beat 0
+        console.log('Bass loop scheduled to start at beat 0');
+        
+        midLoop.start('4n'); // Start at beat 4 (4 beats after bass)
+        console.log('Mid loop scheduled to start at beat 4');
+        
+        typingLoop.start('8n'); // Start at beat 8 (4 beats after mid, 8 beats after bass)
+        console.log('Typing loop scheduled to start at beat 8');
+        
+        sparkleLoop.start('12n'); // Start at beat 12 (4 beats after typing, 12 beats after bass)
+        console.log('Sparkle loop scheduled to start at beat 12');
+        
+        // Note: Loops will start playing at their scheduled times but volumes are set to -60 dB
+        // and will fade in gradually over 3-5 seconds, creating a smooth entrance
+        // Bass pad fades in first (0-3s), then typing (1.5-4.5s), mid (1-4s), sparkle (2-5s)
         
         // Store Tone.js objects for cleanup
         this.toneMusic = {
@@ -1819,7 +2040,7 @@ export class AudioSystem {
             typingBeat,
             bassLoop,
             midLoop,
-            sparklePattern,
+            sparkleLoop,  // Changed from sparklePattern
             typingLoop,
             bassLFO
         };
@@ -1832,6 +2053,272 @@ export class AudioSystem {
         console.log('Music volume:', musicVolume, 'Master volume dB:', musicVolume * 20 - 20);
         console.log('Tone context state:', Tone.context.state);
         console.log('Transport state:', Tone.Transport.state);
+    }
+    
+    /**
+     * Create mellow meditation music (slower, softer, more ambient)
+     * @private
+     */
+    createMeditationMusic() {
+        console.log('createMeditationMusic called');
+        console.log('Tone.js available:', typeof Tone !== 'undefined');
+        console.log('Current tier:', window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0);
+        console.log('Music enabled:', this.musicEnabled);
+        console.log('Audio context state:', this.audioContext ? this.audioContext.state : 'no context');
+        console.log('Is muted:', this.isMuted);
+        console.log('Music volume:', this.musicVolume);
+        console.log('Master volume:', this.masterVolume);
+        
+        // Check if Tone.js is available
+        if (typeof Tone === 'undefined') {
+            console.warn('Tone.js not available, falling back to normal music');
+            this.createAmbientMusic();
+            return;
+        }
+        
+        try {
+            this.createMeditationMusicWithTone();
+        } catch (error) {
+            console.error('Error creating meditation music with Tone.js:', error);
+            console.error('Error stack:', error.stack);
+            // Fallback to normal music
+            this.createAmbientMusic();
+        }
+    }
+    
+    /**
+     * Create mellow meditation music using Tone.js
+     * @private
+     */
+    createMeditationMusicWithTone() {
+        // Double-check tier before creating music (Tier 4 only)
+        const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        if (currentTier < 4 || !this.musicEnabled) {
+            console.log('createMeditationMusic: tier check failed', currentTier, this.musicEnabled);
+            return;
+        }
+        
+        // Ensure musicVolume and masterVolume are not zero BEFORE calculating
+        if (this.musicVolume === 0) {
+            console.warn('musicVolume is 0! Setting to 0.5...');
+            this.musicVolume = 0.5;
+        }
+        if (this.masterVolume === 0) {
+            console.warn('masterVolume is 0! Setting to 0.5...');
+            this.masterVolume = 0.5;
+        }
+        
+        const musicVolume = this.musicVolume * this.masterVolume;
+        
+        console.log('Creating mellow meditation music with Tone.js, volume:', musicVolume);
+        
+        // Final check - if still zero, something is wrong
+        if (musicVolume === 0) {
+            console.error('Music volume is still 0 after adjustments! Aborting music creation.');
+            return;
+        }
+        
+        // Start Tone.js if not already started
+        if (Tone.context.state !== 'running') {
+            Tone.start();
+        }
+        
+        // Create a master volume control first
+        const masterVol = new Tone.Volume(musicVolume * 20 - 20).toDestination();
+        
+        // Create extra reverb for meditation (more spacious and ambient)
+        const reverb = new Tone.Reverb({
+            roomSize: 0.95, // Larger room for more spaciousness
+            dampening: 5000 // More dampening for smoother decay
+        }).connect(masterVol);
+        
+        // Generate reverb (async)
+        reverb.generate().then(() => {
+            console.log('Meditation reverb generated');
+        });
+        
+        // Create a longer delay for more ambient atmosphere
+        const delay = new Tone.FeedbackDelay({
+            delayTime: '8n', // Longer delay for meditation
+            feedback: 0.4 // More feedback for more ambient wash
+        }).connect(reverb);
+        
+        // Layer 1: Soft bass pad - very slow, sustained
+        const bassPad = new Tone.PolySynth(Tone.FMSynth, {
+            maxPolyphony: 3,
+            oscillator: {
+                type: 'sine' // Softer sine wave
+            },
+            envelope: {
+                attack: 1.0, // Very slow attack for smoothness
+                decay: 1.0,
+                sustain: 0.8, // Higher sustain for longer notes
+                release: 2.0 // Longer release for ambient fade
+            },
+            modulationIndex: 0.5, // Less modulation for softer sound
+            modulation: {
+                type: 'sine'
+            }
+        }).connect(delay);
+        
+        // Layer 2: Soft pad - very minimal, sparse
+        const softPad = new Tone.PolySynth(Tone.AMSynth, {
+            maxPolyphony: 2, // Fewer notes for simplicity
+            oscillator: {
+                type: 'sine'
+            },
+            envelope: {
+                attack: 2.0, // Very slow attack
+                decay: 1.5,
+                sustain: 0.6,
+                release: 3.0 // Very long release
+            }
+        }).connect(delay);
+        
+        // Simple, slow chord progressions for meditation (only 3 very gentle progressions)
+        let meditationChords = [
+            // Progression 1: Very gentle C, Am
+            [
+                ['C2', 'G2'],
+                ['A2', 'E3']
+            ],
+            // Progression 2: C, G
+            [
+                ['C2', 'G2'],
+                ['G2', 'D3']
+            ],
+            // Progression 3: Am, C
+            [
+                ['A2', 'E3'],
+                ['C2', 'G2']
+            ]
+        ];
+        
+        // Shuffle for variety
+        const shuffleArray = (array) => {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        };
+        
+        meditationChords = shuffleArray(meditationChords);
+        
+        // Very slow bass pad - change chord every 8 beats (2 bars at slow tempo)
+        let currentMeditationProgression = 0;
+        let meditationChordIndex = 0;
+        let meditationLoopIteration = 0;
+        
+        const meditationBassLoop = new Tone.Loop((time) => {
+            const currentProgression = meditationChords[currentMeditationProgression];
+            // Play every 2nd iteration for sparse but audible rhythm
+            if (meditationLoopIteration % 2 === 0) {
+                const chord = currentProgression[meditationChordIndex % currentProgression.length];
+                console.log('Meditation bass playing chord:', chord, 'at time:', time);
+                bassPad.triggerAttackRelease(chord, '2n', time); // Half note for sustained chords
+                
+                meditationChordIndex++;
+                if (meditationChordIndex % currentProgression.length === 0) {
+                    currentMeditationProgression = (currentMeditationProgression + 1) % meditationChords.length;
+                }
+            }
+            meditationLoopIteration++;
+        }, '2n'); // Every half note, but only plays every 2nd iteration
+        
+        // Very sparse soft pad - plays even less frequently
+        let softPadProgression = 0;
+        let softPadChordIndex = 0;
+        let softPadIteration = 0;
+        
+        const softPadLoop = new Tone.Loop((time) => {
+            const currentProgression = meditationChords[softPadProgression];
+            // Play every 4th iteration for sparse but audible rhythm
+            if (softPadIteration % 4 === 0) {
+                const chord = currentProgression[softPadChordIndex % currentProgression.length];
+                const higherChord = chord.map(note => {
+                    const match = note.match(/([A-G])(\d)/);
+                    if (match) {
+                        return match[1] + (parseInt(match[2]) + 3); // Higher octave
+                    }
+                    return note;
+                });
+                console.log('Meditation soft pad playing chord:', higherChord, 'at time:', time);
+                softPad.triggerAttackRelease(higherChord, '2n', time); // Half note for sustained sound
+                
+                softPadChordIndex++;
+                if (softPadChordIndex % currentProgression.length === 0) {
+                    softPadProgression = (softPadProgression + 1) % meditationChords.length;
+                }
+            }
+            softPadIteration++;
+        }, '2n'); // Every half note, but only plays every 4th iteration
+        
+        // Set volume levels - quieter than normal but still audible for meditation
+        bassPad.volume.value = 8; // Quiet but audible bass
+        softPad.volume.value = 4; // Quiet but audible pad
+        
+        // Set tempo to 80 BPM for meditation (much slower, more mellow)
+        Tone.Transport.bpm.value = 80;
+        console.log('Meditation music BPM set to:', Tone.Transport.bpm.value);
+        
+        // Start Transport
+        if (Tone.Transport.state !== 'started') {
+            Tone.Transport.start();
+            console.log('Tone Transport started for meditation');
+        } else {
+            console.log('Tone Transport already started');
+        }
+        
+        // Start loops immediately (or with small offset for slight variation)
+        const bassOffset = Math.random() * 0.5; // Small random offset
+        const softPadOffset = 1 + Math.random() * 0.5; // Small offset after bass
+        
+        // Start loops immediately (they will wait for Transport to start)
+        meditationBassLoop.start(0); // Start immediately
+        softPadLoop.start(0); // Start immediately
+        
+        console.log('Meditation loops started, bass offset:', bassOffset, 'soft pad offset:', softPadOffset);
+        
+        // Also trigger first chord immediately so music starts right away
+        const firstProgression = meditationChords[0];
+        const firstChord = firstProgression[0];
+        
+        // Trigger first chord immediately (will work once Transport starts)
+        const triggerFirstChord = () => {
+            try {
+                bassPad.triggerAttackRelease(firstChord, '2n', Tone.now());
+                console.log('Meditation music: First chord triggered, chord:', firstChord);
+            } catch (error) {
+                console.error('Error triggering first meditation chord:', error);
+                // Try again after a short delay
+                setTimeout(triggerFirstChord, 100);
+            }
+        };
+        
+        // Trigger immediately and also after Transport starts
+        triggerFirstChord();
+        setTimeout(triggerFirstChord, 200);
+        setTimeout(triggerFirstChord, 500);
+        
+        // Store Tone.js objects for cleanup
+        this.toneMusic = {
+            reverb,
+            masterVol,
+            delay,
+            bassPad,
+            softPad,
+            meditationBassLoop,
+            softPadLoop
+        };
+        
+        // Store references for cleanup
+        this.musicNodes = [bassPad, softPad];
+        this.musicGainNodes = [masterVol];
+        
+        console.log('Mellow meditation music created with Tone.js');
+        console.log('Meditation music volume:', musicVolume, 'BPM:', Tone.Transport.bpm.value);
     }
     
     /**

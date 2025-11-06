@@ -51,7 +51,11 @@ export class MeditationTowers {
             // Start animation loop
             this.startAnimationLoop();
             
+            // Force a render to ensure path is visible
+            this.render();
+            
             console.log('Meditation towers initialized, canvas size:', this.canvas.width, this.canvas.height, 'cell size:', this.cellSize);
+            console.log('Path tiles count:', this.meditationState?.pathTiles?.size || 0);
         }, 100);
     }
     
@@ -181,6 +185,9 @@ export class MeditationTowers {
         // Draw grid background
         this.drawGrid();
         
+        // Draw path
+        this.drawPath();
+        
         // Draw center (sanctuary core)
         this.drawCenter();
         
@@ -223,6 +230,45 @@ export class MeditationTowers {
             this.ctx.moveTo(0, y * this.cellSize);
             this.ctx.lineTo(this.canvas.width, y * this.cellSize);
             this.ctx.stroke();
+        }
+    }
+    
+    /**
+     * Draw path tiles
+     */
+    drawPath() {
+        if (!this.meditationState || !this.meditationState.pathTiles) {
+            console.warn('drawPath: meditationState or pathTiles not available');
+            return;
+        }
+        
+        // Check if pathTiles is a Set and has items
+        if (!(this.meditationState.pathTiles instanceof Set) || this.meditationState.pathTiles.size === 0) {
+            console.warn('drawPath: pathTiles is empty or not a Set');
+            return;
+        }
+        
+        // Draw path tiles with a more visible color
+        this.ctx.fillStyle = 'rgba(60, 227, 197, 0.25)'; // Increased opacity from 0.15 to 0.25
+        
+        for (const tileStr of this.meditationState.pathTiles) {
+            const [x, y] = tileStr.split(',').map(Number);
+            const pixelX = x * this.cellSize;
+            const pixelY = y * this.cellSize;
+            
+            this.ctx.fillRect(pixelX, pixelY, this.cellSize, this.cellSize);
+        }
+        
+        // Draw path borders for better visibility
+        this.ctx.strokeStyle = 'rgba(60, 227, 197, 0.5)'; // Increased opacity from 0.3 to 0.5
+        this.ctx.lineWidth = 2; // Increased from 1 to 2 for better visibility
+        
+        for (const tileStr of this.meditationState.pathTiles) {
+            const [x, y] = tileStr.split(',').map(Number);
+            const pixelX = x * this.cellSize;
+            const pixelY = y * this.cellSize;
+            
+            this.ctx.strokeRect(pixelX, pixelY, this.cellSize, this.cellSize);
         }
     }
     
@@ -318,7 +364,7 @@ export class MeditationTowers {
         // Check if position is valid
         const gridIndex = gridY * this.meditationState.gridSize + gridX;
         const cell = this.meditationState.grid[gridIndex];
-        const canPlace = cell && !cell.tower && this.meditationState.canAffordTower(towerData);
+        const canPlace = cell && !cell.isPath && !cell.tower && this.meditationState.canAffordTower(towerData);
         
         const x = (gridX + 0.5) * this.cellSize;
         const y = (gridY + 0.5) * this.cellSize;

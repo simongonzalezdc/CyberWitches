@@ -22,11 +22,14 @@ const staticFiles = [
   'index.html',
   'styles.css',
   'manifest.json',
-  'sw.js'
+  'sw.js',
+  'start-server.sh',
+  'start-server.bat',
+  'README.txt'
 ];
 
 // Directories to copy recursively
-const staticDirs = ['icons', 'docs'];
+const staticDirs = ['icons', 'docs', 'images'];
 
 async function copyStaticFiles() {
   console.log('📁 Copying static files...');
@@ -100,8 +103,10 @@ async function buildJavaScript() {
     treeShaking: true,
     platform: 'browser',
     charset: 'utf8',
-    // Remove console logs in production (except console.error)
-    drop: isProduction ? ['console'] : [],
+    // Remove console.log in production but keep console.error and console.warn for debugging
+    // Note: esbuild drop: ['console'] removes all console methods, so we'll use a different approach
+    // We'll keep console.error and console.warn, but remove console.log via minification
+    drop: isProduction ? [] : [], // Don't drop console - we need error/warn for production
     // Replace DEBUG constant in debug.js (will replace const DEBUG = ... with const DEBUG = false)
     // Note: This uses string replacement, so we need to handle it in the build process
     // For now, we'll use drop: ['console'] to remove console logs in production

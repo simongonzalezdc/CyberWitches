@@ -8,13 +8,52 @@ import { MeditationUI } from './meditationUI.js';
 import { MeditationTowers } from './meditationTowers.js';
 import { DesignTierSystem } from './designTierSystem.js';
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
-import { formatShort, formatPrecise, formatTimeDuration } from './utils.js';
+import { formatShort, formatPrecise, formatTimeDuration, formatOneDecimal } from './utils.js';
 import { createParticle, pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
 import { particleEffects } from './particleEffects.js';
 import { audioSystem } from './audioSystem.js';
 import { VirtualWorkstationList, VirtualUpgradeList, VirtualAchievementList } from './virtualScroll.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { debounce, throttle, deepClone, formatWithCommas, clamp, lerp, inRange, randomInt, randomFloat, randomChoice, shuffle, isEmpty, capitalize, secondsToTime, calculatePercentage, isMobile, isTouchDevice, getPixelRatio, createElement, batchDOMUpdate, setLocalStorage, getLocalStorage, removeLocalStorage, clearLocalStorage, isInViewport, scrollIntoView, addEventListener, PerformanceMonitor } from './commonUtils.js';
+
+/**
+ * Animate number with custom formatter (for element counters with 1 decimal)
+ */
+function animateNumberWithFormatter(element, startValue, endValue, duration, formatter) {
+    if (!element) return;
+    
+    const startTime = performance.now();
+    const difference = endValue - startValue;
+    
+    // If difference is very small, just update directly
+    if (Math.abs(difference) < 0.01) {
+        element.textContent = formatter(endValue);
+        return;
+    }
+    
+    let animationFrameId = null;
+    
+    function update() {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (ease-out)
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        const current = startValue + (difference * easeProgress);
+        
+        // Update text content with custom formatter
+        element.textContent = formatter(current);
+        
+        if (progress < 1) {
+            animationFrameId = requestAnimationFrame(update);
+        } else {
+            element.textContent = formatter(endValue);
+        }
+    }
+    
+    // Start animation
+    update();
+}
 
 /**
  * Main game controller with optimized timing and performance
@@ -230,13 +269,28 @@ function defineGlobalFunctions() {
     };
     
     window.inscribeUpgrade = (upgId, buttonElement = null) => {
-        if (!gameState) return;
+        if (!gameState) {
+            console.error('inscribeUpgrade: gameState not available');
+            return;
+        }
+        
+        console.log('inscribeUpgrade called:', { upgId, buttonElement });
+        
+        const upgrade = UPGRADES.find(u => u.id === upgId);
+        if (!upgrade) {
+            console.error('inscribeUpgrade: Upgrade not found:', upgId);
+            if (typeof showNotification === 'function') {
+                showNotification('Error: Upgrade not found', 'error');
+            }
+            return;
+        }
         
         const success = gameState.inscribeUpgrade(upgId);
         
         if (success) {
-            const upgrade = UPGRADES.find(u => u.id === upgId);
-            const displayName = upgrade?.displayName || upgId;
+            const displayName = upgrade.displayName || upgId;
+            console.log('Inscription successful:', { upgId, displayName });
+            
             if (typeof showNotification === 'function') {
                 showNotification(`<span class="css-icon-sparkle"></span> Inscribed ${displayName}!`, 'success');
             }
@@ -258,6 +312,34 @@ function defineGlobalFunctions() {
                 pulseElement(buttonElement, 1.2, 300);
                 highlightElement(buttonElement, '#FFDB6E', 400);
             }
+        } else {
+            console.warn('Inscription failed:', { upgId, upgrade });
+            const displayName = upgrade.displayName || upgId;
+            
+            // Check why it failed
+            const owned = gameState.upgradesOwned[upgId] || false;
+            const canAfford = gameState.canAfford ? gameState.canAfford(upgrade.recipe) : false;
+            const unlocked = gameState.ab >= upgrade.unlockAtAb;
+            
+            console.warn('Inscription failure reasons:', { owned, canAfford, unlocked, ab: gameState.ab, unlockAtAb: upgrade.unlockAtAb });
+            
+            if (!unlocked) {
+                if (typeof showNotification === 'function') {
+                    showNotification(`Requires ${formatShort(upgrade.unlockAtAb)} AB to unlock`, 'error');
+                }
+            } else if (owned) {
+                if (typeof showNotification === 'function') {
+                    showNotification(`${displayName} is already owned`, 'error');
+                }
+            } else if (!canAfford) {
+                if (typeof showNotification === 'function') {
+                    showNotification(`Cannot afford ${displayName}`, 'error');
+                }
+            } else {
+                if (typeof showNotification === 'function') {
+                    showNotification(`Failed to inscribe ${displayName}`, 'error');
+                }
+            }
         }
         
         if (typeof updateInscriptionsTab === 'function') {
@@ -266,15 +348,52 @@ function defineGlobalFunctions() {
     };
     
     window.craftRecipe = (recipeId) => {
-        if (!gameState) return;
-        if (gameState.craftDiscoveredRecipe(recipeId)) {
+        if (!gameState) {
+            console.error('GameState not initialized');
+            return false;
+        }
+        
+        console.log('craftRecipe called:', { recipeId });
+        
+        const recipe = HIDDEN_RECIPES.find(r => r.id === recipeId);
+        if (!recipe) {
+            console.error('Recipe not found:', recipeId);
+            if (typeof showNotification === 'function') {
+                showNotification('Recipe not found!', 'error');
+            }
+            return false;
+        }
+        
+        // Check if recipe is discovered
+        if (!gameState.discoveredRecipes.includes(recipeId)) {
+            console.error('Recipe not discovered yet:', recipeId);
+            if (typeof showNotification === 'function') {
+                showNotification('Recipe not discovered yet! Try experimenting first.', 'error');
+            }
+            return false;
+        }
+        
+        // Check if can afford
+        if (!gameState.canAfford(recipe.inputs)) {
+            console.log('Cannot afford recipe:', recipeId, 'Required:', recipe.inputs, 'Have:', gameState.inventory);
+            if (typeof showNotification === 'function') {
+                showNotification('Not enough ingredients!', 'error');
+            }
+            return false;
+        }
+        
+        const success = gameState.craftDiscoveredRecipe(recipeId);
+        
+        if (success) {
+            console.log('Recipe crafted successfully:', recipeId);
+            
             // Track potion crafting for daily tasks
             if (typeof updateDailyProgress === 'function' && gameState) {
                 updateDailyProgress('craft_potion', '', gameState.totalPotionsCrafted);
             }
             
             if (typeof showNotification === 'function') {
-                showNotification('<span class="css-icon-sparkle"></span> Recipe crafted!', 'success');
+                showNotification(`<span class="css-icon-sparkle"></span> ${recipe.name} crafted!`, 'success');
             }
             
             // Play purchase sound (not throttled - purchases are rare)
@@ -290,7 +409,7 @@ function defineGlobalFunctions() {
                 const newAchievements = achievements.checkAchievements();
                 for (const achievement of newAchievements) {
                     if (typeof showNotification === 'function') {
-                        showNotification(`🏆 Achievement: ${achievement.name}!`, 'success');
+                        showNotification(`Achievement: ${achievement.name}!`, 'success');
                     }
                     
                     // Announce to screen reader
@@ -301,6 +420,14 @@ function defineGlobalFunctions() {
                     }
                 }
             }
+            
+            return true;
+        } else {
+            console.error('Failed to craft recipe:', recipeId);
+            if (typeof showNotification === 'function') {
+                showNotification('Failed to craft recipe!', 'error');
+            }
+            return false;
         }
     };
     
@@ -328,19 +455,36 @@ function defineGlobalFunctions() {
     
     // Coven-related global functions
     window.createCoven = () => {
-        if (!gameState || !gameState.covenSystem) return;
+        if (!gameState || !gameState.covenSystem) {
+            if (typeof showNotification === 'function') {
+                showNotification('Coven system not available', 'error');
+            }
+            return;
+        }
         
         const nameInput = document.getElementById('coven-name-input');
         const descInput = document.getElementById('coven-desc-input');
         
-        if (!nameInput || !descInput) return;
+        if (!nameInput) {
+            if (typeof showNotification === 'function') {
+                showNotification('Coven name input not found', 'error');
+            }
+            return;
+        }
         
         const name = nameInput.value.trim();
-        const description = descInput.value.trim();
+        const description = descInput ? descInput.value.trim() : '';
+        
+        if (!name) {
+            if (typeof showNotification === 'function') {
+                showNotification('Please enter a coven name', 'error');
+            }
+            return;
+        }
         
         if (gameState.covenSystem.createCoven(name, description)) {
             nameInput.value = '';
-            descInput.value = '';
+            if (descInput) descInput.value = '';
             if (typeof updateCovenTab === 'function') updateCovenTab();
             if (typeof showNotification === 'function') {
                 showNotification(`🔮 Created coven: ${name}!`, 'success');
@@ -353,10 +497,20 @@ function defineGlobalFunctions() {
     };
     
     window.joinCoven = () => {
-        if (!gameState || !gameState.covenSystem) return;
+        if (!gameState || !gameState.covenSystem) {
+            if (typeof showNotification === 'function') {
+                showNotification('Coven system not available', 'error');
+            }
+            return;
+        }
         
         const codeInput = document.getElementById('coven-code-input');
-        if (!codeInput) return;
+        if (!codeInput) {
+            if (typeof showNotification === 'function') {
+                showNotification('Coven code input not found', 'error');
+            }
+            return;
+        }
         
         const covenCode = codeInput.value.trim();
         
@@ -537,6 +691,7 @@ function initUI() {
         meditationTowers.init();
         window.meditationTowers = meditationTowers; // Make globally accessible for tower placement
         window.meditationUI = meditationUI; // Make globally accessible for UI updates
+        window.meditationState = meditationState; // Make globally accessible for production bonus
     }
     
     // Update meditation tab visibility based on prestige count
@@ -893,6 +1048,82 @@ function initUI() {
         });
     }
     
+    // Comprehensive button verification function
+    function verifyAllButtons() {
+        const buttons = {
+            'cast-button': () => {
+                const btn = document.getElementById('cast-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'auto-cast-toggle': () => {
+                const btn = document.getElementById('auto-cast-toggle');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'experiment-button': () => {
+                const btn = document.getElementById('experiment-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'start-meditation-button': () => {
+                const btn = document.getElementById('start-meditation-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'end-meditation-button': () => {
+                const btn = document.getElementById('end-meditation-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'ascend-button': () => {
+                const btn = document.getElementById('ascend-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'close-prestige-button': () => {
+                const btn = document.getElementById('close-prestige-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'close-welcome-button': () => {
+                const btn = document.getElementById('close-welcome-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'reset-all-progress-button': () => {
+                const btn = document.getElementById('reset-all-progress-button');
+                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+            },
+            'tier-selector': () => {
+                const selector = document.getElementById('tier-selector');
+                return selector && (selector.onchange !== null || selector.hasAttribute('onchange'));
+            }
+        };
+        
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabButtonsWorking = tabButtons.length > 0 && Array.from(tabButtons).every(btn => {
+            return btn.dataset.tab && typeof switchTab === 'function';
+        });
+        
+        const results = {
+            staticButtons: Object.entries(buttons).map(([id, check]) => ({ id, exists: !!document.getElementById(id), hasHandler: check() })),
+            tabButtons: { count: tabButtons.length, working: tabButtonsWorking }
+        };
+        
+        console.log('Button verification:', results);
+        
+        // Log any issues
+        results.staticButtons.forEach(({ id, exists, hasHandler }) => {
+            if (!exists) {
+                console.warn(`Button ${id} not found in DOM!`);
+            } else if (!hasHandler) {
+                console.warn(`Button ${id} exists but may not have a handler!`);
+            }
+        });
+        
+        if (!results.tabButtons.working) {
+            console.warn('Tab buttons may not be working properly!');
+        }
+        
+        return results;
+    }
+    
+    // Run verification after a short delay to ensure all handlers are attached
+    setTimeout(verifyAllButtons, 100);
+    
     // Game state callbacks with optimized updates
     let previousAb = gameState ? gameState.ab : 0;
     
@@ -967,6 +1198,9 @@ function initUI() {
     
     // Update inventory when ingredients change (optimized)
     gameState.onIngredientChanged = (ingId, newValue) => {
+        // Update element counters immediately (always visible in HUD)
+        updateElementCounters();
+        
         // Only update if relevant tabs are currently active
         const activeTabs = ['inventory-tab', 'workstations-tab', 'inscriptions-tab', 'experiment-tab'];
         
@@ -1097,14 +1331,16 @@ function initUI() {
             const abps = gameState.getAbPerSecond(eventMult);
             
             if (abps !== previousAbps) {
-                // Animate number change
-                animateNumber(abpsDisplay, previousAbps, abps, 500);
+                // Format with AB/s label using animateNumberWithFormatter
+                animateNumberWithFormatter(abpsDisplay, previousAbps, abps, 500, (val) => {
+                    return `${formatOneDecimal(val)} AB/s`;
+                });
                 
                 // Add glow effect if AB/s increased
                 if (abps > previousAbps && abps > 0) {
                     abpsDisplay.style.textShadow = '0 0 10px rgba(34, 227, 255, 0.8)';
                     setTimeout(() => {
-                        abpsDisplay.style.textShadow = '';
+                        abpsDisplay.style.textShadow = '0 0 8px rgba(255, 255, 255, 0.375)';
                     }, 500);
                 }
                 
@@ -1118,7 +1354,7 @@ function initUI() {
         if (achievements) {
             const newAchievements = achievements.checkAchievements();
             for (const achievement of newAchievements) {
-                showNotification(`🏆 Achievement: ${achievement.name}!`, 'success');
+                showNotification(`Achievement: ${achievement.name}!`, 'success');
                 
                 // Announce to screen reader
                 if (window.Accessibility) {
@@ -1143,6 +1379,11 @@ function initUI() {
     updateIntervals.push(setInterval(() => {
         updateComboDisplay();
     }, 500));
+    
+    // Update element counters live (optimized) - update every second
+    updateIntervals.push(setInterval(() => {
+        updateElementCounters();
+    }, 1000));
     
     // Modify game tick to include event multipliers
     const originalTick = gameState.tick;
@@ -1171,17 +1412,102 @@ function initUI() {
         previousAb = gameState.ab;
     }
     
+    // Initial AB/s display
+    if (abpsDisplay && gameState) {
+        const abps = gameState.getAbPerSecond();
+        abpsDisplay.textContent = `${formatOneDecimal(abps)} AB/s`;
+        previousAbps = abps;
+    }
+    
+    // Initial element counters display
+    if (gameState) {
+        updateElementCounters();
+    }
+    
     // Mark as initialized
     uiInitialized = true;
     
-    // Set up event delegation for buttons created dynamically with onclick attributes
-    // This ensures buttons work even if native onclick handlers fail
-    // Use capture phase to catch events before they might be stopped
+    // Set up unified button handler for all data-action buttons
+    // This ensures all buttons work even if individual handlers fail
+    // Individual handlers attached to buttons fire first (bubbling phase)
+    // This unified handler acts as fallback if individual handlers don't work
     document.addEventListener('click', (e) => {
         const button = e.target.closest('button');
         if (!button || button.disabled) return;
         
-        // Check if button has onclick attribute
+        const action = button.dataset.action;
+        if (!action) return;
+        
+        // Check if button already has a handler flag set (prevents double-firing)
+        if (button.dataset.handled === 'true') {
+            return; // Already being handled
+        }
+        
+        // Wait for individual handlers to fire (they're in same phase but attached to button)
+        setTimeout(() => {
+            // Check again if button was marked as handled by individual handler
+            if (button.dataset.handled === 'true') {
+                return; // Already handled by individual handler
+            }
+            
+            // Check if event was prevented (individual handler called preventDefault)
+            if (e.defaultPrevented) {
+                return; // Already handled
+            }
+            
+            // If button was removed, individual handler worked
+            if (!button.parentElement) return;
+            
+            const wsId = button.dataset.wsId || button.dataset['ws-id'];
+            const recipeId = button.dataset.recipeId || button.dataset['recipe-id'];
+            const taskId = button.dataset.taskId || button.dataset['task-id'];
+            const boonId = button.dataset.boonId || button.dataset['boon-id'];
+            const upgradeId = button.dataset.upgradeId || button.dataset['upgrade-id'];
+            const amount = button.dataset.amount;
+            
+            console.log('Button action detected (fallback handler):', { action, wsId, recipeId, taskId, boonId, upgradeId, amount });
+            
+            // Mark as handled to prevent double-processing
+            button.dataset.handled = 'true';
+            setTimeout(() => {
+                delete button.dataset.handled;
+            }, 100);
+            
+            // Handle different action types as fallback
+            let handled = false;
+            if (action === 'craft' && wsId && typeof window.craftWorkstation === 'function') {
+                const craftAmount = parseInt(amount, 10) || 1;
+                window.craftWorkstation(wsId, craftAmount, button);
+                handled = true;
+            } else if (action === 'craft-max' && wsId && typeof window.craftWorkstationMax === 'function') {
+                window.craftWorkstationMax(wsId);
+                handled = true;
+            } else if (action === 'craft-recipe' && recipeId && typeof window.craftRecipe === 'function') {
+                window.craftRecipe(recipeId);
+                handled = true;
+            } else if (action === 'claim-task' && taskId && typeof window.claimTask === 'function') {
+                window.claimTask(taskId);
+                handled = true;
+            } else if (action === 'purchase-boon' && boonId && typeof window.purchaseBoon === 'function') {
+                window.purchaseBoon(boonId);
+                handled = true;
+            } else if (action === 'inscribe' && upgradeId && typeof window.inscribeUpgrade === 'function') {
+                window.inscribeUpgrade(upgradeId, button);
+                handled = true;
+            } else if (action === 'create-coven' && typeof window.createCoven === 'function') {
+                window.createCoven();
+                handled = true;
+            } else if (action === 'join-coven' && typeof window.joinCoven === 'function') {
+                window.joinCoven();
+                handled = true;
+            }
+            
+            if (handled) {
+                console.log('Fallback handler executed for:', action);
+            }
+        }, 50); // Increased delay to ensure individual handlers have time to fire and mark as handled
+        
+        // Check if button has onclick attribute (fallback for legacy buttons)
         const onclickAttr = button.getAttribute('onclick');
         if (onclickAttr) {
             // Try to execute the onclick handler manually as fallback
@@ -1283,6 +1609,10 @@ function switchTab(tabName) {
         btn.classList.toggle('active', isActive);
     });
     
+    // Check if we're switching away from meditation tab (for music mode switching)
+    const wasMeditationActive = document.getElementById('meditation-tab')?.classList.contains('active');
+    const isMeditationActive = tabName === 'meditation';
+    
     // Update panes
     tabPanes.forEach(pane => {
         const isActive = pane.id === `${tabName}-tab`;
@@ -1305,10 +1635,50 @@ function switchTab(tabName) {
         console.log(`Tab panel ${pane.id} isActive:`, isActive, 'has active class:', pane.classList.contains('active'), 'display:', pane.style.display);
     });
     
+    // Switch music mode based on meditation tab state (only at Tier 4)
+    if (window.audioSystem && window.audioSystem.musicEnabled) {
+        const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        // Only switch music modes if at Tier 4 (where music is enabled)
+        if (currentTier >= 4) {
+            if (isMeditationActive && window.audioSystem.currentMusicMode !== 'meditation') {
+                // Switching to meditation tab - switch to meditation music
+                window.audioSystem.stopMusic();
+                setTimeout(() => {
+                    window.audioSystem.startMusic(); // Will use meditation music
+                }, 100);
+            } else if (!isMeditationActive && wasMeditationActive && window.audioSystem.currentMusicMode === 'meditation') {
+                // Switching away from meditation tab - switch back to normal music
+                window.audioSystem.stopMusic();
+                setTimeout(() => {
+                    window.audioSystem.startMusic(); // Will use normal music
+                }, 100);
+            }
+        }
+    }
+    
+    // Ensure all non-active tabs are properly hidden
+    tabPanes.forEach(pane => {
+        if (!pane.classList.contains('active')) {
+            pane.style.display = 'none';
+            pane.style.visibility = 'hidden';
+            pane.style.opacity = '0';
+            pane.style.pointerEvents = 'none';
+        }
+    });
+    
     // Update tab content
     switch(tabName) {
         case 'workstations':
             console.log('Updating workstations tab content...');
+            // Ensure meditation tab is hidden
+            const meditationTab = document.getElementById('meditation-tab');
+            if (meditationTab) {
+                meditationTab.classList.remove('active');
+                meditationTab.style.display = 'none';
+                meditationTab.style.visibility = 'hidden';
+                meditationTab.style.opacity = '0';
+                meditationTab.style.pointerEvents = 'none';
+            }
             updateWorkstationsTab();
             // Force container visibility after update
             setTimeout(() => {
@@ -1393,6 +1763,7 @@ function switchTab(tabName) {
             if (meditationUI) {
                 meditationUI.updateAll();
             }
+            // Music switching is handled at the top level of switchTab function
             break;
         case 'stats':
             console.log('Updating stats tab content...');
@@ -1599,7 +1970,7 @@ function getInscriptionBonusRates(prodData, owned, inscriptionMult) {
 
 /**
  * Get tier symbol and styles - centralized helper for consistent tier symbols throughout app
- * @param {number} tier - Tier number (0-4)
+ * @param {number} tier - Tier number (0-5)
  * @returns {Object} Tier symbol and style information
  */
 function getTierSymbol(tier) {
@@ -1638,6 +2009,13 @@ function getTierSymbol(tier) {
             glow: 'rgba(0, 255, 255, 0.4)',
             gradient: 'linear-gradient(135deg, #00FFFF 0%, #00CED1 100%)',
             borderGlow: 'rgba(0, 255, 255, 0.7)'
+        },
+        5: { 
+            symbol: '✪',
+            color: '#FF6B00', // Neon Orange
+            glow: 'rgba(255, 107, 0, 0.6)',
+            gradient: 'linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%)',
+            borderGlow: 'rgba(255, 107, 0, 0.9)'
         }
     };
     return tierStyles[tier] || tierStyles[0];
@@ -1645,21 +2023,22 @@ function getTierSymbol(tier) {
 
 /**
  * Get tier for a workstation based on its position in PRODUCERS array
- * Tier 0: indices 0-3, Tier 1: 4-7, Tier 2: 8-12, Tier 3: 13-17, Tier 4: 18-21
+ * Tier 0: indices 0-4, Tier 1: 5-9, Tier 2: 10-14, Tier 3: 15-19, Tier 4: 20-24, Tier 5: 25+
  */
 function getWorkstationTier(prodData) {
     const index = PRODUCERS.findIndex(p => p.id === prodData.id);
-    if (index <= 3) return 0;
-    if (index <= 7) return 1;
-    if (index <= 12) return 2;
-    if (index <= 17) return 3;
-    return 4;
+    if (index <= 4) return 0;  // Tier 0: 5 workstations (indices 0-4)
+    if (index <= 9) return 1;  // Tier 1: 5 workstations (indices 5-9)
+    if (index <= 14) return 2; // Tier 2: 5 workstations (indices 10-14)
+    if (index <= 19) return 3; // Tier 3: 5 workstations (indices 15-19)
+    if (index <= 24) return 4; // Tier 4: 5 workstations (indices 20-24)
+    return 5;                   // Tier 5: workstations (indices 25+)
 }
 
 /**
  * Get tier for an upgrade based on the highest tier ingredient in its recipe
  * @param {Object} upgData - Upgrade data
- * @returns {number} - Tier (0-4)
+ * @returns {number} - Tier (0-5)
  */
 function getUpgradeTier(upgData) {
     let maxTier = 0;
@@ -1677,25 +2056,15 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
     container.innerHTML = '';
     
     if (unlockedWorkstations.length === 0) {
-            console.log('No workstations unlocked yet. First workstation requires:', PRODUCERS[0]?.unlockAtAb || 'unknown', 'AB');
-            const message = document.createElement('div');
-            message.className = 'card';
-            message.style.cssText = 'position: relative; z-index: 10; pointer-events: auto; visibility: visible; display: block;';
-            message.innerHTML = `
-                <div class="card-title">No Workstations Unlocked</div>
-                <div class="card-description">Cast spells to earn Arcane Bits and unlock your first workstation!</div>
-                <div class="card-section">
-                    <div class="card-label">First workstation requires: ${PRODUCERS[0]?.unlockAtAb || 0} AB</div>
-                    <div class="card-label">Current AB: ${formatShort(gameState.ab)}</div>
-                </div>
-                <div class="button-row">
-                    <button class="btn-primary" style="position: relative; z-index: 11; pointer-events: auto;" onclick="console.log('Cast button clicked from message'); if (typeof window.castButton !== 'undefined' && window.castButton) window.castButton.click();"><span class="css-icon-sparkle"></span> Cast to Earn AB</button>
-                </div>
-            `;
-            container.appendChild(message);
-            console.log('Added message card to container, container children:', container.children.length);
-            return;
-        }
+        container.innerHTML = `
+            <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+                <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
+                <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">No workstations unlocked yet. Start casting to unlock more!</p>
+            </div>
+        `;
+        return;
+    }
+    
         
         console.log('Rendering', unlockedWorkstations.length, 'workstations using traditional rendering');
         
@@ -1710,8 +2079,8 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
         }
         
         // Render by tier
-        const tierNames = ['Tier 0', 'Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'];
-        for (let tier = 0; tier <= 4; tier++) {
+        const tierNames = ['Tier 0', 'Tier 1', 'Tier 2', 'Tier 3', 'Tier 4', 'Tier 5'];
+        for (let tier = 0; tier <= 5; tier++) {
             if (!workstationsByTier[tier] || workstationsByTier[tier].length === 0) continue;
             
             // Add tier header with tier symbol
@@ -1754,13 +2123,14 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                             const ingredient = INGREDIENTS.find(ing => ing.id === outputId);
                             const displayName = ingredient?.displayName || outputId;
                             return `<div class="inscription-bonus-item">
-                                +${formatShort(bonusRate)}/s ${displayName}
+                                <span class="bonus-label">+${formatShort(bonusRate)}/s</span>
+                                <span class="bonus-numbers">${displayName}</span>
                             </div>`;
                         }).join('')}
                     </div>
                     ${inscriptionData.inscriptions.length > 0 ? `
                         <div class="inscription-list">
-                            ${inscriptionData.inscriptions.map(ins => `• ${ins.name} (×${ins.multiplier.toFixed(2)})`).join('<br>')}
+                            ${inscriptionData.inscriptions.map(ins => `• ${ins.name} (×${ins.multiplier.toFixed(2)})`).join(' • ')}
                         </div>
                     ` : ''}
                 `;
@@ -1790,7 +2160,8 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                             const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
                             const displayName = ingredient?.displayName || ingId;
                             return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                                ${displayName}: ${formatShort(have)} / ${formatShort(amount)}
+                                <span class="recipe-label">${displayName}:</span>
+                                <span class="recipe-numbers">${formatShort(have)} / ${formatShort(amount)}</span>
                             </div>`;
                         }).join('')}
                     </div>
@@ -1817,6 +2188,13 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                     btn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        // Mark button as handled to prevent fallback handler from firing
+                        btn.dataset.handled = 'true';
+                        setTimeout(() => {
+                            delete btn.dataset.handled;
+                        }, 100);
+                        
                         const action = btn.dataset.action;
                         const wsId = btn.dataset.wsId;
                         
@@ -1946,7 +2324,7 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
     }
     
     // Render upgrades grouped by tier
-    for (let tier = 0; tier <= 4; tier++) {
+    for (let tier = 0; tier <= 5; tier++) {
         if (!upgradesByTier[tier] || upgradesByTier[tier].length === 0) {
             continue;
         }
@@ -2002,7 +2380,8 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
                         const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
                         const displayName = ingredient?.displayName || ingId;
                         return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                            ${displayName}: ${formatShort(have)} / ${formatShort(amount)}
+                            <span class="recipe-label">${displayName}:</span>
+                            <span class="recipe-numbers">${formatShort(have)} / ${formatShort(amount)}</span>
                         </div>`;
                     }).join('')}
                 </div>
@@ -2011,21 +2390,65 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
                 </button>
             `;
             
-            // Attach event listener directly
+            // Attach event listener directly - always attach handler, check conditions inside
             const button = card.querySelector('button[data-action="inscribe"]');
-            if (button && !owned && canAffordAll) {
-                // Ensure button is clickable
+            if (button) {
+                // Ensure button is visible and clickable
                 button.style.position = 'relative';
                 button.style.zIndex = '100';
-                button.style.pointerEvents = owned ? 'none' : 'auto';
-                button.style.cursor = owned ? 'not-allowed' : 'pointer';
+                
+                // Properly manage disabled state - remove disabled attribute if we can afford it
+                if (owned || !canAffordAll) {
+                    button.disabled = true;
+                    button.style.pointerEvents = 'none';
+                    button.style.cursor = 'not-allowed';
+                    button.style.opacity = '0.6';
+                } else {
+                    button.disabled = false;
+                    button.style.pointerEvents = 'auto';
+                    button.style.cursor = 'pointer';
+                    button.style.opacity = '1';
+                }
+                
                 button.style.visibility = 'visible';
                 button.style.display = 'inline-block';
                 
-                if (!owned && typeof window.inscribeUpgrade === 'function') {
+                // Always attach handler - it will check if it can execute
+                if (typeof window.inscribeUpgrade === 'function') {
                     button.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        // Re-check conditions dynamically at click time (don't rely on closure variables)
+                        if (!gameState) {
+                            console.error('gameState not available');
+                            return;
+                        }
+                        
+                        const currentOwned = gameState.upgradesOwned[upgData.id] || false;
+                        if (currentOwned) {
+                            console.log('Inscribe button: Already owned:', { upgId: upgData.id });
+                            return;
+                        }
+                        
+                        // Re-check if we can afford all materials
+                        let currentCanAffordAll = true;
+                        if (upgData.recipe) {
+                            for (const [ingId, amount] of Object.entries(upgData.recipe)) {
+                                const have = gameState.inventory[ingId] || 0;
+                                if (have < amount) {
+                                    currentCanAffordAll = false;
+                                    console.log('Inscribe button: Cannot afford:', { ingId, have, needed: amount });
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (!currentCanAffordAll || button.disabled) {
+                            console.log('Inscribe button disabled:', { currentCanAffordAll, disabled: button.disabled, upgId: upgData.id });
+                            return;
+                        }
+                        
                         console.log('Inscribe button clicked:', { upgId: upgData.id, button });
                         window.inscribeUpgrade(upgData.id, button);
                     });
@@ -2063,13 +2486,15 @@ function updateInventoryTab() {
     container.innerHTML = '';
     
     if (!gameState.inventory || Object.keys(gameState.inventory).length === 0) {
-        const emptyMsg = document.createElement('div');
-        emptyMsg.className = 'card';
-        emptyMsg.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
-        emptyMsg.innerHTML = '<div class="card-title">Inventory</div><div class="card-description">No ingredients yet. Cast to gather ingredients!</div>';
-        container.appendChild(emptyMsg);
+        container.innerHTML = `
+            <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+                <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
+                <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">Your inventory is empty. Start crafting to collect items!</p>
+            </div>
+        `;
         return;
     }
+    
     
     // Get all items and sort by tier and amount
     const items = [];
@@ -2118,7 +2543,7 @@ function updateInventoryTab() {
     fragment.appendChild(headerCard);
     
     // Create items grouped by tier with enhanced visuals
-    for (let tier = 0; tier <= 4; tier++) {
+    for (let tier = 0; tier <= 5; tier++) {
         if (!itemsByTier[tier] || itemsByTier[tier].length === 0) {
             continue;
         }
@@ -2275,55 +2700,98 @@ function updateExperimentTab() {
     if (expButton) {
         // Explicitly set button text to ensure no emoji (prevents caching issues)
         expButton.textContent = 'Try Experiment';
-        expButton.onclick = () => {
+        
+        // Remove any existing handlers to prevent duplicates
+        expButton.onclick = null;
+        expButton.replaceWith(expButton.cloneNode(true));
+        const newExpButton = document.getElementById('experiment-button');
+        
+        newExpButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Mark as handled to prevent fallback handler from firing
+            newExpButton.dataset.handled = 'true';
+            setTimeout(() => {
+                delete newExpButton.dataset.handled;
+            }, 100);
+            
             try {
+                console.log('Experiment button clicked');
                 const result = gameState.tryExperiment();
                 const resultLabel = document.getElementById('experiment-result');
                 
+                // Ensure result label is visible
+                if (resultLabel) {
+                    resultLabel.style.display = 'block';
+                    resultLabel.style.visibility = 'visible';
+                    resultLabel.style.opacity = '1';
+                }
+                
                 if (result.success) {
-                    resultLabel.innerHTML = `<span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}`;
+                    console.log('Experiment succeeded:', result.recipe.name);
+                    resultLabel.innerHTML = `
+                        <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration" style="width: 256px; height: 256px; object-fit: contain; margin: 0 auto 20px; display: block;">
+                        <span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}
+                    `;
                     resultLabel.className = 'result-label success';
                     
                     // Celebration!
-                    pulseElement(expButton, 1.2, 400);
+                    if (typeof pulseElement === 'function') {
+                        pulseElement(newExpButton, 1.2, 400);
+                    }
                     showNotification(`<span class="css-icon-celebration"></span> Discovered: ${result.recipe.name}!`, 'success');
                     
                     // Create confetti-like particles
-                    const rect = expButton.getBoundingClientRect();
-                    for (let i = 0; i < 5; i++) {
-                        setTimeout(() => {
-                            createParticle(
-                                rect.left + Math.random() * rect.width,
-                                rect.top + Math.random() * rect.height,
-                                '✨',
-                                ['#FF2DAA', '#22E3FF', '#FFDB6E', '#3CE3C5', '#C9A0FF'][i % 5]
-                            );
-                        }, i * 50);
+                    if (typeof createParticle === 'function') {
+                        const rect = newExpButton.getBoundingClientRect();
+                        for (let i = 0; i < 5; i++) {
+                            setTimeout(() => {
+                                createParticle(
+                                    rect.left + Math.random() * rect.width,
+                                    rect.top + Math.random() * rect.height,
+                                    '✨',
+                                    ['#FF2DAA', '#22E3FF', '#FFDB6E', '#3CE3C5', '#C9A0FF'][i % 5]
+                                );
+                            }, i * 50);
+                        }
                     }
                     
                     // Check achievements
                     if (achievements) {
                         const newAchievements = achievements.checkAchievements();
                         for (const achievement of newAchievements) {
-                            showNotification(`🏆 Achievement: ${achievement.name}!`, 'success');
+                            showNotification(`Achievement: ${achievement.name}!`, 'success');
                         }
                     }
                 } else {
-                    resultLabel.textContent = result.message;
-                    resultLabel.className = 'result-label error';
+                    console.log('Experiment failed:', result.message);
+                    resultLabel.innerHTML = `<div class="result-label error" style="color: var(--danger); padding: 15px; font-size: 16px; text-align: center;">${result.message}</div>`;
+                    resultLabel.className = 'result-box';
                     
                     // Shake on failure
-                    if (expButton && typeof shakeElement === 'function') {
-                        shakeElement(expButton, 3, 200);
+                    if (typeof shakeElement === 'function') {
+                        shakeElement(newExpButton, 3, 200);
                     }
+                    
+                    // Show notification for feedback
+                    showNotification(result.message, 'error');
                 }
                 
                 updateExperimentTab();
             } catch (error) {
                 console.error('Error in experiment:', error);
+                const resultLabel = document.getElementById('experiment-result');
+                if (resultLabel) {
+                    resultLabel.innerHTML = `<div class="result-label error" style="color: var(--danger); padding: 15px; font-size: 16px; text-align: center;">Experiment failed due to an error. Check console for details.</div>`;
+                    resultLabel.className = 'result-box';
+                    resultLabel.style.display = 'block';
+                    resultLabel.style.visibility = 'visible';
+                    resultLabel.style.opacity = '1';
+                }
                 showNotification('Experiment failed due to an error', 'error');
             }
-        };
+        });
     }
     
     // Show discovered recipes with batched DOM updates
@@ -2345,7 +2813,8 @@ function updateExperimentTab() {
                     const have = gameState.inventory[ingId] || 0;
                     const canAfford = have >= amount;
                     return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                        ${ingId}: ${formatShort(have)} / ${formatShort(amount)}
+                        <span class="recipe-label">${ingId}:</span>
+                        <span class="recipe-numbers">${formatShort(have)} / ${formatShort(amount)}</span>
                     </div>`;
                 }).join('')}
             </div>
@@ -2358,13 +2827,41 @@ function updateExperimentTab() {
             <button class="btn-primary" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
         `;
         
-            // Attach event listener directly
+            // Attach event listener directly - always attach handler
             const button = card.querySelector('button[data-action="craft-recipe"]');
             if (button && typeof window.craftRecipe === 'function') {
-                button.addEventListener('click', (e) => {
+                // Remove any existing listeners to prevent duplicates
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+                
+                // Ensure button is visible and clickable
+                newButton.style.position = 'relative';
+                newButton.style.zIndex = '100';
+                newButton.style.pointerEvents = 'auto';
+                newButton.style.cursor = 'pointer';
+                newButton.style.visibility = 'visible';
+                newButton.style.display = 'inline-block';
+                
+                // Always attach handler
+                newButton.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    window.craftRecipe(recipeId);
+                    
+                    // Mark button as handled to prevent fallback handler from firing
+                    newButton.dataset.handled = 'true';
+                    setTimeout(() => {
+                        delete newButton.dataset.handled;
+                    }, 100);
+                    
+                    console.log('Craft recipe button clicked:', { recipeId });
+                    const success = window.craftRecipe(recipeId);
+                    
+                    // Visual feedback
+                    if (success && typeof pulseElement === 'function') {
+                        pulseElement(newButton, 1.1, 200);
+                    } else if (!success && typeof shakeElement === 'function') {
+                        shakeElement(newButton, 3, 200);
+                    }
                 });
             }
         
@@ -2426,12 +2923,29 @@ function updateDailiesTab() {
                 </button>
             `;
             
-                // Attach event listener directly
+                // Attach event listener directly - always attach handler, check conditions inside
                 const button = card.querySelector('button[data-action="claim-task"]');
-                if (button && !button.disabled && typeof window.claimTask === 'function') {
+                if (button && typeof window.claimTask === 'function') {
+                    // Ensure button is visible and clickable
+                    button.style.position = 'relative';
+                    button.style.zIndex = '100';
+                    button.style.pointerEvents = (progress < target || claimed || button.disabled) ? 'none' : 'auto';
+                    button.style.cursor = (progress < target || claimed || button.disabled) ? 'not-allowed' : 'pointer';
+                    button.style.visibility = 'visible';
+                    button.style.display = 'inline-block';
+                    
+                    // Always attach handler - it will check if it can execute
                     button.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        // Check if we can actually claim
+                        if (progress < target || claimed || button.disabled) {
+                            console.log('Claim button disabled:', { progress, target, claimed, disabled: button.disabled });
+                            return;
+                        }
+                        
+                        console.log('Claim task button clicked:', { taskId: task.id });
                         window.claimTask(task.id);
                     });
                 }
@@ -2510,12 +3024,29 @@ function updateBoonsTab() {
                 </button>
             `;
             
-                // Attach event listener directly
+                // Attach event listener directly - always attach handler, check conditions inside
                 const button = card.querySelector('button[data-action="purchase-boon"]');
-                if (button && !button.disabled && typeof window.purchaseBoon === 'function') {
+                if (button && typeof window.purchaseBoon === 'function') {
+                    // Ensure button is visible and clickable
+                    button.style.position = 'relative';
+                    button.style.zIndex = '100';
+                    button.style.pointerEvents = (gameState.prestigePoints < cost || button.disabled) ? 'none' : 'auto';
+                    button.style.cursor = (gameState.prestigePoints < cost || button.disabled) ? 'not-allowed' : 'pointer';
+                    button.style.visibility = 'visible';
+                    button.style.display = 'inline-block';
+                    
+                    // Always attach handler - it will check if it can execute
                     button.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        // Check if we can actually purchase
+                        if (gameState.prestigePoints < cost || button.disabled) {
+                            console.log('Purchase boon button disabled:', { prestigePoints: gameState.prestigePoints, cost, disabled: button.disabled });
+                            return;
+                        }
+                        
+                        console.log('Purchase boon button clicked:', { boonId: boonData.id });
                         window.purchaseBoon(boonData.id);
                     });
                 }
@@ -2542,6 +3073,147 @@ function updateComboDisplay() {
         comboDisplay.style.display = 'block';
     } else if (comboDisplay) {
         comboDisplay.style.display = 'none';
+    }
+}
+
+/**
+ * Calculate total ingredient count for each tier
+ * @returns {Object} Object with tier numbers as keys and total counts as values
+ */
+/**
+ * Map ingredient IDs to their elements based on workstation outputs
+ */
+function getIngredientElement(ingId) {
+    // Base essences map directly to elements
+    if (ingId === 'fire_essence') return 'fire';
+    if (ingId === 'water_essence') return 'water';
+    if (ingId === 'air_essence') return 'air';
+    if (ingId === 'crystal_dust') return 'crystal';
+    if (ingId === 'aether_ess') return 'aether';
+    
+    // Special ingredients
+    if (ingId === 'focus') return 'aether'; // Focus is Aether-related (meditation/mental energy)
+    if (ingId === 'ab') return 'aether'; // AB is Aether currency
+    
+    // Find which workstation produces this ingredient
+    const producer = PRODUCERS.find(p => {
+        if (!p.outputs) return false;
+        return Object.keys(p.outputs).includes(ingId);
+    });
+    
+    if (!producer) {
+        // If not found, try to infer from name
+        if (ingId.includes('fire') || ingId.includes('candle') || ingId.includes('wax') || ingId.includes('flame')) return 'fire';
+        if (ingId.includes('water') || ingId.includes('liquid') || ingId.includes('aqua') || ingId.includes('flowing')) return 'water';
+        if (ingId.includes('air') || ingId.includes('wind') || ingId.includes('zephyr') || ingId.includes('breath') || ingId.includes('gust')) return 'air';
+        if (ingId.includes('crystal') || ingId.includes('shaped') || ingId.includes('orb') || (ingId.includes('core') && !ingId.includes('infinity'))) return 'crystal';
+        if (ingId.includes('aether') || ingId.includes('dist') || ingId.includes('infinity') || ingId === 'ab') return 'aether';
+        return null;
+    }
+    
+    // Map workstation type to element based on building type and name
+    const wsId = producer.id;
+    const displayName = producer.displayName || '';
+    
+    // Fire: Forges (except crystal/wind ones)
+    if (wsId.includes('fire') || wsId.includes('candle') || (wsId.includes('forge') && !wsId.includes('crystal') && !wsId.includes('wind') && !wsId.includes('spiral'))) return 'fire';
+    
+    // Water: Wells (except aether ones)
+    if (wsId.includes('water') || wsId.includes('aqua') || wsId.includes('liquid') || wsId.includes('flowing') || (wsId.includes('well') && !wsId.includes('aether'))) return 'water';
+    
+    // Air: Generators
+    if (wsId.includes('air') || wsId.includes('zephyr') || wsId.includes('wind') || wsId.includes('breath') || wsId.includes('generator') || wsId.includes('spiral')) return 'air';
+    
+    // Crystal: Chambers
+    if (wsId.includes('crystal') || wsId.includes('chamber')) return 'crystal';
+    
+    // Aether: Reactors and Focus Mills
+    if (wsId.includes('aether') || wsId.includes('reactor') || wsId.includes('focus')) return 'aether';
+    
+    return null;
+}
+
+function calculateElementTotals() {
+    if (!gameState || !gameState.inventory) {
+        return { fire: 0, water: 0, air: 0, crystal: 0, aether: 0 };
+    }
+    
+    const totals = { fire: 0, water: 0, air: 0, crystal: 0, aether: 0 };
+    
+    // Sum up all ingredients by element
+    for (const ingId in gameState.inventory) {
+        const amount = gameState.inventory[ingId] || 0;
+        if (amount <= 0) continue;
+        
+        const element = getIngredientElement(ingId);
+        if (element && totals.hasOwnProperty(element)) {
+            totals[element] += amount;
+        }
+    }
+    
+    return totals;
+}
+
+// Store previous element totals to detect changes
+let previousElementTotals = { fire: 0, water: 0, air: 0, crystal: 0, aether: 0, focus: 0 };
+
+/**
+ * Update element counter displays with current totals
+ */
+function updateElementCounters() {
+    if (!gameState) return;
+    
+    const totals = calculateElementTotals();
+    
+    // Update each element counter (with 1 decimal place)
+    const elements = ['fire', 'water', 'air', 'crystal', 'aether'];
+    for (const element of elements) {
+        const counterElement = document.getElementById(`element-counter-${element}`);
+        if (!counterElement) continue;
+        
+        const amountElement = counterElement.querySelector('.element-amount');
+        if (!amountElement) continue;
+        
+        const total = totals[element];
+        const formattedTotal = formatOneDecimal(total);
+        const previousTotal = previousElementTotals[element] || 0;
+        
+        // Only update if value changed significantly (avoid unnecessary updates)
+        if (Math.abs(total - previousTotal) > 0.01) {
+            // Animate number change if significant change (using formatOneDecimal for element counters)
+            if (previousTotal > 0 && Math.abs(total - previousTotal) > 0.1) {
+                animateNumberWithFormatter(amountElement, previousTotal, total, 500, formatOneDecimal);
+            } else {
+                // Just update text for small changes
+                amountElement.textContent = formattedTotal;
+            }
+            previousElementTotals[element] = total;
+        } else if (amountElement.textContent.trim() !== formattedTotal) {
+            // Update text if formatting changed but value is same
+            amountElement.textContent = formattedTotal;
+        }
+    }
+    
+    // Update Focus counter (with 1 decimal place)
+    const focusCounter = document.getElementById('element-counter-focus');
+    if (focusCounter) {
+        const focusAmountElement = focusCounter.querySelector('.element-amount');
+        if (focusAmountElement && gameState.inventory) {
+            const focusAmount = gameState.inventory['focus'] || 0;
+            const formattedFocus = formatOneDecimal(focusAmount);
+            const previousFocus = previousElementTotals['focus'] || 0;
+            
+            if (Math.abs(focusAmount - previousFocus) > 0.01) {
+                if (previousFocus > 0 && Math.abs(focusAmount - previousFocus) > 0.1) {
+                    animateNumberWithFormatter(focusAmountElement, previousFocus, focusAmount, 500, formatOneDecimal);
+                } else {
+                    focusAmountElement.textContent = formattedFocus;
+                }
+                previousElementTotals['focus'] = focusAmount;
+            } else if (focusAmountElement.textContent.trim() !== formattedFocus) {
+                focusAmountElement.textContent = formattedFocus;
+            }
+        }
     }
 }
 
@@ -2609,8 +3281,22 @@ function updateStatsTab() {
         { label: 'Achievements', value: `${achievements.getUnlockedCount()}/${achievements.getTotalCount()}` }
     ];
     
+    // Add meditation production bonus if meditation is unlocked
+    if (window.meditationState && typeof window.meditationState.getMeditationProductionBonus === 'function') {
+        const meditationBonus = window.meditationState.getMeditationProductionBonus();
+        const bonusPercent = ((meditationBonus - 1.0) * 100).toFixed(1);
+        stats.push({ 
+            label: '🧘 Meditation Production Bonus', 
+            value: `+${bonusPercent}%`,
+            style: 'color: var(--success); font-weight: bold;'
+        });
+    }
+    
     for (const stat of stats) {
         const item = document.createElement('div');
+        if (stat.style) {
+            item.style.cssText = stat.style;
+        }
         item.className = 'card-section';
         item.innerHTML = `
             <div class="card-label">${stat.label}</div>
@@ -2768,13 +3454,65 @@ function updateCovenTab() {
         `;
     } else {
         statusCard.innerHTML = `
-            <div class="card-title">Not in a Coven</div>
-            <div class="card-description">Join or create a coven to unlock social bonuses!</div>
+            <div class="card-title">Create or Join a Coven</div>
+            <div class="card-description">Join forces with other Cyber Witches to unlock powerful bonuses!</div>
+            <div class="card-section">
+                <div class="card-label">Coven Name:</div>
+                <input type="text" id="coven-name-input" placeholder="Enter coven name" maxlength="50" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); color: var(--text);">
+                <div class="card-label">Description (optional):</div>
+                <textarea id="coven-desc-input" placeholder="Describe your coven" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); resize: vertical; min-height: 60px; color: var(--text);"></textarea>
+            </div>
             <div class="button-row">
-                <button class="btn-primary" onclick="window.createCoven && window.createCoven()">Create Coven</button>
-                <button class="btn-primary" onclick="window.joinCoven && window.joinCoven()">Join Coven</button>
+                <button class="btn-primary" id="create-coven-button-inline" data-action="create-coven">Create Coven</button>
+            </div>
+            <div class="card-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <div class="card-label">Join Coven by Code:</div>
+                <input type="text" id="coven-code-input" placeholder="Enter coven code" style="width: 100%; padding: 8px; margin: 8px 0; border: 1px solid var(--border); border-radius: 4px; background: var(--card-bg); color: var(--text);">
+            </div>
+            <div class="button-row">
+                <button class="btn-primary" id="join-coven-button-inline" data-action="join-coven">Join Coven</button>
             </div>
         `;
+        
+        // Add enter key support for input fields
+        setTimeout(() => {
+            const nameInput = document.getElementById('coven-name-input');
+            const descInput = document.getElementById('coven-desc-input');
+            const codeInput = document.getElementById('coven-code-input');
+            
+            if (nameInput) {
+                nameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (typeof window.createCoven === 'function') {
+                            window.createCoven();
+                        }
+                    }
+                });
+            }
+            
+            if (descInput) {
+                descInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (typeof window.createCoven === 'function') {
+                            window.createCoven();
+                        }
+                    }
+                });
+            }
+            
+            if (codeInput) {
+                codeInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (typeof window.joinCoven === 'function') {
+                            window.joinCoven();
+                        }
+                    }
+                });
+            }
+        }, 0);
     }
     
     container.appendChild(statusCard);
@@ -2800,7 +3538,10 @@ function updateCovenTab() {
             memberItem.className = 'card-section';
             memberItem.innerHTML = `
                 <div class="card-label">${member.name} ${isCurrentPlayer ? '(You)' : ''} ${member.isLeader ? '👑' : '🔮'}</div>
-                <div class="card-description">Contribution: ${formatShort(member.contribution)}</div>
+                <div class="card-description">
+                    <span class="contribution-label">Contribution:</span>
+                    <span class="contribution-value">${formatShort(member.contribution)}</span>
+                </div>
             `;
             membersCard.appendChild(memberItem);
         });
@@ -2811,9 +3552,21 @@ function updateCovenTab() {
         const leaveButton = document.createElement('button');
         leaveButton.className = 'btn-secondary';
         leaveButton.textContent = 'Leave Coven';
-        leaveButton.onclick = () => {
-            if (window.leaveCoven) window.leaveCoven();
-        };
+        leaveButton.id = 'leave-coven-button-inline';
+        leaveButton.style.position = 'relative';
+        leaveButton.style.zIndex = '100';
+        leaveButton.style.pointerEvents = 'auto';
+        leaveButton.style.cursor = 'pointer';
+        leaveButton.style.visibility = 'visible';
+        leaveButton.style.display = 'inline-block';
+        leaveButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Leave coven button clicked (inline)');
+            if (typeof window.leaveCoven === 'function') {
+                window.leaveCoven();
+            }
+        });
         container.appendChild(leaveButton);
     }
     
@@ -2900,7 +3653,10 @@ function updateCovenMembers() {
                 <div class="member-role">${member.isLeader ? '👑 Coven Leader' : '🔮 Coven Member'}</div>
             </div>
             <div class="member-stats">
-                <div class="member-contribution">Contribution: ${formatShort(member.contribution)}</div>
+                <div class="member-contribution">
+                    <span class="contribution-label">Contribution:</span>
+                    <span class="contribution-value">${formatShort(member.contribution)}</span>
+                </div>
                 <div class="member-joined">Joined: ${joinedDate}</div>
             </div>
         `;
@@ -2921,6 +3677,7 @@ function updateAllUI() {
     updateBoonsTab();
     updateStatsTab();
     updateMeditationVisibility(); // Update meditation tab visibility
+    updateElementCounters(); // Update element counters
 }
 
 /**
@@ -3165,7 +3922,7 @@ function debouncedAchievementCheck() {
         if (achievements) {
             const newAchievements = achievements.checkAchievements();
             for (const achievement of newAchievements) {
-                showNotification(`🏆 Achievement: ${achievement.name}!`, 'success');
+                showNotification(`Achievement: ${achievement.name}!`, 'success');
             }
         }
     });
@@ -3248,7 +4005,17 @@ function showNotification(message, type = 'info') {
 function createNotificationElement(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
-    notification.innerHTML = message; // Use innerHTML to support CSS icons
+    
+    // Add achievement unlock scene for achievement notifications
+    if (type === 'success' && message.includes('Achievement')) {
+        notification.innerHTML = `
+            <img src="images/achievements/achievement-unlock-scene.png" alt="Achievement Unlocked" class="achievement-scene">
+            <span>${message}</span>
+        `;
+    } else {
+        notification.innerHTML = message; // Use innerHTML to support CSS icons
+    }
+    
     document.body.appendChild(notification);
     
     slideIn(notification, 'top', 300);

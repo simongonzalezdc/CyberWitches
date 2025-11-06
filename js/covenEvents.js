@@ -436,7 +436,7 @@ export class CovenEventsSystem {
         const bundles = {
             basic: { crystal_dust: 500, aether_ess: 500, fire_essence: 500, water_essence: 250, air_essence: 250 },
             advanced: { shaped_crys: 50, dist_aether: 50, dist_fire: 50, dig_candle: 25, crystal_orb: 25 },
-            legendary: { sigil_charge: 10, quantum_essence: 5, coven_blessing: 3, eldritch_wax: 2 }
+            legendary: { quantum_candle: 10, quantum_water: 5, quantum_air: 5, quantum_crystal: 3 }
         };
         
         const bundle = bundles[tier];

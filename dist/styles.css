@@ -1,684 +1,774 @@
-/* Cyber Witches Game Styles */
+/* Cyber Witches - Modern Styling */
 
-/* CSS Variables */
+/* Import Google Fonts for better typography */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+/* CSS Variables - Enhanced Color Palette */
 :root {
+    /* Primary Colors */
     --primary: #FF2DAA;
+    --primary-glow: #FF2DAA;
     --secondary: #22E3FF;
+    --secondary-glow: #22E3FF;
     --accent: #FFDB6E;
+    --accent-glow: #FFDB6E;
     --success: #3CE3C5;
-    --mystical: #C9A0FF;
-    --bg-dark: #0E0E12;
+    --success-glow: #3CE3C5;
+    
+    /* Background Colors */
+    --bg-dark: #0A0A0F;
     --bg-light: #1A1A2A;
+    --bg-card: #1F1F3A;
+    --bg-card-hover: #252540;
+    
+    /* Text Colors */
     --text: #FFFFFF;
+    --text-bright: #FFFFFF;
     --text-dim: #AAAAAA;
-    --border: #333333;
-    --shadow: rgba(0, 0, 0, 0.2);
-    --glow: rgba(34, 227, 255, 0.4);
+    --text-muted: #666666;
+    
+    /* Border & Shadow */
+    --border: #333366;
+    --border-bright: #555588;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --shadow-glow: rgba(255, 45, 170, 0.3);
+    --shadow-secondary: rgba(34, 227, 255, 0.3);
+    
+    /* Glassmorphism */
+    --glass-bg: rgba(31, 31, 58, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-blur: blur(20px);
+    
+    /* Animations */
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* High Contrast Mode */
-.high-contrast-mode {
-    --primary: #FFFFFF;
-    --secondary: #FFFF00;
-    --accent: #00FF00;
-    --success: #00FFFF;
-    --mystical: #FF00FF;
-    --bg-dark: #000000;
-    --text: #FFFFFF;
-    --text-dim: #CCCCCC;
-}
-
-/* Reduced Motion */
-.reduced-motion * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-}
-
-/* Base Styles */
+/* Reset & Base Styles */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Rajdhani', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 16px;
-    line-height: 1.5;
+    font-weight: 400;
+    line-height: 1.6;
     color: var(--text);
-    background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2a 100%);
-    background-attachment: fixed;
+    background: var(--bg-dark);
+    background-image: url('images/backgrounds/main-game-bg.png');
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     min-height: 100vh;
     overflow-x: hidden;
+    position: relative;
 }
 
-/* Skip Link for Accessibility */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 1px, 1px);
-    clip-path: inset(50%);
-}
-
-.skip-link {
-    position: absolute;
-    top: -100px;
+/* Animated Background Overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
     left: 0;
-    background: var(--primary);
-    color: var(--text);
-    padding: 8px 16px;
-    text-decoration: none;
-    border-radius: 0 0 4px 4px;
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    z-index: 10000;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(255, 45, 170, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(34, 227, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 219, 110, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, rgba(10, 10, 15, 0.7) 0%, rgba(15, 15, 26, 0.6) 25%, rgba(26, 26, 42, 0.5) 50%, rgba(15, 15, 26, 0.6) 75%, rgba(10, 10, 15, 0.7) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    z-index: -2;
+    pointer-events: none;
 }
 
-.skip-link:focus {
-    opacity: 1;
-    transform: translateY(0);
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
-/* HUD */
+/* Scanline Effect */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: -1;
+    animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100vh); }
+}
+
+/* HUD - Enhanced Glassmorphism */
 .hud {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    width: 100%;
-    background: rgba(14, 14, 14, 0.9);
-    backdrop-filter: blur(10px);
-    z-index: 100;
-    padding: 10px;
-    box-shadow: 0 0 20px var(--shadow);
+    background: var(--glass-bg);
+    background-image: url('images/backgrounds/hud-bg-pattern.png');
+    background-repeat: repeat;
+    background-size: 512px 512px;
+    background-position: 0 0;
+    background-blend-mode: overlay;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 15px 20px;
+    z-index: 1000;
+    display: block;
+    visibility: visible;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    height: auto;
+    min-height: 70px; /* Ensure consistent height */
+    max-height: 100px; /* Prevent it from being too tall */
 }
 
-.top-bar {
+.hud::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/backgrounds/hud-bg-pattern.png');
+    background-repeat: repeat;
+    background-size: 512px 512px;
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.hud-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-}
-
-.currency {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.top-bar-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.cast-button {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: var(--text);
-    border: none;
-    border-radius: 50px;
-    padding: 15px 30px;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 20px var(--glow);
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-shadow: 0 0 10px var(--glow);
-    min-width: 150px;
-    min-height: 80px;
-}
-
-.cast-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 25px var(--glow);
-}
-
-.cast-button:active {
-    transform: scale(0.95);
-}
-
-.secondary-button {
-    background: var(--bg-light);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.secondary-button:hover {
-    background: var(--bg-dark);
-    color: var(--text);
-}
-
-.primary-button {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: var(--text);
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.primary-button:hover {
-    background: linear-gradient(135deg, var(--secondary), var(--primary));
-}
-
-.primary-button:disabled {
-    background: var(--bg-light);
-    color: var(--text-dim);
-    cursor: not-allowed;
-}
-
-.combo-display {
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: var(--text);
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    z-index: 1000;
-    text-align: center;
-    box-shadow: 0 0 10px var(--shadow);
-}
-
-/* Main Content */
-.main-container {
-    padding-top: 80px;
-    min-height: calc(100vh - 80px);
-    position: relative;
-}
-
-/* Tab Navigation */
-.tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.tab-button {
-    background: var(--bg-light);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 8px 8px 0 8px;
-    padding: 10px 16px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-}
-
-.tab-button:hover {
-    background: var(--bg-dark);
-    color: var(--text);
-}
-
-.tab-button.active {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: var(--text);
-    box-shadow: 0 0 10px var(--glow);
-}
-
-.tab-button:focus {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
-
-.keyboard-focus-indicator {
-    box-shadow: 0 0 0 5px var(--accent);
-}
-
-/* Tab Content */
-.tab-content {
-    display: flex;
-    flex-direction: column;
+    max-width: 1400px;
+    margin: 0 auto;
     gap: 20px;
 }
 
-.tab-pane {
-    display: none;
-    background: rgba(14, 14, 14, 0.1);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 0 20px var(--shadow);
-    backdrop-filter: blur(5px);
+.currency-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: 'Orbitron', monospace;
 }
 
-.tab-pane.active {
-    display: block;
-}
-
-/* Scroll Containers */
-.scroll-container {
-    max-height: 60vh;
-    overflow-y: auto;
-    padding-right: 10px;
-    border-radius: 8px;
-    background: rgba(14, 14, 14, 0.05);
-}
-
-.scroll-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.scroll-container::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-}
-
-.scroll-container::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 4px;
-}
-
-/* Cards */
-.card {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px var(--shadow);
-}
-
-.card-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: var(--primary);
-}
-
-.card-description {
-    font-size: 14px;
-    color: var(--text-dim);
-    margin-bottom: 12px;
+.currency-display span {
+    font-size: 26px;
+    font-weight: 700;
+    text-shadow: 
+        0 0 10px var(--primary-glow),
+        0 0 20px var(--primary-glow),
+        0 0 30px var(--primary-glow);
+    letter-spacing: 1px;
+    transition: var(--transition-normal);
     line-height: 1.4;
 }
 
-.card-section {
-    margin-bottom: 12px;
+.currency-display span:hover {
+    transform: scale(1.05);
+    text-shadow: 
+        0 0 15px var(--primary-glow),
+        0 0 30px var(--primary-glow),
+        0 0 45px var(--primary-glow);
 }
 
-.card-label {
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--secondary);
-    margin-bottom: 4px;
-}
-
-.card-value {
-    font-size: 14px;
-    color: var(--text);
-    margin-bottom: 4px;
-}
-
-.button-row {
+.hud-controls {
     display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    flex-wrap: wrap;
-}
-
-/* Recipe Items */
-.recipe-item {
-    display: flex;
-    justify-content: space-between;
+    gap: 12px;
     align-items: center;
-    padding: 4px 8px;
-    margin-bottom: 4px;
-    border-radius: 4px;
-    font-size: 12px;
 }
 
-.recipe-item.can-afford {
-    background: rgba(60, 179, 113, 0.2);
-}
-
-.recipe-item.cannot-afford {
-    background: rgba(179, 0, 0, 0.1);
-}
-
-/* Progress Bars */
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+/* Enhanced Buttons */
+button,
+.btn-primary,
+.btn-secondary,
+.btn-cast {
+    padding: 18px 36px;
+    border: none;
+    border-radius: 16px;
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+    display: inline-block;
     overflow: hidden;
-    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-height: 60px;
+    line-height: 1.4;
 }
 
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--success), var(--mystical));
-    border-radius: 4px;
-    transition: width 0.3s;
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
 }
 
-.progress-text {
-    font-size: 12px;
-    color: var(--text-dim);
-    text-align: center;
-    margin-top: 4px;
+/* Removed button:hover::before to prevent flickering */
+
+/* Removed button:active transform to prevent flickering */
+
+.btn-primary {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--secondary);
+    border: 2px solid var(--secondary);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(34, 227, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    padding: 20px 36px !important;
+    min-height: 60px !important;
+    text-shadow: 0 0 10px rgba(255, 45, 170, 0.5);
 }
 
-/* Result Labels */
-.result-label {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 12px;
-}
-
-.result-label.success {
-    background: rgba(60, 179, 113, 0.2);
-    color: var(--text);
-}
-
-.result-label.error {
-    background: rgba(179, 0, 0, 0.2);
-    color: var(--text);
-}
-
-/* Modals */
-.modal {
-    position: fixed;
+.btn-primary::after {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 0;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(255, 45, 170, 0.1);
+    transition: width 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Removed .btn-primary:hover to prevent flickering */
+
+/* Removed .btn-primary:active transform to prevent flickering */
+
+.btn-primary:disabled {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-dim);
+    border-color: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.5;
+    text-shadow: none;
+}
+
+.btn-primary {
+    text-shadow: 0 0 10px rgba(34, 227, 255, 0.5);
+}
+
+.btn-secondary {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    color: var(--text);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Removed .btn-secondary:hover to prevent flickering */
+
+.btn-cast {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--secondary);
+    border: 3px solid var(--secondary);
+    padding: 22px 44px;
+    font-size: 28px;
+    font-weight: 700;
+    box-shadow: 
+        0 6px 25px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(34, 227, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    min-width: 220px;
+    min-height: 80px;
+    text-shadow: 0 0 15px rgba(34, 227, 255, 0.6);
+    animation: pulseGlow 2s ease-in-out infinite;
     display: flex;
-    justify-content: center;
     align-items: center;
-    z-index: 10000;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.modal.active {
-    opacity: 1;
-}
-
-.modal-content {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    max-width: 500px;
-    width: 90%;
-    box-shadow: 0 0 30px var(--shadow);
-    animation: slideIn 0.3s ease-out;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
     justify-content: center;
+    gap: 8px;
 }
 
-/* Coven System */
-.coven-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.cast-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
-.coven-status {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
+.workstation-card-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.experiment-result-illustration {
+    width: 256px;
+    height: 256px;
+    object-fit: contain;
+    margin: 0 auto 20px;
+    display: block;
+}
+
+.experiment-result-illustration.experiment-success {
+    filter: brightness(1.2);
+}
+
+.experiment-result-illustration.experiment-failure {
+    filter: brightness(0.7) grayscale(0.3);
+}
+
+.achievement-scene {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    margin-right: 12px;
+    flex-shrink: 0;
+    vertical-align: middle;
+    align-self: center;
+}
+
+.empty-state-illustration {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
     margin-bottom: 20px;
+    opacity: 0.8;
 }
 
-.coven-info h2 {
-    color: var(--primary);
-    margin-bottom: 8px;
+.empty-state-message {
+    color: var(--text-dim);
+    font-size: 18px;
 }
 
-.coven-stats {
+@keyframes pulseGlow {
+    0%, 100% {
+        box-shadow: 
+            0 6px 25px rgba(0, 0, 0, 0.5),
+            0 0 30px rgba(34, 227, 255, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border-color: var(--secondary);
+    }
+    50% {
+        box-shadow: 
+            0 8px 35px rgba(0, 0, 0, 0.6),
+            0 0 45px rgba(34, 227, 255, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        border-color: rgba(34, 227, 255, 0.9);
+    }
+}
+
+.btn-cast:hover {
+    transform: translateY(-3px) scale(1.05);
+    animation: none;
+    box-shadow: 
+        0 10px 35px rgba(0, 0, 0, 0.6),
+        0 0 50px rgba(34, 227, 255, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-color: var(--secondary);
+}
+
+.btn-cast:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+/* Main Game Area */
+.main-game {
+    margin-top: 100px;
+    padding: 40px 30px;
+    padding-top: 120px; /* Extra padding to ensure tabs are visible below HUD */
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    visibility: visible;
+    display: block;
+}
+
+/* Tab Navigation - Enhanced */
+.tabs-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
-    margin-top: 12px;
-}
-
-.coven-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.coven-progress {
-    margin-top: 16px;
-}
-
-.coven-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.coven-section {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.input-group input {
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text);
-    font-size: 14px;
-}
-
-.button-group {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-/* Ritual Cards */
-.ritual-list {
-    display: flex;
-    flex-direction: column;
     gap: 12px;
+    margin-bottom: 30px;
+    margin-top: 0; /* Ensure it starts right below HUD */
+    justify-content: center;
+    padding: 10px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 100; /* Below HUD but above content */
+    width: 100%;
 }
 
-.ritual-card {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.2s;
+/* Hide meditation and boons tabs by default - will be shown after first ascension */
+.tab-btn[data-tab="meditation"],
+.tab-btn[data-tab="boons"] {
+    display: none;
 }
 
-.ritual-card.completed {
-    background: rgba(60, 179, 113, 0.2);
-    border-color: var(--success);
+#meditation-tab,
+#boons-tab {
+    display: none;
 }
 
-.ritual-title {
-    font-size: 16px;
-    font-weight: bold;
-    color: var(--primary);
-    margin-bottom: 8px;
-}
-
-.ritual-description {
-    font-size: 14px;
+.tab-btn {
+    padding: 18px 32px;
+    background: transparent;
     color: var(--text-dim);
-    margin-bottom: 12px;
-}
-
-.ritual-progress {
-    margin-bottom: 12px;
-}
-
-.ritual-rewards {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.ritual-reward {
-    background: var(--bg-dark);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    color: var(--text);
-}
-
-/* Member Cards */
-.member-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.member-card {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.2s;
-}
-
-.member-info {
-    margin-bottom: 8px;
-}
-
-.member-name {
-    font-size: 16px;
-    font-weight: bold;
-    color: var(--primary);
-}
-
-.member-role {
-    font-size: 14px;
-    color: var(--secondary);
-    margin-bottom: 4px;
-}
-
-.member-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.member-contribution {
-    font-size: 14px;
-    color: var(--text-dim);
-}
-
-.member-joined {
-    font-size: 12px;
-    color: var(--text-dim);
-}
-
-/* Stats */
-.stats-container, .achievements-container {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.stats-container h2, .achievements-container h2 {
-    color: var(--primary);
-    margin-bottom: 16px;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-label {
-    font-weight: bold;
-    color: var(--secondary);
-}
-
-.stat-value {
-    color: var(--text);
-}
-
-/* Boons */
-.boon-header {
-    margin-bottom: 16px;
+    border: 2px solid transparent;
+    border-radius: 12px;
     font-size: 18px;
-    font-weight: bold;
-    color: var(--primary);
+    font-weight: 600;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+    overflow: hidden;
+    min-height: 50px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
-/* Active Events */
-.active-events {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 1000;
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+    z-index: -1;
 }
 
-.event-badge {
-    background: var(--bg-light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    box-shadow: 0 0 10px var(--shadow);
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    border-color: var(--border);
+    transform: translateY(-2px);
+    will-change: transform;
 }
 
-/* Animations */
-@keyframes slideIn {
+.tab-btn:hover::before {
+    left: 100%;
+}
+
+.tab-btn.active {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--secondary);
+    border: 2px solid var(--secondary);
+    box-shadow: 
+        0 2px 12px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(34, 227, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    text-shadow: 0 0 10px rgba(34, 227, 255, 0.5);
+    transform: translateY(0);
+    will-change: auto;
+}
+
+/* Tab Icons - Styled Unicode Symbols */
+.tab-icon {
+    display: inline-block;
+    font-size: 1.2em;
+    line-height: 1;
+    margin-right: 8px;
+    vertical-align: middle;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+/* Workstations - Gear icon - Neon Cyan */
+.tab-icon-workstations {
+    color: #00FFFF !important; /* Neon Cyan */
+    text-shadow: 0 0 12px #00FFFF, 0 0 24px rgba(0, 255, 255, 0.7), 0 0 36px rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Inscriptions - Diamond outline icon - Neon Pink */
+.tab-icon-inscriptions {
+    color: #FF10F0 !important; /* Neon Pink */
+    text-shadow: 0 0 12px #FF10F0, 0 0 24px rgba(255, 16, 240, 0.8), 0 0 36px rgba(255, 16, 240, 0.6) !important;
+}
+
+/* Inventory - Filled square icon - Neon Yellow */
+.tab-icon-inventory {
+    color: #FFFF00 !important; /* Neon Yellow */
+    text-shadow: 0 0 14px #FFFF00, 0 0 28px rgba(255, 255, 0, 0.9), 0 0 42px rgba(255, 255, 0, 0.7) !important;
+}
+
+/* Experiment - Lightning icon - Neon Green */
+.tab-icon-experiment {
+    color: #39FF14 !important; /* Neon Green */
+    text-shadow: 0 0 14px #39FF14, 0 0 28px rgba(57, 255, 20, 0.8), 0 0 42px rgba(57, 255, 20, 0.6) !important;
+}
+
+.tab-icon-experiment .css-icon-lightning {
+    color: #39FF14 !important;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Dailies - Filled circle icon - White */
+.tab-icon-dailies {
+    color: #FFFFFF !important; /* White */
+    text-shadow: 0 0 10px #FFFFFF, 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Coven - Filled star icon - Neon Cyan */
+.tab-icon-coven {
+    color: #00FFFF !important; /* Neon Cyan */
+    text-shadow: 0 0 16px #00FFFF, 0 0 32px rgba(0, 255, 255, 0.9), 0 0 48px rgba(0, 255, 255, 0.7) !important;
+    animation: iconFloat 3s ease-in-out infinite, tier4IconPulse 2s ease-in-out infinite !important;
+}
+
+/* Boons - Triangle icon - Neon Yellow */
+.tab-icon-boons {
+    color: #FFFF00 !important; /* Neon Yellow */
+    text-shadow: 0 0 16px #FFFF00, 0 0 32px rgba(255, 255, 0, 0.9), 0 0 48px rgba(255, 255, 0, 0.7) !important;
+    animation: iconFloat 3s ease-in-out infinite, tier4IconPulse 2s ease-in-out infinite !important;
+}
+
+/* Meditation - Circle with dot icon - Neon Green */
+.tab-icon-meditation {
+    color: #39FF14 !important; /* Neon Green */
+    text-shadow: 0 0 12px #39FF14, 0 0 24px rgba(57, 255, 20, 0.7), 0 0 36px rgba(57, 255, 20, 0.5) !important;
+}
+
+/* Stats - Square with cross icon - Neon Pink */
+.tab-icon-stats {
+    color: #FF10F0 !important; /* Neon Pink */
+    text-shadow: 0 0 12px #FF10F0, 0 0 24px rgba(255, 16, 240, 0.8), 0 0 36px rgba(255, 16, 240, 0.6) !important;
+}
+
+/* Tab Panels - Glassmorphism */
+.tabs-content {
+    position: relative;
+    width: 100%;
+    min-height: 400px;
+    display: block;
+    visibility: visible;
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.tab-panel {
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 24px;
+    border: 2px solid var(--glass-border);
+    padding: 40px;
+    min-height: 700px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: var(--transition-normal);
+    overflow: visible;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tab-panel.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+    min-height: 700px !important;
+    padding: 40px !important;
+    overflow: visible !important;
+    animation: fadeInSlide 0.4s ease-out;
+}
+
+/* Tab Panel Background Images */
+#workstations-tab.tab-panel.active {
+    background-image: url('images/backgrounds/tab-workstations-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+#workstations-tab.tab-panel.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/backgrounds/tab-workstations-bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    z-index: -1;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+#inscriptions-tab.tab-panel.active {
+    background-image: url('images/backgrounds/tab-inscriptions-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+#inscriptions-tab.tab-panel.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/backgrounds/tab-inscriptions-bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    z-index: -1;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+#boons-tab.tab-panel.active {
+    background-image: url('images/backgrounds/tab-boons-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+#boons-tab.tab-panel.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/backgrounds/tab-boons-bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    z-index: -1;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+#coven-tab.tab-panel.active {
+    background-image: url('images/backgrounds/tab-coven-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+#coven-tab.tab-panel.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/backgrounds/tab-coven-bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    z-index: -1;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+#experiment-tab.tab-panel.active {
+    background-image: url('images/backgrounds/tab-experiment-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+#experiment-tab.tab-panel.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/backgrounds/tab-experiment-bg.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    z-index: -1;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+@keyframes fadeInSlide {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
@@ -686,81 +776,2406 @@ body {
     }
 }
 
-@keyframes pulse {
+.tab-panel.active .content-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 18px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Content Lists - Grid Layout (Dashboard Style) */
+.content-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: visible;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    visibility: visible;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: start;
+}
+
+/* Responsive grid adjustments */
+@media (min-width: 1600px) {
+    .content-list {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+}
+
+@media (max-width: 1200px) {
+    .content-list {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .content-list {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* Fallback for vertical layout if needed */
+.content-list.vertical {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+}
+
+/* Enhanced Cards - Grid Tile Style (Dashboard) */
+.card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 2px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    visibility: visible;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto auto auto auto;
+    gap: 12px;
+    transition: none;
+    overflow: visible;
+    min-height: auto;
+    height: auto;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: default;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* Card header spans full width */
+.card > .card-title {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.card > .card-description {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+/* Card content columns */
+.card-content-left {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card-content-right {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Full-width sections (buttons, inscription bonuses) */
+.card-section.full-width {
+    grid-column: 1 / -1;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Inscription bonuses compact 2-column layout - must override parent flex */
+.inscription-bonuses {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    margin-top: 6px;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex: none !important;
+}
+
+.card-section.full-width .inscription-bonuses {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    flex: none !important;
+}
+
+.inscription-bonus-item {
+    font-size: 12px;
+    color: var(--success);
+    padding: 4px 6px;
+    background: rgba(60, 227, 197, 0.1);
+    border-radius: 4px;
+    border-left: 2px solid var(--success);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.inscription-list {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(60, 227, 197, 0.3);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+/* Tier header for workstation grouping */
+.content-list > .tier-header {
+    grid-column: 1 / -1;
+    margin: 20px 0 10px 0;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--text-bright);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.content-list > .tier-header:first-child {
+    margin-top: 0;
+}
+
+/* Button row spans full width */
+.button-row {
+    grid-column: 1 / -1;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    opacity: 0;
+    transition: none;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Removed card hover effects to prevent flickering */
+
+.card-title {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    color: var(--secondary);
+    margin-bottom: 6px;
+    text-shadow: 0 0 8px rgba(34, 227, 255, 0.5);
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-description {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    line-height: 1.3;
+    flex-shrink: 0;
+}
+
+.card-section {
+    margin-bottom: 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+    transition: none;
+    min-height: auto;
+    height: auto;
+    width: 100%;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* Removed card-section hover to prevent flickering */
+
+.card-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+}
+
+.card-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'Orbitron', monospace;
+    line-height: 1.3;
+    margin: 2px 0;
+}
+
+.recipe-item {
+    padding: 6px 10px;
+    margin: 4px 0;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 2px solid transparent;
+    transition: none;
+    font-size: 12px;
+    line-height: 1.3;
+    min-height: auto;
+    height: auto;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.recipe-item.can-afford {
+    border-left-color: var(--success);
+    background: rgba(60, 227, 197, 0.1);
+}
+
+.recipe-item.cannot-afford {
+    border-left-color: var(--primary);
+    opacity: 0.7;
+}
+
+/* Removed recipe-item hover to prevent flickering */
+
+.button-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 100;
+    pointer-events: auto;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.button-row button,
+.button-row .btn-primary,
+.card button[data-action],
+.card .btn-primary {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    min-height: 36px !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1.5px solid var(--secondary) !important;
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        0 0 15px rgba(34, 227, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    color: var(--secondary) !important;
+    text-shadow: 0 0 8px rgba(34, 227, 255, 0.4) !important;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    position: relative !important;
+    z-index: 100 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+/* Disabled button styles - dimmed when not affordable */
+.button-row button:disabled,
+.button-row .btn-primary:disabled,
+.button-row .btn-disabled,
+.card button[data-action]:disabled,
+.card .btn-primary:disabled,
+.card .btn-disabled {
+    opacity: 0.4 !important;
+    box-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    filter: grayscale(0.5);
+}
+
+/* Enabled button styles - lit up when affordable */
+.button-row button:not(:disabled):not(.btn-disabled),
+.button-row .btn-primary:not(:disabled):not(.btn-disabled),
+.card button[data-action]:not(:disabled):not(.btn-disabled),
+.card .btn-primary:not(:disabled):not(.btn-disabled) {
+    opacity: 1 !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-color: var(--secondary) !important;
+    box-shadow: 
+        0 2px 12px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(34, 227, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    text-shadow: 0 0 10px rgba(34, 227, 255, 0.5) !important;
+    cursor: pointer !important;
+    color: var(--secondary) !important;
+}
+
+/* Removed button hover effects to prevent flickering */
+
+/* Modals - Enhanced */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: var(--transition-normal);
+}
+
+.modal.active {
+    display: flex !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.modal-content {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 2px solid var(--primary);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 550px;
+    width: 90%;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 50px rgba(255, 45, 170, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 10001;
+    pointer-events: auto;
+    animation: modalSlideIn 0.4s ease-out;
+}
+
+/* Modal Background Images */
+#prestige-modal .modal-content {
+    background-image: url('images/modals/prestige-scene.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+#prestige-modal .modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/modals/prestige-scene.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.4;
+    z-index: -1;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+#welcome-back-modal .modal-content {
+    background-image: url('images/modals/welcome-back-scene.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+#welcome-back-modal .modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/modals/welcome-back-scene.png');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.4;
+    z-index: -1;
+    border-radius: 24px;
+    pointer-events: none;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-content h2 {
+    margin-bottom: 24px;
+    color: var(--secondary);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    text-shadow: 0 0 15px rgba(34, 227, 255, 0.5);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* Notifications - Enhanced */
+#notifications-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+}
+
+.notification {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid var(--primary);
+    border-radius: 12px;
+    padding: 18px 24px;
+    min-width: 300px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 45, 170, 0.3);
+    pointer-events: auto;
+    animation: notificationSlideIn 0.4s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+@keyframes notificationSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Result Box */
+.result-box {
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--glass-border);
+    min-height: 60px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* Enhanced Scrollbar */
+.content-list::-webkit-scrollbar {
+    width: 10px;
+}
+
+.content-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.content-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--secondary));
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(255, 45, 170, 0.5);
+}
+
+.content-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--secondary), var(--primary));
+    box-shadow: 0 0 15px rgba(34, 227, 255, 0.7);
+}
+
+/* Progress Bars - Enhanced */
+.progress-bar-container {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: shimmer 2.5s infinite;
+}
+
+@keyframes shimmer {
     0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Inventory Item Cards - Enhanced with Eye Candy */
+.inventory-header {
+    background: linear-gradient(135deg, rgba(255, 45, 170, 0.15) 0%, rgba(34, 227, 255, 0.15) 100%) !important;
+    border: 2px solid var(--primary) !important;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(255, 45, 170, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.inventory-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: visible;
+}
+
+.inventory-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 16px;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.inventory-item:hover::before {
+    opacity: 0.5;
+}
+
+.inventory-item-content {
+    position: relative;
+    z-index: 2;
+}
+
+.inventory-icon {
+    display: inline-block;
+    animation: iconFloat 3s ease-in-out infinite;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Tier-specific icon styling with neon colors */
+.tier-icon-0 {
+    color: #FFFFFF !important; /* White */
+    text-shadow: 0 0 10px #FFFFFF, 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4) !important;
+}
+
+.tier-icon-1 {
+    color: #FF10F0 !important; /* Neon Pink */
+    text-shadow: 0 0 12px #FF10F0, 0 0 24px rgba(255, 16, 240, 0.8), 0 0 36px rgba(255, 16, 240, 0.6) !important;
+}
+
+.tier-icon-2 {
+    color: #FFFF00 !important; /* Neon Yellow */
+    text-shadow: 0 0 14px #FFFF00, 0 0 28px rgba(255, 255, 0, 0.9), 0 0 42px rgba(255, 255, 0, 0.7) !important;
+}
+
+.tier-icon-3 {
+    color: #39FF14 !important; /* Neon Green */
+    text-shadow: 0 0 16px #39FF14, 0 0 32px rgba(57, 255, 20, 0.6), 0 0 48px rgba(57, 255, 20, 0.4) !important;
+}
+
+.tier-icon-4 {
+    color: #00FFFF !important; /* Neon Cyan */
+    text-shadow: 0 0 18px #00FFFF, 0 0 36px rgba(0, 255, 255, 0.7), 0 0 54px rgba(0, 255, 255, 0.5) !important;
+    animation: iconFloat 3s ease-in-out infinite, tier4IconPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes iconFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-5px) rotate(5deg);
+    }
+}
+
+@keyframes tier4IconPulse {
+    0%, 100% {
+        text-shadow: 0 0 18px #00FFFF, 0 0 36px rgba(0, 255, 255, 0.7), 0 0 54px rgba(0, 255, 255, 0.5);
         transform: scale(1);
     }
     50% {
+        text-shadow: 0 0 22px #00FFFF, 0 0 44px rgba(0, 255, 255, 0.9), 0 0 66px rgba(0, 255, 255, 0.7);
         transform: scale(1.1);
     }
+}
+
+.inventory-amount {
+    position: relative;
+}
+
+.inventory-progress {
+    position: relative;
+    overflow: hidden;
+}
+
+.inventory-shimmer {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: inventoryShimmer 3s infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes inventoryShimmer {
+    0% {
+        left: -100%;
+    }
     100% {
+        left: 100%;
+    }
+}
+
+.inventory-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        opacity: 0.3;
         transform: scale(1);
     }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.02);
+    }
+}
+
+/* Tier-specific inventory item enhancements */
+.inventory-item[data-tier="0"] {
+    border-color: rgba(136, 136, 136, 0.5);
+}
+
+.inventory-item[data-tier="1"] {
+    border-color: rgba(60, 227, 197, 0.6);
+}
+
+.inventory-item[data-tier="2"] {
+    border-color: rgba(255, 45, 170, 0.7);
+}
+
+.inventory-item[data-tier="3"] {
+    border-color: rgba(255, 219, 110, 0.8);
+    animation: tier3Pulse 3s ease-in-out infinite;
+}
+
+.inventory-item[data-tier="4"] {
+    border-color: rgba(255, 107, 107, 0.9);
+    animation: tier4Pulse 2s ease-in-out infinite;
+}
+
+@keyframes tier3Pulse {
+    0%, 100% {
+        box-shadow: 
+            0 4px 20px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(255, 219, 110, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 6px 30px rgba(0, 0, 0, 0.5),
+            0 0 40px rgba(255, 219, 110, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+}
+
+@keyframes tier4Pulse {
+    0%, 100% {
+        box-shadow: 
+            0 4px 20px rgba(0, 0, 0, 0.4),
+            0 0 25px rgba(255, 107, 107, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        box-shadow: 
+            0 8px 40px rgba(0, 0, 0, 0.6),
+            0 0 60px rgba(255, 107, 107, 0.7),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Enhanced progress bar for inventory */
+.inventory-item .progress-bar-container {
+    position: relative;
+    overflow: visible;
+}
+
+.inventory-item .progress-bar-fill {
+    position: relative;
+    overflow: hidden;
+}
+
+.inventory-item .progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 2s infinite;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .main-container {
-        padding: 60px 20px;
+    .main-game {
+        padding: 15px 10px;
     }
     
-    .tabs {
+    .tabs-nav {
         flex-direction: column;
-        gap: 8px;
+        padding: 8px;
     }
     
-    .tab-button {
-        padding: 8px 12px;
-        font-size: 14px;
+    .tab-btn {
+        width: 100%;
+    }
+    
+    .hud-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .btn-cast {
+        width: 100%;
+        min-width: 100%;
     }
     
     .card {
-        padding: 12px;
-        margin-bottom: 12px;
+        padding: 18px;
     }
     
     .modal-content {
+        padding: 24px;
         width: 95%;
-        padding: 16px;
     }
     
-    .coven-container {
-        gap: 16px;
-    }
-    
-    .coven-section {
-        padding: 12px;
+    .notification {
+        min-width: 250px;
     }
 }
 
-@media (max-width: 480px) {
-    .main-container {
-        padding: 40px 10px;
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
-    
-    .hud {
-        padding: 5px;
-    }
-    
-    .cast-button {
-        padding: 10px 20px;
-        font-size: 20px;
-        min-width: 120px;
-        min-height: 60px;
-    }
-    
-    .tab-button {
-        padding: 6px 10px;
-        font-size: 12px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    :root {
+        --bg-dark: #000000;
+        --bg-light: #1A1A1A;
+        --bg-card: #2A2A2A;
+        --text: #FFFFFF;
+        --text-dim: #CCCCCC;
+        --border: #666666;
     }
     
     .card {
-        padding: 8px;
-        margin-bottom: 8px;
+        border-width: 2px;
     }
     
-    .modal-content {
-        width: 90%;
-        padding: 12px;
+    button {
+        border-width: 2px;
     }
+}
+
+/* Meditation Tab Styles */
+
+.meditation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 2px solid var(--primary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.meditation-currency,
+.meditation-health,
+.meditation-wave {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-bright);
+    font-family: 'Orbitron', sans-serif;
+}
+
+.meditation-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.meditation-main {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    min-height: 600px;
+}
+
+.meditation-grid-container {
+    position: relative;
+    background: rgba(0, 0, 0, 0.5);
+    background-image: url('images/meditation/meditation-canvas-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#meditation-canvas {
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    display: block;
+    background-image: url('images/meditation/meditation-canvas-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+.meditation-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.tower-selection,
+.meditation-inventory,
+.meditation-upgrades {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    padding: 15px;
+}
+
+.tower-selection h3,
+.meditation-inventory h3,
+.meditation-upgrades h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 15px;
+    font-family: 'Orbitron', sans-serif;
+    text-shadow: 0 0 10px var(--secondary-glow);
+}
+
+.tower-list,
+.meditation-inventory-list,
+.meditation-upgrade-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tower-card,
+.inventory-item-card,
+.upgrade-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.tower-card.can-afford {
+    border-color: var(--success);
+    box-shadow: 0 0 10px rgba(60, 227, 197, 0.3);
+}
+
+.tower-card.cannot-afford {
+    border-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.6;
+}
+
+.tower-place-button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.tower-place-button.selected {
+    background: rgba(0, 255, 0, 0.3) !important;
+    border-color: var(--success) !important;
+    box-shadow: 0 0 15px rgba(60, 227, 197, 0.5) !important;
+    color: var(--success) !important;
+}
+
+.empty-message {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 20px;
+    font-style: italic;
+}
+
+
+/* Responsive Design for Meditation Tab */
+@media (max-width: 1200px) {
+    .meditation-main {
+        grid-template-columns: 1fr;
+    }
+    
+    .meditation-sidebar {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .meditation-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .meditation-currency,
+    .meditation-health,
+    .meditation-wave {
+        font-size: 16px;
+    }
+    
+    #meditation-canvas {
+        min-height: 400px;
+    }
+}
+
+/* ============================================
+   Design Tier System - Progressive Revelation
+   Feature 2: Progressive Design Revelation
+   ============================================ */
+
+/* Tier 0 - Monochrome/CLI Terminal (Default State) */
+body.tier-0 {
+    color: #FFFFFF;
+    background: #000000 !important;
+    background-image: none !important;
+    background-size: auto !important;
+    background-position: 0 0 !important;
+    font-family: 'Courier New', 'Consolas', 'Fira Code', monospace;
+}
+
+/* Disable ALL animations, transitions, and movements on Tier 0 */
+body.tier-0 *,
+body.tier-0 *::before,
+body.tier-0 *::after {
+    animation: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    scale: none !important;
+    translate: none !important;
+}
+
+body.tier-0 * {
+    color: #FFFFFF !important;
+    background: transparent !important;
+    border-color: #FFFFFF !important;
+}
+
+body.tier-0 .btn-primary,
+body.tier-0 .btn-cast,
+body.tier-0 button {
+    background: #000000 !important;
+    border: 1px solid #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+body.tier-0 .card,
+body.tier-0 .workstation-card,
+body.tier-0 .upgrade-card {
+    background: #000000 !important;
+    border: 1px solid #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* Disable background animations */
+body.tier-0::before,
+body.tier-0::after {
+    display: none !important;
+    animation: none !important;
+}
+
+/* Disable particle effects canvas */
+body.tier-0 #particle-canvas {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Disable hover, focus, and active effects on Tier 0 */
+body.tier-0 *:hover,
+body.tier-0 *:focus,
+body.tier-0 *:active {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    scale: none !important;
+    translate: none !important;
+}
+
+/* Disable any floating or movement animations */
+body.tier-0 .icon-float,
+body.tier-0 [class*="float"],
+body.tier-0 [class*="pulse"],
+body.tier-0 [class*="glow"],
+body.tier-0 [class*="animate"],
+body.tier-0 [class*="slide"],
+body.tier-0 [class*="shake"],
+body.tier-0 [class*="spin"] {
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Disable any number animations */
+body.tier-0 .animate-number,
+body.tier-0 [data-animate] {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Force all tab icons to white in Tier 0 */
+body.tier-0 .tab-icon,
+body.tier-0 .tab-icon-workstations,
+body.tier-0 .tab-icon-inscriptions,
+body.tier-0 .tab-icon-inventory,
+body.tier-0 .tab-icon-experiment,
+body.tier-0 .tab-icon-dailies,
+body.tier-0 .tab-icon-coven,
+body.tier-0 .tab-icon-boons,
+body.tier-0 .tab-icon-meditation,
+body.tier-0 .tab-icon-stats,
+body.tier-0 .tab-icon-settings,
+body.tier-0 .tab-icon *,
+body.tier-0 .css-icon-lightning,
+body.tier-0 .tab-icon-experiment .css-icon-lightning {
+    color: #FFFFFF !important;
+    text-shadow: none !important;
+}
+
+/* Tier 1 and Tier 2 use colored tab icons but remove glows/text-shadows (CLI-like) */
+body.tier-1 .tab-icon,
+body.tier-1 .tab-icon-workstations,
+body.tier-1 .tab-icon-inscriptions,
+body.tier-1 .tab-icon-inventory,
+body.tier-1 .tab-icon-experiment,
+body.tier-1 .tab-icon-dailies,
+body.tier-1 .tab-icon-coven,
+body.tier-1 .tab-icon-boons,
+body.tier-1 .tab-icon-meditation,
+body.tier-1 .tab-icon-stats,
+body.tier-1 .tab-icon-settings,
+body.tier-2 .tab-icon,
+body.tier-2 .tab-icon-workstations,
+body.tier-2 .tab-icon-inscriptions,
+body.tier-2 .tab-icon-inventory,
+body.tier-2 .tab-icon-experiment,
+body.tier-2 .tab-icon-dailies,
+body.tier-2 .tab-icon-coven,
+body.tier-2 .tab-icon-boons,
+body.tier-2 .tab-icon-meditation,
+body.tier-2 .tab-icon-stats,
+body.tier-2 .tab-icon-settings {
+    /* Keep colors but remove glows/text-shadows for CLI-like appearance */
+    text-shadow: none !important;
+    animation: none !important;
+}
+
+/* Tier 1 - Basic Color (CLI-like) */
+body.tier-1 {
+    /* Colors are enabled via CSS variables */
+    font-family: 'Courier New', 'Consolas', 'Fira Code', monospace;
+    background: #000000 !important;
+    background-image: none !important;
+    color: #FFFFFF;
+    /* No transitions or animations on Tier 1 */
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Remove all glows, shadows, animations, and transitions on Tier 1 */
+body.tier-1 *,
+body.tier-1 *::before,
+body.tier-1 *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transform: none !important;
+}
+
+/* Buttons: border only, transparent background, dark base */
+body.tier-1 .btn-primary,
+body.tier-1 .btn-cast,
+body.tier-1 .btn-secondary,
+body.tier-1 .btn-danger,
+body.tier-1 button {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--primary) !important;
+    color: var(--secondary) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+body.tier-1 .btn-cast {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+body.tier-1 .btn-secondary {
+    border-color: var(--secondary) !important;
+    color: var(--secondary) !important;
+}
+
+body.tier-1 .btn-danger {
+    border-color: #FF4444 !important;
+    color: #FF4444 !important;
+}
+
+/* Cards: dark background with border only */
+body.tier-1 .card,
+body.tier-1 .workstation-card,
+body.tier-1 .upgrade-card {
+    background: #000000 !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--border) !important;
+    color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+body.tier-1 .card-section {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Remove purple/pink backgrounds from HUD and tabs on Tier 1 */
+body.tier-1 .hud {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.tier-1 .tabs-nav {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 2px solid var(--border) !important;
+}
+
+body.tier-1 .tab-btn {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+body.tier-1 .tab-btn.active {
+    background: transparent !important;
+    background-image: none !important;
+    border-color: var(--primary) !important;
+}
+
+body.tier-1 .tab-btn::before,
+body.tier-1 .tab-btn::after {
+    display: none !important;
+}
+
+/* Remove any purple/pink backgrounds from all elements */
+body.tier-1 * {
+    background-image: none !important;
+}
+
+body.tier-1 *[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Specific overrides for common purple backgrounds */
+body.tier-1 .card-section.full-width,
+body.tier-1 .inscription-bonuses,
+body.tier-1 .card-content-left,
+body.tier-1 .card-content-right {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove purple/pink backgrounds from card sections with borders */
+body.tier-1 .card-section.full-width[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove any rgba purple backgrounds */
+body.tier-1 *[style*="rgba(255, 45, 170"],
+body.tier-1 *[style*="rgba(255, 16, 240"],
+body.tier-1 *[style*="#FF2DAA"],
+body.tier-1 *[style*="#FF10F0"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Ensure all purple/pink tinted backgrounds are removed */
+body.tier-1 .card::before {
+    display: none !important;
+}
+
+body.tier-1 .tab-panel {
+    background: transparent !important;
+}
+
+body.tier-1 .tab-panel.active {
+    background: transparent !important;
+}
+
+/* Remove glass backgrounds that might have purple tint */
+body.tier-1 [class*="glass"],
+body.tier-1 [style*="backdrop-filter"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Remove background gradients */
+body.tier-1::before,
+body.tier-1::after {
+    display: none !important;
+}
+
+/* Keep particle canvas disabled */
+body.tier-1 #particle-canvas {
+    display: none !important;
+}
+
+/* No hover effects on Tier 1 */
+body.tier-1 *:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+/* Buttons on hover - keep border, no background change, no animations */
+body.tier-1 .btn-primary:hover,
+body.tier-1 .btn-cast:hover,
+body.tier-1 .btn-secondary:hover,
+body.tier-1 .btn-danger:hover,
+body.tier-1 button:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* No transitions or animations on Tier 1 */
+body.tier-1 .color-transitions {
+    transition: none !important;
+    animation: none !important;
+}
+
+body.tier-1 .btn-primary,
+body.tier-1 .btn-cast,
+body.tier-1 .btn-secondary,
+body.tier-1 .btn-danger,
+body.tier-1 button {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Tier 2 - Sound Effects (same visual as Tier 1, just adds sound) */
+/* Tier 2 should look exactly like Tier 1 - no visual changes, only sound enabled */
+/* Use CSS selector to inherit all Tier 1 styles */
+body.tier-2,
+body.tier-2 * {
+    /* Inherit all Tier 1 visual styles - use same rules */
+}
+
+body.tier-2 {
+    /* Same as Tier 1 - CLI-like with colors */
+    font-family: 'Courier New', 'Consolas', 'Fira Code', monospace !important;
+    background: #000000 !important;
+    background-image: none !important;
+    color: #FFFFFF !important;
+    /* No transitions or animations on Tier 2 (same as Tier 1) */
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Tier 2 has the same visual rules as Tier 1 - no animations, no glows, no shadows */
+body.tier-2 *,
+body.tier-2 *::before,
+body.tier-2 *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    animation: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transform: none !important;
+}
+
+/* Buttons: same as Tier 1 - border only, transparent background */
+body.tier-2 .btn-primary,
+body.tier-2 .btn-cast,
+body.tier-2 .btn-secondary,
+body.tier-2 .btn-danger,
+body.tier-2 button {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--primary) !important;
+    color: var(--secondary) !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+body.tier-2 .btn-cast {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+}
+
+body.tier-2 .btn-secondary {
+    border-color: var(--secondary) !important;
+    color: var(--secondary) !important;
+}
+
+body.tier-2 .btn-danger {
+    border-color: #FF4444 !important;
+    color: #FF4444 !important;
+}
+
+/* Cards: same as Tier 1 - dark background with border only */
+body.tier-2 .card,
+body.tier-2 .workstation-card,
+body.tier-2 .upgrade-card {
+    background: #000000 !important;
+    background-image: none !important;
+    background-gradient: none !important;
+    border: 2px solid var(--border) !important;
+    color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+body.tier-2 .card-section {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Remove purple/pink backgrounds from HUD and tabs on Tier 2 (same as Tier 1) */
+body.tier-2 .hud {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.tier-2 .tabs-nav {
+    background: #000000 !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 2px solid var(--border) !important;
+}
+
+body.tier-2 .tab-btn {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+body.tier-2 .tab-btn.active {
+    background: transparent !important;
+    background-image: none !important;
+    border-color: var(--primary) !important;
+}
+
+body.tier-2 .tab-btn::before,
+body.tier-2 .tab-btn::after {
+    display: none !important;
+}
+
+/* Remove any purple/pink backgrounds from all elements on Tier 2 (same as Tier 1) */
+body.tier-2 * {
+    background-image: none !important;
+}
+
+body.tier-2 *[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Specific overrides for common purple backgrounds on Tier 2 (same as Tier 1) */
+body.tier-2 .card-section.full-width,
+body.tier-2 .inscription-bonuses,
+body.tier-2 .card-content-left,
+body.tier-2 .card-content-right {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove purple/pink backgrounds from card sections with borders on Tier 2 (same as Tier 1) */
+body.tier-2 .card-section.full-width[style*="background"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Remove any rgba purple backgrounds on Tier 2 (same as Tier 1) */
+body.tier-2 *[style*="rgba(255, 45, 170"],
+body.tier-2 *[style*="rgba(255, 16, 240"],
+body.tier-2 *[style*="#FF2DAA"],
+body.tier-2 *[style*="#FF10F0"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Ensure all purple/pink tinted backgrounds are removed on Tier 2 (same as Tier 1) */
+body.tier-2 .card::before {
+    display: none !important;
+}
+
+body.tier-2 .tab-panel {
+    background: transparent !important;
+}
+
+body.tier-2 .tab-panel.active {
+    background: transparent !important;
+}
+
+/* Remove glass backgrounds that might have purple tint on Tier 2 (same as Tier 1) */
+body.tier-2 [class*="glass"],
+body.tier-2 [style*="backdrop-filter"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Remove background gradients on Tier 2 (same as Tier 1) */
+body.tier-2::before,
+body.tier-2::after {
+    display: none !important;
+}
+
+/* Disable particle canvas on Tier 2 */
+body.tier-2 #particle-canvas {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* No hover effects on Tier 2 (same as Tier 1) */
+body.tier-2 *:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+/* Buttons on hover - keep border, no background change, no animations on Tier 2 (same as Tier 1) */
+body.tier-2 .btn-primary:hover,
+body.tier-2 .btn-cast:hover,
+body.tier-2 .btn-secondary:hover,
+body.tier-2 .btn-danger:hover,
+body.tier-2 button:hover {
+    background: transparent !important;
+    background-color: transparent !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* No transitions or animations on Tier 2 (same as Tier 1) */
+body.tier-2 .color-transitions {
+    transition: none !important;
+    animation: none !important;
+}
+
+body.tier-2 .btn-primary,
+body.tier-2 .btn-cast,
+body.tier-2 .btn-secondary,
+body.tier-2 .btn-danger,
+body.tier-2 button {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Tier 3 - Full Animations */
+body.tier-3 .full-animations {
+    /* All animations enabled */
+}
+
+body.tier-3 .full-animations * {
+    transition: all var(--transition-normal);
+}
+
+body.tier-3 .btn-primary:hover,
+body.tier-3 .btn-cast:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+body.tier-3 .card:hover,
+body.tier-3 .workstation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px var(--shadow-glow);
+}
+
+/* Tier 4 - Music (same visual as Tier 3) */
+body.tier-4 {
+    /* Same as Tier 3 visually */
+}
+
+/* ============================================
+   Background Images (Tier 3+ only)
+   ============================================ */
+
+/* Main Game Background - Only on Tier 3+ */
+body.tier-3::before,
+body.tier-4::before {
+    background-image: 
+        url('images/backgrounds/main-game-bg.png'),
+        radial-gradient(circle at 20% 50%, rgba(255, 45, 170, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(34, 227, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 219, 110, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg-dark) 0%, #0F0F1A 25%, #1A1A2A 50%, #0F0F1A 75%, var(--bg-dark) 100%);
+    background-size: 
+        cover,
+        200% 200%,
+        200% 200%,
+        200% 200%,
+        200% 200%;
+    background-position: 
+        center,
+        0% 50%,
+        0% 50%,
+        0% 50%,
+        0% 50%;
+    background-blend-mode: overlay, normal, normal, normal, normal;
+    opacity: 0.8;
+}
+
+/* Tab Panel Backgrounds - Only on Tier 3+ */
+body.tier-3 #workstations-tab.active,
+body.tier-4 #workstations-tab.active {
+    background-image: url('images/backgrounds/tab-workstations-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #inscriptions-tab.active,
+body.tier-4 #inscriptions-tab.active {
+    background-image: url('images/backgrounds/tab-inscriptions-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #experiment-tab.active,
+body.tier-4 #experiment-tab.active {
+    background-image: url('images/backgrounds/tab-experiment-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #coven-tab.active,
+body.tier-4 #coven-tab.active {
+    background-image: url('images/backgrounds/tab-coven-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+body.tier-3 #boons-tab.active,
+body.tier-4 #boons-tab.active {
+    background-image: url('images/backgrounds/tab-boons-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+}
+
+/* Meditation Canvas Background - Only on Tier 3+ */
+body.tier-3 #meditation-canvas,
+body.tier-4 #meditation-canvas {
+    background-image: url('images/backgrounds/meditation-canvas-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Ensure tab panels maintain their glass effect on top of backgrounds */
+body.tier-3 .tab-panel.active,
+body.tier-4 .tab-panel.active {
+    position: relative;
+}
+
+body.tier-3 .tab-panel.active::before,
+body.tier-4 .tab-panel.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 24px;
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Ensure content is above background */
+body.tier-3 .tab-panel.active > *,
+body.tier-4 .tab-panel.active > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Explicitly hide background images on Tier 0-2 */
+body.tier-0 .tab-panel.active,
+body.tier-1 .tab-panel.active,
+body.tier-2 .tab-panel.active {
+    background-image: none !important;
+}
+
+body.tier-0 .tab-panel.active::before,
+body.tier-1 .tab-panel.active::before,
+body.tier-2 .tab-panel.active::before {
+    display: none !important;
+}
+
+/* Hide images on Tier 0-2 */
+body.tier-0 img,
+body.tier-1 img,
+body.tier-2 img {
+    display: none !important;
+}
+
+body.tier-0,
+body.tier-1,
+body.tier-2 {
+    background-image: none !important;
+}
+
+body.tier-0::before,
+body.tier-1::before,
+body.tier-2::before {
+    background-image: none !important;
+}
+
+body.tier-0 .hud,
+body.tier-1 .hud,
+body.tier-2 .hud {
+    background-image: none !important;
+}
+
+body.tier-0 .hud::before,
+body.tier-1 .hud::before,
+body.tier-2 .hud::before {
+    display: none !important;
+}
+
+body.tier-0 .modal-content,
+body.tier-1 .modal-content,
+body.tier-2 .modal-content {
+    background-image: none !important;
+}
+
+body.tier-0 .modal-content::before,
+body.tier-1 .modal-content::before,
+body.tier-2 .modal-content::before {
+    display: none !important;
+}
+
+body.tier-0 .meditation-grid-container,
+body.tier-1 .meditation-grid-container,
+body.tier-2 .meditation-grid-container {
+    background-image: none !important;
+}
+
+body.tier-0 #meditation-canvas,
+body.tier-1 #meditation-canvas,
+body.tier-2 #meditation-canvas {
+    background-image: none !important;
+}
+
+/* Water and Air Element Colors */
+:root {
+    /* Water Colors */
+    --water-primary: #22E3FF;
+    --water-secondary: #00FFFF;
+    --water-dark: #0066CC;
+    
+    /* Air Colors */
+    --air-primary: #88D8FF;
+    --air-secondary: #FFFFFF;
+    --air-light: #E0F4FF;
+}
+
+/* ============================================
+   Settings Tab Styles
+   ============================================ */
+
+.settings-content {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.settings-header {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 30px;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.settings-section {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.settings-section h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--secondary);
+    margin-bottom: 15px;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.settings-section p {
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.settings-note {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 10px;
+}
+
+.settings-select {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-dark);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: 'Rajdhani', sans-serif;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.settings-select:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--shadow-glow);
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--shadow-glow);
+}
+
+.settings-select option:disabled {
+    color: var(--text-muted);
+    background: var(--bg-dark);
+}
+
+/* Danger Zone Styles */
+.settings-section-danger {
+    border-color: #FF4444;
+    background: rgba(255, 68, 68, 0.05);
+}
+
+.settings-section-danger h3 {
+    color: #FF4444;
+}
+
+.settings-warning {
+    color: #FFAA44 !important;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.btn-danger {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%);
+    border: 2px solid #FF6666;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer !important;
+    transition: all var(--transition-normal);
+    margin-top: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1000 !important;
+    pointer-events: auto !important;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.btn-danger * {
+    pointer-events: none !important;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #FF6666 0%, #FF0000 100%);
+    border-color: #FF8888;
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+    transform: translateY(-2px);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+#current-tier-display {
+    color: var(--secondary);
+    font-weight: 700;
+    font-size: 20px;
+}
+
+/* Settings Icons - Pure CSS */
+.settings-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+    position: relative;
+}
+
+.settings-header .tab-icon {
+    margin-right: 10px;
+}
+
+/* Settings/Gear Icon - Pure CSS */
+.css-icon-settings {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    position: relative;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.css-icon-settings::before {
+    content: '';
+    position: absolute;
+    width: 0.5em;
+    height: 0.5em;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.css-icon-settings::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 0.25em;
+    top: -0.3em;
+    left: 50%;
+    transform: translateX(-50%);
+    background: currentColor;
+    box-shadow: 
+        0 0.5em 0 0 currentColor,
+        0.35em 0.25em 0 0 currentColor,
+        -0.35em 0.25em 0 0 currentColor,
+        0.35em -0.25em 0 0 currentColor,
+        -0.35em -0.25em 0 0 currentColor;
+}
+
+/* Warning Triangle Icon - Pure CSS */
+.css-icon-warning {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 0.5em solid transparent;
+    border-right: 0.5em solid transparent;
+    border-bottom: 0.866em solid currentColor;
+    position: relative;
+    margin-right: 8px;
+}
+
+.css-icon-warning::after {
+    content: '!';
+    position: absolute;
+    top: 0.15em;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #000000;
+    font-weight: bold;
+    font-size: 0.7em;
+    line-height: 1;
+}
+
+.settings-icon-warning .css-icon-warning {
+    color: #FFAA44;
+}
+
+/* Reset/Delete Icon - Pure CSS */
+.css-icon-reset {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.9em;
+    position: relative;
+    border: 2px solid currentColor;
+    border-top: none;
+    border-radius: 0 0 2px 2px;
+    margin-right: 8px;
+}
+
+.css-icon-reset::before {
+    content: '';
+    position: absolute;
+    top: -0.3em;
+    left: -0.15em;
+    width: 0.3em;
+    height: 0.15em;
+    border: 2px solid currentColor;
+    border-bottom: none;
+    border-radius: 0.15em 0.15em 0 0;
+}
+
+.css-icon-reset::after {
+    content: '';
+    position: absolute;
+    top: -0.3em;
+    right: -0.15em;
+    width: 0.3em;
+    height: 0.15em;
+    border: 2px solid currentColor;
+    border-bottom: none;
+    border-radius: 0.15em 0.15em 0 0;
+}
+
+/* Horizontal lines inside trash can */
+.css-icon-reset {
+    background: 
+        linear-gradient(currentColor, currentColor) center/0.2em 0.1em no-repeat,
+        linear-gradient(currentColor, currentColor) center 0.25em/0.2em 0.1em no-repeat;
+}
+
+/* Sparkle/Star Icon - Pure CSS (for cast, crafted, inscribed notifications) */
+.css-icon-sparkle {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    position: relative;
+}
+
+.css-icon-sparkle::before,
+.css-icon-sparkle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: currentColor;
+}
+
+.css-icon-sparkle::before {
+    width: 0.15em;
+    height: 0.8em;
+    border-radius: 0.075em;
+}
+
+.css-icon-sparkle::after {
+    width: 0.8em;
+    height: 0.15em;
+    border-radius: 0.075em;
+}
+
+/* Lightning Bolt Icon - Pure CSS (for ascend) */
+.css-icon-lightning {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-lightning::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 0.25em solid transparent;
+    border-right: 0.25em solid transparent;
+    border-top: 0.4em solid currentColor;
+}
+
+.css-icon-lightning::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0.1em;
+    width: 0;
+    height: 0;
+    border-left: 0.15em solid transparent;
+    border-right: 0.15em solid transparent;
+    border-bottom: 0.4em solid currentColor;
+}
+
+/* Scroll Icon - Pure CSS (for inscription bonuses) */
+.css-icon-scroll {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.9em;
+    position: relative;
+    margin-right: 0.2em;
+    border: 2px solid currentColor;
+    border-radius: 0.15em 0.15em 0 0;
+    background: transparent;
+}
+
+.css-icon-scroll::before {
+    content: '';
+    position: absolute;
+    bottom: -0.2em;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.5em;
+    height: 0.3em;
+    border: 2px solid currentColor;
+    border-top: none;
+    border-radius: 0 0 0.15em 0.15em;
+}
+
+.css-icon-scroll::after {
+    content: '';
+    position: absolute;
+    top: 0.15em;
+    left: 0.15em;
+    width: 0.4em;
+    height: 0.05em;
+    background: currentColor;
+    border-radius: 0.025em;
+    box-shadow: 0 0.15em 0 0 currentColor, 0 0.3em 0 0 currentColor;
+}
+
+/* Fire Icon - Pure CSS (for combo milestones) */
+.css-icon-fire {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.9em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-fire::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.3em;
+    height: 0.4em;
+    background: currentColor;
+    border-radius: 0.15em 0.15em 0 0;
+    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+}
+
+.css-icon-fire::after {
+    content: '';
+    position: absolute;
+    bottom: 0.2em;
+    left: 0.1em;
+    width: 0.5em;
+    height: 0.6em;
+    background: currentColor;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    clip-path: polygon(20% 100%, 50% 0, 80% 100%);
+}
+
+/* Celebration/Party Icon - Pure CSS */
+.css-icon-celebration {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-celebration::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.2em;
+    height: 0.3em;
+    background: currentColor;
+    border-radius: 50% 50% 0 0;
+}
+
+.css-icon-celebration::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.4em;
+    height: 0.5em;
+    background: currentColor;
+    border-radius: 0 0 50% 50%;
+    box-shadow: 
+        -0.15em 0 0 0 currentColor,
+        0.15em 0 0 0 currentColor,
+        -0.1em -0.1em 0 0 currentColor,
+        0.1em -0.1em 0 0 currentColor;
+}
+
+/* Clock Icon - Pure CSS */
+.css-icon-clock {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+}
+
+.css-icon-clock::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0.1em;
+    height: 0.25em;
+    background: currentColor;
+    transform-origin: bottom center;
+    transform: translate(-50%, -100%) translateY(0.1em);
+}
+
+.css-icon-clock::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.2em;
+    height: 0.1em;
+    background: currentColor;
+    transform-origin: left center;
+    transform: translate(-50%, -50%) translateX(0.1em);
+}
+
+/* Sound/Speaker Icon - Pure CSS */
+.css-icon-sound {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-sound::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.3em;
+    height: 0.5em;
+    border: 2px solid currentColor;
+    border-right: none;
+    border-radius: 0.15em 0 0 0.15em;
+    background: transparent;
+}
+
+.css-icon-sound::after {
+    content: '';
+    position: absolute;
+    top: 0.1em;
+    left: 0.25em;
+    width: 0.15em;
+    height: 0.3em;
+    border: 2px solid currentColor;
+    border-left: none;
+    border-radius: 0 0.15em 0.15em 0;
+    background: currentColor;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 50% 50%);
+}
+
+/* Music Note Icon - Pure CSS */
+.css-icon-music {
+    display: inline-block;
+    width: 0.6em;
+    height: 0.8em;
+    position: relative;
+    margin-right: 0.2em;
+}
+
+.css-icon-music::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0.2em;
+    width: 0.15em;
+    height: 0.5em;
+    border: 2px solid currentColor;
+    border-radius: 0.075em;
+    background: transparent;
+}
+
+.css-icon-music::after {
+    content: '';
+    position: absolute;
+    top: 0.4em;
+    left: 0;
+    width: 0.3em;
+    height: 0.3em;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0.2em 0.2em 0 0 currentColor;
 }

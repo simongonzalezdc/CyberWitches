@@ -10,6 +10,7 @@
     "build": "node build.js",
     "build:prod": "node build.js --production",
     "preview": "npx http-server dist -p 3000 -o",
+    "package": "bash package-for-friend.sh || ./package-for-friend.sh",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

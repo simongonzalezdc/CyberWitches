@@ -1,4 +1,4 @@
-import { PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
+import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { Balance } from './utils.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { CovenSystem } from './covenSystem.js';
@@ -222,6 +222,12 @@ export class GameState {
         
         // Active ingredient production buffs
         mult *= this.getBuff('ingredient_production');
+        
+        // Meditation production bonus (only available through meditation)
+        if (window.meditationState && typeof window.meditationState.getMeditationProductionBonus === 'function') {
+            const meditationBonus = window.meditationState.getMeditationProductionBonus();
+            mult *= meditationBonus;
+        }
         
         return mult;
     }
@@ -766,6 +772,9 @@ export class GameState {
             this.workstations = data.workstations || {};
             this.upgradesOwned = data.upgrades || {};
             
+            // Clean up deprecated ingredients from inventory
+            this.cleanupInventory();
+            
             const prestigeData = data.prestige || {};
             this.prestigePoints = prestigeData.points || 0;
             this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
@@ -918,6 +927,71 @@ export class GameState {
         }
         
         return true;
+    }
+    
+    /**
+     * Clean up deprecated ingredients from inventory
+     * Removes ingredients that no longer exist in the game
+     */
+    cleanupInventory() {
+        if (!this.inventory) return;
+        
+        // List of deprecated ingredients that should be removed
+        const deprecatedIngredients = [
+            'quantum_essence',
+            'quantum_aether',
+            'aether_flux',
+            'wax_hex',
+            'infinity_flux',
+            'eldritch_wax',
+            'sigil_charge',
+            'coven_blessing'
+        ];
+        
+        // Get list of valid ingredient IDs from INGREDIENTS array
+        const validIngredients = new Set();
+        if (typeof INGREDIENTS !== 'undefined') {
+            INGREDIENTS.forEach(ing => validIngredients.add(ing.id));
+        }
+        
+        // Also allow base essences and AB
+        validIngredients.add('fire_essence');
+        validIngredients.add('water_essence');
+        validIngredients.add('air_essence');
+        validIngredients.add('crystal_dust');
+        validIngredients.add('aether_ess');
+        validIngredients.add('ab');
+        
+        // Remove deprecated ingredients
+        let removedCount = 0;
+        for (const depIng of deprecatedIngredients) {
+            if (this.inventory.hasOwnProperty(depIng)) {
+                const amount = this.inventory[depIng];
+                delete this.inventory[depIng];
+                removedCount++;
+                console.log(`Removed deprecated ingredient: ${depIng} (had ${amount})`);
+            }
+        }
+        
+        // Remove any ingredients not in the valid list (check against INGREDIENTS array)
+        for (const ingId in this.inventory) {
+            if (!validIngredients.has(ingId)) {
+                // Check if it's a meditation-only ingredient (keep those)
+                const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+                if (!ingredient || !ingredient.meditationOnly) {
+                    const amount = this.inventory[ingId];
+                    delete this.inventory[ingId];
+                    removedCount++;
+                    console.log(`Removed invalid ingredient: ${ingId} (had ${amount})`);
+                }
+            }
+        }
+        
+        if (removedCount > 0) {
+            console.log(`Cleaned up ${removedCount} deprecated/invalid ingredients from inventory`);
+            // Save after cleanup
+            this.saveGameState();
+        }
     }
 }
 
