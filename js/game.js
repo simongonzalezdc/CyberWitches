@@ -926,6 +926,12 @@ function initUI() {
     tutorialSystem = new TutorialSystem(gameState);
     window.tutorialSystem = tutorialSystem;
     
+    // Initialize quest system (already initialized as singleton, but ensure it's accessible)
+    if (questSystem) {
+        window.questSystem = questSystem;
+        questSystem.init(); // Ensure it's initialized
+    }
+    
     // Initialize balance testing framework
     balanceTestingFramework = new BalanceTestingFramework(gameState);
     window.balanceTestingFramework = balanceTestingFramework;

@@ -1,6 +1,7 @@
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { Balance } from './utils.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
+import { GAME_CONSTANTS } from './codeOrganization.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
 
@@ -42,7 +43,7 @@ export class GameState {
         
         // Milestone rewards (Feature 3: Dopamine Maximization)
         this.unlockedMilestones = new Set();
-        this.milestones = [100, 1000, 10000, 100000, 1000000, 10000000];
+        this.milestones = GAME_CONSTANTS.MILESTONE_THRESHOLDS;
         
         // Timestamps
         this.lastSaveTime = Date.now() / 1000;
@@ -67,7 +68,7 @@ export class GameState {
         // DOM update batching
         this.pendingUpdates = new Set();
         this.batchTimeout = null;
-        this.batchDelay = 16; // ~60fps
+        this.batchDelay = GAME_CONSTANTS.UI_UPDATE_DELAY; // ~60fps
     }
     
     /**
@@ -82,10 +83,9 @@ export class GameState {
      * Start the game tick loop with optimized timing
      */
     startTickLoop() {
-        const tickRate = 100; // 10 ticks per second
         this.tickInterval = setInterval(() => {
             this.tick();
-        }, tickRate);
+        }, GAME_CONSTANTS.TICK_RATE);
     }
     
     /**
@@ -114,7 +114,7 @@ export class GameState {
         
         // Auto-save every 30 seconds
         const nowSeconds = Date.now() / 1000;
-        if (nowSeconds - this.lastSaveTime > 30.0) {
+        if (nowSeconds - this.lastSaveTime > GAME_CONSTANTS.AUTO_SAVE_INTERVAL / 1000) {
             this.saveGameState();
         }
     }
@@ -1144,46 +1144,197 @@ export class GameState {
     }
     
     /**
-     * Check for save conflicts
+     * Check for save conflicts and resolve them
+     * @returns {boolean} True if conflicts were resolved, false otherwise
      */
     checkSaveConflicts() {
         // Check for multiple save files
         const saveKeys = Object.keys(localStorage).filter(key => 
-            key.startsWith('cyberWitchesSave')
+            key.startsWith('cyberWitchesSave') && !key.includes('_backup_')
         );
         
-        if (saveKeys.length > 1) {
-            console.warn('Multiple save files detected. Using most recent.');
-            
-            // Get most recent save
-            let mostRecent = null;
-            let mostRecentTime = 0;
-            
-            saveKeys.forEach(key => {
-                try {
-                    const saveData = JSON.parse(localStorage.getItem(key));
-                    const timestamp = saveData.timestamp || 0;
-                    if (timestamp > mostRecentTime) {
-                        mostRecentTime = timestamp;
-                        mostRecent = key;
-                    }
-                } catch (e) {
-                    console.error('Failed to parse save:', key, e);
-                }
-            });
-            
-            // Use most recent save
-            if (mostRecent && mostRecent !== 'cyberWitchesSave') {
-                const saveData = localStorage.getItem(mostRecent);
-                localStorage.setItem('cyberWitchesSave', saveData);
+        if (saveKeys.length <= 1) {
+            return false; // No conflicts
+        }
+        
+        console.warn('Multiple save files detected. Attempting to resolve conflicts.');
+        
+        // Parse all saves
+        const saves = [];
+        saveKeys.forEach(key => {
+            try {
+                const saveDataStr = localStorage.getItem(key);
+                const saveData = JSON.parse(saveDataStr);
+                saves.push({
+                    key: key,
+                    data: saveData,
+                    timestamp: saveData.timestamp || 0,
+                    version: saveData.version || '1.0'
+                });
+            } catch (e) {
+                console.error('Failed to parse save:', key, e);
             }
-            
-            // Clean up old saves
-            saveKeys.forEach(key => {
-                if (key !== 'cyberWitchesSave' && key !== mostRecent) {
-                    localStorage.removeItem(key);
+        });
+        
+        if (saves.length <= 1) {
+            return false; // No valid saves
+        }
+        
+        // Sort by timestamp (most recent first)
+        saves.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Get primary save (most recent)
+        const primarySave = saves[0];
+        
+        // Try to merge saves if they're close in time (within 5 minutes)
+        const timeDiff = primarySave.timestamp - saves[1].timestamp;
+        const fiveMinutes = 5 * 60; // 5 minutes in seconds
+        
+        if (timeDiff < fiveMinutes && saves.length === 2) {
+            // Attempt to merge saves
+            const merged = this.mergeSaveData(primarySave.data, saves[1].data);
+            if (merged) {
+                console.log('Successfully merged save data.');
+                const mergedData = {
+                    ...primarySave.data,
+                    ...merged,
+                    timestamp: Math.max(primarySave.timestamp, saves[1].timestamp),
+                    version: primarySave.version
+                };
+                localStorage.setItem('cyberWitchesSave', JSON.stringify(mergedData));
+                
+                // Clean up old saves
+                saves.forEach(save => {
+                    if (save.key !== 'cyberWitchesSave') {
+                        localStorage.removeItem(save.key);
+                    }
+                });
+                return true;
+            }
+        }
+        
+        // Use most recent save if merge failed or saves are too far apart
+        if (primarySave.key !== 'cyberWitchesSave') {
+            const saveData = localStorage.getItem(primarySave.key);
+            localStorage.setItem('cyberWitchesSave', saveData);
+        }
+        
+        // Clean up old saves (keep backups)
+        saves.forEach(save => {
+            if (save.key !== 'cyberWitchesSave' && !save.key.includes('_backup_')) {
+                // Create backup before removing
+                try {
+                    const backupKey = `cyberWitchesSave_backup_${Date.now()}_${save.key}`;
+                    localStorage.setItem(backupKey, localStorage.getItem(save.key));
+                } catch (e) {
+                    console.error('Failed to create backup:', e);
                 }
+                localStorage.removeItem(save.key);
+            }
+        });
+        
+        return true;
+    }
+    
+    /**
+     * Merge two save data objects
+     * @param {Object} save1 - First save data
+     * @param {Object} save2 - Second save data
+     * @returns {Object|null} Merged save data or null if merge failed
+     */
+    mergeSaveData(save1, save2) {
+        try {
+            const merged = {
+                // Use higher values for currency and stats
+                ab: Math.max(save1.ab || 0, save2.ab || 0),
+                abTotal: Math.max(save1.abTotal || 0, save2.abTotal || 0),
+                
+                // Merge inventories (take maximum)
+                inventory: {},
+                workstations: {},
+                upgrades: {},
+                
+                // Merge prestige data
+                prestige: {
+                    points: Math.max(
+                        (save1.prestige?.points || 0),
+                        (save2.prestige?.points || 0)
+                    ),
+                    lifetimeEarned: Math.max(
+                        (save1.prestige?.lifetimeEarned || 0),
+                        (save2.prestige?.lifetimeEarned || 0)
+                    ),
+                    bonuses: { ...save1.prestige?.bonuses, ...save2.prestige?.bonuses },
+                    count: Math.max(
+                        (save1.prestige?.count || 0),
+                        (save2.prestige?.count || 0)
+                    )
+                },
+                
+                // Merge experiments (union of discovered recipes)
+                experiments: {
+                    discovered: [...new Set([
+                        ...(save1.experiments?.discovered || []),
+                        ...(save2.experiments?.discovered || [])
+                    ])]
+                },
+                
+                // Merge stats (take maximum)
+                stats: {
+                    totalTaps: Math.max(
+                        (save1.stats?.totalTaps || 0),
+                        (save2.stats?.totalTaps || 0)
+                    ),
+                    totalWorkstationsCrafted: Math.max(
+                        (save1.stats?.totalWorkstationsCrafted || 0),
+                        (save2.stats?.totalWorkstationsCrafted || 0)
+                    ),
+                    totalPotionsCrafted: Math.max(
+                        (save1.stats?.totalPotionsCrafted || 0),
+                        (save2.stats?.totalPotionsCrafted || 0)
+                    )
+                },
+                
+                // Merge milestones (union)
+                milestones: {
+                    unlocked: [...new Set([
+                        ...(save1.milestones?.unlocked || []),
+                        ...(save2.milestones?.unlocked || [])
+                    ])]
+                }
+            };
+            
+            // Merge inventories (take maximum)
+            const allIngredients = new Set([
+                ...Object.keys(save1.inventory || {}),
+                ...Object.keys(save2.inventory || {})
+            ]);
+            allIngredients.forEach(ingId => {
+                merged.inventory[ingId] = Math.max(
+                    save1.inventory?.[ingId] || 0,
+                    save2.inventory?.[ingId] || 0
+                );
             });
+            
+            // Merge workstations (take maximum)
+            const allWorkstations = new Set([
+                ...Object.keys(save1.workstations || {}),
+                ...Object.keys(save2.workstations || {})
+            ]);
+            allWorkstations.forEach(wsId => {
+                merged.workstations[wsId] = Math.max(
+                    save1.workstations?.[wsId] || 0,
+                    save2.workstations?.[wsId] || 0
+                );
+            });
+            
+            // Merge upgrades (union)
+            merged.upgrades = { ...save1.upgrades, ...save2.upgrades };
+            
+            return merged;
+        } catch (error) {
+            console.error('Failed to merge save data:', error);
+            return null;
         }
     }
 }
