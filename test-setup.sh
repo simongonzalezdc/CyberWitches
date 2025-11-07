@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# CyberWitches Tester Setup Script
+# Spellwright Tester Setup Script
 # This script helps testers install and launch the game locally
 
 set -e  # Exit on error
 
 echo "=========================================="
-echo "CyberWitches - Tester Setup Script"
+echo "Spellwright - Tester Setup Script"
 echo "=========================================="
 echo ""
 

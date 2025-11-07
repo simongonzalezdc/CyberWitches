@@ -1,4 +1,4 @@
-# CyberWitches - Tester Setup Guide
+# Spellwright - Tester Setup Guide
 
 This guide helps testers quickly set up and launch the game locally.
 

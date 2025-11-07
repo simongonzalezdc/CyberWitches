@@ -1,8 +1,8 @@
 #!/bin/bash
-# Simple server script for Cyber Witches
+# Simple server script for Spellwright
 # Double-click this file or run: bash start-server.sh
 
-echo "🎮 Starting Cyber Witches Game Server..."
+echo "🎮 Starting Spellwright Game Server..."
 echo ""
 echo "The game will be available at: http://localhost:8000"
 echo "Press Ctrl+C to stop the server"

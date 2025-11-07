@@ -924,6 +924,84 @@ function initUI() {
     let autoCastEnabled = false;
     let autoCastInterval = null;
     
+    // Make autoCastEnabled accessible globally for combo display
+    window.getAutoCastEnabled = () => autoCastEnabled;
+    
+    // Function to get current auto-cast interval based on events
+    const getAutoCastInterval = () => {
+        // Check if Inspiration event is active (double cast rewards)
+        if (eventSystem && eventSystem.hasEventEffect('double_casts')) {
+            // Faster casting during Inspiration events (250ms instead of 500ms)
+            return 250;
+        }
+        // Default interval
+        return 500;
+    };
+    
+    // Function to update auto-cast interval based on events
+    const updateAutoCastInterval = () => {
+        if (autoCastEnabled && autoCastInterval) {
+            // Clear existing interval
+            clearInterval(autoCastInterval);
+            if (memoryLeakPreventionManager) {
+                memoryLeakPreventionManager.clearTrackedInterval(autoCastInterval);
+            }
+            
+            // Create new interval with updated speed
+            const interval = getAutoCastInterval();
+            autoCastInterval = setInterval(() => {
+                if (gameState && castButton) {
+                    const handler = castButton.onclick;
+                    if (handler) handler();
+                }
+            }, interval);
+            
+            // Track new interval
+            if (memoryLeakPreventionManager) {
+                memoryLeakPreventionManager.trackInterval(autoCastInterval);
+            }
+            
+            // Show notification if speed changed due to event
+            if (eventSystem && eventSystem.hasEventEffect('double_casts')) {
+                if (window.showNotification) {
+                    window.showNotification('⚡ Auto-cast speed boosted by Inspiration event!', 'info');
+                }
+            }
+        }
+    };
+    
+    // Make updateAutoCastInterval accessible globally for event system
+    window.updateAutoCastInterval = updateAutoCastInterval;
+    
+    // Make updateAutoCastVisualFeedback accessible globally
+    window.updateAutoCastVisualFeedback = updateAutoCastVisualFeedback;
+    
+    // Function to update visual feedback for auto-cast
+    const updateAutoCastVisualFeedback = () => {
+        if (autoCastEnabled) {
+            // Add visual feedback to cast button
+            if (castButton) {
+                castButton.classList.add('auto-cast-active');
+            }
+            
+            // Highlight combo display when auto-cast is maintaining combo
+            const comboDisplay = document.getElementById('combo-display');
+            if (comboDisplay && comboSystem && comboSystem.getComboCount() > 0) {
+                comboDisplay.classList.add('auto-combo-active');
+            }
+        } else {
+            // Remove visual feedback
+            if (castButton) {
+                castButton.classList.remove('auto-cast-active');
+            }
+            
+            const comboDisplay = document.getElementById('combo-display');
+            if (comboDisplay) {
+                comboDisplay.classList.remove('auto-combo-active');
+            }
+        }
+    };
+    
     // Query for tab buttons - try both class names for compatibility
     tabButtons = document.querySelectorAll('.tab-btn');
     if (tabButtons.length === 0) {
@@ -1556,17 +1634,25 @@ function initUI() {
             }
             
             if (autoCastEnabled) {
-                // Auto-cast every 500ms
+                // Auto-cast with event-aware interval
+                const interval = getAutoCastInterval();
                 autoCastInterval = setInterval(() => {
                     if (gameState && castButton) {
                         const handler = castButton.onclick;
                         if (handler) handler();
                     }
-                }, 500);
+                }, interval);
                 
                 // Track interval for cleanup
                 if (memoryLeakPreventionManager) {
                     memoryLeakPreventionManager.trackInterval(autoCastInterval);
+                }
+                
+                // Show notification about event-aware speed if Inspiration is active
+                if (eventSystem && eventSystem.hasEventEffect('double_casts')) {
+                    if (window.showNotification) {
+                        window.showNotification('⚡ Auto-cast speed boosted by Inspiration event!', 'info');
+                    }
                 }
             } else {
                 if (autoCastInterval) {
@@ -1577,6 +1663,9 @@ function initUI() {
                     autoCastInterval = null;
                 }
             }
+            
+            // Update visual feedback
+            updateAutoCastVisualFeedback();
         });
     }
     
@@ -2093,6 +2182,11 @@ function initUI() {
             eventSystem.checkForEvents();
             eventSystem.updateEvents(0.1);
             updateActiveEvents();
+            
+            // Update auto-cast interval if Inspiration event starts/ends
+            if (window.updateAutoCastInterval) {
+                window.updateAutoCastInterval();
+            }
         }
     }, 1000);
     
@@ -2105,6 +2199,10 @@ function initUI() {
     // Update combo display (optimized) - reduced frequency to prevent flickering
     const comboInterval = setInterval(() => {
         updateComboDisplay();
+        // Update auto-cast visual feedback to keep combo highlighting in sync
+        if (window.updateAutoCastVisualFeedback) {
+            window.updateAutoCastVisualFeedback();
+        }
     }, 500);
     
     // Track interval for cleanup
@@ -4014,10 +4112,20 @@ function updateComboDisplay() {
     
     if (comboCount > 0 && comboDisplay) {
         const mult = comboSystem.getComboMultiplier();
-        comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)`;
+        // Check if auto-cast is maintaining this combo
+        const autoMaintaining = window.getAutoCastEnabled && window.getAutoCastEnabled();
+        comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)${autoMaintaining ? ' <span class="auto-indicator">⚡</span>' : ''}`;
         comboDisplay.style.display = 'block';
+        
+        // Update auto-combo visual feedback
+        if (autoMaintaining) {
+            comboDisplay.classList.add('auto-combo-active');
+        } else {
+            comboDisplay.classList.remove('auto-combo-active');
+        }
     } else if (comboDisplay) {
         comboDisplay.style.display = 'none';
+        comboDisplay.classList.remove('auto-combo-active');
     }
 }
 

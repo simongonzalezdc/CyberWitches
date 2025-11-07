@@ -20,10 +20,10 @@ python3 -m http.server 8080
 
 ### 2. Play the Game
 
-1. Click **✨ Cast** to gather ingredients
-2. Go to **🏭 Workstations** tab
-3. Craft your first workstation
-4. Watch resources auto-produce!
+1. Click **✨ Cast** to gather magic before it fades
+2. Go to **🏭 Workstations** tab (preservation chambers)
+3. Craft your first preservation chamber
+4. Watch resources auto-produce as magic is preserved!
 
 ### 3. Explore Features
 
@@ -35,22 +35,23 @@ python3 -m http.server 8080
 
 ## 🎮 Gameplay Loop
 
-1. **Cast** → Gather basic ingredients
-2. **Craft Workstations** → Auto-produce resources
-3. **Buy Upgrades** → Boost production
-4. **Experiment** → Discover new recipes
-5. **Complete Dailies** → Earn bonus rewards
-6. **Ascend** → Prestige for Eldritch Keys
+1. **Cast** → Gather magic before it fades (Arcane Bits)
+2. **Craft Preservation Chambers** → Auto-produce preserved materials
+3. **Buy Inscriptions** → Refine preservation techniques
+4. **Experiment** → Discover new preservation techniques
+5. **Complete Daily Rituals** → Maintenance rituals to keep preserved magic stable
+6. **Ascend** → Choose an elemental preservation strategy
 7. **Buy Boons** → Permanent upgrades
-8. **Repeat** → Get stronger each run!
+8. **Repeat** → Preserve more magic each run!
 
 ## 💡 Tips
 
-- Workstations auto-produce resources every second
-- Experiment when you have lots of ingredients
-- Daily tasks reset every day at midnight
-- Prestige when you can't progress further
-- Eldritch Keys persist across prestiges
+- Preservation chambers auto-produce materials every second
+- Experiment when you have lots of preserved materials
+- Daily rituals reset every day at midnight
+- Ascend when you can't progress further (choose your elemental path)
+- Prestige points persist across ascensions
+- The UI starts glitchy and stabilizes as you preserve more magic (design tiers)
 
 ## 🐛 Troubleshooting
 

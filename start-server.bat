@@ -1,8 +1,8 @@
 @echo off
-REM Simple server script for Cyber Witches (Windows)
+REM Simple server script for Spellwright (Windows)
 REM Double-click this file to run
 
-echo 🎮 Starting Cyber Witches Game Server...
+echo 🎮 Starting Spellwright Game Server...
 echo.
 echo The game will be available at: http://localhost:8000
 echo Press Ctrl+C to stop the server

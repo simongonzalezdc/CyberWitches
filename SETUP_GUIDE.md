@@ -1,4 +1,4 @@
-# 🛠️ Setup Guide for Cyber Witches
+# 🛠️ Setup Guide for Spellwright
 
 ## ✅ What's Been Implemented
 
@@ -14,15 +14,18 @@ All core game systems have been implemented in vanilla JavaScript:
 - **Data definitions** - All game content definitions
 
 ### ✅ UI Components
-- **Main HUD** - Top bar with AB display and Cast button
-- **Workstations tab** - Workstation crafting interface
-- **Inscriptions tab** - Upgrade purchasing interface
-- **Inventory tab** - Inventory display
-- **Experiment tab** - Experiment/discovery interface
-- **Daily rituals tab** - Daily tasks interface
+- **Main HUD** - Top bar with Arcane Bits (AB) display and Cast button
+- **Workstations tab** - Preservation chamber crafting interface
+- **Inscriptions tab** - Upgrade purchasing interface (refine preservation techniques)
+- **Inventory tab** - Inventory display (preserved materials)
+- **Experiment tab** - Experiment/discovery interface (discover new preservation techniques)
+- **Daily rituals tab** - Daily tasks interface (maintenance rituals)
 - **Boons tab** - Prestige bonuses interface
+- **Meditation tab** - Mental defense mini-game (unlocks after first ascension)
+- **Settings tab** - Settings, story section, fading theme toggles
 - **Welcome back modal** - Offline progress modal
-- **Prestige modal** - Prestige/ascend modal
+- **Prestige modal** - Ascension modal with elemental specialization choice
+- **Story modals** - Story introduction, meditation story, full story
 
 ## 🚀 Getting Started
 
@@ -50,11 +53,11 @@ Simply open `index.html` in your browser (some features may be limited due to CO
 ## 📁 Project Structure
 
 ```
-CyberWitches/
+Spellwright/
 ├── index.html          # Main HTML structure
-├── styles.css          # All styling (neon theme)
+├── styles.css          # All styling (neon theme + glitch effects)
 ├── js/
-│   ├── game.js        # Main game controller & UI
+│   ├── game.js        # Main game controller & UI, story integration
 │   ├── gameState.js   # Core game logic
 │   ├── dailyRituals.js # Daily task system
 │   ├── data.js        # Game content definitions
@@ -62,19 +65,26 @@ CyberWitches/
 │   ├── achievements.js # Achievement system
 │   ├── animations.js  # UI animations
 │   ├── comboSystem.js # Combo system
-│   └── eventSystem.js # Event management
+│   ├── eventSystem.js # Event management
+│   ├── designTierSystem.js # Design tier system
+│   ├── fadingThemeSystem.js # Visual fading theme effects
+│   ├── elementSpecialization.js # Elemental specialization system
+│   ├── meditationState.js # Meditation mini-game state
+│   ├── meditationUI.js # Meditation UI
+│   └── meditationTowers.js # Meditation tower system
 ├── package.json        # npm configuration
 └── README.md          # Project documentation
 ```
 
 ## 🎮 How to Play
 
-1. **Cast** - Click the Cast button to gather ingredients
-2. **Craft Workstations** - Use ingredients to build auto-producing workstations
-3. **Inscribe Upgrades** - Purchase permanent upgrades to boost production
-4. **Experiment** - Try experimenting to discover hidden recipes
-5. **Complete Dailies** - Finish daily tasks for rewards
-6. **Ascend** - Prestige to earn Eldritch Keys and permanent bonuses
+1. **Cast** - Click the Cast button to gather magic before it fades (Arcane Bits)
+2. **Craft Preservation Chambers** - Use materials to build auto-producing preservation chambers
+3. **Inscribe Upgrades** - Purchase permanent upgrades to refine preservation techniques
+4. **Experiment** - Try experimenting to discover new preservation techniques
+5. **Complete Daily Rituals** - Finish maintenance rituals to keep preserved magic stable
+6. **Ascend** - Prestige to choose an elemental preservation strategy and earn permanent bonuses
+7. **Meditate** - Defend your mind from the mental toll of the fading (unlocks after first ascension)
 
 ## 🛠️ Development
 
@@ -106,13 +116,18 @@ Edit formulas in `js/utils.js`:
 
 ## 🎨 Styling
 
-The game uses a neon cyberpunk theme defined in `styles.css`:
+The game uses a neon cyberpunk theme with progressive glitch effects defined in `styles.css`:
 - Background: `#0E0E12` (dark)
 - Primary: `#FF2DAA` (pink)
 - Secondary: `#22E3FF` (cyan)
 - Accent: `#FFDB6E` (gold)
 - Success: `#3CE3C5` (teal)
 - Mystical: `#C9A0FF` (purple)
+
+### Glitch Effects System
+The UI starts heavily glitched at Tier 0 and progressively stabilizes to perfect at Tier 4:
+- Screen tearing, chromatic aberration, scanlines, text corruption, position jitter, opacity flicker, distortion waves, glitchy gradient
+- All effects are CSS-only and GPU-accelerated for performance
 
 ## 📱 Responsive Design
 
@@ -123,13 +138,13 @@ The game is designed to work on:
 
 ## 💾 Save System
 
-Saves are stored in browser localStorage under the key `cyberWitchesSave`. The game auto-saves every 30 seconds and on window close.
+Saves are stored in browser localStorage under the key `spellwrightSave`. The game auto-saves every 30 seconds and on window close.
 
 ### Manual Save/Load
 
 Saves happen automatically. To manually export/import saves:
-- Export: Copy the value from `localStorage.getItem('cyberWitchesSave')`
-- Import: Use `localStorage.setItem('cyberWitchesSave', yourSaveData)`
+- Export: Copy the value from `localStorage.getItem('spellwrightSave')`
+- Import: Use `localStorage.setItem('spellwrightSave', yourSaveData)`
 
 ## 🐛 Troubleshooting
 

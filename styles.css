@@ -1225,6 +1225,138 @@ body.tier-4::after {
     color: var(--success);
 }
 
+/* Auto-Cast Visual Feedback */
+/* Cast button visual feedback when auto-cast is active */
+.btn-cast.auto-cast-active {
+    position: relative;
+}
+
+/* Auto-cast indicator on combo display */
+.auto-indicator {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* Combo display highlighting when auto-cast is maintaining combo */
+.auto-combo-active {
+    /* Visual feedback will be tier-specific */
+}
+
+/* Tier 0: No colors, no animations - just text indication */
+body.tier-0 .btn-cast.auto-cast-active {
+    /* No visual changes - just class for text indication */
+    border-style: dashed !important;
+}
+
+body.tier-0 .auto-combo-active {
+    /* No visual changes - just class for text indication */
+    border-style: dashed !important;
+}
+
+body.tier-0 .auto-indicator {
+    color: #FFFFFF !important;
+    opacity: 1 !important;
+}
+
+/* Tier 1-2: Colors allowed, no animations */
+body.tier-1 .btn-cast.auto-cast-active,
+body.tier-2 .btn-cast.auto-cast-active {
+    border-color: var(--success) !important;
+    border-width: 2px !important;
+    /* No animations on Tier 1-2 */
+    animation: none !important;
+    transition: none !important;
+}
+
+body.tier-1 .auto-combo-active,
+body.tier-2 .auto-combo-active {
+    border: 1px solid var(--success) !important;
+    background: rgba(60, 227, 197, 0.1) !important;
+    /* No animations on Tier 1-2 */
+    animation: none !important;
+    transition: none !important;
+}
+
+body.tier-1 .auto-indicator,
+body.tier-2 .auto-indicator {
+    color: var(--success) !important;
+    /* No animations on Tier 1-2 */
+    animation: none !important;
+}
+
+/* Tier 3-4: Colors AND animations allowed */
+body.tier-3 .btn-cast.auto-cast-active,
+body.tier-4 .btn-cast.auto-cast-active {
+    border-color: var(--success) !important;
+    border-width: 2px !important;
+    box-shadow: 0 0 10px var(--success-glow, rgba(60, 227, 197, 0.3)) !important;
+    animation: autoCastPulse 2s ease-in-out infinite !important;
+}
+
+body.tier-3 .auto-combo-active,
+body.tier-4 .auto-combo-active {
+    border: 1px solid var(--success) !important;
+    background: rgba(60, 227, 197, 0.1) !important;
+    box-shadow: 0 0 8px var(--success-glow, rgba(60, 227, 197, 0.2)) !important;
+    animation: autoComboGlow 2s ease-in-out infinite !important;
+}
+
+body.tier-3 .auto-indicator,
+body.tier-4 .auto-indicator {
+    color: var(--success) !important;
+    animation: autoIndicatorPulse 1.5s ease-in-out infinite !important;
+}
+
+/* Animations for Tier 3+ only */
+@keyframes autoCastPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px var(--success-glow, rgba(60, 227, 197, 0.3));
+    }
+    50% {
+        box-shadow: 0 0 15px var(--success-glow, rgba(60, 227, 197, 0.5));
+    }
+}
+
+@keyframes autoComboGlow {
+    0%, 100% {
+        box-shadow: 0 0 8px var(--success-glow, rgba(60, 227, 197, 0.2));
+        background: rgba(60, 227, 197, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 12px var(--success-glow, rgba(60, 227, 197, 0.3));
+        background: rgba(60, 227, 197, 0.15);
+    }
+}
+
+@keyframes autoIndicatorPulse {
+    0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+/* Ensure animations are disabled on Tier 0-2 */
+body.tier-0 .btn-cast.auto-cast-active,
+body.tier-0 .auto-combo-active,
+body.tier-0 .auto-indicator,
+body.tier-1 .btn-cast.auto-cast-active,
+body.tier-1 .auto-combo-active,
+body.tier-1 .auto-indicator,
+body.tier-2 .btn-cast.auto-cast-active,
+body.tier-2 .auto-combo-active,
+body.tier-2 .auto-indicator {
+    animation: none !important;
+    animation-play-state: paused !important;
+    transition: none !important;
+    transform: none !important;
+}
+
 /* Settings Button in Sidebar */
 .sidebar-settings-button {
     width: 100%;

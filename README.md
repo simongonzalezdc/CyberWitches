@@ -1,6 +1,6 @@
-# Cyber Witches: Idle Coven
+# Spellwright
 
-A magical idle game about casting spells and building workstations.
+Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. An idle game about preserving magic before it disappears forever.
 
 ## Quick Start
 
@@ -28,19 +28,20 @@ Quick deployment steps:
 
 ## Features
 
-- ✨ Manual and automatic spell casting
-- 🏭 Workstation crafting and automation
-- 📜 Upgrade system with inscriptions
-- 🔬 Experimentation to discover recipes
-- ⚡ Prestige system for permanent bonuses
+- ✨ Manual and automatic spell casting (gather magic before it fades)
+- 🏭 Preservation chamber crafting and automation
+- 📜 Upgrade system with inscriptions (refine preservation techniques)
+- 🔬 Experimentation to discover new preservation techniques
+- ⚡ Ascension system with elemental specialization choices
 - 🏆 Achievement system
-- 📅 Daily rituals
-- 🔮 Coven system
-- 🧘 Meditation mini-game
+- 📅 Daily rituals (maintenance rituals to keep preserved magic stable)
+- 🧘 Meditation mini-game (defend your mind from the mental toll of the fading)
 - 🎵 Procedural ambient music (Tier 4+)
 - 🔊 Sound effects (Tier 2+)
 - 📱 Progressive Web App (PWA) support
 - ♿ Accessibility features
+- 🎨 Progressive glitch effects (UI starts glitchy and stabilizes as you progress)
+- 🌈 Visual fading theme effects (represent the fading magic)
 
 ## Technology Stack
 
@@ -77,13 +78,25 @@ CyberWitches/
 
 ### Design Tiers
 
-The game uses a progressive design tier system that reveals features as players progress:
+The game uses a progressive design tier system that reveals features as players progress. The UI starts heavily glitched and progressively stabilizes as you preserve more magic:
 
-- **Tier 0**: Minimal UI (text only)
-- **Tier 1**: Basic color
-- **Tier 2**: Sound effects
-- **Tier 3**: Full graphics
-- **Tier 4**: Music
+- **Tier 0**: Minimal UI (monochrome, maximum glitch effects)
+- **Tier 1**: Basic color (heavy glitch effects)
+- **Tier 2**: Sound effects (moderate glitch effects)
+- **Tier 3**: Full graphics (light glitch effects)
+- **Tier 4**: Music (perfect, no glitches)
+
+### Glitch Effects System
+
+The UI starts heavily glitched at Tier 0 and progressively stabilizes until it's perfect at Tier 4. This represents the "fading magic" theme - as you preserve more magic, the UI becomes more stable. Effects include:
+- Screen tearing / horizontal glitch lines
+- Chromatic aberration (RGB channel separation)
+- Scanlines (CRT monitor effect)
+- Text corruption / character flicker
+- Position jitter (micro-shifts)
+- Opacity flicker
+- Distortion waves
+- Glitchy gradient (fading theme overlay)
 
 ## Documentation
 

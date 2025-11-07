@@ -1,9 +1,9 @@
 @echo off
-REM CyberWitches Tester Setup Script (Windows)
+REM Spellwright Tester Setup Script (Windows)
 REM This script helps testers install and launch the game locally
 
 echo ==========================================
-echo CyberWitches - Tester Setup Script
+echo Spellwright - Tester Setup Script
 echo ==========================================
 echo.
 

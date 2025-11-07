@@ -406,15 +406,28 @@ Random events provide temporary bonuses:
 ### Auto-Cast Feature
 
 **How to Use:**
-- Click the **"Auto: OFF"** button to toggle
-- When enabled, casts automatically every 500ms
+- Click the **"Auto Mode"** button in the sidebar to toggle
+- Unlocks after your first ascension (prestige)
+- When enabled, casts automatically every 500ms (2 casts per second)
 - Great for maintaining combos
 - Useful for idle gameplay
 
+**Visual Feedback:**
+- Cast button shows visual indicator when auto-cast is active
+- Combo display shows ⚡ icon when auto-cast is maintaining your combo
+- Visual feedback respects design tier restrictions (animations only at Tier 3+)
+
+**Event-Aware Speed Boost:**
+- During **💡 Inspiration** events (double cast rewards), auto-cast speed increases to 250ms (4 casts per second)
+- Automatically adjusts when Inspiration event starts or ends
+- Notification appears when speed boost activates
+
 **Strategy:**
-- Enable auto-cast when you want to focus on other tasks
-- Combines well with combo system
-- Can help complete tap-based achievements
+- **Maintaining Combos**: Auto-cast is perfect for maintaining high combos (casts every 500ms, well within 2-second combo window)
+- **During Events**: Auto-cast automatically speeds up during Inspiration events for maximum benefit
+- **Idle Gameplay**: Enable auto-cast when you want to focus on other tasks or planning
+- **Manual vs Auto**: For maximum control during Inspiration events, you can manually cast faster than auto-cast, but auto-cast ensures you don't miss the event window
+- **Post-Prestige**: After first prestige, workstations produce most resources, so auto-cast is mainly for combo maintenance and event bonuses
 
 ### Offline Progress
 

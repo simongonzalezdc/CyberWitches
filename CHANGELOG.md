@@ -1,6 +1,43 @@
-# Changelog - CyberWitches Game
+# Changelog - Spellwright
 
 ## Recent Changes
+
+### Game Title & Story Integration (Phase 1-3)
+- ✅ Game title changed to **"Spellwright"**
+- ✅ Currency renamed to **"Arcane Bits (AB)"** (replacing "Spell Energy (SE)")
+- ✅ Complete story integration: "The Fading" narrative framework
+- ✅ Story introduction modal on first launch
+- ✅ Meditation story introduction when meditation unlocks
+- ✅ Ascension story integration with elemental choice context
+- ✅ Daily rituals updated with story context
+- ✅ Experimentation updated with story context
+- ✅ Settings/About tab with story section and "Read Full Story" button
+- ✅ Tutorial updated with story elements
+- ✅ Workstation descriptions updated with lore (preservation chambers)
+- ✅ Achievement descriptions updated with story context
+
+### Visual Fading Theme Effects (Phase 3)
+- ✅ Background fade gradient overlay (Tier 2+)
+- ✅ Particle fade effect (Tier 3+)
+- ✅ Element fade indicators (Tier 1+)
+- ✅ All effects toggleable in Settings
+- ✅ Effects respect design tier rules
+- ✅ Preserve effect triggers when casting or building
+
+### Glitch Effects System - Progressive UI Stabilization
+- ✅ **8 glitch effects implemented** (all CSS-only for performance):
+  1. Screen tearing / horizontal glitch lines (Tier 0-3, progressive reduction)
+  2. Chromatic aberration / RGB channel separation (Tier 1-3, progressive reduction)
+  3. Scanlines / CRT monitor effect (Tier 0-3, progressive reduction)
+  4. Text corruption / character flicker (Tier 0-1 only)
+  5. Position jitter / micro-shifts (Tier 0-2, progressive reduction)
+  6. Opacity flicker (Tier 0-1 only)
+  7. Distortion waves (Tier 0-2, progressive reduction)
+  8. Glitchy gradient / fading theme overlay (Tier 2-3, smooth at Tier 4)
+- ✅ UI starts heavily glitched at Tier 0 and progressively stabilizes to perfect at Tier 4
+- ✅ All effects are GPU-accelerated and performance-optimized
+- ✅ Glitch effects override night sky background in Tier 0-3
+- ✅ Night sky background restored in Tier 4 (perfect state)
 
 ### Design Tier System - Complete Implementation
 - ✅ All tiers (0-4) now properly enforce their restrictions
@@ -25,6 +62,8 @@
 - ✅ Fixed syntax errors
 - ✅ Fixed button event listener issues
 - ✅ Improved error handling
+- ✅ Created `FadingThemeSystem` class for visual fading theme effects
+- ✅ Integrated glitch effects system with design tier system
 
 ### Bug Fixes
 - ✅ Fixed missing closing brace in game.js (line 2057)
@@ -37,13 +76,20 @@
 ## Files Modified
 
 ### Core Files
-- `js/game.js` - Main game logic, removed search/filter, fixed syntax errors
+- `js/game.js` - Main game logic, story integration, meditation story modal, full story modal, preserve effect triggers
 - `js/designTierSystem.js` - Design tier system implementation
+- `js/fadingThemeSystem.js` - **NEW** Visual fading theme effects system
+- `js/tutorial.js` - Updated with story elements
+- `js/data.js` - Updated workstation descriptions, daily task descriptions with story context
+- `js/elementSpecialization.js` - Updated elemental path descriptions with story context
+- `js/achievements.js` - Updated achievement descriptions with story context
 - `js/searchFilter.js` - Archived (moved to `archive/code/searchFilter.js`)
-- `index.html` - UI reorganization, removed searchFilter script tag
+- `index.html` - Updated title, meta descriptions, tooltips, story section in Settings, fading theme toggles
+- `manifest.json` - Updated PWA manifest with new title and description
+- `package.json` - Updated project name and description
 
 ### Styling
-- `styles.css` - Design tier CSS rules, sidebar settings button styles
+- `styles.css` - Design tier CSS rules, sidebar settings button styles, **glitch effects system (8 effects)**, fading theme visual effects
 
 ---
 
@@ -57,6 +103,11 @@
 - Settings panel
 - Tutorial system
 - Save/load functionality
+- Story introduction modals
+- Meditation story introduction
+- Full story modal
+- Visual fading theme effects (all 3 options)
+- Glitch effects system (all 8 effects, progressive tier reduction)
 
 ### ⚠️ Known Issues (Non-Critical)
 - ScriptProcessorNode deprecation warning (Tone.js library)
@@ -71,4 +122,18 @@
 - Coven system expansion (currently archived)
 - Performance optimizations
 - Additional tutorial improvements
+- Fine-tune glitch effect intensities based on player feedback
+- Add more story elements as game expands
+
+---
+
+## Version History
+
+### v1.0.0 (Current)
+- Complete story integration ("The Fading")
+- Visual fading theme effects
+- Glitch effects system (progressive UI stabilization)
+- Design tier system (all tiers implemented)
+- PWA support
+- Full accessibility features
 
