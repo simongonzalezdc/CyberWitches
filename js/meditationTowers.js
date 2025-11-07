@@ -104,12 +104,8 @@ export class MeditationTowers {
             this.hoverGridY = null;
         });
         
-        // Click - place tower
+        // Click - place tower or upgrade existing tower
         this.canvas.addEventListener('click', (e) => {
-            if (!this.selectedTowerId) {
-                return; // No tower selected, do nothing
-            }
-            
             const rect = this.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -117,26 +113,45 @@ export class MeditationTowers {
             const gridX = Math.floor(x / this.cellSize);
             const gridY = Math.floor(y / this.cellSize);
             
-            console.log('Canvas clicked at grid position:', gridX, gridY, 'Tower:', this.selectedTowerId);
+            // Check if there's a tower at this position
+            const gridIndex = gridY * this.meditationState.gridSize + gridX;
+            const cell = this.meditationState.grid[gridIndex];
+            const existingTower = cell && cell.tower;
             
-            // Try to place tower
-            if (this.meditationState && this.meditationState.placeTower(this.selectedTowerId, gridX, gridY)) {
-                console.log('Tower placed successfully');
-                this.selectedTowerId = null; // Clear selection after placement
-                
-                // Clear selected button state
-                const buttons = document.querySelectorAll('.tower-place-button');
-                buttons.forEach(btn => {
-                    btn.classList.remove('selected');
-                    btn.textContent = 'Place Tower';
-                });
-                
-                // Update UI
-                if (window.meditationUI) {
-                    window.meditationUI.updateTowerList();
+            if (existingTower) {
+                // Clicked on existing tower - try to upgrade it
+                if (this.meditationState && this.meditationState.upgradeTower(existingTower)) {
+                    console.log('Tower upgraded successfully');
+                    // Update UI
+                    if (window.meditationUI) {
+                        window.meditationUI.updateTowerList();
+                        window.meditationUI.updateMeditationInventory();
+                    }
+                } else {
+                    console.log('Cannot upgrade tower - cannot afford or max level');
                 }
-            } else {
-                console.log('Failed to place tower - invalid position or cannot afford');
+            } else if (this.selectedTowerId) {
+                // No tower at position, try to place selected tower
+                console.log('Canvas clicked at grid position:', gridX, gridY, 'Tower:', this.selectedTowerId);
+                
+                if (this.meditationState && this.meditationState.placeTower(this.selectedTowerId, gridX, gridY)) {
+                    console.log('Tower placed successfully');
+                    this.selectedTowerId = null; // Clear selection after placement
+                    
+                    // Clear selected button state
+                    const buttons = document.querySelectorAll('.tower-place-button');
+                    buttons.forEach(btn => {
+                        btn.classList.remove('selected');
+                        btn.textContent = 'Place Tower';
+                    });
+                    
+                    // Update UI
+                    if (window.meditationUI) {
+                        window.meditationUI.updateTowerList();
+                    }
+                } else {
+                    console.log('Failed to place tower - invalid position or cannot afford');
+                }
             }
         });
     }
@@ -313,9 +328,10 @@ export class MeditationTowers {
             const y = tower.y * this.cellSize;
             const radius = this.cellSize * 0.3;
             
-            // Draw tower range (if active)
+            // Draw tower range (if active) - use current tower stats
             if (this.meditationState.activeSession && this.meditationState.waveActive) {
-                const range = tower.data.range * this.cellSize;
+                const stats = this.meditationState.getTowerStats(tower);
+                const range = stats.range * this.cellSize;
                 const rangeGradient = this.ctx.createRadialGradient(x, y, 0, x, y, range);
                 rangeGradient.addColorStop(0, 'rgba(0, 255, 255, 0.1)');
                 rangeGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
@@ -326,17 +342,27 @@ export class MeditationTowers {
                 this.ctx.fill();
             }
             
-            // Draw tower circle
-            const tierColor = this.getTierColor(tower.data.tier);
-            this.ctx.fillStyle = tierColor;
+            // Draw tower circle - color based on tower type
+            const towerColor = this.getTowerColor(tower.id);
+            this.ctx.fillStyle = towerColor;
             this.ctx.beginPath();
             this.ctx.arc(x, y, radius, 0, Math.PI * 2);
             this.ctx.fill();
             
             // Draw tower border
-            this.ctx.strokeStyle = tierColor;
+            this.ctx.strokeStyle = towerColor;
             this.ctx.lineWidth = 2;
             this.ctx.stroke();
+            
+            // Draw tower level indicator if upgraded
+            const level = tower.upgradeLevel || 0;
+            if (level > 0) {
+                this.ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
+                this.ctx.font = `${radius * 0.4}px Arial`;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(level.toString(), x, y - radius * 0.3);
+            }
             
             // Draw tower icon (simple symbol)
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
@@ -381,8 +407,8 @@ export class MeditationTowers {
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
         
-        // Draw range preview
-        const range = towerData.range * this.cellSize;
+        // Draw range preview (use base range)
+        const range = towerData.baseRange * this.cellSize;
         this.ctx.strokeStyle = canPlace ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
@@ -540,17 +566,16 @@ export class MeditationTowers {
     }
     
     /**
-     * Get tier color
+     * Get tower color based on tower type
      */
-    getTierColor(tier) {
+    getTowerColor(towerId) {
         const colors = {
-            0: 'rgba(255, 255, 255, 0.8)', // White
-            1: 'rgba(255, 16, 240, 0.8)',  // Neon Pink
-            2: 'rgba(255, 255, 0, 0.8)',   // Neon Yellow
-            3: 'rgba(57, 255, 20, 0.8)',   // Neon Green
-            4: 'rgba(0, 255, 255, 0.8)'    // Neon Cyan
+            'peace_circle': 'rgba(255, 255, 255, 0.8)',      // White
+            'focus_ring': 'rgba(0, 255, 255, 0.8)',          // Cyan
+            'tranquility_shrine': 'rgba(255, 16, 240, 0.8)', // Pink
+            'zen_pavilion': 'rgba(57, 255, 20, 0.8)'         // Green
         };
-        return colors[tier] || colors[0];
+        return colors[towerId] || colors['peace_circle'];
     }
 }
 

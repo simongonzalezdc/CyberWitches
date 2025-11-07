@@ -9,8 +9,8 @@ import { MeditationTowers } from './meditationTowers.js';
 import { DesignTierSystem } from './designTierSystem.js';
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { formatShort, formatPrecise, formatTimeDuration, formatOneDecimal } from './utils.js';
-import { createParticle, pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
-import { particleEffects } from './particleEffects.js';
+import { pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
+// Particle effects removed for memory optimization - see VISUAL_ALTERNATIVES.md
 import { audioSystem } from './audioSystem.js';
 import { VirtualWorkstationList, VirtualUpgradeList, VirtualAchievementList } from './virtualScroll.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
@@ -353,7 +353,7 @@ function defineGlobalFunctions() {
             
             if (!unlocked) {
                 if (typeof showNotification === 'function') {
-                    showNotification(`Requires ${formatShort(upgrade.unlockAtAb)} AB to unlock`, 'error');
+                    showNotification(`Requires ${formatShort(upgrade.unlockAtAb)} SE to unlock`, 'error');
                 }
             } else if (owned) {
                 if (typeof showNotification === 'function') {
@@ -436,13 +436,16 @@ function defineGlobalFunctions() {
             if (achievements && typeof achievements.checkAchievements === 'function') {
                 const newAchievements = achievements.checkAchievements();
                 for (const achievement of newAchievements) {
-                    // Play achievement sound
-                    if (window.audioSystem && window.audioSystem.playSound) {
-                        window.audioSystem.playSound('achievement');
-                    }
-                    
-                    if (typeof showNotification === 'function') {
-                        showNotification(`Achievement: ${achievement.name}!`, 'success');
+                    // Only show notification if not already shown
+                    if (!shownAchievementNotifications.has(achievement.name)) {
+                        // Play achievement sound
+                        if (window.audioSystem && window.audioSystem.playSound) {
+                            window.audioSystem.playSound('achievement');
+                        }
+                        
+                        if (typeof showNotification === 'function') {
+                            showNotification(`Achievement: ${achievement.name}!`, 'success');
+                        }
                     }
                     
                     // Announce to screen reader
@@ -854,7 +857,7 @@ function initUI() {
     designTierSystem.applyTier(designTierSystem.getCurrentTier()).catch(err => console.error('Error applying initial tier:', err));
     window.designTierSystem = designTierSystem; // Make globally accessible
     window.achievements = achievements; // Make achievements accessible for design tier system
-    window.particleEffects = particleEffects; // Make particle effects accessible globally
+    // Particle effects removed for memory optimization
     window.audioSystem = audioSystem; // Make audio system accessible globally
     
     // Unlock audio on first user interaction (required by browsers)
@@ -914,15 +917,11 @@ function initUI() {
     document.addEventListener('touchstart', unlockAudio);
     document.addEventListener('keydown', unlockAudio);
     
-    // Initialize particle system if canvas exists
+    // Particle effects removed for memory optimization (~3-8 MB savings)
+    // See VISUAL_ALTERNATIVES.md for economical visual alternatives
     const particleCanvas = document.getElementById('particle-canvas');
     if (particleCanvas) {
-        particleEffects.initialize(particleCanvas);
-        // Hide by default - will be enabled when tier 3+ is unlocked
-        if (designTierSystem.getCurrentTier() < 3) {
-            particleCanvas.style.display = 'none';
-            particleEffects.disable();
-        }
+        particleCanvas.style.display = 'none'; // Hide particle canvas
     }
     
     // Make initBackgroundSparkles globally accessible for tier unlocks
@@ -960,13 +959,13 @@ function initUI() {
         }
     };
     
-    // Check tier unlocks when AB changes significantly (achievement milestones)
-    // Hook into addAb to check on AB changes
+    // Check tier unlocks when Spell Energy changes significantly (achievement milestones)
+    // Hook into addAb to check on Spell Energy changes
     if (gameState && gameState.addAb) {
         const originalAddAb = gameState.addAb.bind(gameState);
         gameState.addAb = function(amount) {
             const result = originalAddAb(amount);
-            // Check unlocks on AB milestones (1,000, 10,000, 100,000, 1,000,000)
+            // Check unlocks on Spell Energy milestones (1,000, 10,000, 100,000, 1,000,000)
             const ab = this.ab || 0;
             if (ab >= 1000 && ab < 10000 || ab >= 10000 && ab < 100000 || ab >= 100000 && ab < 1000000 || ab >= 1000000) {
                 checkTierUnlocksOnEvent();
@@ -1072,7 +1071,26 @@ function initUI() {
     // Make resetAllProgress globally accessible for debugging
     window.resetAllProgress = resetAllProgress;
     
-    // Settings quick button in sidebar
+    // Settings counter in sidebar (replaces old settings button)
+    const settingsCounter = document.getElementById('settings-counter');
+    if (settingsCounter) {
+        settingsCounter.addEventListener('click', () => {
+            switchTab('settings');
+            // Announce to screen readers
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Settings tab opened', 'polite');
+            }
+        });
+        // Also handle Enter key for accessibility
+        settingsCounter.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                switchTab('settings');
+            }
+        });
+    }
+    
+    // Legacy settings button (if it still exists, keep it working)
     const settingsQuickButton = document.getElementById('settings-quick-button');
     if (settingsQuickButton) {
         settingsQuickButton.addEventListener('click', () => {
@@ -1246,25 +1264,14 @@ function initUI() {
                         const x = rect.left + rect.width / 2;
                         const y = rect.top + rect.height / 2;
                         
-                        // Create particles (limit to prevent spam)
-                        if (gameState.totalTaps % 5 === 0 || Math.random() > 0.7) {
-                            if (typeof createParticle === 'function') {
-                                createParticle(x, y - 30, '+1', '#22E3FF');
-                            }
-                        }
+                        // Particle effects removed for memory optimization
+                        // Visual feedback now uses CSS animations (see VISUAL_ALTERNATIVES.md)
                         
-                        // Show AB gain if any
-                        if (gameState.ab > oldAb && (gameState.ab - oldAb) > 0.05) {
-                            if (typeof createParticle === 'function') {
-                                createParticle(x, y - 60, `+${formatShort(gameState.ab - oldAb)} AB`, '#FFDB6E');
-                            }
-                            
-                            // Announce to screen reader
-                            if (window.Accessibility) {
-                                window.Accessibility.announceGameEvent('cast', {
-                                    amount: gameState.ab - oldAb
-                                });
-                            }
+                        // Announce to screen reader
+                        if (window.Accessibility) {
+                            window.Accessibility.announceGameEvent('cast', {
+                                amount: gameState.ab - oldAb
+                            });
                         }
                     });
                 }
@@ -1304,17 +1311,17 @@ function initUI() {
     const autoCastToggle = document.getElementById('auto-cast-toggle');
     window.autoCastEnabled = () => autoCastEnabled; // Make accessible for sound throttling
     
-    // Function to update auto button visibility based on tier
+    // Function to update auto button visibility based on first ascension
     const updateAutoButtonVisibility = () => {
-        if (autoCastToggle && designTierSystem) {
-            const currentTier = designTierSystem.getCurrentTier();
-            if (currentTier >= 4) {
-                // Show auto button at Tier 4+
+        if (autoCastToggle && gameState) {
+            const hasAscended = gameState.prestigeCount >= 1;
+            if (hasAscended) {
+                // Show auto button after first ascension
                 autoCastToggle.style.display = 'flex';
                 autoCastToggle.style.visibility = 'visible';
                 autoCastToggle.style.opacity = '1';
             } else {
-                // Hide auto button below Tier 4
+                // Hide auto button until first ascension
                 autoCastToggle.style.display = 'none';
                 autoCastToggle.style.visibility = 'hidden';
                 autoCastToggle.style.opacity = '0';
@@ -1338,14 +1345,17 @@ function initUI() {
         }
     };
     
+    // Make updateAutoButtonVisibility globally accessible
+    window.updateAutoButtonVisibility = updateAutoButtonVisibility;
+    
     // Initialize visibility based on current tier
     updateAutoButtonVisibility();
     
     if (autoCastToggle) {
         autoCastToggle.addEventListener('click', () => {
-            // Double-check tier before allowing auto-cast
-            if (designTierSystem && designTierSystem.getCurrentTier() < 4) {
-                return; // Don't allow auto-cast below Tier 4
+            // Double-check prestige count before allowing auto-cast
+            if (gameState && gameState.prestigeCount < 1) {
+                return; // Don't allow auto-cast until first ascension
             }
             
             autoCastEnabled = !autoCastEnabled;
@@ -1390,18 +1400,10 @@ function initUI() {
         });
     }
     
-    // Listen for tier changes to update button visibility
-    // Check periodically and on tier unlock events
-    if (designTierSystem) {
-        // Check visibility whenever tier unlocks
-        const originalUnlockTier = designTierSystem.unlockTier.bind(designTierSystem);
-        designTierSystem.unlockTier = function(tier) {
-            originalUnlockTier(tier);
-            // Update auto button visibility when tier unlocks
-            setTimeout(updateAutoButtonVisibility, 100); // Small delay to ensure tier is applied
-        };
-        
-        // Also check periodically in case tier changes externally
+    // Listen for prestige count changes to update button visibility
+    // Check periodically and on ascension events
+    if (gameState) {
+        // Also check periodically in case prestige count changes externally
         setInterval(() => {
             updateAutoButtonVisibility();
         }, 2000); // Check every 2 seconds
@@ -1416,8 +1418,8 @@ function initUI() {
             // Show confirmation dialog
             const prestigeGain = gameState.calculatePrestigeGain();
             const confirmed = await showDestructiveConfirmation(
-                '⚡ Ascend',
-                `Are you sure you want to ascend?\n\nYou will gain ${prestigeGain.toFixed(2)} Eldritch Keys (EK).\n\nYou will lose:\n• All AB and ingredients\n• All workstations\n• All upgrades (except prestige bonuses)\n\nYou will keep:\n• Prestige points (Eldritch Keys)\n• Prestige bonuses (Boons)\n• Discovered recipes\n• Achievements\n• Design tier unlocks`,
+                stripEmojisIfLowTier('⚡ Ascend'),
+                `Are you sure you want to ascend?\n\nYou will gain ${prestigeGain.toFixed(2)} Eldritch Keys (EK).\n\nYou will lose:\n• All Spell Energy and ingredients\n• All workstations\n• All upgrades (except prestige bonuses)\n\nYou will keep:\n• Prestige points (Eldritch Keys)\n• Prestige bonuses (Boons)\n• Discovered recipes\n• Achievements\n• Design tier unlocks`,
                 'ASCEND'
             );
             
@@ -1448,11 +1450,11 @@ function initUI() {
                     window.audioSystem.playSound('level_up');
                 }
                 
-                // Reset design tiers to tier 1 when ascending
+                // Reset design tiers to tier 0 when ascending
                 if (designTierSystem) {
                     try {
-                        await designTierSystem.resetToTier1();
-                        console.log('Design tiers reset to tier 1 after ascend');
+                        await designTierSystem.resetToTier0();
+                        console.log('Design tiers reset to tier 0 after ascend');
                     } catch (error) {
                         console.error('Error resetting design tiers after ascend:', error);
                     }
@@ -1485,6 +1487,11 @@ function initUI() {
                     if (window.showNotification) {
                         window.showNotification('Meditation unlocked!', 'success');
                     }
+                }
+                
+                // Update auto button visibility after ascension
+                if (window.updateAutoButtonVisibility) {
+                    window.updateAutoButtonVisibility();
                 }
                 
                 // Update settings tab to show tier selector after first ascension
@@ -1612,7 +1619,7 @@ function initUI() {
     gameState.onAbChanged = (newValue) => {
         if (!abDisplay) return;
         
-        // Track AB earning for daily tasks (use total earned, not current balance)
+        // Track Spell Energy earning for daily tasks (use total earned, not current balance)
         if (typeof updateDailyProgress === 'function' && gameState) {
             updateDailyProgress('earn_ab', '', gameState.abTotalEarned);
         }
@@ -1625,7 +1632,7 @@ function initUI() {
                 animateNumber(abDisplay, previousAb, newValue, 200);
             } else {
                 // Direct update for small changes (faster)
-                abDisplay.textContent = `AB: ${formatShort(newValue)}`;
+                abDisplay.textContent = `SE: ${formatShort(newValue)}`;
             }
             
             previousAb = newValue;
@@ -1662,6 +1669,10 @@ function initUI() {
         } else if (gameState.prestigeCount >= 1) {
             // Just update visibility if already initialized
             updateMeditationVisibility();
+        }
+        // Update auto button visibility after prestige
+        if (window.updateAutoButtonVisibility) {
+            window.updateAutoButtonVisibility();
         }
         debouncedUIUpdate('allUI', updateAllUI);
     };
@@ -1833,12 +1844,12 @@ function initUI() {
             const abps = gameState.getAbPerSecond(eventMult);
             
             if (abps !== previousAbps) {
-                // Format with AB/s label using animateNumberWithFormatter
+                // Format with SE/s label using animateNumberWithFormatter
                 animateNumberWithFormatter(abpsDisplay, previousAbps, abps, 500, (val) => {
-                    return `${formatOneDecimal(val)} AB/s`;
+                    return `${formatOneDecimal(val)} SE/s`;
                 });
                 
-                // Add glow effect if AB/s increased
+                // Add glow effect if SE/s increased
                 if (abps > previousAbps && abps > 0) {
                     abpsDisplay.style.textShadow = '0 0 10px rgba(34, 227, 255, 0.8)';
                     setTimeout(() => {
@@ -1857,12 +1868,16 @@ function initUI() {
     }
     updateIntervals.push(abpsInterval);
     
-    // Check for achievements periodically (optimized)
+    // Check for achievements periodically (optimized) - reduced frequency to prevent spam
     const achievementInterval = setInterval(() => {
         if (achievements) {
             const newAchievements = achievements.checkAchievements();
             for (const achievement of newAchievements) {
-                showNotification(`Achievement: ${achievement.name}!`, 'success');
+                // Only show notification if not already shown
+                const notificationMessage = `Achievement: ${achievement.name}!`;
+                if (!shownAchievementNotifications.has(achievement.name)) {
+                    showNotification(notificationMessage, 'success');
+                }
                 
                 // Check tier unlocks after achievement is unlocked
                 if (designTierSystem) {
@@ -1881,7 +1896,7 @@ function initUI() {
                 }
             }
         }
-    }, 1000);
+    }, 2000); // Increased interval from 1000ms to 2000ms to reduce frequency
     
     // Track interval for cleanup
     if (memoryLeakPreventionManager) {
@@ -1965,16 +1980,16 @@ function initUI() {
     window.UPGRADES = UPGRADES;
     window.INGREDIENTS = INGREDIENTS;
     
-    // Initial AB display
+    // Initial Spell Energy display
     if (abDisplay && gameState) {
-        abDisplay.textContent = `AB: ${formatShort(gameState.ab)}`;
+        abDisplay.textContent = `SE: ${formatShort(gameState.ab)}`;
         previousAb = gameState.ab;
     }
     
-    // Initial AB/s display
+    // Initial SE/s display
     if (abpsDisplay && gameState) {
         const abps = gameState.getAbPerSecond();
-        abpsDisplay.textContent = `${formatOneDecimal(abps)} AB/s`;
+        abpsDisplay.textContent = `${formatOneDecimal(abps)} SE/s`;
         previousAbps = abps;
     }
     
@@ -1987,9 +2002,8 @@ function initUI() {
     uiInitialized = true;
     
     // Set up unified button handler for all data-action buttons
-    // This ensures all buttons work even if individual handlers fail
-    // Individual handlers attached to buttons fire first (bubbling phase)
-    // This unified handler acts as fallback if individual handlers don't work
+    // This ensures all buttons work reliably - fires immediately on first click
+    // Use capture phase to ensure we catch clicks before they bubble
     document.addEventListener('click', (e) => {
         const button = e.target.closest('button');
         if (!button || button.disabled) return;
@@ -1997,68 +2011,57 @@ function initUI() {
         const action = button.dataset.action;
         if (!action) return;
         
-        // Check if button already has a handler flag set (prevents double-firing)
-        if (button.dataset.handled === 'true') {
-            return; // Already being handled
+        // Check if event was already handled by a direct handler
+        // Only skip if the event was explicitly prevented by a direct handler
+        // Don't rely on data-handled flags that might prevent legitimate clicks
+        if (e.defaultPrevented && button.dataset.handled === 'true') {
+            // Event was already handled by a direct handler
+            return;
         }
         
-        // Wait for individual handlers to fire (they're in same phase but attached to button)
+        // Get button data attributes
+        const wsId = button.dataset.wsId || button.dataset['ws-id'];
+        const recipeId = button.dataset.recipeId || button.dataset['recipe-id'];
+        const taskId = button.dataset.taskId || button.dataset['task-id'];
+        const boonId = button.dataset.boonId || button.dataset['boon-id'];
+        const upgradeId = button.dataset.upgradeId || button.dataset['upgrade-id'];
+        const amount = button.dataset.amount;
+        
+        // Mark as handled to prevent double-processing
+        button.dataset.handled = 'true';
         setTimeout(() => {
-            // Check again if button was marked as handled by individual handler
-            if (button.dataset.handled === 'true') {
-                return; // Already handled by individual handler
-            }
-            
-            // Check if event was prevented (individual handler called preventDefault)
-            if (e.defaultPrevented) {
-                return; // Already handled
-            }
-            
-            // If button was removed, individual handler worked
-            if (!button.parentElement) return;
-            
-            const wsId = button.dataset.wsId || button.dataset['ws-id'];
-            const recipeId = button.dataset.recipeId || button.dataset['recipe-id'];
-            const taskId = button.dataset.taskId || button.dataset['task-id'];
-            const boonId = button.dataset.boonId || button.dataset['boon-id'];
-            const upgradeId = button.dataset.upgradeId || button.dataset['upgrade-id'];
-            const amount = button.dataset.amount;
-            
-            console.log('Button action detected (fallback handler):', { action, wsId, recipeId, taskId, boonId, upgradeId, amount });
-            
-            // Mark as handled to prevent double-processing
-            button.dataset.handled = 'true';
-            setTimeout(() => {
-                delete button.dataset.handled;
-            }, 100);
-            
-            // Handle different action types as fallback
-            let handled = false;
-            if (action === 'craft' && wsId && typeof window.craftWorkstation === 'function') {
-                const craftAmount = parseInt(amount, 10) || 1;
-                window.craftWorkstation(wsId, craftAmount, button);
-                handled = true;
-            } else if (action === 'craft-max' && wsId && typeof window.craftWorkstationMax === 'function') {
-                window.craftWorkstationMax(wsId);
-                handled = true;
-            } else if (action === 'craft-recipe' && recipeId && typeof window.craftRecipe === 'function') {
-                window.craftRecipe(recipeId);
-                handled = true;
-            } else if (action === 'claim-task' && taskId && typeof window.claimTask === 'function') {
-                window.claimTask(taskId);
-                handled = true;
-            } else if (action === 'purchase-boon' && boonId && typeof window.purchaseBoon === 'function') {
-                window.purchaseBoon(boonId);
-                handled = true;
-            } else if (action === 'inscribe' && upgradeId && typeof window.inscribeUpgrade === 'function') {
-                window.inscribeUpgrade(upgradeId, button);
-                handled = true;
-            }
-            
-            if (handled) {
-                console.log('Fallback handler executed for:', action);
-            }
-        }, 50); // Increased delay to ensure individual handlers have time to fire and mark as handled
+            delete button.dataset.handled;
+        }, 200);
+        
+        // Handle different action types - fire immediately
+        let handled = false;
+        if (action === 'craft' && wsId && typeof window.craftWorkstation === 'function') {
+            const craftAmount = parseInt(amount, 10) || 1;
+            window.craftWorkstation(wsId, craftAmount, button);
+            handled = true;
+        } else if (action === 'craft-max' && wsId && typeof window.craftWorkstationMax === 'function') {
+            window.craftWorkstationMax(wsId);
+            handled = true;
+        } else if (action === 'craft-recipe' && recipeId && typeof window.craftRecipe === 'function') {
+            window.craftRecipe(recipeId);
+            handled = true;
+        } else if (action === 'claim-task' && taskId && typeof window.claimTask === 'function') {
+            window.claimTask(taskId);
+            handled = true;
+        } else if (action === 'purchase-boon' && boonId && typeof window.purchaseBoon === 'function') {
+            window.purchaseBoon(boonId);
+            handled = true;
+        } else if (action === 'inscribe' && upgradeId && typeof window.inscribeUpgrade === 'function') {
+            window.inscribeUpgrade(upgradeId, button);
+            handled = true;
+        }
+        
+        if (handled) {
+            // Prevent default and stop propagation to avoid double-handling
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Unified handler executed for:', action);
+        }
         
         // Check if button has onclick attribute (fallback for legacy buttons)
         const onclickAttr = button.getAttribute('onclick');
@@ -2181,6 +2184,29 @@ function switchTab(tabName) {
     // Check if we're switching away from meditation tab
     const wasMeditationActive = document.getElementById('meditation-tab')?.classList.contains('active');
     const isMeditationActive = tabName === 'meditation';
+    
+    // Cleanup meditation state when leaving meditation tab (Priority 2: Memory optimization)
+    if (wasMeditationActive && !isMeditationActive && meditationState) {
+        console.log('Leaving meditation tab - cleaning up meditation state');
+        
+        // Clear distractions array to free memory (~2-5 MB savings)
+        if (meditationState.distractions && meditationState.distractions.length > 0) {
+            console.log(`Clearing ${meditationState.distractions.length} distractions`);
+            meditationState.distractions = [];
+        }
+        
+        // Stop meditation tick loop if session is not active
+        if (!meditationState.activeSession) {
+            meditationState.stopTickLoop();
+            console.log('Meditation tick loop stopped (session inactive)');
+        }
+        
+        // Stop UI update intervals to reduce CPU usage
+        if (meditationUI) {
+            meditationUI.stopUpdateIntervals();
+            console.log('Meditation UI update intervals stopped');
+        }
+    }
     
     // Update panes
     tabPanes.forEach(pane => {
@@ -2306,7 +2332,16 @@ function switchTab(tabName) {
             
             if (meditationUI) {
                 meditationUI.updateAll();
+                // Restart UI update intervals when entering meditation tab
+                meditationUI.startUpdateIntervals();
             }
+            
+            // Restart meditation tick loop if it was stopped
+            if (meditationState && !meditationState.tickInterval) {
+                meditationState.startTickLoop();
+                console.log('Meditation tick loop restarted');
+            }
+            
             // Music switching is handled at the top level of switchTab function
             break;
         case 'stats':
@@ -2379,7 +2414,16 @@ function updateWorkstationsTab() {
     });
     
     // Filter unlocked workstations
-    const unlockedWorkstations = PRODUCERS.filter(prod => gameState.ab >= prod.unlockAtAb);
+    let unlockedWorkstations = PRODUCERS.filter(prod => gameState.ab >= prod.unlockAtAb);
+    
+    // Hide focus workstations until meditation is unlocked
+    const isMeditationUnlocked = gameState.prestigeCount >= 1;
+    if (!isMeditationUnlocked) {
+        unlockedWorkstations = unlockedWorkstations.filter(prod => 
+            !prod.id.includes('focus') && !prod.id.includes('focus_mill')
+        );
+    }
+    
     console.log('Unlocked workstations:', unlockedWorkstations.length, 'of', PRODUCERS.length, 'total');
     
     // Destroy existing virtual list if it exists
@@ -2752,7 +2796,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             
             card.innerHTML = `
                 <div class="card-title">${prodData.displayName}</div>
-                <div class="card-description">⚙️ Owned: ${owned}</div>
+                <div class="card-description">${stripEmojisIfLowTier('⚙️')} Owned: ${owned}</div>
                 <div class="card-content-left">
                     <div class="card-section">
                         <div class="card-label">Produces:</div>
@@ -2800,14 +2844,11 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                     btn.style.display = 'inline-block';
                     
                     btn.addEventListener('click', (e) => {
+                        // Mark button as handled BEFORE processing to prevent unified handler from firing
+                        btn.dataset.handled = 'true';
+                        
                         e.preventDefault();
                         e.stopPropagation();
-                        
-                        // Mark button as handled to prevent fallback handler from firing
-                        btn.dataset.handled = 'true';
-                        setTimeout(() => {
-                            delete btn.dataset.handled;
-                        }, 100);
                         
                         const action = btn.dataset.action;
                         const wsId = btn.dataset.wsId;
@@ -2824,7 +2865,12 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                         } else {
                             console.error('Button action handler not found:', { action, wsId });
                         }
-                    });
+                        
+                        // Clear handled flag after a short delay
+                        setTimeout(() => {
+                            delete btn.dataset.handled;
+                        }, 200);
+                    }, { capture: true }); // Use capture phase to fire before unified handler
                 });
             
             container.appendChild(card);
@@ -2854,7 +2900,15 @@ function updateInscriptionsTab() {
     container.style.gap = '15px';
     
     // Filter unlocked upgrades
-    const unlockedUpgrades = UPGRADES.filter(upg => gameState.ab >= upg.unlockAtAb);
+    let unlockedUpgrades = UPGRADES.filter(upg => gameState.ab >= upg.unlockAtAb);
+    
+    // Hide focus upgrades until meditation is unlocked
+    const isMeditationUnlocked = gameState.prestigeCount >= 1;
+    if (!isMeditationUnlocked) {
+        unlockedUpgrades = unlockedUpgrades.filter(upg => 
+            !upg.id.includes('focus') && !upg.affects.includes('focus')
+        );
+    }
     
     // Destroy existing virtual list if it exists
     if (virtualUpgradeList) {
@@ -2982,7 +3036,7 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
             }
             
             card.innerHTML = `
-                <div class="card-title">${upgData.displayName} ${owned ? '✓' : ''}</div>
+                <div class="card-title">${upgData.displayName} ${owned ? stripEmojisIfLowTier('✓') : ''}</div>
                 <div class="card-description">${upgData.description}</div>
                 <div class="card-section">
                     <div class="card-label">Effect: ${effectText}</div>
@@ -3094,8 +3148,8 @@ function updateInventoryTab() {
     
     // Ensure container is visible - use grid layout for compact display
     container.style.display = 'grid';
-    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
-    container.style.gap = '8px';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+    container.style.gap = '6px';
     container.style.visibility = 'visible';
     container.style.opacity = '1';
     container.innerHTML = '';
@@ -3115,9 +3169,17 @@ function updateInventoryTab() {
     const items = [];
     let maxAmount = 0;
     
+    // Hide focus from inventory until meditation is unlocked
+    const isMeditationUnlocked = gameState.prestigeCount >= 1;
+    
     for (const ingId in gameState.inventory) {
         const amount = gameState.inventory[ingId];
         if (amount <= 0) continue;
+        
+        // Skip focus-related ingredients if meditation is not unlocked
+        if (!isMeditationUnlocked && (ingId === 'focus' || ingId.includes('focus'))) {
+            continue;
+        }
         
         const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
         const tier = ingredient?.tier || 0;
@@ -3386,19 +3448,8 @@ function updateInventoryTab() {
             });
             }
             
-            // Add click effect (only for tier 3+ - particle effects)
-            if (!isTier0 && !isTier1Or2 && typeof createParticle === 'function') {
-            card.addEventListener('click', () => {
-                const rect = card.getBoundingClientRect();
-                    const tierSymbolData = getTierSymbol(tier);
-                createParticle(
-                    rect.left + rect.width / 2,
-                    rect.top + rect.height / 2,
-                    tierStyle.symbol,
-                        tierSymbolData.color
-                );
-            });
-            }
+            // Particle effects removed for memory optimization
+            // Visual feedback now uses CSS animations (see VISUAL_ALTERNATIVES.md)
             
             fragment.appendChild(card);
         }
@@ -3461,26 +3512,17 @@ function updateExperimentTab() {
                     }
                     showNotification(`<span class="css-icon-celebration"></span> Discovered: ${result.recipe.name}!`, 'success');
                     
-                    // Create confetti-like particles
-                    if (typeof createParticle === 'function') {
-                        const rect = newExpButton.getBoundingClientRect();
-                        for (let i = 0; i < 5; i++) {
-                            setTimeout(() => {
-                                createParticle(
-                                    rect.left + Math.random() * rect.width,
-                                    rect.top + Math.random() * rect.height,
-                                    '✨',
-                                    ['#FF2DAA', '#22E3FF', '#FFDB6E', '#3CE3C5', '#C9A0FF'][i % 5]
-                                );
-                            }, i * 50);
-                        }
-                    }
+                    // Particle effects removed for memory optimization
+                    // Visual feedback now uses CSS animations (see VISUAL_ALTERNATIVES.md)
                     
                     // Check achievements
                     if (achievements) {
                         const newAchievements = achievements.checkAchievements();
                         for (const achievement of newAchievements) {
-                            showNotification(`Achievement: ${achievement.name}!`, 'success');
+                            // Only show notification if not already shown
+                            if (!shownAchievementNotifications.has(achievement.name)) {
+                                showNotification(`Achievement: ${achievement.name}!`, 'success');
+                            }
                         }
                     }
                 } else {
@@ -3546,43 +3588,49 @@ function updateExperimentTab() {
             <button class="btn-primary" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
         `;
         
-            // Attach event listener directly - always attach handler
-            const button = card.querySelector('button[data-action="craft-recipe"]');
-            if (button && typeof window.craftRecipe === 'function') {
-                // Remove any existing listeners to prevent duplicates
-                const newButton = button.cloneNode(true);
-                button.parentNode.replaceChild(newButton, button);
+        // Attach event listener directly - use event delegation for better reliability
+        const button = card.querySelector('button[data-action="craft-recipe"]');
+        if (button && typeof window.craftRecipe === 'function') {
+            // Ensure button is visible and clickable
+            button.style.position = 'relative';
+            button.style.zIndex = '100';
+            button.style.pointerEvents = 'auto';
+            button.style.cursor = 'pointer';
+            button.style.visibility = 'visible';
+            button.style.display = 'inline-block';
+            
+            // Attach handler directly - use capture phase to fire before unified handler
+            button.addEventListener('click', (e) => {
+                // Mark button as handled BEFORE processing to prevent unified handler from firing
+                button.dataset.handled = 'true';
                 
-                // Ensure button is visible and clickable
-                newButton.style.position = 'relative';
-                newButton.style.zIndex = '100';
-                newButton.style.pointerEvents = 'auto';
-                newButton.style.cursor = 'pointer';
-                newButton.style.visibility = 'visible';
-                newButton.style.display = 'inline-block';
+                e.preventDefault();
+                e.stopPropagation();
                 
-                // Always attach handler
-                newButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Mark button as handled to prevent fallback handler from firing
-                    newButton.dataset.handled = 'true';
-                    setTimeout(() => {
-                        delete newButton.dataset.handled;
-                    }, 100);
-                    
-                    console.log('Craft recipe button clicked:', { recipeId });
-                    const success = window.craftRecipe(recipeId);
-                    
-                    // Visual feedback
-                    if (success && typeof pulseElement === 'function') {
-                        pulseElement(newButton, 1.1, 200);
-                    } else if (!success && typeof shakeElement === 'function') {
-                        shakeElement(newButton, 3, 200);
+                console.log('Craft recipe button clicked:', { recipeId });
+                const success = window.craftRecipe(recipeId);
+                
+                // Update UI after crafting
+                if (success) {
+                    updateExperimentTab();
+                    if (typeof updateAllUI === 'function') {
+                        debouncedUIUpdate('allUI', updateAllUI);
                     }
-                });
-            }
+                }
+                
+                // Visual feedback
+                if (success && typeof pulseElement === 'function') {
+                    pulseElement(button, 1.1, 200);
+                } else if (!success && typeof shakeElement === 'function') {
+                    shakeElement(button, 3, 200);
+                }
+                
+                // Clear handled flag after a short delay
+                setTimeout(() => {
+                    delete button.dataset.handled;
+                }, 200);
+            }, { capture: true, once: false }); // Use capture phase, allow multiple clicks
+        }
         
         fragment.appendChild(card);
     }
@@ -3612,7 +3660,7 @@ function updateDailiesTab() {
             let rewardText = '';
             switch (task.rewardType) {
                 case 'ab':
-                    rewardText = `${formatShort(task.rewardValue)} AB`;
+                    rewardText = `${formatShort(task.rewardValue)} SE`;
                     break;
                 case 'buff':
                     rewardText = `+${Math.floor(task.buffMultiplier * 100)}% for ${formatTimeDuration(task.rewardValue)}`;
@@ -3710,13 +3758,13 @@ function updateBoonsTab() {
                     effectText = `+${Math.floor(boonData.value * 100)}% ${boonData.param} Production per level`;
                     break;
                 case 'starting_currency':
-                    effectText = `+${formatShort(boonData.value)} AB at start per level`;
+                    effectText = `+${formatShort(boonData.value)} SE at start per level`;
                     break;
                 case 'start_ingredient':
                     effectText = `+${formatShort(boonData.value)} ${boonData.param} at start per level`;
                     break;
                 case 'ab_production_mult':
-                    effectText = `+${Math.floor(boonData.value * 100)}% AB Production per level`;
+                    effectText = `+${Math.floor(boonData.value * 100)}% Spell Energy Production per level`;
                     break;
                 case 'click_mult':
                     effectText = `+${Math.floor(boonData.value * 100)}% Cast Rewards per level`;
@@ -3812,7 +3860,7 @@ function getIngredientElement(ingId) {
     
     // Special ingredients
     if (ingId === 'focus') return 'aether'; // Focus is Aether-related (meditation/mental energy)
-    if (ingId === 'ab') return 'aether'; // AB is Aether currency
+    if (ingId === 'ab') return 'aether'; // Spell Energy is Aether currency
     
     // Find which workstation produces this ingredient
     const producer = PRODUCERS.find(p => {
@@ -3913,25 +3961,38 @@ function updateElementCounters() {
         }
     }
     
-    // Update Focus counter (with 1 decimal place)
+    // Update Focus counter (with 1 decimal place) - only if meditation is unlocked
+    const isMeditationUnlocked = gameState.prestigeCount >= 1;
     const focusCounter = document.getElementById('element-counter-focus');
     if (focusCounter) {
-        const focusAmountElement = focusCounter.querySelector('.element-amount');
-        if (focusAmountElement && gameState.inventory) {
-            const focusAmount = gameState.inventory['focus'] || 0;
-            const formattedFocus = formatOneDecimal(focusAmount);
-            const previousFocus = previousElementTotals['focus'] || 0;
+        if (isMeditationUnlocked) {
+            // Show focus counter
+            focusCounter.style.display = 'flex';
+            focusCounter.style.visibility = 'visible';
+            focusCounter.style.opacity = '1';
             
-            if (Math.abs(focusAmount - previousFocus) > 0.01) {
-                if (previousFocus > 0 && Math.abs(focusAmount - previousFocus) > 0.1) {
-                    animateNumberWithFormatter(focusAmountElement, previousFocus, focusAmount, 500, formatOneDecimal);
-                } else {
+            const focusAmountElement = focusCounter.querySelector('.element-amount');
+            if (focusAmountElement && gameState.inventory) {
+                const focusAmount = gameState.inventory['focus'] || 0;
+                const formattedFocus = formatOneDecimal(focusAmount);
+                const previousFocus = previousElementTotals['focus'] || 0;
+                
+                if (Math.abs(focusAmount - previousFocus) > 0.01) {
+                    if (previousFocus > 0 && Math.abs(focusAmount - previousFocus) > 0.1) {
+                        animateNumberWithFormatter(focusAmountElement, previousFocus, focusAmount, 500, formatOneDecimal);
+                    } else {
+                        focusAmountElement.textContent = formattedFocus;
+                    }
+                    previousElementTotals['focus'] = focusAmount;
+                } else if (focusAmountElement.textContent.trim() !== formattedFocus) {
                     focusAmountElement.textContent = formattedFocus;
                 }
-                previousElementTotals['focus'] = focusAmount;
-            } else if (focusAmountElement.textContent.trim() !== formattedFocus) {
-                focusAmountElement.textContent = formattedFocus;
             }
+        } else {
+            // Hide focus counter
+            focusCounter.style.display = 'none';
+            focusCounter.style.visibility = 'hidden';
+            focusCounter.style.opacity = '0';
         }
     }
 }
@@ -3995,15 +4056,15 @@ function updateStatsTab() {
     // Split stats into two columns
     const leftColumnStats = [
         { label: 'Total Casts', value: gameState.totalTaps },
-        { label: 'Total AB Earned', value: formatShort(gameState.abTotalEarned) },
-        { label: 'AB Per Second', value: formatShort(gameState.getAbPerSecond()) },
+        { label: 'Total Spell Energy Earned', value: formatShort(gameState.abTotalEarned) },
+        { label: 'Spell Energy Per Second', value: formatShort(gameState.getAbPerSecond()) },
         { label: 'Recipes Discovered', value: gameState.discoveredRecipes.length },
         { label: 'Achievements', value: `${achievements.getUnlockedCount()}/${achievements.getTotalCount()}` }
     ];
     
     const rightColumnStats = [
         { label: 'Workstations Crafted', value: gameState.totalWorkstationsCrafted },
-        { label: 'Current AB', value: formatShort(gameState.ab) },
+        { label: 'Current Spell Energy', value: formatShort(gameState.ab) },
         { label: 'Prestige Points', value: gameState.prestigePoints },
         { label: 'Max Combo', value: comboSystem ? comboSystem.maxCombo : 0 }
     ];
@@ -4013,7 +4074,7 @@ function updateStatsTab() {
         const meditationBonus = window.meditationState.getMeditationProductionBonus();
         const bonusPercent = ((meditationBonus - 1.0) * 100).toFixed(1);
         rightColumnStats.push({ 
-            label: '🧘 Meditation Production Bonus', 
+            label: stripEmojisIfLowTier('🧘 Meditation Production Bonus'), 
             value: `+${bonusPercent}%`,
             style: 'color: var(--success); font-weight: bold;'
         });
@@ -4058,15 +4119,26 @@ function updateStatsTab() {
     statsCard.appendChild(statsContainer);
     container.appendChild(statsCard);
     
-    // Achievements section
+    // Achievements section with two-column layout
     const achievementsCard = document.createElement('div');
     achievementsCard.className = 'card';
     achievementsCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
     achievementsCard.innerHTML = '<div class="card-title">Achievements</div>';
     
+    // Create achievements container with grid layout (two columns)
+    const achievementsContainer = document.createElement('div');
+    achievementsContainer.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; max-height: 50vh; overflow-y: auto;';
+    
+    // Create left and right columns for achievements
+    const achievementsLeftColumn = document.createElement('div');
+    achievementsLeftColumn.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+    
+    const achievementsRightColumn = document.createElement('div');
+    achievementsRightColumn.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+    
     const achievementsList = document.createElement('div');
     achievementsList.className = 'content-list';
-    achievementsList.style.cssText = 'display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; padding-right: 20px; padding-left: 20px; padding-top: 20px; padding-bottom: 20px; width: 100%; box-sizing: border-box;';
+    achievementsList.style.cssText = 'display: none;'; // Hidden, we'll use the columns instead
     
     // Destroy existing virtual list if it exists
     if (virtualAchievementList) {
@@ -4094,36 +4166,29 @@ function updateStatsTab() {
         } catch (e) {
             console.error('Error creating virtual achievement list:', e);
             // Fall back to traditional rendering
-            renderAchievementsTraditional(achievementsList, achievementsArray);
+            renderAchievementsTraditional(achievementsArray);
         }
     } else {
         // Traditional rendering for all lists
-        renderAchievementsTraditional(achievementsList, achievementsArray);
+        renderAchievementsTraditional(achievementsArray);
     }
     
-    // Helper function for traditional rendering
-    function renderAchievementsTraditional(achievementsList, achievementsArray) {
+    // Helper function for traditional rendering with two-column layout
+    function renderAchievementsTraditional(achievementsArray) {
         console.log('Using traditional rendering for', achievementsArray.length, 'achievements');
-        
-        // Ensure achievementsList is visible
-        achievementsList.style.display = 'flex';
-        achievementsList.style.flexDirection = 'column';
-        achievementsList.style.gap = '10px';
-        achievementsList.style.visibility = 'visible';
-        achievementsList.style.opacity = '1';
-        achievementsList.style.minHeight = '100px';
         
         if (!achievementsArray || achievementsArray.length === 0) {
             console.warn('No achievements to render');
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'card-section';
-            emptyMsg.style.cssText = 'padding: 10px; color: var(--text-dim);';
+            emptyMsg.style.cssText = 'padding: 10px; color: var(--text-dim); grid-column: 1 / -1;';
             emptyMsg.textContent = 'No achievements available yet.';
-            achievementsList.appendChild(emptyMsg);
+            achievementsContainer.appendChild(emptyMsg);
             return;
         }
         
-        achievementsArray.forEach(achievement => {
+        // Distribute achievements across two columns
+        achievementsArray.forEach((achievement, index) => {
             if (!achievement) return;
             const unlocked = achievements.unlockedAchievements?.has(achievement.id) || false;
             
@@ -4151,21 +4216,32 @@ function updateStatsTab() {
             }
             
             const item = document.createElement('div');
-            item.className = 'card-section';
-            item.style.cssText = `padding: 10px; border-radius: 6px; background: ${unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)'}; margin-bottom: 10px; position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; box-sizing: border-box;`;
+            item.className = 'card-section achievement-item';
+            item.style.cssText = `padding: 10px; border-radius: 6px; background: ${unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)'}; margin-bottom: 8px; position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; box-sizing: border-box; overflow: visible; line-height: 1.5;`;
             item.innerHTML = `
-                <div class="card-label" style="color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'}; word-wrap: break-word; overflow-wrap: break-word;">
-                    ${unlocked ? '✓' : '○'} ${achievement.name || 'Unknown Achievement'}
+                <div class="card-label" style="color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'}; word-wrap: break-word; overflow-wrap: break-word; margin-bottom: 6px; font-weight: 600; line-height: 1.5; display: block; white-space: normal;">
+                    ${stripEmojisIfLowTier(unlocked ? '✓' : '○')} ${achievement.name || 'Unknown Achievement'}
                 </div>
-                <div class="card-description" style="font-size: 12px; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">${achievement.description || 'No description'}</div>
+                <div class="card-description" style="font-size: 11px; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; line-height: 1.5; color: var(--text-dim); display: block; white-space: normal; margin-bottom: 4px;">${achievement.description || 'No description'}</div>
                 ${progressHTML}
             `;
-            achievementsList.appendChild(item);
+            
+            // Alternate between left and right columns
+            if (index % 2 === 0) {
+                achievementsLeftColumn.appendChild(item);
+            } else {
+                achievementsRightColumn.appendChild(item);
+            }
         });
-        console.log('Rendered', achievementsArray.length, 'achievements using traditional rendering');
+        
+        // Append columns to container
+        achievementsContainer.appendChild(achievementsLeftColumn);
+        achievementsContainer.appendChild(achievementsRightColumn);
+        
+        console.log('Rendered', achievementsArray.length, 'achievements using traditional rendering in two columns');
     }
     
-    achievementsCard.appendChild(achievementsList);
+    achievementsCard.appendChild(achievementsContainer);
     container.appendChild(achievementsCard);
     
     console.log('Stats tab updated, container children:', container.children.length);
@@ -4213,6 +4289,7 @@ function updateAllUI() {
 
 /**
  * Update meditation and boons tab visibility based on prestige count
+ * Also hides/shows focus-related features
  */
 function updateMeditationVisibility() {
     if (!gameState) return;
@@ -4248,6 +4325,22 @@ function updateMeditationVisibility() {
             meditationTabPanel.style.visibility = 'hidden';
             meditationTabPanel.style.opacity = '0';
             meditationTabPanel.style.pointerEvents = 'none';
+        }
+    }
+    
+    // Update focus counter visibility
+    const focusCounter = document.getElementById('element-counter-focus');
+    if (focusCounter) {
+        if (isUnlocked) {
+            focusCounter.style.display = 'flex';
+            focusCounter.style.visibility = 'visible';
+            focusCounter.style.opacity = '1';
+            focusCounter.style.pointerEvents = 'auto';
+        } else {
+            focusCounter.style.display = 'none';
+            focusCounter.style.visibility = 'hidden';
+            focusCounter.style.opacity = '0';
+            focusCounter.style.pointerEvents = 'none';
         }
     }
     
@@ -4763,7 +4856,10 @@ function debouncedAchievementCheck() {
         if (achievements) {
             const newAchievements = achievements.checkAchievements();
             for (const achievement of newAchievements) {
-                showNotification(`Achievement: ${achievement.name}!`, 'success');
+                // Only show notification if not already shown
+                if (!shownAchievementNotifications.has(achievement.name)) {
+                    showNotification(`Achievement: ${achievement.name}!`, 'success');
+                }
             }
         }
     });
@@ -4781,11 +4877,57 @@ function initAutoSave() {
         if (gameState) {
             gameState.saveGameState();
         }
+        // Also save meditation state if it exists
+        if (meditationState && typeof meditationState.saveState === 'function') {
+            meditationState.saveState();
+        }
+        
+        // Periodic memory cleanup (every 5 minutes)
+        if (typeof window._lastMemoryCleanup === 'undefined' || Date.now() - window._lastMemoryCleanup > 300000) {
+            performMemoryCleanup();
+            window._lastMemoryCleanup = Date.now();
+        }
     }, autoSaveInterval);
     
     // Track interval for cleanup
+    allIntervals.push(autoSaveTimer);
     if (memoryLeakPreventionManager) {
         memoryLeakPreventionManager.trackInterval(autoSaveTimer);
+    }
+}
+
+/**
+ * Perform periodic memory cleanup
+ */
+function performMemoryCleanup() {
+    // Force garbage collection hint (if available)
+    if (window.gc && typeof window.gc === 'function') {
+        try {
+            window.gc();
+        } catch (e) {
+            // GC not available
+        }
+    }
+    
+    // Clear any cached calculations
+    if (gameState && gameState.cachedProduction) {
+        // Keep cache but limit its size
+        const cacheKeys = Object.keys(gameState.cachedProduction);
+        if (cacheKeys.length > 100) {
+            // Clear oldest entries
+            const keysToDelete = cacheKeys.slice(0, cacheKeys.length - 100);
+            keysToDelete.forEach(key => {
+                delete gameState.cachedProduction[key];
+            });
+        }
+    }
+    
+    // Log memory usage if available (Chrome DevTools)
+    if (performance.memory) {
+        const memoryMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
+        if (parseFloat(memoryMB) > 1000) {
+            console.warn(`High memory usage detected: ${memoryMB} MB`);
+        }
     }
 }
 
@@ -4818,13 +4960,17 @@ function stripEmojisIfLowTier(text) {
     if (currentTier < 3) {
         // Remove common emoji characters (Unicode ranges for emojis)
         // This regex removes emojis while preserving HTML tags
-        return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F1E0}-\u{1F1FF}]/gu, '')
+        // Includes: symbols (✓, ○, ⚡, ⚙, etc.), emojis, and other Unicode emoji ranges
+        return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2190}-\u{21FF}]|[\u{2713}-\u{2714}]|[\u{25CB}-\u{25CF}]|[\u{26A1}]|[\u{2699}]|[\u{2728}]|[\u{1F4F1}]|[\u{1F4BE}]|[\u{1F680}]|[\u{1F3AE}]|[\u{1F9D8}]|[\u{1F319}]|[\u{23F0}]/gu, '')
             .replace(/\s+/g, ' ') // Clean up extra spaces
             .trim();
     }
     
     return text;
 }
+
+// Make function globally available
+window.stripEmojisIfLowTier = stripEmojisIfLowTier;
 let notificationCount = 0;
 let lastNotificationReset = Date.now();
 
@@ -4901,7 +5047,7 @@ function showCraftNotification(message, amount) {
     const notification = document.createElement('div');
     notification.className = 'craft-notification';
     notification.innerHTML = `
-        <span class="craft-icon">✨</span>
+        <span class="craft-icon">${stripEmojisIfLowTier('✨')}</span>
         <span class="craft-message">${message}</span>
     `;
     
@@ -4938,12 +5084,37 @@ function showCraftNotification(message, amount) {
     }
 }
 
+// Track shown achievement notifications to prevent duplicates
+const shownAchievementNotifications = new Set();
+
 /**
  * Create notification element
  * @param {string} message - Notification message
  * @param {string} type - Notification type
  */
 function createNotificationElement(message, type) {
+    // Prevent duplicate achievement notifications
+    if (type === 'success' && message.includes('Achievement')) {
+        // Extract achievement name from message
+        const achievementMatch = message.match(/Achievement: (.+)!/);
+        if (achievementMatch) {
+            const achievementName = achievementMatch[1];
+            if (shownAchievementNotifications.has(achievementName)) {
+                // Already shown this achievement, skip
+                return;
+            }
+            shownAchievementNotifications.add(achievementName);
+        }
+    }
+    
+    // Get or create notifications container
+    let container = document.getElementById('notifications-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notifications-container';
+        document.body.appendChild(container);
+    }
+    
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     
@@ -4958,7 +5129,7 @@ function createNotificationElement(message, type) {
         notification.innerHTML = message; // Use innerHTML to support CSS icons
     }
     
-    document.body.appendChild(notification);
+    container.appendChild(notification);
     
     slideIn(notification, 'top', 300);
     
@@ -4992,7 +5163,7 @@ function processNotificationQueue() {
 
 function showWelcomeBack(elapsed, abGained) {
     document.getElementById('welcome-time').innerHTML = `<span class="css-icon-clock"></span> Away for: ${formatTimeDuration(elapsed)}`;
-    document.getElementById('welcome-ab').innerHTML = `<span class="css-icon-sparkle"></span> Earned: ${formatShort(abGained)} AB`;
+    document.getElementById('welcome-ab').innerHTML = `<span class="css-icon-sparkle"></span> Earned: ${formatShort(abGained)} SE`;
     welcomeBackModal.classList.add('active');
     // Force show when active
     welcomeBackModal.style.display = 'flex';
@@ -5072,69 +5243,257 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
     
-    // PWA Installation Prompt
-    let deferredPrompt;
-    const installButton = document.createElement('button');
-    installButton.className = 'btn-secondary';
-    installButton.textContent = '📱 Install App';
-    installButton.style.display = 'none';
-    installButton.setAttribute('aria-label', 'Install Cyber Witches app');
+    // PWA Installation Prompt - Enhanced experience
+    let deferredPrompt = null;
+    let installPromptShown = false;
+    const installButton = document.getElementById('install-app-button');
     
-    // Add install button to top bar
-    const installBar = document.querySelector('.top-bar');
-    if (installBar) {
-        installBar.appendChild(installButton);
+    // Check if already installed
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                       window.navigator.standalone || 
+                       document.referrer.includes('android-app://');
+    
+    if (isInstalled) {
+        // Already installed, hide install button
+        if (installButton) {
+            installButton.style.display = 'none';
+        }
+    } else {
+        // Show install button if available (will be shown when prompt is available)
+        if (installButton) {
+            installButton.style.display = 'none';
+        }
     }
     
-    // Listen for beforeinstallprompt event
+    // Listen for beforeinstallprompt event (Chrome, Edge, etc.)
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent mini-infobar from appearing on mobile
         e.preventDefault();
-        // Stash event so it can be triggered later
         deferredPrompt = e;
-        // Show install button
-        installButton.style.display = 'block';
         
-        // Show notification about app installation
-        if (window.showNotification) {
-            window.showNotification('📱 Cyber Witches can be installed!', 'info');
+        // Show install button in HUD
+        if (installButton) {
+            installButton.style.display = 'inline-flex';
+            installButton.style.visibility = 'visible';
+        }
+        
+        // Show welcome/install modal for first-time users
+        if (!installPromptShown && !localStorage.getItem('installPromptShown')) {
+            showInstallWelcomeModal();
+            installPromptShown = true;
+            localStorage.setItem('installPromptShown', 'true');
+        } else if (window.showNotification) {
+            window.showNotification('📱 Install Cyber Witches for offline play!', 'info', 5000);
         }
     });
     
+    // Make deferredPrompt accessible to modal functions
+    window.getDeferredPrompt = () => deferredPrompt;
+    
     // Install button click handler
-    installButton.addEventListener('click', () => {
-        if (deferredPrompt) {
-            // Show install prompt
-            deferredPrompt.prompt();
-            // Wait for user to respond to prompt
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    if (window.showNotification) {
-                        window.showNotification('<span class="css-icon-celebration"></span> Cyber Witches installed successfully!', 'success');
+    if (installButton) {
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                try {
+                    // Show install prompt
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    
+                    if (outcome === 'accepted') {
+                        console.log('User accepted install prompt');
+                        if (window.showNotification) {
+                            window.showNotification('<span class="css-icon-celebration"></span> Installing Cyber Witches...', 'success');
+                        }
+                        // Hide install button
+                        if (installButton) {
+                            installButton.style.display = 'none';
+                        }
+                    } else {
+                        console.log('User dismissed install prompt');
                     }
-                    console.log('User accepted install prompt');
-                } else {
-                    console.log('User dismissed install prompt');
+                    
+                    deferredPrompt = null;
+                } catch (error) {
+                    console.error('Error showing install prompt:', error);
+                    // Fallback: show manual installation instructions
+                    showInstallInstructions();
                 }
-                // Clear deferred prompt
-                deferredPrompt = null;
-                // Hide install button
-                installButton.style.display = 'none';
-            });
-        }
-    });
+            } else {
+                // No prompt available, show manual instructions
+                showInstallInstructions();
+            }
+        });
+    }
     
     // Listen for app installed event
     window.addEventListener('appinstalled', () => {
-        // Hide install button
-        installButton.style.display = 'none';
-        // Clear deferred prompt
+        console.log('App installed successfully');
+        if (installButton) {
+            installButton.style.display = 'none';
+        }
         deferredPrompt = null;
-        // Show success notification
+        
         if (window.showNotification) {
-            window.showNotification('<span class="css-icon-celebration"></span> Cyber Witches is now installed!', 'success');
+            window.showNotification('<span class="css-icon-celebration"></span> Cyber Witches is now installed! Play offline anytime!', 'success', 5000);
+        }
+        
+        // Close any install modals
+        const installModal = document.getElementById('install-welcome-modal');
+        if (installModal) {
+            installModal.remove();
         }
     });
+    
+    /**
+     * Show welcome/install modal for first-time users
+     */
+    function showInstallWelcomeModal() {
+        const modal = document.createElement('div');
+        modal.id = 'install-welcome-modal';
+        modal.className = 'install-modal';
+        modal.innerHTML = `
+            <div class="install-modal-content">
+                <div class="install-modal-header">
+                    <h2>${stripEmojisIfLowTier('✨ Welcome to Cyber Witches!')}</h2>
+                    <button class="install-modal-close" aria-label="Close">&times;</button>
+                </div>
+                <div class="install-modal-body">
+                    <p><strong>Install the app for the best experience:</strong></p>
+                    <ul class="install-benefits">
+                        <li>${stripEmojisIfLowTier('📱 Play offline - No internet required')}</li>
+                        <li>${stripEmojisIfLowTier('💾 Auto-save - Your progress is always safe')}</li>
+                        <li>${stripEmojisIfLowTier('🚀 Faster startup - Launch like a desktop app')}</li>
+                        <li>${stripEmojisIfLowTier('🎮 Full screen - Immersive gameplay')}</li>
+                    </ul>
+                    <div class="install-modal-actions">
+                        <button id="install-welcome-button" class="btn-primary btn-install-large">
+                            <span class="install-icon">${stripEmojisIfLowTier('📱')}</span> Install Now
+                        </button>
+                        <button class="btn-secondary install-modal-skip">Maybe Later</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Close button
+        const closeBtn = modal.querySelector('.install-modal-close');
+        const skipBtn = modal.querySelector('.install-modal-skip');
+        const installBtn = modal.querySelector('#install-welcome-button');
+        
+        closeBtn.addEventListener('click', () => modal.remove());
+        skipBtn.addEventListener('click', () => modal.remove());
+        
+        // Install button
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                const prompt = window.getDeferredPrompt ? window.getDeferredPrompt() : deferredPrompt;
+                if (prompt) {
+                    try {
+                        prompt.prompt();
+                        const { outcome } = await prompt.userChoice;
+                        if (outcome === 'accepted') {
+                            modal.remove();
+                        }
+                    } catch (error) {
+                        console.error('Error showing install prompt:', error);
+                        showInstallInstructions();
+                        modal.remove();
+                    }
+                } else {
+                    // No prompt available, show instructions
+                    showInstallInstructions();
+                    modal.remove();
+                }
+            });
+        }
+        
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+    
+    /**
+     * Show manual installation instructions based on platform
+     */
+    function showInstallInstructions() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+        const isEdge = /Edge/.test(navigator.userAgent);
+        const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+        
+        let instructions = '';
+        
+        if (isIOS) {
+            instructions = `
+                <h3>${stripEmojisIfLowTier('📱 Install on iOS (Safari)')}</h3>
+                <ol>
+                    <li>Tap the <strong>Share</strong> button ${stripEmojisIfLowTier('<span style="font-size: 20px;">📤</span>')} at the bottom</li>
+                    <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                    <li>Tap <strong>"Add"</strong> to confirm</li>
+                    <li>Launch from your home screen!</li>
+                </ol>
+            `;
+        } else if (isAndroid) {
+            instructions = `
+                <h3>${stripEmojisIfLowTier('📱 Install on Android')}</h3>
+                <ol>
+                    <li>Tap the <strong>Menu</strong> button ${stripEmojisIfLowTier('<span style="font-size: 20px;">⋮</span>')} (three dots)</li>
+                    <li>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></li>
+                    <li>Tap <strong>"Install"</strong> to confirm</li>
+                    <li>Launch from your home screen!</li>
+                </ol>
+            `;
+        } else if (isChrome || isEdge) {
+            instructions = `
+                <h3>${stripEmojisIfLowTier('💻 Install on Desktop (Chrome/Edge)')}</h3>
+                <ol>
+                    <li>Look for the <strong>Install</strong> icon ${stripEmojisIfLowTier('<span style="font-size: 20px;">➕</span>')} in the address bar</li>
+                    <li>Click it and select <strong>"Install"</strong></li>
+                    <li>Or use the <strong>"Install"</strong> button in the top bar</li>
+                    <li>Launch from your desktop or app menu!</li>
+                </ol>
+            `;
+        } else {
+            instructions = `
+                <h3>${stripEmojisIfLowTier('📱 Install Instructions')}</h3>
+                <p>Look for an <strong>"Install"</strong> or <strong>"Add to Home Screen"</strong> option in your browser menu.</p>
+                <p>On desktop: Check the address bar for an install icon.</p>
+                <p>On mobile: Use the browser's share menu to add to home screen.</p>
+            `;
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'install-modal';
+        modal.innerHTML = `
+            <div class="install-modal-content">
+                <div class="install-modal-header">
+                    <h2>${stripEmojisIfLowTier('📱 How to Install')}</h2>
+                    <button class="install-modal-close" aria-label="Close">&times;</button>
+                </div>
+                <div class="install-modal-body">
+                    ${instructions}
+                    <div class="install-modal-actions">
+                        <button class="btn-primary install-modal-close">Got it!</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const closeBtn = modal.querySelector('.install-modal-close');
+        closeBtn.addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
     
     // Add prestige button to top bar
     const hudControls = document.querySelector('.hud-controls');
@@ -5299,6 +5658,8 @@ function initCovenSystem() {
  * Prevents memory leaks and ensures clean shutdown
  */
 function cleanup() {
+    console.log('Cleaning up game resources...');
+    
     // Clear all tracked intervals
     allIntervals.forEach(interval => {
         if (interval) clearInterval(interval);
@@ -5316,6 +5677,12 @@ function cleanup() {
         if (interval) clearInterval(interval);
     });
     updateIntervals = [];
+    
+    // Clear UI update timeouts
+    uiUpdateTimeouts.forEach((timeout, key) => {
+        if (timeout) clearTimeout(timeout);
+    });
+    uiUpdateTimeouts.clear();
     
     // Clear auto-cast interval
     if (autoCastInterval) {
@@ -5335,6 +5702,16 @@ function cleanup() {
         delete window._backgroundSparklesCleanup;
     }
     
+    // Cleanup meditation state tick loop
+    if (meditationState && typeof meditationState.stopTickLoop === 'function') {
+        meditationState.stopTickLoop();
+    }
+    
+    // Cleanup memory leak prevention manager
+    if (memoryLeakPreventionManager && typeof memoryLeakPreventionManager.cleanup === 'function') {
+        memoryLeakPreventionManager.cleanup();
+    }
+    
     // Save game state before cleanup
     if (gameState) {
         try {
@@ -5343,6 +5720,25 @@ function cleanup() {
             console.error('Error saving game state during cleanup:', error);
         }
     }
+    
+    // Save meditation state before cleanup
+    if (meditationState && typeof meditationState.saveState === 'function') {
+        try {
+            meditationState.saveState();
+        } catch (error) {
+            console.error('Error saving meditation state during cleanup:', error);
+        }
+    }
+    
+    // Clear large arrays/objects that might be holding memory
+    if (gameState) {
+        // Don't clear gameState itself, but clear any cached data
+        if (gameState.cachedProduction) {
+            gameState.cachedProduction = null;
+        }
+    }
+    
+    console.log('Cleanup complete');
 }
 
 // Add cleanup listener on page unload

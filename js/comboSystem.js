@@ -53,16 +53,13 @@ export class ComboSystem {
         }
         
         // Particle effect
-        if (window.createParticle) {
-            const castButton = document.getElementById('cast-button');
-            if (castButton) {
-                const rect = castButton.getBoundingClientRect();
-                window.createParticle(
-                    rect.left + rect.width / 2,
-                    rect.top + rect.height / 2,
-                    `${milestone}x COMBO!`,
-                    '#FF2DAA'
-                );
+        // Particle effects removed for memory optimization
+        // Visual feedback now uses CSS animations
+        const castButton = document.getElementById('cast-button');
+        if (castButton) {
+            // Use CSS animation instead of particles
+            if (typeof pulseElement === 'function') {
+                pulseElement(castButton, 1.15, 300);
             }
         }
         

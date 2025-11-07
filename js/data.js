@@ -147,7 +147,7 @@ export const PRODUCERS = [
         outputs: { aether_well: 0.4 }
     },
     
-    // Tier 2 - Mid Game Producers (5 workstations: one per element + AB producer)
+    // Tier 2 - Mid Game Producers (5 workstations: one per element + Spell Energy producer)
     // Fire - Forge
     {
         id: "ws_enhanced_candle_forge",
@@ -184,10 +184,10 @@ export const PRODUCERS = [
         growth: 1.17,
         outputs: { crystal_core: 0.4 }
     },
-    // Aether - Reactor (AB Producer - requires all 4 other elements)
+    // Aether - Reactor (Spell Energy Producer - requires all 4 other elements)
     {
         id: "ws_arcane_bit_reactor",
-        displayName: "Arcane Bit Reactor",
+        displayName: "Spell Energy Reactor",
         unlockAtAb: 10000.0,
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2 },
         growth: 1.18,
@@ -204,7 +204,7 @@ export const PRODUCERS = [
         outputs: { focus: 0.2 }
     },
     
-    // Tier 3 - Late Game Producers (5 workstations: one per element + AB producer)
+    // Tier 3 - Late Game Producers (5 workstations: one per element + Spell Energy producer)
     // Fire - Forge
     {
         id: "ws_quantum_candle_forge",
@@ -241,10 +241,10 @@ export const PRODUCERS = [
         growth: 1.21,
         outputs: { quantum_crystal: 0.3 }
     },
-    // Aether - Reactor (AB Producer - requires all 4 other elements)
+    // Aether - Reactor (Spell Energy Producer - requires all 4 other elements)
     {
         id: "ws_etheric_bit_reactor",
-        displayName: "Etheric Bit Reactor",
+        displayName: "Etheric Energy Reactor",
         unlockAtAb: 200000.0,
         recipe: { quantum_candle: 3, quantum_water: 3, quantum_air: 3, quantum_crystal: 3 },
         growth: 1.22,
@@ -318,10 +318,10 @@ export const PRODUCERS = [
         growth: 1.29,
         outputs: { infinity_core: 0.15 }
     },
-    // Aether - Reactor (AB Producer - requires all 4 other elements)
+    // Aether - Reactor (Spell Energy Producer - requires all 4 other elements)
     {
         id: "ws_infinity_bit_reactor",
-        displayName: "Infinity Bit Reactor",
+        displayName: "Infinity Energy Reactor",
         unlockAtAb: 20000000.0,
         recipe: { eternal_flame: 5, infinity_core: 5, void_liquid: 5, void_breath: 5 },
         growth: 1.30,
@@ -709,17 +709,17 @@ export const UPGRADES = [
     {
         id: "u_focus_conversion_1",
         displayName: "Focus Conversion",
-        description: "Convert Focus to AB (1 AB per 100 Focus)",
+        description: "Convert Focus to Spell Energy (1 SE per 100 Focus)",
         affects: "focus_to_ab",
         type: "conversion",
-        value: 0.01, // 100 focus = 1 AB
+        value: 0.01, // 100 focus = 1 SE
         recipe: { focus: 100, enhanced_candle: 5, crystal_core: 5 },
         unlockAtAb: 10000.0
     },
     {
         id: "u_ab_mult_1",
-        displayName: "AB Multiplier",
-        description: "Increases all AB production by 50%",
+        displayName: "Spell Energy Multiplier",
+        description: "Increases all Spell Energy production by 50%",
         affects: "ab_production",
         type: "multiplier",
         value: 1.5,
@@ -728,8 +728,8 @@ export const UPGRADES = [
     },
     {
         id: "u_ab_mult_2",
-        displayName: "AB Amplifier",
-        description: "Increases all AB production by 100%",
+        displayName: "Spell Energy Amplifier",
+        description: "Increases all Spell Energy production by 100%",
         affects: "ab_production",
         type: "multiplier",
         value: 2.0,
@@ -738,8 +738,8 @@ export const UPGRADES = [
     },
     {
         id: "u_ab_mult_3",
-        displayName: "AB Transcendence",
-        description: "Increases all AB production by 200%",
+        displayName: "Spell Energy Transcendence",
+        description: "Increases all Spell Energy production by 200%",
         affects: "ab_production",
         type: "multiplier",
         value: 3.0,
@@ -748,8 +748,8 @@ export const UPGRADES = [
     },
     {
         id: "u_ab_mult_4",
-        displayName: "AB Infinity",
-        description: "Increases all AB production by 500%",
+        displayName: "Spell Energy Infinity",
+        description: "Increases all Spell Energy production by 500%",
         affects: "ab_production",
         type: "multiplier",
         value: 6.0,
@@ -792,7 +792,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_bits",
         displayName: "Seeded Spellbook",
-        description: "+1000 AB at start per level",
+        description: "+1000 SE at start per level",
         type: "starting_currency",
         value: 1000.0,
         baseCostPp: 5.0,
@@ -801,7 +801,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_bits_2",
         displayName: "Enchanted Tome",
-        description: "+10000 AB at start per level",
+        description: "+10000 SE at start per level",
         type: "starting_currency",
         value: 10000.0,
         baseCostPp: 25.0,
@@ -810,7 +810,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_bits_3",
         displayName: "Arcane Library",
-        description: "+100000 AB at start per level",
+        description: "+100000 SE at start per level",
         type: "starting_currency",
         value: 100000.0,
         baseCostPp: 100.0,
@@ -984,8 +984,8 @@ export const PRESTIGE_BONUSES = [
     // Special bonuses
     {
         id: "pp_ab_mult",
-        displayName: "AB Amplifier",
-        description: "+10% AB production per level",
+        displayName: "Spell Energy Amplifier",
+        description: "+10% Spell Energy production per level",
         type: "ab_production_mult",
         value: 0.10,
         baseCostPp: 25.0,
@@ -1041,7 +1041,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_focus_conversion_1",
         displayName: "Focus Conversion",
-        description: "Improves Focus to AB conversion rate by 10% per level",
+        description: "Improves Focus to Spell Energy conversion rate by 10% per level",
         type: "focus_conversion_mult",
         value: 0.10,
         baseCostPp: 30.0,
@@ -1181,7 +1181,7 @@ export const DAILY_TASKS_POOL = [
     {
         id: "d_ab_earn",
         displayName: "Accumulate Power",
-        description: "Earn 10000 AB",
+        description: "Earn 10000 SE",
         condition: "earn_ab:10000",
         rewardType: "ab",
         rewardValue: 5000.0
@@ -1284,8 +1284,8 @@ export const HIDDEN_RECIPES = [
         id: "ab_amplifier_potion",
         inputs: { crystal_orb: 5, aether_well: 3 },
         outputs: { ab_amplifier: 1 },
-        name: "AB Amplifier Potion",
-        description: "💰 TEMPORARY: +200% AB production for 20 minutes"
+        name: "Spell Energy Amplifier Potion",
+        description: "💰 TEMPORARY: +200% Spell Energy production for 20 minutes"
     },
     
     // Tier 2 - Temporary Buff Potions
@@ -1307,8 +1307,8 @@ export const HIDDEN_RECIPES = [
         id: "ab_turbo_charge",
         inputs: { crystal_core: 5, flowing_current: 3, wind_spiral: 3 },
         outputs: { ab_turbo_charge: 1 },
-        name: "AB Turbo Charge",
-        description: "💰 TEMPORARY: +500% AB production for 45 minutes"
+        name: "Spell Energy Turbo Charge",
+        description: "💰 TEMPORARY: +500% Spell Energy production for 45 minutes"
     },
     {
         id: "rare_material_catalyst",
@@ -1337,8 +1337,8 @@ export const HIDDEN_RECIPES = [
         id: "ab_overdrive",
         inputs: { quantum_water: 5, quantum_air: 5, quantum_crystal: 3 },
         outputs: { ab_overdrive: 1 },
-        name: "AB Overdrive",
-        description: "💰 TEMPORARY: +1000% AB production for 1.5 hours"
+        name: "Spell Energy Overdrive",
+        description: "💰 TEMPORARY: +1000% Spell Energy production for 1.5 hours"
     },
     {
         id: "master_catalyst",
@@ -1425,15 +1425,15 @@ export const HIDDEN_RECIPES = [
         id: "ab_infinity_boost",
         inputs: { void_crystal: 5, void_liquid: 3, void_breath: 3 },
         outputs: { ab_infinity_boost: 1 },
-        name: "AB Infinity Boost",
-        description: "💰 TEMPORARY: +2000% AB production for 3 hours"
+        name: "Spell Energy Infinity Boost",
+        description: "💰 TEMPORARY: +2000% Spell Energy production for 3 hours"
     },
     {
         id: "ab_eternal_boost",
         inputs: { eternal_flame: 5, infinity_core: 5, void_liquid: 3, void_breath: 3 },
         outputs: { ab_eternal_boost: 1 },
-        name: "AB Eternal Boost",
-        description: "💰 TEMPORARY: +5000% AB production for 5 hours"
+        name: "Spell Energy Eternal Boost",
+        description: "💰 TEMPORARY: +5000% Spell Energy production for 5 hours"
     },
     {
         id: "infinity_catalyst",
@@ -1461,101 +1461,58 @@ export const HIDDEN_RECIPES = [
 // Meditation Tower Defense Data
 
 export const MEDITATION_TOWERS = [
-    // Tier 0 - Basic meditation circles
+    // 4 Simple Tower Types - each can be upgraded directly
     {
         id: "peace_circle",
         displayName: "Peace Circle",
-        tier: 0,
         recipe: { fire_essence: 10 },
-        damage: 10,
-        range: 2,
-        attackSpeed: 1.0, // attacks per second
-        cost: { serenity_essence: 0.1 } // Focus cost per attack
+        baseDamage: 10,
+        baseRange: 2,
+        baseAttackSpeed: 1.0, // attacks per second
+        cost: { serenity_essence: 0.1 }, // Focus cost per attack
+        upgradeCost: { serenity_essence: 5 }, // Cost per upgrade level
+        upgradeDamageMult: 1.5, // Damage multiplier per upgrade (1.5x, 2.25x, 3.375x, etc.)
+        upgradeRangeMult: 1.2, // Range multiplier per upgrade
+        upgradeSpeedMult: 1.15 // Attack speed multiplier per upgrade
     },
     {
         id: "focus_ring",
         displayName: "Focus Ring",
-        tier: 0,
         recipe: { crystal_dust: 5, aether_ess: 5 },
-        damage: 15,
-        range: 2.5,
-        attackSpeed: 1.2,
-        cost: { serenity_essence: 0.15 }
+        baseDamage: 15,
+        baseRange: 2.5,
+        baseAttackSpeed: 1.2,
+        cost: { serenity_essence: 0.15 },
+        upgradeCost: { focus_crystal: 3 },
+        upgradeDamageMult: 1.5,
+        upgradeRangeMult: 1.2,
+        upgradeSpeedMult: 1.15
     },
-    // Tier 1 - Enhanced circles
     {
         id: "tranquility_shrine",
         displayName: "Tranquility Shrine",
-        tier: 1,
         recipe: { dist_fire: 3, dig_candle: 2, shaped_crys: 2 },
-        damage: 25,
-        range: 3,
-        attackSpeed: 1.5,
-        cost: { focus_crystal: 0.2 }
+        baseDamage: 25,
+        baseRange: 3,
+        baseAttackSpeed: 1.5,
+        cost: { focus_crystal: 0.2 },
+        upgradeCost: { focus_crystal: 5, tranquil_aether: 2 },
+        upgradeDamageMult: 1.5,
+        upgradeRangeMult: 1.2,
+        upgradeSpeedMult: 1.15
     },
-    {
-        id: "serenity_altar",
-        displayName: "Serenity Altar",
-        tier: 1,
-        recipe: { dig_candle: 2, crystal_orb: 2, dist_aether: 3 },
-        damage: 30,
-        range: 3.5,
-        attackSpeed: 1.3,
-        cost: { focus_crystal: 0.25 }
-    },
-    // Tier 2 - Advanced sanctuaries
     {
         id: "zen_pavilion",
         displayName: "Zen Pavilion",
-        tier: 2,
         recipe: { enhanced_candle: 2, crystal_core: 2, flowing_current: 2, wind_spiral: 2 },
-        damage: 50,
-        range: 4,
-        attackSpeed: 2.0,
-        cost: { tranquil_aether: 0.3 }
-    },
-    {
-        id: "meditation_temple",
-        displayName: "Meditation Temple",
-        tier: 2,
-        recipe: { enhanced_candle: 3, crystal_core: 2, flowing_current: 2, wind_spiral: 2 },
-        damage: 60,
-        range: 4.5,
-        attackSpeed: 1.8,
-        cost: { tranquil_aether: 0.35 }
-    },
-    // Tier 3 - Master sanctuaries
-    {
-        id: "quantum_sanctum",
-        displayName: "Quantum Sanctum",
-        tier: 3,
-        recipe: { quantum_candle: 2, quantum_water: 2, quantum_air: 2, quantum_crystal: 2 },
-        damage: 100,
-        range: 5,
-        attackSpeed: 2.5,
-        cost: { zen_orb: 0.5 }
-    },
-    // Tier 4 - Legendary sanctuaries
-    {
-        id: "nirvana_sanctuary",
-        displayName: "Nirvana Sanctuary",
-        tier: 4,
-        recipe: { arcane_candle: 2, void_crystal: 2, quantum_candle: 2, quantum_crystal: 2 },
-        damage: 200,
-        range: 6,
-        attackSpeed: 3.0,
-        cost: { nirvana_essence: 1.0 }
-    },
-    // Tier 5 - Ultimate sanctuaries
-    {
-        id: "eternal_sanctuary",
-        displayName: "Eternal Sanctuary",
-        tier: 5,
-        recipe: { eternal_flame: 2, infinity_core: 2, void_liquid: 2, void_breath: 2 },
-        damage: 400,
-        range: 7,
-        attackSpeed: 4.0,
-        cost: { eternal_essence: 1.5 }
+        baseDamage: 50,
+        baseRange: 4,
+        baseAttackSpeed: 2.0,
+        cost: { tranquil_aether: 0.3 },
+        upgradeCost: { tranquil_aether: 5, zen_orb: 2 },
+        upgradeDamageMult: 1.5,
+        upgradeRangeMult: 1.2,
+        upgradeSpeedMult: 1.15
     }
 ];
 

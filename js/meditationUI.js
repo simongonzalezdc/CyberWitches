@@ -166,66 +166,110 @@ export class MeditationUI {
     }
     
     /**
-     * Update tower list
+     * Update tower list - shows all 4 tower types and placed towers with upgrade buttons
      */
     updateTowerList() {
         if (!this.towerList || !this.meditationState) return;
         
         this.towerList.innerHTML = '';
         
-        // Group towers by tier
-        const towersByTier = {};
-        for (const tower of MEDITATION_TOWERS) {
-            if (!towersByTier[tower.tier]) {
-                towersByTier[tower.tier] = [];
+        // Show all 4 tower types (no tiers)
+        for (const towerData of MEDITATION_TOWERS) {
+            const canAfford = this.meditationState.canAffordTower(towerData);
+            
+            const towerCard = document.createElement('div');
+            towerCard.className = `card tower-card ${canAfford ? 'can-afford' : 'cannot-afford'}`;
+            
+            // Show base stats
+            towerCard.innerHTML = `
+                <div class="card-title">${towerData.displayName}</div>
+                <div class="card-description">
+                    Base: ${towerData.baseDamage} dmg | ${towerData.baseRange} range | ${towerData.baseAttackSpeed.toFixed(2)}/s
+                </div>
+                <div class="card-section">
+                    <div class="card-label">Recipe:</div>
+                    ${Object.entries(towerData.recipe).map(([ingId, amount]) => {
+                        const have = this.gameState.inventory[ingId] || 0;
+                        const canAffordIng = have >= amount;
+                        const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+                        const displayName = ingredient ? ingredient.displayName : ingId;
+                        return `<div class="recipe-item ${canAffordIng ? 'can-afford' : 'cannot-afford'}">
+                            ${displayName}: ${formatShort(have)} / ${formatShort(amount)}
+                        </div>`;
+                    }).join('')}
+                </div>
+                <button class="btn-primary tower-place-button" data-tower-id="${towerData.id}" ${canAfford ? '' : 'disabled'}>
+                    Place Tower
+                </button>
+            `;
+            
+            // Add click handler for tower placement
+            const button = towerCard.querySelector('.tower-place-button');
+            if (button) {
+                button.addEventListener('click', () => {
+                    this.handleTowerPlacement(towerData.id);
+                });
             }
-            towersByTier[tower.tier].push(tower);
+            
+            this.towerList.appendChild(towerCard);
         }
         
-        // Render towers by tier
-        for (let tier = 0; tier <= 4; tier++) {
-            if (!towersByTier[tier] || towersByTier[tier].length === 0) continue;
+        // Show placed towers with upgrade buttons
+        const placedTowers = this.meditationState.towers || [];
+        if (placedTowers.length > 0) {
+            const placedHeader = document.createElement('div');
+            placedHeader.className = 'tier-header';
+            placedHeader.textContent = 'Placed Towers';
+            placedHeader.style.marginTop = '20px';
+            this.towerList.appendChild(placedHeader);
             
-            // Add tier header
-            const tierHeader = document.createElement('div');
-            tierHeader.className = 'tier-header';
-            tierHeader.textContent = `Tier ${tier} Towers`;
-            this.towerList.appendChild(tierHeader);
-            
-            // Render towers for this tier
-            for (const towerData of towersByTier[tier]) {
-                const canAfford = this.meditationState.canAffordTower(towerData);
+            for (const tower of placedTowers) {
+                const stats = this.meditationState.getTowerStats(tower);
+                const level = tower.upgradeLevel || 0;
+                const canUpgrade = this.meditationState.canAffordTowerUpgrade(tower.data, level);
+                
+                // Calculate upgrade cost
+                const costMultiplier = Math.pow(1.5, level);
+                const upgradeCosts = Object.entries(tower.data.upgradeCost || {}).map(([ingId, baseCost]) => {
+                    const required = baseCost * costMultiplier;
+                    const have = this.meditationState.meditationInventory[ingId] || 0;
+                    const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+                    const displayName = ingredient ? ingredient.displayName : ingId;
+                    return { ingId, displayName, required, have, canAfford: have >= required };
+                });
                 
                 const towerCard = document.createElement('div');
-                towerCard.className = `card tower-card ${canAfford ? 'can-afford' : 'cannot-afford'}`;
+                towerCard.className = `card tower-card placed-tower`;
                 
                 towerCard.innerHTML = `
-                    <div class="card-title">${towerData.displayName}</div>
+                    <div class="card-title">${tower.data.displayName} (Level ${level})</div>
                     <div class="card-description">
-                        Damage: ${towerData.damage} | Range: ${towerData.range} | Speed: ${towerData.attackSpeed.toFixed(2)}/s
+                        ${stats.damage.toFixed(1)} dmg | ${stats.range.toFixed(1)} range | ${stats.attackSpeed.toFixed(2)}/s
                     </div>
                     <div class="card-section">
-                        <div class="card-label">Recipe:</div>
-                        ${Object.entries(towerData.recipe).map(([ingId, amount]) => {
-                            const have = this.gameState.inventory[ingId] || 0;
-                            const canAffordIng = have >= amount;
-                            const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
-                            const displayName = ingredient ? ingredient.displayName : ingId;
-                            return `<div class="recipe-item ${canAffordIng ? 'can-afford' : 'cannot-afford'}">
-                                ${displayName}: ${formatShort(have)} / ${formatShort(amount)}
+                        <div class="card-label">Upgrade Cost (Level ${level + 1}):</div>
+                        ${upgradeCosts.map(({ displayName, required, have, canAfford }) => {
+                            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+                                ${displayName}: ${formatShort(have)} / ${formatShort(required)}
                             </div>`;
                         }).join('')}
                     </div>
-                    <button class="btn-primary tower-place-button" data-tower-id="${towerData.id}" ${canAfford ? '' : 'disabled'}>
-                        Place Tower
+                    <button class="btn-primary tower-upgrade-button" data-tower-gridx="${tower.gridX}" data-tower-gridy="${tower.gridY}" ${canUpgrade ? '' : 'disabled'}>
+                        Upgrade to Level ${level + 1}
                     </button>
                 `;
                 
-                // Add click handler for tower placement
-                const button = towerCard.querySelector('.tower-place-button');
-                if (button) {
-                    button.addEventListener('click', () => {
-                        this.handleTowerPlacement(towerData.id);
+                // Add click handler for tower upgrade
+                const upgradeButton = towerCard.querySelector('.tower-upgrade-button');
+                if (upgradeButton) {
+                    upgradeButton.addEventListener('click', () => {
+                        if (this.meditationState.upgradeTower(tower)) {
+                            this.updateTowerList();
+                            this.updateMeditationInventory();
+                            if (window.meditationTowers) {
+                                window.meditationTowers.renderTowers();
+                            }
+                        }
                     });
                 }
                 

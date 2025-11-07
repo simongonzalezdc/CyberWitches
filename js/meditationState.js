@@ -19,8 +19,8 @@ export class MeditationState {
         this.tranquility = 100.0;
         this.tranquilityMax = 100.0;
         
-        // Grid system (16x16 grid for higher resolution)
-        this.gridSize = 16;
+        // Grid system (20x20 grid)
+        this.gridSize = 20;
         this.grid = []; // Array of {x, y, tower: null or tower object, isPath: false}
         this.towers = []; // Array of placed towers
         this.path = []; // Array of path tiles {x, y, nextX, nextY} for pathfinding
@@ -33,6 +33,10 @@ export class MeditationState {
         this.distractions = []; // Active distractions on the grid
         this.nextSpawnTime = 0;
         this.waveStartTime = 0;
+        this.waveEndTime = 0; // When the wave should end (duration-based)
+        this.waveMaxDuration = 30000; // Base 30 seconds per wave (increases with wave number)
+        this.waveDistractionsSpawned = 0; // Track total distractions spawned this wave
+        this.waveMaxDistractions = 10; // Max distractions per wave (increases with wave number)
         
         // Active session
         this.activeSession = false;
@@ -84,6 +88,7 @@ export class MeditationState {
     
     /**
      * Initialize maze-like path from edges to center
+     * Creates a more complex, winding maze with multiple routes and strategic chokepoints
      */
     initializePath() {
         this.path = [];
@@ -91,41 +96,133 @@ export class MeditationState {
         
         const centerX = Math.floor(this.gridSize / 2);
         const centerY = Math.floor(this.gridSize / 2);
+        const quarter = Math.floor(this.gridSize / 4);
+        const threeQuarter = Math.floor(this.gridSize * 3 / 4);
         
-        // Create multiple paths from different edges to center
-        // Top-left entry
-        this.addPathSegment(0, 0, 3, 0);
-        this.addPathSegment(3, 0, 3, 3);
-        this.addPathSegment(3, 3, centerX, 3);
-        this.addPathSegment(centerX, 3, centerX, centerY);
+        // Create a more complex maze with winding paths and multiple routes
         
-        // Top-right entry
-        this.addPathSegment(this.gridSize - 1, 0, this.gridSize - 4, 0);
-        this.addPathSegment(this.gridSize - 4, 0, this.gridSize - 4, 3);
-        this.addPathSegment(this.gridSize - 4, 3, centerX, 3);
+        // === NORTH ENTRY POINTS ===
+        // Top-left entry (winding path)
+        this.addPathSegment(0, 0, 2, 0);
+        this.addPathSegment(2, 0, 2, 3);
+        this.addPathSegment(2, 3, 5, 3);
+        this.addPathSegment(5, 3, 5, 5);
+        this.addPathSegment(5, 5, centerX - 2, 5);
+        this.addPathSegment(centerX - 2, 5, centerX - 2, centerY - 2);
+        this.addPathSegment(centerX - 2, centerY - 2, centerX, centerY - 2);
+        this.addPathSegment(centerX, centerY - 2, centerX, centerY);
         
-        // Bottom-left entry
+        // Top-center entry (direct path with a turn)
+        this.addPathSegment(centerX, 0, centerX, 2);
+        this.addPathSegment(centerX, 2, centerX + 2, 2);
+        this.addPathSegment(centerX + 2, 2, centerX + 2, centerY - 1);
+        this.addPathSegment(centerX + 2, centerY - 1, centerX, centerY);
+        
+        // Top-right entry (zigzag path)
+        this.addPathSegment(this.gridSize - 1, 0, this.gridSize - 2, 0);
+        this.addPathSegment(this.gridSize - 2, 0, this.gridSize - 2, 4);
+        this.addPathSegment(this.gridSize - 2, 4, this.gridSize - 5, 4);
+        this.addPathSegment(this.gridSize - 5, 4, this.gridSize - 5, 6);
+        this.addPathSegment(this.gridSize - 5, 6, centerX + 2, 6);
+        this.addPathSegment(centerX + 2, 6, centerX + 2, centerY + 1);
+        this.addPathSegment(centerX + 2, centerY + 1, centerX, centerY);
+        
+        // === EAST ENTRY POINTS ===
+        // Right-center entry (spiral-like)
+        this.addPathSegment(this.gridSize - 1, centerY, this.gridSize - 3, centerY);
+        this.addPathSegment(this.gridSize - 3, centerY, this.gridSize - 3, centerY - 3);
+        this.addPathSegment(this.gridSize - 3, centerY - 3, centerX + 1, centerY - 3);
+        this.addPathSegment(centerX + 1, centerY - 3, centerX + 1, centerY);
+        
+        // Right-top entry
+        this.addPathSegment(this.gridSize - 1, quarter, this.gridSize - 4, quarter);
+        this.addPathSegment(this.gridSize - 4, quarter, this.gridSize - 4, centerY - 2);
+        this.addPathSegment(this.gridSize - 4, centerY - 2, centerX, centerY - 2);
+        this.addPathSegment(centerX, centerY - 2, centerX, centerY);
+        
+        // Right-bottom entry
+        this.addPathSegment(this.gridSize - 1, threeQuarter, this.gridSize - 5, threeQuarter);
+        this.addPathSegment(this.gridSize - 5, threeQuarter, this.gridSize - 5, centerY + 2);
+        this.addPathSegment(this.gridSize - 5, centerY + 2, centerX, centerY + 2);
+        this.addPathSegment(centerX, centerY + 2, centerX, centerY);
+        
+        // === SOUTH ENTRY POINTS ===
+        // Bottom-left entry (long winding path)
         this.addPathSegment(0, this.gridSize - 1, 3, this.gridSize - 1);
         this.addPathSegment(3, this.gridSize - 1, 3, this.gridSize - 4);
-        this.addPathSegment(3, this.gridSize - 4, centerX, this.gridSize - 4);
-        this.addPathSegment(centerX, this.gridSize - 4, centerX, centerY);
+        this.addPathSegment(3, this.gridSize - 4, 7, this.gridSize - 4);
+        this.addPathSegment(7, this.gridSize - 4, 7, this.gridSize - 7);
+        this.addPathSegment(7, this.gridSize - 7, centerX - 2, this.gridSize - 7);
+        this.addPathSegment(centerX - 2, this.gridSize - 7, centerX - 2, centerY + 2);
+        this.addPathSegment(centerX - 2, centerY + 2, centerX, centerY + 2);
+        this.addPathSegment(centerX, centerY + 2, centerX, centerY);
+        
+        // Bottom-center entry
+        this.addPathSegment(centerX, this.gridSize - 1, centerX, this.gridSize - 3);
+        this.addPathSegment(centerX, this.gridSize - 3, centerX - 3, this.gridSize - 3);
+        this.addPathSegment(centerX - 3, this.gridSize - 3, centerX - 3, centerY + 1);
+        this.addPathSegment(centerX - 3, centerY + 1, centerX, centerY);
         
         // Bottom-right entry
         this.addPathSegment(this.gridSize - 1, this.gridSize - 1, this.gridSize - 4, this.gridSize - 1);
-        this.addPathSegment(this.gridSize - 4, this.gridSize - 1, this.gridSize - 4, this.gridSize - 4);
-        this.addPathSegment(this.gridSize - 4, this.gridSize - 4, centerX, this.gridSize - 4);
+        this.addPathSegment(this.gridSize - 4, this.gridSize - 1, this.gridSize - 4, this.gridSize - 5);
+        this.addPathSegment(this.gridSize - 4, this.gridSize - 5, centerX + 2, this.gridSize - 5);
+        this.addPathSegment(centerX + 2, this.gridSize - 5, centerX + 2, centerY + 2);
+        this.addPathSegment(centerX + 2, centerY + 2, centerX, centerY);
         
-        // Add horizontal connecting paths
-        this.addPathSegment(3, 6, centerX, 6);
-        this.addPathSegment(centerX, 6, this.gridSize - 4, 6);
-        this.addPathSegment(3, 9, centerX, 9);
-        this.addPathSegment(centerX, 9, this.gridSize - 4, 9);
+        // === WEST ENTRY POINTS ===
+        // Left-center entry
+        this.addPathSegment(0, centerY, 2, centerY);
+        this.addPathSegment(2, centerY, 2, centerY + 3);
+        this.addPathSegment(2, centerY + 3, centerX - 1, centerY + 3);
+        this.addPathSegment(centerX - 1, centerY + 3, centerX - 1, centerY);
+        this.addPathSegment(centerX - 1, centerY, centerX, centerY);
         
-        // Add vertical connecting paths
-        this.addPathSegment(6, 3, 6, centerY);
-        this.addPathSegment(6, centerY, 6, this.gridSize - 4);
-        this.addPathSegment(9, 3, 9, centerY);
-        this.addPathSegment(9, centerY, 9, this.gridSize - 4);
+        // Left-top entry
+        this.addPathSegment(0, quarter, 3, quarter);
+        this.addPathSegment(3, quarter, 3, centerY - 2);
+        this.addPathSegment(3, centerY - 2, centerX, centerY - 2);
+        this.addPathSegment(centerX, centerY - 2, centerX, centerY);
+        
+        // Left-bottom entry
+        this.addPathSegment(0, threeQuarter, 4, threeQuarter);
+        this.addPathSegment(4, threeQuarter, 4, centerY + 2);
+        this.addPathSegment(4, centerY + 2, centerX, centerY + 2);
+        this.addPathSegment(centerX, centerY + 2, centerX, centerY);
+        
+        // === INTERNAL CONNECTING PATHS (create loops and alternative routes) ===
+        // Horizontal connector near top
+        this.addPathSegment(quarter, 5, centerX - 1, 5);
+        this.addPathSegment(centerX - 1, 5, centerX + 1, 5);
+        this.addPathSegment(centerX + 1, 5, threeQuarter, 5);
+        
+        // Horizontal connector in middle-top
+        this.addPathSegment(quarter, 8, centerX, 8);
+        this.addPathSegment(centerX, 8, threeQuarter, 8);
+        
+        // Horizontal connector in middle-bottom
+        this.addPathSegment(quarter, 12, centerX, 12);
+        this.addPathSegment(centerX, 12, threeQuarter, 12);
+        
+        // Vertical connector on left side
+        this.addPathSegment(6, quarter, 6, centerY - 1);
+        this.addPathSegment(6, centerY - 1, 6, centerY + 1);
+        this.addPathSegment(6, centerY + 1, 6, threeQuarter);
+        
+        // Vertical connector on right side
+        this.addPathSegment(this.gridSize - 7, quarter, this.gridSize - 7, centerY);
+        this.addPathSegment(this.gridSize - 7, centerY, this.gridSize - 7, threeQuarter);
+        
+        // Diagonal connector (creates interesting routing)
+        this.addPathSegment(8, 7, 9, 8);
+        this.addPathSegment(9, 8, 10, 9);
+        this.addPathSegment(10, 9, centerX + 1, centerY - 1);
+        
+        // Create a small loop near center (strategic chokepoint)
+        this.addPathSegment(centerX - 2, centerY - 1, centerX - 1, centerY - 1);
+        this.addPathSegment(centerX - 1, centerY - 1, centerX - 1, centerY + 1);
+        this.addPathSegment(centerX - 1, centerY + 1, centerX - 2, centerY + 1);
+        this.addPathSegment(centerX - 2, centerY + 1, centerX - 2, centerY - 1);
         
         // Mark path tiles in grid
         for (let y = 0; y < this.gridSize; y++) {
@@ -393,7 +490,15 @@ export class MeditationState {
         this.currentWave++;
         this.waveActive = true;
         this.waveStartTime = Date.now();
-        this.nextSpawnTime = Date.now() + 1000; // First spawn after 1 second
+        // Wave duration increases slightly with wave number (30s base, +2s per wave, max 60s)
+        const waveDuration = Math.min(30000 + (this.currentWave * 2000), 60000);
+        this.waveEndTime = this.waveStartTime + waveDuration;
+        // Faster initial spawn with higher waves (wave 1 = 1s, wave 5 = 0.5s, wave 10+ = 0.3s)
+        const initialSpawnDelay = Math.max(1000 - (this.currentWave * 50), 300);
+        this.nextSpawnTime = Date.now() + initialSpawnDelay;
+        this.waveDistractionsSpawned = 0;
+        // Increase max distractions with wave number (wave 1 = 10, wave 2 = 15, etc.)
+        this.waveMaxDistractions = 10 + (this.currentWave * 5);
         
         if (this.onWaveChanged) {
             this.onWaveChanged(this.currentWave);
@@ -425,8 +530,21 @@ export class MeditationState {
             // Update distractions
             this.updateDistractions(delta);
             
-            // Check if wave is complete
-            if (this.distractions.length === 0 && this.nextSpawnTime > now + 5000) {
+            // Check if wave should end (duration exceeded or max distractions spawned)
+            const waveDurationExceeded = now >= this.waveEndTime;
+            const maxDistractionsReached = this.waveDistractionsSpawned >= this.waveMaxDistractions;
+            const shouldStopSpawning = waveDurationExceeded || maxDistractionsReached;
+            
+            // If we should stop spawning, set nextSpawnTime far in the future
+            if (shouldStopSpawning && this.nextSpawnTime < now + 10000) {
+                this.nextSpawnTime = now + 10000; // Stop spawning
+            }
+            
+            // Check if wave is complete (all distractions killed AND spawning stopped)
+            const spawningStopped = this.nextSpawnTime > now + 5000;
+            const allDistractionsKilled = this.distractions.length === 0;
+            
+            if (allDistractionsKilled && spawningStopped) {
                 // Wave complete
                 this.waveActive = false;
                 this.totalWavesCompleted++;
@@ -448,13 +566,22 @@ export class MeditationState {
     updateWave(delta) {
         const now = Date.now();
         
-        if (now >= this.nextSpawnTime) {
+        // Check if wave should stop spawning
+        const waveDurationExceeded = now >= this.waveEndTime;
+        const maxDistractionsReached = this.waveDistractionsSpawned >= this.waveMaxDistractions;
+        
+        if (!waveDurationExceeded && !maxDistractionsReached && now >= this.nextSpawnTime) {
             this.spawnDistraction();
+            this.waveDistractionsSpawned++;
             
-            // Calculate next spawn time (faster spawning as wave progresses)
-            const waveProgress = (now - this.waveStartTime) / 30000; // 30 second waves
-            const baseInterval = 2000 - (waveProgress * 1500); // 2s to 0.5s
-            this.nextSpawnTime = now + Math.max(baseInterval, 500);
+            // Calculate next spawn time (faster spawning as wave progresses AND with higher waves)
+            const waveProgress = (now - this.waveStartTime) / (this.waveEndTime - this.waveStartTime);
+            // Base interval decreases with wave number (wave 1 = 2s, wave 5 = 1.2s, wave 10 = 0.8s)
+            const waveBaseInterval = Math.max(2000 - (this.currentWave * 120), 500);
+            // Within-wave progression: faster spawning as wave progresses
+            const progressReduction = waveProgress * (waveBaseInterval * 0.6); // Up to 60% faster by end of wave
+            const baseInterval = waveBaseInterval - progressReduction;
+            this.nextSpawnTime = now + Math.max(baseInterval, 300); // Minimum 300ms between spawns
         }
     }
     
@@ -518,11 +645,14 @@ export class MeditationState {
             y = randomTile.y;
         }
         
-        // Scale health and rewards with wave
+        // Scale health, speed, and damage with wave for increasing difficulty
         const waveMultiplier = 1 + (this.currentWave * 0.2);
+        const speedMultiplier = 1 + (this.currentWave * 0.1); // 10% speed increase per wave
+        const damageMultiplier = 1 + (this.currentWave * 0.15); // 15% damage increase per wave
+        
         const health = distractionData.health * waveMultiplier;
-        const speed = distractionData.speed;
-        const damage = distractionData.damage;
+        const speed = distractionData.speed * speedMultiplier;
+        const damage = distractionData.damage * damageMultiplier;
         
         const distraction = {
             id: distractionData.id,
@@ -666,20 +796,20 @@ export class MeditationState {
         for (const tower of this.towers) {
             if (!tower || !tower.data) continue;
             
-            // Find nearest distraction in range
-            const nearestDist = this.findNearestDistraction(tower.x, tower.y, tower.data.range);
+            // Find nearest distraction in range (use current tower stats)
+            const stats = this.getTowerStats(tower);
+            const nearestDist = this.findNearestDistraction(tower.x, tower.y, stats.range);
             
             if (nearestDist) {
                 // Check if tower can attack (based on attack speed)
                 const now = Date.now();
                 if (!tower.lastAttackTime) tower.lastAttackTime = 0;
+                const attackInterval = 1.0 / stats.attackSpeed;
                 const timeSinceAttack = (now - tower.lastAttackTime) / 1000;
-                const attackInterval = 1.0 / tower.data.attackSpeed;
                 
                 if (timeSinceAttack >= attackInterval) {
-                    // Attack!
-                    const damage = tower.data.damage * this.getTowerDamageMultiplier();
-                    nearestDist.health -= damage;
+                    // Attack! Use current tower stats (includes upgrades)
+                    nearestDist.health -= stats.damage;
                     
                     tower.lastAttackTime = now;
                     
@@ -764,7 +894,7 @@ export class MeditationState {
         // Spend ingredients
         this.spendTowerCost(towerData);
         
-        // Place tower
+        // Place tower with upgrade level 0
         const tower = {
             id: towerId,
             data: towerData,
@@ -772,6 +902,7 @@ export class MeditationState {
             y: gridY + 0.5,
             gridX: gridX,
             gridY: gridY,
+            upgradeLevel: 0, // Start at level 0
             lastAttackTime: 0,
             disabled: false
         };
@@ -911,17 +1042,83 @@ export class MeditationState {
     }
     
     /**
-     * Get tower damage multiplier from upgrades
+     * Get tower stats (damage, range, attack speed) based on base stats and upgrade level
      */
-    getTowerDamageMultiplier() {
-        let mult = 1.0;
-        for (const upgId in this.meditationUpgrades) {
-            const upg = MEDITATION_UPGRADES.find(u => u.id === upgId);
-            if (upg && upg.type === 'tower_damage') {
-                mult *= upg.value;
+    getTowerStats(tower) {
+        if (!tower || !tower.data) return { damage: 0, range: 0, attackSpeed: 0 };
+        
+        const level = tower.upgradeLevel || 0;
+        const data = tower.data;
+        
+        // Calculate stats: base * (multiplier ^ level)
+        const damage = data.baseDamage * Math.pow(data.upgradeDamageMult, level);
+        const range = data.baseRange * Math.pow(data.upgradeRangeMult, level);
+        const attackSpeed = data.baseAttackSpeed * Math.pow(data.upgradeSpeedMult, level);
+        
+        return { damage, range, attackSpeed };
+    }
+    
+    /**
+     * Upgrade a tower
+     */
+    upgradeTower(tower) {
+        if (!tower || !tower.data) return false;
+        
+        const data = tower.data;
+        const level = tower.upgradeLevel || 0;
+        
+        // Check if can afford upgrade
+        if (!this.canAffordTowerUpgrade(data, level)) {
+            return false;
+        }
+        
+        // Spend upgrade cost
+        this.spendTowerUpgradeCost(data, level);
+        
+        // Upgrade tower
+        tower.upgradeLevel = (tower.upgradeLevel || 0) + 1;
+        
+        // Save state
+        this.saveState();
+        
+        return true;
+    }
+    
+    /**
+     * Check if can afford tower upgrade
+     */
+    canAffordTowerUpgrade(towerData, currentLevel) {
+        if (!towerData.upgradeCost) return false;
+        
+        // Upgrade cost scales with level (each level costs more)
+        const costMultiplier = Math.pow(1.5, currentLevel); // 1x, 1.5x, 2.25x, etc.
+        
+        for (const ingId in towerData.upgradeCost) {
+            const baseCost = towerData.upgradeCost[ingId];
+            const required = baseCost * costMultiplier;
+            const have = this.meditationInventory[ingId] || 0;
+            if (have < required) {
+                return false;
             }
         }
-        return mult;
+        
+        return true;
+    }
+    
+    /**
+     * Spend tower upgrade cost
+     */
+    spendTowerUpgradeCost(towerData, currentLevel) {
+        if (!towerData.upgradeCost) return;
+        
+        // Upgrade cost scales with level
+        const costMultiplier = Math.pow(1.5, currentLevel);
+        
+        for (const ingId in towerData.upgradeCost) {
+            const baseCost = towerData.upgradeCost[ingId];
+            const amount = baseCost * costMultiplier;
+            this.meditationInventory[ingId] = Math.max(0, (this.meditationInventory[ingId] || 0) - amount);
+        }
     }
     
     /**
@@ -1011,7 +1208,8 @@ export class MeditationState {
             towers: this.towers.map(t => ({
                 id: t.id,
                 gridX: t.gridX,
-                gridY: t.gridY
+                gridY: t.gridY,
+                upgradeLevel: t.upgradeLevel || 0
             })),
             // Save meditation statistics for production bonus
             totalWavesCompleted: this.totalWavesCompleted,
@@ -1054,6 +1252,7 @@ export class MeditationState {
                                 y: towerData.gridY + 0.5,
                                 gridX: towerData.gridX,
                                 gridY: towerData.gridY,
+                                upgradeLevel: towerData.upgradeLevel || 0,
                                 lastAttackTime: 0,
                                 disabled: false
                             };

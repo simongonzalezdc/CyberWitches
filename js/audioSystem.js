@@ -54,11 +54,12 @@ export class AudioSystem {
         this.maxConcurrentSounds = 8;
         this.activeSounds = [];
         
-        // Initialize audio system
-        this.initializeAudio();
+        // Lazy loading flags
+        this.soundsLoaded = false;
+        this.audioInitialized = false;
         
-        // Load default sounds
-        this.loadDefaultSounds();
+        // Don't initialize audio or load sounds until needed (Tier 2+ for SFX, Tier 4+ for Music)
+        // This saves ~15-25 MB of memory on startup
         
         // Start tier monitoring to ensure tiers 0-3 NEVER have music
         this.startTierMonitoring();
@@ -70,10 +71,14 @@ export class AudioSystem {
     }
     
     /**
-     * Initialize audio system
+     * Initialize audio system (lazy loading - only when needed)
      * @private
      */
     initializeAudio() {
+        if (this.audioInitialized) {
+            return; // Already initialized
+        }
+        
         try {
             // Create audio context
             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -82,11 +87,33 @@ export class AudioSystem {
                 this.masterGainNode = this.audioContext.createGain();
                 this.masterGainNode.connect(this.audioContext.destination);
                 this.isInitialized = true;
+                this.audioInitialized = true;
+                console.log('Audio system initialized (lazy loaded)');
             }
         } catch (error) {
             handleError(error, 'audioInitialize');
             this.isInitialized = false;
         }
+    }
+    
+    /**
+     * Lazy load sound effects (only when Tier 2+)
+     * @private
+     */
+    async lazyLoadSounds() {
+        if (this.soundsLoaded) {
+            return; // Already loaded
+        }
+        
+        // Initialize audio if not already done
+        if (!this.audioInitialized) {
+            this.initializeAudio();
+        }
+        
+        // Load default sounds
+        await this.loadDefaultSounds();
+        this.soundsLoaded = true;
+        console.log('Sound effects loaded (lazy loaded for Tier 2+)');
     }
     
     /**
@@ -137,7 +164,7 @@ export class AudioSystem {
      * Load default sound effects
      * @private
      */
-    loadDefaultSounds() {
+    async loadDefaultSounds() {
         // Define sound effects with data URLs (simplified for demo)
         const defaultSounds = [
             {
@@ -212,10 +239,9 @@ export class AudioSystem {
             }
         ];
         
-        // Load all sounds
-        for (const soundData of defaultSounds) {
-            this.loadSound(soundData);
-        }
+        // Load all sounds asynchronously
+        const loadPromises = defaultSounds.map(soundData => this.loadSound(soundData));
+        await Promise.all(loadPromises);
     }
     
     /**
@@ -820,7 +846,7 @@ export class AudioSystem {
      * @param {Object} options - Playback options
      * @returns {boolean} Whether sound was played successfully
      */
-    playSound(soundId, options = {}) {
+    async playSound(soundId, options = {}) {
         // Check if sound effects are enabled (Tier 2+)
         // First check the design tier
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
@@ -844,6 +870,11 @@ export class AudioSystem {
         if (this.isMuted) {
             console.log('playSound: Audio is muted');
             return false;
+        }
+        
+        // Lazy load sounds if not already loaded
+        if (!this.soundsLoaded) {
+            await this.lazyLoadSounds();
         }
         
         // Ensure audio context exists and is initialized
@@ -1319,10 +1350,16 @@ export class AudioSystem {
     /**
      * Enable sound effects (for design tier system)
      * This ensures sound effects are enabled when Tier 2 is unlocked
+     * LAZY LOADING: Only loads sounds when Tier 2+ is reached
      */
     async enableSoundEffects() {
         this.soundEffectsEnabled = true;
-        console.log('enableSoundEffects called - enabling sound effects');
+        console.log('enableSoundEffects called - enabling sound effects (lazy loading)');
+        
+        // Lazy load sounds if not already loaded
+        if (!this.soundsLoaded) {
+            await this.lazyLoadSounds();
+        }
         
         // Ensure audio context is resumed (required by browsers)
         if (this.audioContext && this.audioContext.state === 'suspended') {
@@ -1367,7 +1404,8 @@ export class AudioSystem {
             sfxVolume: this.sfxVolume,
             masterVolume: this.masterVolume,
             audioContextState: this.audioContext ? this.audioContext.state : 'no context',
-            isInitialized: this.isInitialized
+            isInitialized: this.isInitialized,
+            soundsLoaded: this.soundsLoaded
         });
     }
     
@@ -1384,6 +1422,7 @@ export class AudioSystem {
      * Enable music (for design tier system)
      * This ensures music is enabled when Tier 4 is unlocked
      * ONLY works at Tier 4 - tiers 0-3 must NEVER have music
+     * LAZY LOADING: Only initializes audio and loads music when Tier 4+ is reached
      */
     async enableMusic() {
         // STRICT CHECK: Only enable music at Tier 4
@@ -1396,7 +1435,12 @@ export class AudioSystem {
         }
         
         this.musicEnabled = true;
-        console.log('enableMusic called - unlocking audio and starting music');
+        console.log('enableMusic called - unlocking audio and starting music (lazy loading)');
+        
+        // Lazy load sounds if not already loaded (needed for music system)
+        if (!this.soundsLoaded) {
+            await this.lazyLoadSounds();
+        }
         
         // Unlock audio if needed (required for browser autoplay policies)
         if (this.audioUnlockRequired) {

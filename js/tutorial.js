@@ -65,9 +65,22 @@ class TutorialSystem {
             return false;
         }
         
-        // Start if no steps completed and game is new
-        return this.completedSteps.size === 0 && 
-               (!this.gameState || (this.gameState.totalTaps === 0 && this.gameState.abTotalEarned === 0));
+        // Check if tutorial was explicitly skipped
+        const tutorialSkipped = localStorage.getItem('tutorialSkipped') === 'true';
+        if (tutorialSkipped) {
+            return false;
+        }
+        
+        // Start if no steps completed and game is truly new
+        // Check multiple properties to ensure game is new
+        const isNewGame = !this.gameState || (
+            (this.gameState.totalTaps === 0 || this.gameState.totalTaps === undefined) && 
+            (this.gameState.abTotalEarned === 0 || this.gameState.abTotalEarned === undefined) &&
+            (this.gameState.ab === 0 || this.gameState.ab === undefined) &&
+            Object.keys(this.gameState.inventory || {}).length === 0
+        );
+        
+        return this.completedSteps.size === 0 && isNewGame;
     }
     
     /**
@@ -193,9 +206,10 @@ class TutorialSystem {
         overlay.id = 'tutorial-overlay';
         overlay.className = 'tutorial-overlay';
         
-        // Create backdrop
+        // Create backdrop - use pointer-events: none so it doesn't block clicks
         const backdrop = document.createElement('div');
         backdrop.className = 'tutorial-backdrop';
+        backdrop.style.pointerEvents = 'none'; // Don't block clicks
         overlay.appendChild(backdrop);
         
         // Create tooltip
@@ -306,6 +320,8 @@ class TutorialSystem {
      */
     skipTutorial() {
         if (confirm('Are you sure you want to skip the tutorial?')) {
+            // Mark as skipped so it doesn't auto-start again
+            localStorage.setItem('tutorialSkipped', 'true');
             this.completeTutorial();
         }
     }

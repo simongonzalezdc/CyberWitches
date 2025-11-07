@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A magical idle game about casting spells and building workstations">
+    <meta name="description" content="A magical idle game about casting spells and building workstations. Install to play offline and enjoy a full desktop app experience!">
     <meta name="theme-color" content="#FF2DAA">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cyber Witches">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Cyber Witches: Idle Coven</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <!-- Tone.js for better ambient music -->
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
 </head>
@@ -57,6 +62,10 @@
                     <span class="element-label">Focus</span>
                     <span class="element-amount">0</span>
                 </div>
+                <div class="element-counter element-counter-settings" id="settings-counter" role="button" tabindex="0" aria-label="Open Settings" title="Settings (Ctrl+,)">
+                    <span class="element-icon element-icon-settings">⚙</span>
+                    <span class="element-label">Settings</span>
+                </div>
             </div>
             
             <!-- Craft Notifications Area -->
@@ -73,14 +82,6 @@
                     <span class="auto-status" id="auto-status">OFF</span>
                 </button>
             </div>
-            
-            <!-- Settings Button -->
-            <div class="sidebar-section">
-                <button id="settings-quick-button" class="sidebar-settings-button" aria-label="Open Settings" title="Settings (Ctrl+,)">
-                    <span class="settings-icon">⚙</span>
-                    <span class="settings-label">Settings</span>
-                </button>
-            </div>
         </div>
     </div>
 
@@ -88,13 +89,13 @@
     <div class="hud">
         <div class="hud-content">
             <div class="currency-display">
-                <span id="ab-display">AB: 0</span>
-            </div>
-            <div class="element-counter abps-counter" id="abps-counter">
-                <span class="element-icon abps-icon">⚡</span>
-                <span class="element-amount" id="abps-display">0.0 AB/s</span>
+                <span id="ab-display" title="Spell Energy - Energy gathered from casting spells. Use it to build workstations and power your cyber coven.">SE: 0</span>
+                <span id="abps-display" class="seps-display" title="Spell Energy per second">0.0 SE/s</span>
             </div>
                 <div class="hud-controls">
+                    <button id="install-app-button" class="btn-install" style="display: none;" title="Install Cyber Witches as an app for offline play" aria-label="Install App">
+                        <span class="install-icon">📱</span> Install
+                    </button>
                     <button id="cast-button" class="btn-cast">
                         <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
                         <span class="css-icon-sparkle"></span> Cast
@@ -337,7 +338,7 @@
         <div class="modal-content">
             <h2>🌙 Welcome Back!</h2>
             <p id="welcome-time">⏰ Away for: 0s</p>
-            <p id="welcome-ab">✨ Earned: 0 AB</p>
+            <p id="welcome-ab">✨ Earned: 0 SE</p>
             <button id="close-welcome-button" class="btn-primary">Close</button>
         </div>
     </div>

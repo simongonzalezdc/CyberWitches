@@ -1,5 +1,5 @@
 import { handleError, safeFunction } from './errorHandler.js';
-import { particleEffects } from './particleEffects.js';
+// Particle effects removed for memory optimization
 import { audioSystem } from './audioSystem.js';
 
 /**
@@ -420,9 +420,8 @@ export class CelebrationAnimationsSystem {
             }
             
             // Create particle effect
-            if (config.particleEffect && particleEffects.isRunning) {
-                particleEffects.createEffect(config.particleEffect, x, y);
-            }
+            // Particle effects removed for memory optimization
+            // Visual feedback now uses CSS animations
             
             // Start celebration animation
             this.startCelebrationAnimation(celebration);

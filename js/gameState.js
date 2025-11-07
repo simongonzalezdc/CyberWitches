@@ -376,17 +376,13 @@ export class GameState {
             window.showNotification(`Milestone: ${this.formatShort(ab)} AB! +${this.formatShort(reward)} bonus`, 'success');
         }
         
-        // Particle effect
-        if (window.createParticle) {
-            const abDisplay = document.getElementById('ab-display');
-            if (abDisplay) {
-                const rect = abDisplay.getBoundingClientRect();
-                window.createParticle(
-                    rect.left + rect.width / 2,
-                    rect.top + rect.height / 2,
-                    `MILESTONE!`,
-                    '#FFDB6E'
-                );
+        // Particle effects removed for memory optimization
+        // Visual feedback now uses CSS animations
+        const abDisplay = document.getElementById('ab-display');
+        if (abDisplay) {
+            // Use CSS animation instead of particles
+            if (typeof pulseElement === 'function') {
+                pulseElement(abDisplay, 1.1, 200);
             }
         }
         
@@ -871,7 +867,27 @@ export class GameState {
             this.prestigePoints = prestigeData.points || 0;
             this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
             this.prestigeBonuses = prestigeData.bonuses || {};
-            this.prestigeCount = prestigeData.count || 0;
+            
+            // Load prestige count, with fallback: if missing but has prestige points, assume at least 1 ascension
+            let prestigeCountInferred = false;
+            if (prestigeData.count !== undefined && prestigeData.count !== null) {
+                this.prestigeCount = prestigeData.count;
+            } else if (this.prestigePoints > 0 || Object.keys(this.prestigeBonuses).length > 0) {
+                // If they have prestige points or bonuses but no count, they must have ascended at least once
+                this.prestigeCount = 1;
+                prestigeCountInferred = true;
+                console.log('Prestige count missing from save, inferred from prestige points/bonuses. Setting to 1.');
+            } else {
+                this.prestigeCount = 0;
+            }
+            
+            // If we inferred the count, save it back to ensure it's persisted
+            if (prestigeCountInferred) {
+                // Save after a short delay to ensure all loading is complete
+                setTimeout(() => {
+                    this.saveGameState();
+                }, 1000);
+            }
             
             const experimentsData = data.experiments || {};
             this.discoveredRecipes = experimentsData.discovered || [];
@@ -1065,8 +1081,21 @@ export class GameState {
                 data.version = "2.0";
             }
             
-            // Migrate to version 2.1 (add validation)
-            if (data.version === "2.0") {
+            // Migrate to version 2.1 (add validation and ensure prestige.count exists)
+            if (data.version === "2.0" || parseFloat(data.version) < 2.1) {
+                // Ensure prestige.count exists - if missing but has prestige points/bonuses, infer it
+                if (data.prestige) {
+                    if (data.prestige.count === undefined || data.prestige.count === null) {
+                        // If they have prestige points or bonuses, they must have ascended at least once
+                        if ((data.prestige.points > 0) || (data.prestige.bonuses && Object.keys(data.prestige.bonuses).length > 0)) {
+                            data.prestige.count = 1;
+                            console.log('Migrating save: Added missing prestige.count (inferred from prestige points/bonuses)');
+                        } else {
+                            data.prestige.count = 0;
+                        }
+                    }
+                }
+                
                 data.version = "2.1";
             }
             

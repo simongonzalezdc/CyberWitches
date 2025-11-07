@@ -1,5 +1,5 @@
 import { handleError, safeFunction } from './errorHandler.js';
-import { particleEffects } from './particleEffects.js';
+// Particle effects removed for memory optimization
 import { audioSystem } from './audioSystem.js';
 import { celebrationAnimations } from './celebrationAnimations.js';
 
@@ -461,7 +461,7 @@ export class EasterEggsSystem {
         // Create particle effect
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        particleEffects.createLevelUpEffect(centerX, centerY);
+        // Particle effects removed for memory optimization
         
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
@@ -523,7 +523,7 @@ export class EasterEggsSystem {
         // Create magical particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        particleEffects.createRitualEffect(centerX, centerY);
+        // Particle effects removed for memory optimization
         
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
@@ -595,7 +595,7 @@ export class EasterEggsSystem {
         // Create magical particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        particleEffects.createRitualEffect(centerX, centerY);
+        // Particle effects removed for memory optimization
         
         // Show celebration with phrase-specific message
         const messages = {
@@ -709,7 +709,7 @@ export class EasterEggsSystem {
         // Create pi particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        particleEffects.createLevelUpEffect(centerX, centerY);
+        // Particle effects removed for memory optimization
         
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
@@ -819,7 +819,7 @@ export class EasterEggsSystem {
         // Create quantum particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        particleEffects.createRitualEffect(centerX, centerY);
+        // Particle effects removed for memory optimization
         
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
@@ -849,7 +849,7 @@ export class EasterEggsSystem {
         // Create hex particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        particleEffects.createLevelUpEffect(centerX, centerY);
+        // Particle effects removed for memory optimization
         
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
@@ -901,11 +901,8 @@ export class EasterEggsSystem {
         // Play discovery sound
         audioSystem.playSound('achievement');
         
-        // Create particle effect
-        particleEffects.createAchievementEffect(
-            window.innerWidth - 150,
-            100
-        );
+        // Particle effects removed for memory optimization
+        // Achievement effect removed
         
         // Remove notification after 5 seconds
         setTimeout(() => {

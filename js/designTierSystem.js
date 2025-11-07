@@ -9,6 +9,8 @@ export class DesignTierSystem {
         this.currentTier = this.loadTier();
         this.unlockedTiers = new Set([0]); // Tier 0 always unlocked
         this.loadUnlockedTiers();
+        this.gameStartTime = Date.now(); // Track when game started for time-based requirements
+        this.tierUnlockTimes = {}; // Track when each tier was unlocked
     }
     
     /**
@@ -24,38 +26,96 @@ export class DesignTierSystem {
         // Add null checks with defaults
         const ab = this.gameState.ab || 0;
         // Get achievement count from the achievement system if available
-        // Use getUnlockedCount() instead of getUnlockedAchievements() which doesn't exist
         const unlockedCount = window.achievements && typeof window.achievements.getUnlockedCount === 'function' 
             ? window.achievements.getUnlockedCount() 
             : 0;
         // Prestige count - actual number of ascensions (prestige completions)
         const prestigeCount = this.gameState.prestigeCount || 0;
         
-        // Tier 1: Multiple achievements (3+) or 1,000 AB (mid-game milestone)
+        // Calculate playtime in seconds
+        const playtimeSeconds = (Date.now() - this.gameStartTime) / 1000;
+        
+        // Get time spent in current tier (if any tier unlocked)
+        const currentTier = Math.max(...Array.from(this.unlockedTiers));
+        const tierUnlockTime = this.tierUnlockTimes[currentTier] || this.gameStartTime;
+        const timeInCurrentTier = (Date.now() - tierUnlockTime) / 1000;
+        
+        // Tier 1: Require 3 achievements AND 500 AB AND minimum 30 seconds playtime
         if (!this.unlockedTiers.has(1)) {
-            if (unlockedCount >= 3 || ab >= 1000) {
+            const minPlaytime = 30; // 30 seconds
+            if (unlockedCount >= 3 && ab >= 500 && playtimeSeconds >= minPlaytime) {
+                this.tierUnlockTimes[1] = Date.now();
                 this.unlockTier(1).catch(err => console.error('Error unlocking tier 1:', err));
             }
         }
         
-        // Tier 2: More achievements (6+) or 10,000 AB (late-game milestone)
+        // Tier 2: Require 6 achievements AND 5,000 AB AND minimum 2 minutes playtime AND 30 seconds in Tier 1
         if (!this.unlockedTiers.has(2)) {
-            if (unlockedCount >= 6 || ab >= 10000) {
+            const minPlaytime = 120; // 2 minutes
+            const minTimeInTier1 = 30; // 30 seconds in Tier 1
+            const timeInTier1 = this.tierUnlockTimes[1] ? (Date.now() - this.tierUnlockTimes[1]) / 1000 : 0;
+            const canUnlock = unlockedCount >= 6 && ab >= 5000 && playtimeSeconds >= minPlaytime && timeInTier1 >= minTimeInTier1;
+            if (canUnlock) {
+                this.tierUnlockTimes[2] = Date.now();
                 this.unlockTier(2).catch(err => console.error('Error unlocking tier 2:', err));
+            } else {
+                // Debug log to help diagnose unlock issues
+                console.log('Tier 2 unlock check:', {
+                    achievements: unlockedCount + '/6',
+                    se: ab + '/5000',
+                    playtime: Math.round(playtimeSeconds) + 's/' + minPlaytime + 's',
+                    timeInTier1: Math.round(timeInTier1) + 's/' + minTimeInTier1 + 's',
+                    tier1UnlockTime: this.tierUnlockTimes[1] ? new Date(this.tierUnlockTimes[1]).toISOString() : 'not set',
+                    canUnlock,
+                    missing: {
+                        achievements: unlockedCount < 6,
+                        se: ab < 5000,
+                        playtime: playtimeSeconds < minPlaytime,
+                        timeInTier1: timeInTier1 < minTimeInTier1
+                    }
+                });
             }
         }
         
-        // Tier 3: Even more achievements (9+) or 100,000 AB (requires significant progression)
+        // Tier 3: Require 9 achievements AND 50,000 AB AND minimum 5 minutes playtime AND 2 minutes in Tier 2
         if (!this.unlockedTiers.has(3)) {
-            if (unlockedCount >= 9 || ab >= 100000) {
+            const minPlaytime = 300; // 5 minutes
+            const minTimeInTier2 = 120; // 2 minutes in Tier 2
+            const timeInTier2 = this.tierUnlockTimes[2] ? (Date.now() - this.tierUnlockTimes[2]) / 1000 : 0;
+            const canUnlock = unlockedCount >= 9 && ab >= 50000 && playtimeSeconds >= minPlaytime && timeInTier2 >= minTimeInTier2;
+            if (canUnlock) {
+                this.tierUnlockTimes[3] = Date.now();
                 this.unlockTier(3).catch(err => console.error('Error unlocking tier 3:', err));
+            } else if (ab >= 50000) {
+                // Debug log when SE requirement is met but other requirements aren't
+                console.log('Tier 3 unlock check:', {
+                    achievements: unlockedCount + '/9',
+                    se: ab + '/50000',
+                    playtime: Math.round(playtimeSeconds) + 's/' + minPlaytime + 's',
+                    timeInTier2: Math.round(timeInTier2) + 's/' + minTimeInTier2 + 's',
+                    canUnlock
+                });
             }
         }
         
-        // Tier 4: Most achievements (12+) or 1,000,000 AB (end-game milestone)
+        // Tier 4: Require 12 achievements AND 500,000 AB AND minimum 10 minutes playtime AND 5 minutes in Tier 3
         if (!this.unlockedTiers.has(4)) {
-            if (unlockedCount >= 12 || ab >= 1000000) {
+            const minPlaytime = 600; // 10 minutes
+            const minTimeInTier3 = 300; // 5 minutes in Tier 3
+            const timeInTier3 = this.tierUnlockTimes[3] ? (Date.now() - this.tierUnlockTimes[3]) / 1000 : 0;
+            const canUnlock = unlockedCount >= 12 && ab >= 500000 && playtimeSeconds >= minPlaytime && timeInTier3 >= minTimeInTier3;
+            if (canUnlock) {
+                this.tierUnlockTimes[4] = Date.now();
                 this.unlockTier(4).catch(err => console.error('Error unlocking tier 4:', err));
+            } else if (ab >= 500000) {
+                // Debug log when SE requirement is met but other requirements aren't
+                console.log('Tier 4 unlock check:', {
+                    achievements: unlockedCount + '/12',
+                    se: ab + '/500000',
+                    playtime: Math.round(playtimeSeconds) + 's/' + minPlaytime + 's',
+                    timeInTier3: Math.round(timeInTier3) + 's/' + minTimeInTier3 + 's',
+                    canUnlock
+                });
             }
         }
     }
@@ -139,9 +199,8 @@ export class DesignTierSystem {
         // Try multiple possible names for particle system
         if (window.particleSystem) {
             window.particleSystem.disable();
-        } else if (window.particleEffects) {
-            window.particleEffects.disable();
         }
+        // Particle effects removed for memory optimization
         
         // Disable sound effects (Tier 0 = no sound)
         if (window.audioSystem && window.audioSystem.disableSoundEffects) {
@@ -181,9 +240,8 @@ export class DesignTierSystem {
         // Disable any animation systems
         if (window.particleSystem) {
             window.particleSystem.disable();
-        } else if (window.particleEffects) {
-            window.particleEffects.disable();
         }
+        // Particle effects removed for memory optimization
         
         // Disable sound effects (Tier 1 = no sound, only color)
         if (window.audioSystem && window.audioSystem.disableSoundEffects) {
@@ -244,9 +302,8 @@ export class DesignTierSystem {
         // Try multiple possible names for particle system
         if (window.particleSystem) {
             window.particleSystem.enable();
-        } else if (window.particleEffects) {
-            window.particleEffects.enable();
         }
+        // Particle effects removed for memory optimization
     }
     
     async applyTier4() {
@@ -273,9 +330,8 @@ export class DesignTierSystem {
         // Try multiple possible names for particle system
         if (window.particleSystem) {
             window.particleSystem.enable();
-        } else if (window.particleEffects) {
-            window.particleEffects.enable();
         }
+        // Particle effects removed for memory optimization
         
         // Enable background music (the only difference from Tier 3)
         if (window.audioSystem) {
@@ -398,24 +454,30 @@ export class DesignTierSystem {
     }
     
     /**
-     * Reset tiers to tier 1 (called when ascending)
+     * Reset tiers to tier 0 (called when ascending)
      */
-    async resetToTier1() {
-        console.log('Resetting design tiers to tier 1 after ascend...');
+    async resetToTier0() {
+        console.log('Resetting design tiers to tier 0 after ascend...');
         
-        // Reset unlocked tiers to only tier 0 and tier 1
-        this.unlockedTiers = new Set([0, 1]);
+        // Reset unlocked tiers to only tier 0
+        this.unlockedTiers = new Set([0]);
         
-        // Set current tier to 1
-        this.currentTier = 1;
+        // Set current tier to 0
+        this.currentTier = 0;
         
-        // Apply tier 1 settings
-        await this.applyTier(1);
+        // Reset playtime tracking for new run
+        this.gameStartTime = Date.now();
+        
+        // Reset tier unlock times
+        this.tierUnlockTimes = {};
+        
+        // Apply tier 0 settings
+        await this.applyTier(0);
         
         // Save the reset state
         this.saveTier();
         
-        console.log('Design tiers reset to tier 1. Unlocked tiers:', Array.from(this.unlockedTiers));
+        console.log('Design tiers reset to tier 0. Unlocked tiers:', Array.from(this.unlockedTiers));
     }
     
     /**
