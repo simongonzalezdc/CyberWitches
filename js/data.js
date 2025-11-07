@@ -33,15 +33,11 @@ export const INGREDIENTS = [
     { id: "quantum_water", displayName: "Quantum Water", tier: 3 },
     { id: "quantum_air", displayName: "Quantum Air", tier: 3 },
     
-    // Tier 4 - Legendary ingredients (first half)
+    // Tier 4 - Legendary ingredients
     { id: "arcane_candle", displayName: "Arcane Candle", tier: 4 },
     { id: "void_crystal", displayName: "Void Crystal", tier: 4 },
-    
-    // Tier 5 - Legendary ingredients (second half)
-    { id: "void_liquid", displayName: "Void Liquid", tier: 5 },
-    { id: "void_breath", displayName: "Void Breath", tier: 5 },
-    { id: "eternal_flame", displayName: "Eternal Flame", tier: 5 },
-    { id: "infinity_core", displayName: "Infinity Core", tier: 5 },
+    { id: "void_liquid", displayName: "Void Liquid", tier: 4 },
+    { id: "void_breath", displayName: "Void Breath", tier: 4 },
     
     // Meditation-exclusive ingredients
     { id: "serenity_essence", displayName: "Serenity Essence", tier: 0, meditationOnly: true },
@@ -58,6 +54,7 @@ export const PRODUCERS = [
     {
         id: "ws_fire_forge",
         displayName: "Fire Forge",
+        description: "A preservation chamber that stabilizes Fire essence before it fades. The intense heat slows the fading, allowing you to preserve more magic.",
         unlockAtAb: 25.0,
         recipe: { fire_essence: 10 },
         growth: 1.12,
@@ -67,6 +64,7 @@ export const PRODUCERS = [
     {
         id: "ws_aqua_well",
         displayName: "Aqua Well",
+        description: "A preservation chamber that stabilizes Water essence before it fades. The flowing water creates a stable environment that resists the fading.",
         unlockAtAb: 30.0,
         recipe: { water_essence: 10 },
         growth: 1.12,
@@ -76,6 +74,7 @@ export const PRODUCERS = [
     {
         id: "ws_zephyr_generator",
         displayName: "Zephyr Generator",
+        description: "A preservation chamber that stabilizes Air essence before it fades. The constant motion creates a barrier against the fading.",
         unlockAtAb: 35.0,
         recipe: { air_essence: 10 },
         growth: 1.12,
@@ -85,6 +84,7 @@ export const PRODUCERS = [
     {
         id: "ws_crystal_chamber",
         displayName: "Crystal Chamber",
+        description: "A preservation chamber that stabilizes Crystal essence before it fades. Crystal structures are the most stable—they resist the fading better than others.",
         unlockAtAb: 40.0,
         recipe: { crystal_dust: 10 },
         growth: 1.12,
@@ -94,6 +94,7 @@ export const PRODUCERS = [
     {
         id: "ws_aether_synthesizer",
         displayName: "Aether Synthesizer",
+        description: "A preservation chamber that synthesizes Aether from all four elements. By combining the elements, you create a more stable form that resists the fading.",
         unlockAtAb: 50.0,
         recipe: { 
             fire_essence: 2,
@@ -152,16 +153,6 @@ export const PRODUCERS = [
         outputs: { aether_well: 0.4 }
     },
     
-    // Tier 1 - Early AB Producer (first automated AB production)
-    {
-        id: "ws_arcane_bit_reactor_t1",
-        displayName: "Arcane Bit Reactor",
-        unlockAtAb: 1000.0,
-        recipe: { dig_candle: 2, crystal_orb: 1, aether_well: 1 },
-        growth: 1.15,
-        outputs: { ab: 1.5 }
-    },
-    
     // Tier 2 - Mid Game Producers (5 workstations: one per element + Arcane Bits producer)
     // Fire - Forge
     {
@@ -207,16 +198,6 @@ export const PRODUCERS = [
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
         outputs: { ab: 5.0 }
-    },
-    
-    // Tier 2 - Focus Producer
-    {
-        id: "ws_focus_mill",
-        displayName: "Focus Mill",
-        unlockAtAb: 6000.0,
-        recipe: { enhanced_candle: 2, crystal_core: 2, flowing_current: 1, wind_spiral: 1 },
-        growth: 1.16,
-        outputs: { focus: 0.2 }
     },
     
     // Tier 3 - Late Game Producers (5 workstations: one per element + Arcane Bits producer)
@@ -266,17 +247,7 @@ export const PRODUCERS = [
         outputs: { ab: 25.0 }
     },
     
-    // Tier 3 - Focus Producer
-    {
-        id: "ws_focus_mill_t3",
-        displayName: "Quantum Focus Mill",
-        unlockAtAb: 150000.0,
-        recipe: { quantum_candle: 2, quantum_crystal: 2, quantum_water: 2, quantum_air: 2 },
-        growth: 1.20,
-        outputs: { focus: 0.5 }
-    },
-    
-    // Tier 4 - Legendary Producers (first half: Arcane/Void)
+    // Tier 4 - Legendary Producers (5 workstations: one per element + Arcane Bits producer)
     // Fire - Forge
     {
         id: "ws_arcane_candle_forge",
@@ -286,23 +257,12 @@ export const PRODUCERS = [
         growth: 1.25,
         outputs: { arcane_candle: 0.2 }
     },
-    // Crystal - Chamber
-    {
-        id: "ws_void_crystal_chamber",
-        displayName: "Void Crystal Chamber",
-        unlockAtAb: 6500000.0,
-        recipe: { quantum_crystal: 5, quantum_candle: 3, quantum_water: 3, quantum_air: 3 },
-        growth: 1.26,
-        outputs: { void_crystal: 0.2 }
-    },
-    
-    // Tier 5 - Legendary Producers (second half: Void advanced + new tier 5)
     // Water - Well
     {
         id: "ws_void_liquid_well",
         displayName: "Void Liquid Well",
-        unlockAtAb: 8000000.0,
-        recipe: { void_crystal: 3, arcane_candle: 3, quantum_water: 5, quantum_crystal: 3 },
+        unlockAtAb: 6500000.0,
+        recipe: { quantum_water: 5, quantum_crystal: 3, quantum_candle: 3, quantum_air: 3 },
         growth: 1.26,
         outputs: { void_liquid: 0.2 }
     },
@@ -310,57 +270,28 @@ export const PRODUCERS = [
     {
         id: "ws_void_breath_generator",
         displayName: "Void Breath Generator",
-        unlockAtAb: 9000000.0,
-        recipe: { void_crystal: 3, arcane_candle: 3, quantum_air: 5, quantum_crystal: 3 },
+        unlockAtAb: 8000000.0,
+        recipe: { quantum_air: 5, quantum_crystal: 3, quantum_candle: 3, quantum_water: 3 },
         growth: 1.26,
         outputs: { void_breath: 0.2 }
     },
-    // Fire - Eternal Forge (new tier 5)
+    // Crystal - Chamber
     {
-        id: "ws_eternal_flame_forge",
-        displayName: "Eternal Flame Forge",
-        unlockAtAb: 12000000.0,
-        recipe: { arcane_candle: 5, void_crystal: 3, void_liquid: 3, void_breath: 3 },
-        growth: 1.28,
-        outputs: { eternal_flame: 0.15 }
-    },
-    // Crystal - Infinity Chamber (new tier 5)
-    {
-        id: "ws_infinity_core_chamber",
-        displayName: "Infinity Core Chamber",
-        unlockAtAb: 15000000.0,
-        recipe: { void_crystal: 5, void_liquid: 3, void_breath: 3, arcane_candle: 3 },
-        growth: 1.29,
-        outputs: { infinity_core: 0.15 }
+        id: "ws_void_crystal_chamber",
+        displayName: "Void Crystal Chamber",
+        unlockAtAb: 9000000.0,
+        recipe: { quantum_crystal: 5, quantum_candle: 3, quantum_water: 3, quantum_air: 3 },
+        growth: 1.26,
+        outputs: { void_crystal: 0.2 }
     },
     // Aether - Reactor (Arcane Bits Producer - requires all 4 other elements + Aether)
     {
         id: "ws_infinity_bit_reactor",
         displayName: "Infinity Energy Reactor",
         unlockAtAb: 20000000.0,
-        recipe: { eternal_flame: 5, infinity_core: 5, void_liquid: 5, void_breath: 5, aether_well: 5 },
+        recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,
         outputs: { ab: 750.0 }
-    },
-    
-    // Tier 4 - Focus Producer
-    {
-        id: "ws_focus_mill_t4",
-        displayName: "Void Focus Mill",
-        unlockAtAb: 7000000.0,
-        recipe: { arcane_candle: 3, void_crystal: 2, quantum_candle: 3, quantum_crystal: 2 },
-        growth: 1.25,
-        outputs: { focus: 1.2 }
-    },
-    
-    // Tier 5 - Focus Producer
-    {
-        id: "ws_focus_mill_t5",
-        displayName: "Eternal Focus Mill",
-        unlockAtAb: 18000000.0,
-        recipe: { eternal_flame: 3, infinity_core: 3, void_liquid: 2, void_breath: 2 },
-        growth: 1.28,
-        outputs: { focus: 2.5 }
     }
 ];
 
@@ -427,16 +358,6 @@ export const UPGRADES = [
         value: 2.0,
         recipe: { aether_well: 3, dist_aether: 5 },
         unlockAtAb: 1000.0
-    },
-    {
-        id: "u_candle_1",
-        displayName: "Bit Forge Boost",
-        description: "×2 Arcane Bit Reactor",
-        affects: "producer:ws_arcane_bit_reactor_t1",
-        type: "multiplier",
-        value: 2.0,
-        recipe: { dig_candle: 3, crystal_orb: 2, aether_well: 2 },
-        unlockAtAb: 2000.0
     },
     // Tier 2 - Workstation upgrades
     {
@@ -628,33 +549,13 @@ export const UPGRADES = [
         unlockAtAb: 11000000.0
     },
     {
-        id: "u_eternalflame_1",
-        displayName: "Eternal Flame Mastery",
-        description: "×3 Eternal Flame Forge",
-        affects: "producer:ws_eternal_flame_forge",
-        type: "multiplier",
-        value: 3.0,
-        recipe: { eternal_flame: 5, arcane_candle: 3, void_crystal: 3 },
-        unlockAtAb: 15000000.0
-    },
-    {
-        id: "u_infinitycore_1",
-        displayName: "Infinity Core Mastery",
-        description: "×3 Infinity Core Chamber",
-        affects: "producer:ws_infinity_core_chamber",
-        type: "multiplier",
-        value: 3.0,
-        recipe: { infinity_core: 5, void_crystal: 3, eternal_flame: 3 },
-        unlockAtAb: 18000000.0
-    },
-    {
         id: "u_infinitycore_ab_1",
         displayName: "Infinity Engine Boost",
         description: "×3 Infinity Bit Reactor",
         affects: "producer:ws_infinity_bit_reactor",
         type: "multiplier",
         value: 3.0,
-        recipe: { eternal_flame: 3, infinity_core: 3, void_liquid: 3, void_breath: 3 },
+        recipe: { arcane_candle: 3, void_crystal: 3, void_liquid: 3, void_breath: 3 },
         unlockAtAb: 25000000.0
     },
     
@@ -681,36 +582,6 @@ export const UPGRADES = [
     },
     
     // Focus-related upgrades
-    {
-        id: "u_focus_production_1",
-        displayName: "Focus Amplification",
-        description: "×2 Focus production",
-        affects: "producer_focus",
-        type: "multiplier",
-        value: 2.0,
-        recipe: { focus: 10, enhanced_candle: 2, crystal_core: 2 },
-        unlockAtAb: 6000.0
-    },
-    {
-        id: "u_focus_production_2",
-        displayName: "Focus Mastery",
-        description: "×3 Focus production",
-        affects: "producer_focus",
-        type: "multiplier",
-        value: 3.0,
-        recipe: { focus: 50, enhanced_candle: 5, crystal_core: 5, flowing_current: 3, wind_spiral: 3 },
-        unlockAtAb: 120000.0
-    },
-    {
-        id: "u_focus_production_3",
-        displayName: "Focus Transcendence",
-        description: "×4 Focus production",
-        affects: "producer_focus",
-        type: "multiplier",
-        value: 4.0,
-        recipe: { focus: 200, quantum_candle: 3, quantum_crystal: 3, quantum_water: 2, quantum_air: 2 },
-        unlockAtAb: 500000.0
-    },
     {
         id: "u_focus_meditation_1",
         displayName: "Meditative Focus",
@@ -864,16 +735,6 @@ export const PRESTIGE_BONUSES = [
         costGrowth: 1.5
     },
     {
-        id: "pp_candle_mult",
-        displayName: "Bit Forge Star",
-        description: "+5% Arcane Bit Reactor / level",
-        type: "producer_mult",
-        param: "ws_arcane_bit_reactor_t1",
-        value: 0.05,
-        baseCostPp: 10.0,
-        costGrowth: 1.5
-    },
-    {
         id: "pp_sigilforge_mult",
         displayName: "Reactor Star",
         description: "+5% Etheric Reactor / level",
@@ -931,16 +792,6 @@ export const PRESTIGE_BONUSES = [
         param: "ws_void_crystal_chamber",
         value: 0.05,
         baseCostPp: 200.0,
-        costGrowth: 1.5
-    },
-    {
-        id: "pp_infinitycore_mult",
-        displayName: "Infinity Star",
-        description: "+5% Infinity Core Chamber / level",
-        type: "producer_mult",
-        param: "ws_infinity_core_chamber",
-        value: 0.05,
-        baseCostPp: 500.0,
         costGrowth: 1.5
     },
     {
@@ -1025,25 +876,6 @@ export const PRESTIGE_BONUSES = [
         costGrowth: 1.5
     },
     
-    // Focus-related bonuses
-    {
-        id: "pp_focus_production_1",
-        displayName: "Focus Mill Boost",
-        description: "+10% Focus / level",
-        type: "producer_focus_mult",
-        value: 0.10,
-        baseCostPp: 15.0,
-        costGrowth: 1.5
-    },
-    {
-        id: "pp_focus_production_2",
-        displayName: "Focus Mastery",
-        description: "+25% Focus / level",
-        type: "producer_focus_mult",
-        value: 0.25,
-        baseCostPp: 40.0,
-        costGrowth: 1.5
-    },
     {
         id: "pp_meditation_focus_1",
         displayName: "Meditative Focus",
@@ -1068,24 +900,24 @@ export const DAILY_TASKS_POOL = [
     // Tier 0 - Basic tasks
     {
         id: "d_kindle",
-        displayName: "Kindle the Flame",
-        description: "Craft 3 Fire Forges",
+        displayName: "Preserve the Flame",
+        description: "Craft 3 Fire Forges to preserve Fire essence before it fades",
         condition: "craft:workstation:ws_fire_forge:3",
         rewardType: "ab",
         rewardValue: 5000.0
     },
     {
         id: "d_shape",
-        displayName: "Crystal Shaping",
-        description: "Craft 2 Crystal Chambers",
+        displayName: "Stabilize Crystal",
+        description: "Craft 2 Crystal Chambers to stabilize Crystal essence before it fades",
         condition: "craft:workstation:ws_crystal_chamber:2",
         rewardType: "ab",
         rewardValue: 7500.0
     },
     {
         id: "d_still",
-        displayName: "Aether Synthesis",
-        description: "Craft 2 Aether Synthesizers",
+        displayName: "Synthesize Aether",
+        description: "Craft 2 Aether Synthesizers to preserve Aether before it fades",
         condition: "craft:workstation:ws_aether_synthesizer:2",
         rewardType: "ab",
         rewardValue: 7500.0
@@ -1094,8 +926,8 @@ export const DAILY_TASKS_POOL = [
     // Tier 1 - Intermediate tasks
     {
         id: "d_song",
-        displayName: "Crystal Song",
-        description: "Own 3 Crystal Orb Forges",
+        displayName: "Crystal Resonance",
+        description: "Maintain 3 Crystal Orb Chambers to keep preserved magic stable",
         condition: "own:workstation:ws_crystal_chamber:3",
         rewardType: "buff",
         rewardValue: 900.0,
@@ -1103,8 +935,8 @@ export const DAILY_TASKS_POOL = [
     },
     {
         id: "d_forge",
-        displayName: "Digital Crafting",
-        description: "Craft 2 Digital Candle Forges",
+        displayName: "Preserve Digital Candles",
+        description: "Craft 2 Digital Candle Forges to preserve Fire essence in stable form",
         condition: "craft:workstation:ws_digcandle_forge:2",
         rewardType: "ab",
         rewardValue: 10000.0
@@ -1112,7 +944,7 @@ export const DAILY_TASKS_POOL = [
     {
         id: "d_well",
         displayName: "Aether Well",
-        description: "Own 2 Aether Wells",
+        description: "Maintain 2 Aether Wells to preserve Aether essence",
         condition: "own:workstation:ws_aether_reactor_t1:2",
         rewardType: "buff",
         rewardValue: 1200.0,
@@ -1122,8 +954,8 @@ export const DAILY_TASKS_POOL = [
     // Tier 2 - Advanced tasks
     {
         id: "d_enhanced",
-        displayName: "Enhanced Production",
-        description: "Craft 2 Enhanced Candle Forges",
+        displayName: "Enhanced Preservation",
+        description: "Craft 2 Enhanced Candle Forges to preserve Fire essence in enhanced form",
         condition: "craft:workstation:ws_enhanced_candle_forge:2",
         rewardType: "ab",
         rewardValue: 25000.0
@@ -1243,31 +1075,6 @@ export const DAILY_TASKS_POOL = [
         condition: "earn_focus:100",
         rewardType: "ab",
         rewardValue: 10000.0
-    },
-    {
-        id: "d_focus_mill",
-        displayName: "Focus Mill",
-        description: "Craft 1 Focus Mill",
-        condition: "craft:workstation:ws_focus_mill:1",
-        rewardType: "ab",
-        rewardValue: 15000.0
-    },
-    {
-        id: "d_focus_production",
-        displayName: "Focus Production",
-        description: "Produce 500 Focus",
-        condition: "produce_focus:500",
-        rewardType: "ab",
-        rewardValue: 20000.0
-    },
-    {
-        id: "d_focus_upgrade",
-        displayName: "Focus Enhancement",
-        description: "Purchase Focus Amplification upgrade",
-        condition: "purchase_upgrade:u_focus_production_1",
-        rewardType: "buff",
-        rewardValue: 1800.0,
-        buffMultiplier: 0.15
     },
     {
         id: "d_focus_experiment",
@@ -1401,7 +1208,7 @@ export const HIDDEN_RECIPES = [
     },
     {
         id: "eternal_focus_essence",
-        inputs: { focus: 100, eternal_flame: 3, infinity_core: 3, void_liquid: 2, void_breath: 2 },
+        inputs: { focus: 100, arcane_candle: 3, void_crystal: 3, void_liquid: 2, void_breath: 2 },
         outputs: { eternal_focus_essence: 1 },
         name: "Eternal Focus Essence",
         description: "🧘 TEMPORARY: +1000% meditation Focus generation for 6 hours"
@@ -1417,7 +1224,7 @@ export const HIDDEN_RECIPES = [
     },
     {
         id: "eternal_production_elixir",
-        inputs: { eternal_flame: 3, infinity_core: 2, void_liquid: 2, void_breath: 1 },
+        inputs: { arcane_candle: 3, void_crystal: 2, void_liquid: 2, void_breath: 1 },
         outputs: { eternal_production_elixir: 1 },
         name: "Eternal Production Elixir",
         description: "✨ TEMPORARY: +1000% production for 6 hours"
@@ -1431,7 +1238,7 @@ export const HIDDEN_RECIPES = [
     },
     {
         id: "eternal_speed_surge",
-        inputs: { eternal_flame: 2, infinity_core: 3 },
+        inputs: { arcane_candle: 2, void_crystal: 3 },
         outputs: { eternal_speed_surge: 1 },
         name: "Eternal Speed Surge",
         description: "⚡ TEMPORARY: +1000% cast speed for 4 hours"
@@ -1445,7 +1252,7 @@ export const HIDDEN_RECIPES = [
     },
     {
         id: "ab_eternal_boost",
-        inputs: { eternal_flame: 5, infinity_core: 5, void_liquid: 3, void_breath: 3 },
+        inputs: { arcane_candle: 5, void_crystal: 5, void_liquid: 3, void_breath: 3 },
         outputs: { ab_eternal_boost: 1 },
         name: "Arcane Bits Eternal Boost",
         description: "💰 TEMPORARY: +1000% Arcane Bits production for 2 hours"
@@ -1459,7 +1266,7 @@ export const HIDDEN_RECIPES = [
     },
     {
         id: "eternal_catalyst",
-        inputs: { eternal_flame: 5, infinity_core: 5, void_liquid: 3, void_breath: 3 },
+        inputs: { arcane_candle: 5, void_crystal: 5, void_liquid: 3, void_breath: 3 },
         outputs: { eternal_catalyst: 1 },
         name: "Eternal Catalyst",
         description: "🔮 TEMPORARY: 10x all ingredient production for 6 hours"

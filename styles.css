@@ -85,8 +85,649 @@ body {
     position: relative;
 }
 
+/* ============================================
+   Glitch Effects System - Progressive UI Stabilization
+   All effects are CSS-only for performance
+   ============================================ */
+
+/* 1. SCREEN TEARING / HORIZONTAL GLITCH LINES */
+/* Tier 0-3: Progressive reduction, Tier 4: None */
+/* Using a separate element to avoid conflict with body::before (night sky) */
+body.tier-0::before,
+body.tier-1::before,
+body.tier-2::before,
+body.tier-3::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: screen;
+    will-change: transform;
+    /* Override night sky background for glitch effect */
+    background-image: none !important;
+    animation: none !important;
+}
+
+/* Tier 0: Heavy, frequent, monochrome */
+/* Override night sky background */
+body.tier-0::before {
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(255, 255, 255, 0.15) 3px,
+        rgba(255, 255, 255, 0.15) 6px
+    ) !important;
+    background-image: none !important;
+    animation: screenTearHeavy 0.08s infinite !important;
+    z-index: 9999 !important;
+}
+
+/* Tier 1: Heavy, frequent, colored */
+/* Override night sky background */
+body.tier-1::before {
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(255, 45, 170, 0.2) 3px,
+        rgba(255, 45, 170, 0.2) 6px
+    ) !important;
+    background-image: none !important;
+    animation: screenTearHeavy 0.1s infinite !important;
+    z-index: 9999 !important;
+}
+
+/* Tier 2: Moderate, less frequent */
+/* Override night sky background */
+body.tier-2::before {
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 4px,
+        rgba(255, 45, 170, 0.1) 4px,
+        rgba(255, 45, 170, 0.1) 8px
+    ) !important;
+    background-image: none !important;
+    animation: screenTearModerate 0.3s infinite !important;
+    z-index: 9999 !important;
+}
+
+/* Tier 3: Light, rare */
+/* Override night sky background */
+body.tier-3::before {
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 6px,
+        rgba(255, 45, 170, 0.05) 6px,
+        rgba(255, 45, 170, 0.05) 12px
+    ) !important;
+    background-image: none !important;
+    animation: screenTearLight 1s infinite !important;
+    z-index: 9999 !important;
+}
+
+/* Tier 4: None */
+body.tier-4::before {
+    display: none !important;
+}
+
+@keyframes screenTearHeavy {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    75% { transform: translateX(-1px); }
+}
+
+@keyframes screenTearModerate {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(1px); }
+}
+
+@keyframes screenTearLight {
+    0%, 100% { transform: translateX(0); opacity: 0; }
+    50% { transform: translateX(0.5px); opacity: 1; }
+}
+
+/* 2. CHROMATIC ABERRATION (RGB Channel Separation) */
+/* Tier 0: None (monochrome), Tier 1-3: Progressive reduction, Tier 4: None */
+body.tier-1 *:not(script):not(style):not(::before):not(::after) {
+    filter: drop-shadow(2px 0 0 rgba(255, 0, 0, 0.5))
+            drop-shadow(-2px 0 0 rgba(0, 255, 255, 0.5));
+    animation: chromaticAberrationHeavy 0.3s infinite;
+}
+
+body.tier-2 *:not(script):not(style):not(::before):not(::after) {
+    filter: drop-shadow(1px 0 0 rgba(255, 0, 0, 0.3))
+            drop-shadow(-1px 0 0 rgba(0, 255, 255, 0.3));
+    animation: chromaticAberrationModerate 0.5s infinite;
+}
+
+body.tier-3 *:not(script):not(style):not(::before):not(::after) {
+    filter: drop-shadow(0.5px 0 0 rgba(255, 0, 0, 0.2))
+            drop-shadow(-0.5px 0 0 rgba(0, 255, 255, 0.2));
+    animation: chromaticAberrationLight 1s infinite;
+}
+
+body.tier-4 *:not(script):not(style):not(::before):not(::after) {
+    filter: none !important;
+}
+
+@keyframes chromaticAberrationHeavy {
+    0%, 100% { filter: drop-shadow(2px 0 0 rgba(255, 0, 0, 0.5)) drop-shadow(-2px 0 0 rgba(0, 255, 255, 0.5)); }
+    50% { filter: drop-shadow(3px 0 0 rgba(255, 0, 0, 0.6)) drop-shadow(-3px 0 0 rgba(0, 255, 255, 0.6)); }
+}
+
+@keyframes chromaticAberrationModerate {
+    0%, 100% { filter: drop-shadow(1px 0 0 rgba(255, 0, 0, 0.3)) drop-shadow(-1px 0 0 rgba(0, 255, 255, 0.3)); }
+    50% { filter: drop-shadow(1.5px 0 0 rgba(255, 0, 0, 0.4)) drop-shadow(-1.5px 0 0 rgba(0, 255, 255, 0.4)); }
+}
+
+@keyframes chromaticAberrationLight {
+    0%, 100% { filter: drop-shadow(0.5px 0 0 rgba(255, 0, 0, 0.2)) drop-shadow(-0.5px 0 0 rgba(0, 255, 255, 0.2)); }
+    50% { filter: drop-shadow(0.75px 0 0 rgba(255, 0, 0, 0.25)) drop-shadow(-0.75px 0 0 rgba(0, 255, 255, 0.25)); }
+}
+
+/* 3. SCANLINES (CRT Monitor Effect) */
+/* Tier 0-3: Progressive reduction, Tier 4: None */
+body.tier-0::after,
+body.tier-1::after,
+body.tier-2::after,
+body.tier-3::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    mix-blend-mode: overlay;
+    will-change: opacity;
+}
+
+/* Tier 0: Heavy, flickering, monochrome */
+/* Override existing scanline effect */
+body.tier-0::after {
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0.1) 1px,
+        transparent 1px,
+        transparent 2px
+    ) !important;
+    background-image: none !important;
+    animation: scanlinesHeavy 0.1s infinite !important;
+    z-index: 9998 !important;
+}
+
+/* Tier 1: Heavy, flickering, colored */
+/* Override existing scanline effect */
+body.tier-1::after {
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    ) !important;
+    background-image: none !important;
+    animation: scanlinesHeavy 0.15s infinite !important;
+    z-index: 9998 !important;
+}
+
+/* Tier 2: Moderate */
+/* Override existing scanline effect */
+body.tier-2::after {
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.08),
+        rgba(0, 0, 0, 0.08) 1px,
+        transparent 1px,
+        transparent 3px
+    ) !important;
+    background-image: none !important;
+    animation: scanlinesModerate 0.3s infinite !important;
+    z-index: 9998 !important;
+}
+
+/* Tier 3: Light */
+/* Override existing scanline effect */
+body.tier-3::after {
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.04),
+        rgba(0, 0, 0, 0.04) 1px,
+        transparent 1px,
+        transparent 4px
+    ) !important;
+    background-image: none !important;
+    animation: scanlinesLight 0.5s infinite !important;
+    z-index: 9998 !important;
+}
+
+/* Tier 4: None */
+body.tier-4::after {
+    display: none !important;
+}
+
+@keyframes scanlinesHeavy {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes scanlinesModerate {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes scanlinesLight {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.3; }
+}
+
+/* 4. TEXT CORRUPTION / CHARACTER FLICKER */
+/* Tier 0-1 only, Tier 2+: None */
+body.tier-0 h1, body.tier-0 h2, body.tier-0 h3,
+body.tier-0 .btn-primary, body.tier-0 .btn-secondary,
+body.tier-0 .element-label, body.tier-0 .tab-btn {
+    animation: textCorruptionHeavy 0.2s infinite;
+}
+
+body.tier-1 h1, body.tier-1 h2, body.tier-1 h3,
+body.tier-1 .btn-primary, body.tier-1 .btn-secondary,
+body.tier-1 .element-label, body.tier-1 .tab-btn {
+    animation: textCorruptionLight 0.5s infinite;
+}
+
+@keyframes textCorruptionHeavy {
+    0%, 100% { 
+        text-shadow: 0 0 0 currentColor;
+        transform: translateX(0);
+    }
+    25% { 
+        text-shadow: 1px 0 0 rgba(255, 0, 0, 0.5), -1px 0 0 rgba(0, 255, 255, 0.5);
+        transform: translateX(1px);
+    }
+    50% { 
+        text-shadow: -1px 0 0 rgba(255, 0, 0, 0.5), 1px 0 0 rgba(0, 255, 255, 0.5);
+        transform: translateX(-1px);
+    }
+    75% { 
+        text-shadow: 0.5px 0 0 rgba(255, 0, 0, 0.3);
+        transform: translateX(0.5px);
+    }
+}
+
+@keyframes textCorruptionLight {
+    0%, 100% { 
+        text-shadow: 0 0 0 currentColor;
+    }
+    50% { 
+        text-shadow: 0.5px 0 0 rgba(255, 0, 0, 0.2);
+    }
+}
+
+/* 5. POSITION JITTER (Micro-shifts) */
+/* Tier 0-2: Progressive reduction, Tier 3+: None */
+body.tier-0 .btn-primary, body.tier-0 .btn-secondary,
+body.tier-0 .btn-cast, body.tier-0 .workstation-card,
+body.tier-0 .upgrade-card, body.tier-0 .tab-btn {
+    animation: positionJitterHeavy 0.15s infinite;
+}
+
+body.tier-1 .btn-primary, body.tier-1 .btn-secondary,
+body.tier-1 .btn-cast, body.tier-1 .workstation-card,
+body.tier-1 .upgrade-card, body.tier-1 .tab-btn {
+    animation: positionJitterModerate 0.3s infinite;
+}
+
+body.tier-2 .btn-primary, body.tier-2 .btn-secondary,
+body.tier-2 .btn-cast, body.tier-2 .workstation-card,
+body.tier-2 .upgrade-card, body.tier-2 .tab-btn {
+    animation: positionJitterLight 0.6s infinite;
+}
+
+@keyframes positionJitterHeavy {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(1px, -1px); }
+    50% { transform: translate(-1px, 1px); }
+    75% { transform: translate(1px, 1px); }
+}
+
+@keyframes positionJitterModerate {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(0.5px, -0.5px); }
+}
+
+@keyframes positionJitterLight {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(0.25px, -0.25px); }
+}
+
+/* 6. OPACITY FLICKER */
+/* Tier 0-1 only, Tier 2+: None */
+body.tier-0 .sidebar, body.tier-0 .tab-panel,
+body.tier-0 .workstation-card, body.tier-0 .upgrade-card {
+    animation: opacityFlickerHeavy 0.2s infinite;
+}
+
+body.tier-1 .sidebar, body.tier-1 .tab-panel,
+body.tier-1 .workstation-card, body.tier-1 .upgrade-card {
+    animation: opacityFlickerLight 0.4s infinite;
+}
+
+@keyframes opacityFlickerHeavy {
+    0%, 100% { opacity: 1; }
+    25% { opacity: 0.85; }
+    50% { opacity: 0.7; }
+    75% { opacity: 0.9; }
+}
+
+@keyframes opacityFlickerLight {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.9; }
+}
+
+/* 7. DISTORTION WAVES */
+/* Tier 0-2: Progressive reduction, Tier 3+: None */
+body.tier-0 .sidebar, body.tier-0 .tab-panel,
+body.tier-0 .workstation-card, body.tier-0 .upgrade-card {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    animation: distortionWavesModerate 2s infinite;
+}
+
+body.tier-1 .sidebar, body.tier-1 .tab-panel,
+body.tier-1 .workstation-card, body.tier-1 .upgrade-card {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    animation: distortionWavesLight 3s infinite;
+}
+
+body.tier-2 .sidebar, body.tier-2 .tab-panel,
+body.tier-2 .workstation-card, body.tier-2 .upgrade-card {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    animation: distortionWavesSubtle 4s infinite;
+}
+
+@keyframes distortionWavesModerate {
+    0%, 100% { 
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    50% { 
+        clip-path: polygon(0 0, 100% 0, 98% 100%, 2% 100%);
+    }
+}
+
+@keyframes distortionWavesLight {
+    0%, 100% { 
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    50% { 
+        clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%);
+    }
+}
+
+@keyframes distortionWavesSubtle {
+    0%, 100% { 
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    50% { 
+        clip-path: polygon(0 0, 100% 0, 99.5% 100%, 0.5% 100%);
+    }
+}
+
+/* 8. GLITCHY GRADIENT (Fading Theme) */
+/* Tier 0-1: None, Tier 2-3: Progressive glitchy, Tier 4: Smooth */
+
+/* Fading Theme Visual Effects */
+
+/* Background Fade Gradient Overlay (Tier 2+) */
+.fading-theme-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        180deg,
+        rgba(108, 92, 231, 0.1) 0%,
+        rgba(108, 92, 231, 0.05) 50%,
+        rgba(26, 26, 46, 0.15) 100%
+    );
+    animation: fadeShift 60s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+}
+
+/* Hide gradient in Tier 0-1 (Tier 1 has zero gradients) */
+.tier-0 .fading-theme-overlay,
+.tier-1 .fading-theme-overlay {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    animation: none !important;
+}
+
+/* Disable glitch animations in Tier 0 (but keep glitch effects) */
+/* Note: Glitch effects use animations, but we want them in Tier 0 */
+/* Only disable smooth animations, not glitch animations */
+.tier-0 .fading-theme-overlay,
+.tier-0 .fading-particle,
+.tier-0 .element-fade-indicator {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Ensure glitch effects work in Tier 0 */
+body.tier-0::before,
+body.tier-0::after {
+    animation-play-state: running !important;
+}
+
+/* Disable glitch effects in Tier 4 (perfect) */
+body.tier-4::before,
+body.tier-4::after {
+    display: none !important;
+}
+
+body.tier-4 * {
+    animation: none !important;
+    filter: none !important;
+    clip-path: none !important;
+    text-shadow: none !important;
+}
+
+/* Tier 2: Heavy glitchy gradient (first appearance) */
+body.tier-2 .fading-theme-overlay {
+    background: linear-gradient(
+        180deg,
+        rgba(108, 92, 231, 0.15) 0%,
+        rgba(255, 0, 0, 0.12) 20%,  /* Red corruption */
+        rgba(108, 92, 231, 0.1) 30%,
+        rgba(0, 255, 255, 0.12) 50%, /* Cyan corruption */
+        rgba(108, 92, 231, 0.05) 70%,
+        rgba(26, 26, 46, 0.2) 100%
+    );
+    animation: glitchGradientHeavy 2s infinite;
+    filter: hue-rotate(0deg);
+}
+
+/* Tier 3: Moderate glitchy gradient */
+body.tier-3 .fading-theme-overlay {
+    background: linear-gradient(
+        180deg,
+        rgba(108, 92, 231, 0.12) 0%,
+        rgba(255, 0, 0, 0.05) 25%,  /* Light red corruption */
+        rgba(108, 92, 231, 0.08) 30%,
+        rgba(0, 255, 255, 0.05) 50%, /* Light cyan corruption */
+        rgba(108, 92, 231, 0.05) 70%,
+        rgba(26, 26, 46, 0.15) 100%
+    );
+    animation: glitchGradientModerate 4s infinite;
+    filter: hue-rotate(0deg);
+}
+
+/* Tier 4: Smooth gradient (perfect) */
+body.tier-4 .fading-theme-overlay {
+    background: linear-gradient(
+        180deg,
+        rgba(108, 92, 231, 0.1) 0%,
+        rgba(108, 92, 231, 0.05) 50%,
+        rgba(26, 26, 46, 0.15) 100%
+    );
+    animation: fadeShift 60s ease-in-out infinite;
+    filter: none;
+}
+
+@keyframes glitchGradientHeavy {
+    0%, 100% {
+        filter: hue-rotate(0deg);
+        background-position: 0% 0%;
+    }
+    25% {
+        filter: hue-rotate(15deg);
+        background-position: 3% 0%;
+    }
+    50% {
+        filter: hue-rotate(-15deg);
+        background-position: -3% 0%;
+    }
+    75% {
+        filter: hue-rotate(8deg);
+        background-position: 1.5% 0%;
+    }
+}
+
+@keyframes glitchGradientModerate {
+    0%, 100% {
+        filter: hue-rotate(0deg);
+        background-position: 0% 0%;
+    }
+    50% {
+        filter: hue-rotate(5deg);
+        background-position: 1% 0%;
+    }
+}
+
+@keyframes fadeShift {
+    0%, 100% {
+        opacity: 0.1;
+        filter: brightness(1);
+    }
+    50% {
+        opacity: 0.15;
+        filter: brightness(0.95);
+    }
+}
+
+/* Brighten when preserving */
+.fading-theme-overlay.preserved {
+    animation: preserveBrighten 2s ease-out;
+}
+
+@keyframes preserveBrighten {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.15);
+    }
+}
+
+/* Particle Fade Effect (Tier 3+) */
+.fading-particle {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: radial-gradient(circle, rgba(255, 45, 170, 0.6) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+}
+
+.fading-particle.preserved {
+    animation: preserveFlash 1.5s ease-out;
+}
+
+@keyframes preserveFlash {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+}
+
+/* Hide particles in Tier 0-2 */
+.tier-0 .fading-particle,
+.tier-1 .fading-particle,
+.tier-2 .fading-particle {
+    display: none !important;
+}
+
+/* Element Fade Indicators (Tier 1+) */
+.element-fade-indicator {
+    width: 40px;
+    height: 3px;
+    background: currentColor;
+    border-radius: 2px;
+    opacity: 0.4;
+    margin-top: 4px;
+    pointer-events: none;
+    display: none;
+}
+
+/* Hide indicators in Tier 0 */
+.tier-0 .element-fade-indicator {
+    display: none !important;
+}
+
+/* Element-specific fade rates */
+.element-fade-indicator-fire {
+    animation: elementFade 2s ease-in-out infinite;
+}
+
+.element-fade-indicator-water {
+    animation: elementFade 3s ease-in-out infinite;
+}
+
+.element-fade-indicator-air {
+    animation: elementFade 2.5s ease-in-out infinite;
+}
+
+.element-fade-indicator-crystal {
+    animation: elementFade 4s ease-in-out infinite;
+}
+
+.element-fade-indicator-aether {
+    animation: elementFade 3.5s ease-in-out infinite;
+}
+
+@keyframes elementFade {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.2;
+    }
+}
+
 /* Animated Night Sky Background Overlay */
-body::before {
+/* Note: body::before is used for screen tearing glitch in Tier 0-3 */
+/* Night sky is moved to a separate layer or disabled in glitch tiers */
+body.tier-4::before {
     content: '';
     position: fixed;
     top: 0;
@@ -214,8 +855,9 @@ body::before {
     opacity: 0.6;
 }
 
-/* Scanline Effect */
-body::after {
+/* Scanline Effect - Only in Tier 4 (perfect) */
+/* Note: body::after is used for glitch scanlines in Tier 0-3 */
+body.tier-4::after {
     content: '';
     position: fixed;
     top: 0;

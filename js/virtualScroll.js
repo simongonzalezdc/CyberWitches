@@ -411,37 +411,15 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 </div>
             `;
             
-                // Attach event listeners directly instead of using onclick
+                // Ensure buttons are clickable - unified handler will handle clicks
                 const buttons = card.querySelectorAll('button[data-action]');
                 buttons.forEach(btn => {
-                    // Remove any existing listeners to prevent duplicates
-                    const newBtn = btn.cloneNode(true);
-                    btn.parentNode.replaceChild(newBtn, btn);
-                    
-                    newBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        // Mark button as handled to prevent fallback handler from firing
-                        newBtn.dataset.handled = 'true';
-                        setTimeout(() => {
-                            delete newBtn.dataset.handled;
-                        }, 100);
-                        
-                        const action = newBtn.dataset.action;
-                        const wsId = newBtn.dataset.wsId;
-                        
-                        console.log('Button clicked:', { action, wsId, amount: newBtn.dataset.amount });
-                        
-                        if (action === 'craft' && typeof window.craftWorkstation === 'function') {
-                            const amount = parseInt(newBtn.dataset.amount, 10) || 1;
-                            console.log('Calling craftWorkstation with:', { wsId, amount });
-                            window.craftWorkstation(wsId, amount, newBtn);
-                        } else if (action === 'craft-max' && typeof window.craftWorkstationMax === 'function') {
-                            console.log('Calling craftWorkstationMax with:', { wsId });
-                            window.craftWorkstationMax(wsId);
-                        }
-                    });
+                    // Ensure button is clickable
+                    btn.style.position = 'relative';
+                    btn.style.zIndex = '100';
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.cursor = 'pointer';
+                    // Unified handler in initUI() will handle all clicks
                 });
                 
                 return card;
@@ -631,19 +609,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
         // Attach event listeners directly instead of using onclick
         const buttons = card.querySelectorAll('button[data-action]');
         buttons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const action = btn.dataset.action;
-                const wsId = btn.dataset.wsId;
-                
-                if (action === 'craft' && typeof window.craftWorkstation === 'function') {
-                    const amount = parseInt(btn.dataset.amount) || 1;
-                    window.craftWorkstation(wsId, amount, btn);
-                } else if (action === 'craft-max' && typeof window.craftWorkstationMax === 'function') {
-                    window.craftWorkstationMax(wsId);
-                }
-            });
+            // Unified handler in initUI() will handle all clicks
         });
         
         // Add tooltip after card is created
@@ -787,11 +753,7 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                 // Attach event listener directly instead of using onclick
                 const button = card.querySelector('button[data-action="inscribe"]');
                 if (button && !owned && canAffordAll && typeof window.inscribeUpgrade === 'function') {
-                    button.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        window.inscribeUpgrade(upgrade.id, button);
-                    });
+                    // Unified handler in initUI() will handle all clicks
                 }
                 
                 return card;

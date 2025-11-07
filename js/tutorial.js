@@ -90,8 +90,8 @@ class TutorialSystem {
         this.tutorialSteps = [
             {
                 id: 'welcome',
-                title: 'Welcome to Cyber Witches!',
-                message: 'Cast spells, build workstations, grow your coven.',
+                title: 'Spellwright',
+                message: 'Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells to gather magic before it fades, then build preservation chambers to stabilize it.',
                 target: null,
                 position: 'center',
                 action: null
@@ -99,7 +99,7 @@ class TutorialSystem {
             {
                 id: 'cast_button',
                 title: 'Cast Your First Spell',
-                message: 'Click Cast to earn ingredients and Spell Energy.',
+                message: 'Click Cast to gather magic before it fades. Each spell pulls energy from a dwindling pool.',
                 target: '#cast-button',
                 position: 'bottom',
                 action: () => {
@@ -113,8 +113,8 @@ class TutorialSystem {
             },
             {
                 id: 'workstations',
-                title: 'Build Workstations',
-                message: 'Workstations make ingredients automatically.',
+                title: 'Build Preservation Chambers',
+                message: 'Preservation chambers capture and hold spell energy before it fades. They stabilize fading essences into materials that won\'t fade.',
                 target: '.tab-btn[data-tab="workstations"]',
                 position: 'bottom',
                 action: () => {
@@ -126,16 +126,16 @@ class TutorialSystem {
             },
             {
                 id: 'craft_workstation',
-                title: 'Craft Your First Workstation',
-                message: 'Click "Craft x1" to build one.',
+                title: 'Craft Your First Preservation Chamber',
+                message: 'Click "Craft x1" to build your first preservation chamber. Each element fades at a different rate—preserve what you can.',
                 target: '.card button[data-action="craft"]',
                 position: 'top',
                 action: null
             },
             {
                 id: 'inscriptions',
-                title: 'Purchase Upgrades',
-                message: 'Buy permanent upgrades in Inscriptions.',
+                title: 'Refine Your Preservation Techniques',
+                message: 'Buy permanent upgrades in Inscriptions to refine your preservation techniques and fight the fading more effectively.',
                 target: '.tab-btn[data-tab="inscriptions"]',
                 position: 'bottom',
                 action: () => {

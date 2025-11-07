@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cast spells, build workstations, and grow your cyber coven. Play offline anytime!">
+    <meta name="description" content="Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. Play offline anytime!">
     <meta name="theme-color" content="#FF2DAA">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Cyber Witches">
+    <meta name="apple-mobile-web-app-title" content="Spellwright">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Cyber Witches: Idle Coven</title>
+    <title>Spellwright</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
@@ -89,7 +89,7 @@
     <div class="hud">
         <div class="hud-content">
             <div class="currency-display">
-                <span id="ab-display" title="Arcane Bits - Earned from casting. Build workstations to make more.">AB: 0</span>
+                <span id="ab-display" title="Arcane Bits - Preserved energy captured from fading magic. Use it to build preservation structures.">AB: 0</span>
                 <span id="abps-display" class="seps-display" title="Arcane Bits per second">0.0 AB/s</span>
                 <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" title="Elemental Affinity"></span>
             </div>
@@ -97,7 +97,7 @@
                     <button id="install-app-button" class="btn-install" style="display: none;" title="Install to play offline" aria-label="Install App">
                         <span class="install-icon">📱</span> Install
                     </button>
-                    <button id="cast-button" class="btn-cast">
+                    <button id="cast-button" class="btn-cast" title="Gather magic before it fades">
                         <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
                         <span class="css-icon-sparkle"></span> Cast
                     </button>
@@ -112,15 +112,15 @@
         
         <!-- Tab Navigation -->
         <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="workstations" title="Build workstations that make ingredients" aria-label="Workstations tab"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
-            <button class="tab-btn" data-tab="inscriptions" title="Buy permanent upgrades" aria-label="Inscriptions tab"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
-            <button class="tab-btn" data-tab="inventory" title="Your collected ingredients" aria-label="Inventory tab"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
-            <button class="tab-btn" data-tab="experiment" title="Try experiments to find new recipes" aria-label="Experiment tab"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
-            <button class="tab-btn" data-tab="dailies" title="Daily tasks for rewards" aria-label="Rituals tab"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
+            <button class="tab-btn active" data-tab="workstations" title="Preservation chambers that capture and hold spell energy before it fades" aria-label="Workstations tab"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
+            <button class="tab-btn" data-tab="inscriptions" title="Refine your preservation techniques with permanent upgrades" aria-label="Inscriptions tab"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
+            <button class="tab-btn" data-tab="inventory" title="Your preserved materials that resist the fading" aria-label="Inventory tab"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
+            <button class="tab-btn" data-tab="experiment" title="Discover new preservation techniques through experimentation" aria-label="Experiment tab"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
+            <button class="tab-btn" data-tab="dailies" title="Maintenance rituals to keep preserved magic stable" aria-label="Rituals tab"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
             <!-- Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
             <button class="tab-btn" data-tab="boons" title="Buy permanent bonuses with Eldritch Keys" aria-label="Boons tab"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
-            <button class="tab-btn" data-tab="meditation" title="Tower defense mini-game" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
-            <button class="tab-btn" data-tab="stats" title="Your stats and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
+            <button class="tab-btn" data-tab="meditation" title="Defend your mind from the mental toll of the fading" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
+            <button class="tab-btn" data-tab="stats" title="Your preservation milestones and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
         </div>
 
         <!-- Tab Content -->
@@ -142,7 +142,12 @@
 
             <!-- Experiment Tab -->
             <div id="experiment-tab" class="tab-panel">
-                <button id="experiment-button" class="btn-primary">Try Experiment</button>
+                <div class="experiment-intro" style="margin-bottom: 20px; padding: 15px; background: var(--bg-secondary, #16213e); border-radius: 8px; border: 1px solid var(--border, #333);">
+                    <p style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.5; margin: 0;">
+                        <strong style="color: var(--text-primary, #fff);">Discover new preservation techniques</strong> by experimenting with different combinations of preserved materials. Each discovery helps you fight the fading more effectively.
+                    </p>
+                </div>
+                <button id="experiment-button" class="btn-primary" title="Discover new preservation techniques through experimentation">Try Experiment</button>
                 <div id="experiment-result" class="result-box"></div>
                 <div id="recipe-list" class="content-list"></div>
             </div>
@@ -293,6 +298,47 @@
                                 >
                                 <span class="volume-value" id="music-volume-value">100%</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Story Section -->
+                    <div class="settings-section">
+                        <h3><span class="settings-icon">📖</span> The Story</h3>
+                        <p style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                            Magic is dying. The world's spell energy is fading, and once it's gone, it won't return. You are a <strong style="color: var(--success, #00d4aa);">Spellwright</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
+                        </p>
+                        <p style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                            Every spell you cast pulls energy from a dwindling pool. If you don't act, magic will be gone forever. Your workstations are preservation chambers—structures that capture and hold spell energy before it fades.
+                        </p>
+                        <button id="read-full-story-button" class="btn-secondary" style="margin-top: 10px;">
+                            <span class="settings-icon">📚</span> Read Full Story
+                        </button>
+                    </div>
+
+                    <!-- Fading Theme Visual Effects -->
+                    <div class="settings-section">
+                        <h3><span class="settings-icon">✨</span> Fading Theme Effects</h3>
+                        <p class="settings-note">Visual effects that represent the fading magic (Gradient: Tier 2+, Indicators: Tier 1+)</p>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="fading-gradient-toggle" class="setting-checkbox">
+                                <span>Background Fade Gradient</span>
+                            </label>
+                            <p class="settings-note">Subtle gradient overlay showing magic fading (Tier 2+)</p>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="fading-particles-toggle" class="setting-checkbox">
+                                <span>Particle Fade Effect</span>
+                            </label>
+                            <p class="settings-note">Particles that slowly fade away (Tier 3+)</p>
+                        </div>
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                <input type="checkbox" id="fading-indicators-toggle" class="setting-checkbox">
+                                <span>Element Fade Indicators</span>
+                            </label>
+                            <p class="settings-note">Visual indicators showing element fade rates (Tier 1+)</p>
                         </div>
                     </div>
 

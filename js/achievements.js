@@ -14,21 +14,21 @@ export class AchievementSystem {
             {
                 id: 'first_cast',
                 name: 'First Spell',
-                description: 'Cast your first spell',
+                description: 'You\'ve cast your first spell, gathering magic before it fades completely.',
                 condition: () => this.gameState.totalTaps >= 1,
                 reward: { type: 'ab', amount: 10 }
             },
             {
                 id: 'first_ab',
-                name: 'First AB',
-                description: 'Earn your first AB',
+                name: 'First Arcane Bits',
+                description: 'You\'ve preserved your first Arcane Bits—energy captured from fading magic.',
                 condition: () => this.gameState.ab >= 1,
                 reward: { type: 'ab', amount: 5 }
             },
             {
                 id: 'first_workstation',
-                name: 'First Factory',
-                description: 'Craft your first workstation',
+                name: 'First Preservation Chamber',
+                description: 'You\'ve built your first preservation chamber. The fading slows, if only slightly.',
                 condition: () => this.gameState.totalWorkstationsCrafted >= 1,
                 reward: { type: 'ab', amount: 50 }
             },
@@ -63,7 +63,7 @@ export class AchievementSystem {
             {
                 id: 'first_discovery',
                 name: 'Experimenter',
-                description: 'Discover your first recipe',
+                description: 'You\'ve discovered a new preservation technique. Each discovery helps you fight the fading more effectively.',
                 condition: () => this.gameState.discoveredRecipes.length >= 1,
                 reward: { type: 'ab', amount: 100 }
             },
@@ -246,13 +246,6 @@ export class AchievementSystem {
             
             // Focus-related achievements
             {
-                id: 'first_focus_mill',
-                name: 'Focus Mill',
-                description: 'Craft your first Focus Mill',
-                condition: () => this.gameState.workstations?.ws_focus_mill?.count > 0,
-                reward: { type: 'ab', amount: 5000 }
-            },
-            {
                 id: 'hundred_focus',
                 name: 'Focus Accumulator',
                 description: 'Produce 100 Focus',
@@ -265,25 +258,6 @@ export class AchievementSystem {
                 description: 'Produce 1000 Focus',
                 condition: () => (this.gameState.inventory?.focus || 0) + (this.gameState.totalFocusProduced || 0) >= 1000,
                 reward: { type: 'ab', amount: 50000 }
-            },
-            {
-                id: 'all_focus_mills',
-                name: 'Focus Mastery',
-                description: 'Own all 4 Focus Mills (Tier 2, 3, 4, and 5)',
-                condition: () => {
-                    return this.gameState.workstations?.ws_focus_mill?.count > 0 &&
-                           this.gameState.workstations?.ws_focus_mill_t3?.count > 0 &&
-                           this.gameState.workstations?.ws_focus_mill_t4?.count > 0 &&
-                           this.gameState.workstations?.ws_focus_mill_t5?.count > 0;
-                },
-                reward: { type: 'ab', amount: 100000 }
-            },
-            {
-                id: 'focus_upgrade',
-                name: 'Focus Enhancement',
-                description: 'Purchase Focus Amplification upgrade',
-                condition: () => this.gameState.upgradesOwned?.u_focus_production_1 === true,
-                reward: { type: 'ab', amount: 20000 }
             },
             {
                 id: 'focus_experiment',

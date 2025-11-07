@@ -7,6 +7,7 @@ import { MeditationState } from './meditationState.js';
 import { MeditationUI } from './meditationUI.js';
 import { MeditationTowers } from './meditationTowers.js';
 import { DesignTierSystem } from './designTierSystem.js';
+import { FadingThemeSystem } from './fadingThemeSystem.js';
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { ELEMENT_SPECIALIZATIONS } from './elementSpecialization.js';
 import { formatShort, formatPrecise, formatTimeDuration, formatOneDecimal } from './utils.js';
@@ -98,6 +99,7 @@ let meditationState;
 let meditationUI;
 let meditationTowers;
 let designTierSystem;
+let fadingThemeSystem;
 let tutorialSystem;
 let balanceTestingFramework;
 let progressionAnalysis;
@@ -143,6 +145,13 @@ let updateIntervals = [];
 let allIntervals = []; // Track all intervals for cleanup
 let allTimeouts = []; // Track all timeouts for cleanup
 let autoCastInterval = null; // Track auto-cast interval
+
+// Click handling state - prevent duplicate clicks
+const clickHandlers = {
+    processing: new Set(), // Track buttons currently being processed
+    lastClickTime: new Map(), // Track last click time per button
+    debounceDelay: 300 // Minimum time between clicks (ms)
+};
 
 // Keyboard shortcuts
 const keyboardShortcuts = {
@@ -194,6 +203,32 @@ function defineGlobalFunctions() {
             return;
         }
         
+        // Create unique key for this button/action combination
+        const buttonKey = buttonElement ? `${wsId}-${buttonElement.dataset.amount || '1'}-${buttonElement.dataset.action || 'craft'}` : `${wsId}-${amount}`;
+        
+        // Debounce: Prevent rapid clicks
+        const now = Date.now();
+        const lastClick = clickHandlers.lastClickTime.get(buttonKey) || 0;
+        if (now - lastClick < clickHandlers.debounceDelay) {
+            console.log('Click debounced - too soon after last click');
+            return;
+        }
+        
+        // Check if already processing this button
+        if (clickHandlers.processing.has(buttonKey)) {
+            console.log('Already processing this action, ignoring click');
+            return;
+        }
+        
+        // Mark as processing
+        clickHandlers.processing.add(buttonKey);
+        clickHandlers.lastClickTime.set(buttonKey, now);
+        
+        // Disable button during processing
+        if (buttonElement) {
+            buttonElement.disabled = true;
+        }
+        
         // Ensure amount is a number
         const craftAmount = parseInt(amount, 10) || 1;
         console.log('craftWorkstation called:', { wsId, amount: craftAmount, originalAmount: amount });
@@ -211,6 +246,11 @@ function defineGlobalFunctions() {
             if (buttonElement && typeof highlightElement === 'function') {
                 highlightElement(buttonElement, '#3CE3C5', 300);
                 pulseElement(buttonElement, 1.1, 200);
+            }
+            
+            // Trigger preserve effect
+            if (window.fadingThemeSystem && typeof window.fadingThemeSystem.triggerPreserveEffect === 'function') {
+                window.fadingThemeSystem.triggerPreserveEffect();
             }
             
             // Show notification in sidebar
@@ -239,6 +279,19 @@ function defineGlobalFunctions() {
             }
         }
         
+        // Re-enable button and clear processing flag
+        if (buttonElement) {
+            // Use setTimeout to ensure UI updates before re-enabling
+            setTimeout(() => {
+                buttonElement.disabled = false;
+            }, 50);
+        }
+        
+        // Clear processing flag after a delay
+        setTimeout(() => {
+            clickHandlers.processing.delete(buttonKey);
+        }, clickHandlers.debounceDelay);
+        
         // Refresh virtual scroll if it exists, otherwise update tab
         if (virtualWorkstationList && typeof virtualWorkstationList.refresh === 'function') {
             console.log('Refreshing virtual scroll...');
@@ -248,8 +301,35 @@ function defineGlobalFunctions() {
         }
     };
     
-    window.craftWorkstationMax = (wsId) => {
+    window.craftWorkstationMax = (wsId, buttonElement = null) => {
         if (!gameState) return;
+        
+        // Create unique key for this action
+        const buttonKey = `max-${wsId}`;
+        
+        // Debounce: Prevent rapid clicks
+        const now = Date.now();
+        const lastClick = clickHandlers.lastClickTime.get(buttonKey) || 0;
+        if (now - lastClick < clickHandlers.debounceDelay) {
+            console.log('Max click debounced - too soon after last click');
+            return;
+        }
+        
+        // Check if already processing
+        if (clickHandlers.processing.has(buttonKey)) {
+            console.log('Already processing max craft, ignoring click');
+            return;
+        }
+        
+        // Mark as processing
+        clickHandlers.processing.add(buttonKey);
+        clickHandlers.lastClickTime.set(buttonKey, now);
+        
+        // Disable button during processing
+        if (buttonElement) {
+            buttonElement.disabled = true;
+        }
+        
         console.log('craftWorkstationMax called for:', wsId);
         let maxCount = 0;
         for (let i = 0; i < 1000; i++) {
@@ -295,12 +375,50 @@ function defineGlobalFunctions() {
                 updateWorkstationsTab();
             }
         }
+        
+        // Re-enable button and clear processing flag
+        if (buttonElement) {
+            setTimeout(() => {
+                buttonElement.disabled = false;
+            }, 50);
+        }
+        
+        // Clear processing flag after a delay
+        setTimeout(() => {
+            clickHandlers.processing.delete(buttonKey);
+        }, clickHandlers.debounceDelay);
     };
     
     window.inscribeUpgrade = (upgId, buttonElement = null) => {
         if (!gameState) {
             console.error('inscribeUpgrade: gameState not available');
             return;
+        }
+        
+        // Create unique key for this action
+        const buttonKey = `inscribe-${upgId}`;
+        
+        // Debounce: Prevent rapid clicks
+        const now = Date.now();
+        const lastClick = clickHandlers.lastClickTime.get(buttonKey) || 0;
+        if (now - lastClick < clickHandlers.debounceDelay) {
+            console.log('Inscribe click debounced - too soon after last click');
+            return;
+        }
+        
+        // Check if already processing
+        if (clickHandlers.processing.has(buttonKey)) {
+            console.log('Already processing inscription, ignoring click');
+            return;
+        }
+        
+        // Mark as processing
+        clickHandlers.processing.add(buttonKey);
+        clickHandlers.lastClickTime.set(buttonKey, now);
+        
+        // Disable button during processing
+        if (buttonElement) {
+            buttonElement.disabled = true;
         }
         
         console.log('inscribeUpgrade called:', { upgId, buttonElement });
@@ -311,6 +429,13 @@ function defineGlobalFunctions() {
             if (typeof showNotification === 'function') {
                 showNotification('Error: Upgrade not found', 'error');
             }
+            // Re-enable button on error
+            if (buttonElement) {
+                setTimeout(() => {
+                    buttonElement.disabled = false;
+                }, 50);
+            }
+            clickHandlers.processing.delete(buttonKey);
             return;
         }
         
@@ -374,6 +499,18 @@ function defineGlobalFunctions() {
                 }
             }
         }
+        
+        // Re-enable button and clear processing flag
+        if (buttonElement) {
+            setTimeout(() => {
+                buttonElement.disabled = false;
+            }, 50);
+        }
+        
+        // Clear processing flag after a delay
+        setTimeout(() => {
+            clickHandlers.processing.delete(buttonKey);
+        }, clickHandlers.debounceDelay);
         
         if (typeof updateInscriptionsTab === 'function') {
             updateInscriptionsTab();
@@ -831,6 +968,9 @@ function initUI() {
     comboSystem = new ComboSystem();
     eventSystem = new EventSystem(gameState);
     
+    // Show story introduction on first launch
+    showStoryIntroduction();
+    
     // Initialize tutorial system
     tutorialSystem = new TutorialSystem(gameState);
     window.tutorialSystem = tutorialSystem;
@@ -861,6 +1001,28 @@ function initUI() {
     designTierSystem = new DesignTierSystem(gameState);
     designTierSystem.applyTier(designTierSystem.getCurrentTier()).catch(err => console.error('Error applying initial tier:', err));
     window.designTierSystem = designTierSystem; // Make globally accessible
+    
+    // Initialize fading theme system
+    fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
+    window.fadingThemeSystem = fadingThemeSystem; // Make globally accessible
+    
+    // Update fading theme when tier changes
+    const originalApplyTier = designTierSystem.applyTier.bind(designTierSystem);
+    designTierSystem.applyTier = async function(tier) {
+        await originalApplyTier(tier);
+        if (fadingThemeSystem) {
+            fadingThemeSystem.updateForTier(tier);
+        }
+    };
+    
+    // Also update when tier is set manually
+    const originalSetTier = designTierSystem.setTier.bind(designTierSystem);
+    designTierSystem.setTier = async function(tier) {
+        await originalSetTier(tier);
+        if (fadingThemeSystem) {
+            fadingThemeSystem.updateForTier(tier);
+        }
+    };
     window.achievements = achievements; // Make achievements accessible for design tier system
     // Particle effects removed for memory optimization
     window.audioSystem = audioSystem; // Make audio system accessible globally
@@ -1034,6 +1196,14 @@ function initUI() {
                     window.showNotification('This tier has not been unlocked yet!', 'error');
                 }
             }
+        });
+    }
+    
+    // Read Full Story button
+    const readFullStoryButton = document.getElementById('read-full-story-button');
+    if (readFullStoryButton) {
+        readFullStoryButton.addEventListener('click', () => {
+            showFullStoryModal();
         });
     }
     
@@ -1262,6 +1432,11 @@ function initUI() {
                         }
                         isProcessing = false;
                     }, 100);
+                    
+                    // Trigger preserve effect
+                    if (window.fadingThemeSystem && typeof window.fadingThemeSystem.triggerPreserveEffect === 'function') {
+                        window.fadingThemeSystem.triggerPreserveEffect();
+                    }
                     
                     // Particles (deferred to not block)
                     requestAnimationFrame(() => {
@@ -2023,26 +2198,33 @@ function initUI() {
         if (!action) return;
         
         // Check if event was already handled by a direct handler
-        // Only skip if the event was explicitly prevented by a direct handler
-        // Don't rely on data-handled flags that might prevent legitimate clicks
-        if (e.defaultPrevented && button.dataset.handled === 'true') {
-            // Event was already handled by a direct handler
+        // Skip if the event was explicitly prevented (direct handler already processed it)
+        if (e.defaultPrevented) {
+            return;
+        }
+        
+        // Check if button is already being processed (debounce check)
+        const wsId = button.dataset.wsId || button.dataset['ws-id'];
+        const amount = button.dataset.amount;
+        let buttonKey = '';
+        if (action === 'craft' && wsId) {
+            buttonKey = `${wsId}-${amount || '1'}-craft`;
+        } else if (action === 'craft-max' && wsId) {
+            buttonKey = `max-${wsId}`;
+        }
+        
+        if (buttonKey && clickHandlers.processing.has(buttonKey)) {
+            // Already processing this action, ignore click
+            e.preventDefault();
+            e.stopPropagation();
             return;
         }
         
         // Get button data attributes
-        const wsId = button.dataset.wsId || button.dataset['ws-id'];
         const recipeId = button.dataset.recipeId || button.dataset['recipe-id'];
         const taskId = button.dataset.taskId || button.dataset['task-id'];
         const boonId = button.dataset.boonId || button.dataset['boon-id'];
         const upgradeId = button.dataset.upgradeId || button.dataset['upgrade-id'];
-        const amount = button.dataset.amount;
-        
-        // Mark as handled to prevent double-processing
-        button.dataset.handled = 'true';
-        setTimeout(() => {
-            delete button.dataset.handled;
-        }, 200);
         
         // Handle different action types - fire immediately
         let handled = false;
@@ -2051,7 +2233,7 @@ function initUI() {
             window.craftWorkstation(wsId, craftAmount, button);
             handled = true;
         } else if (action === 'craft-max' && wsId && typeof window.craftWorkstationMax === 'function') {
-            window.craftWorkstationMax(wsId);
+            window.craftWorkstationMax(wsId, button);
             handled = true;
         } else if (action === 'craft-recipe' && recipeId && typeof window.craftRecipe === 'function') {
             window.craftRecipe(recipeId);
@@ -2072,6 +2254,7 @@ function initUI() {
             e.preventDefault();
             e.stopPropagation();
             console.log('Unified handler executed for:', action);
+            return; // Exit early to prevent fallback handlers
         }
         
         // Check if button has onclick attribute (fallback for legacy buttons)
@@ -2447,13 +2630,7 @@ function updateWorkstationsTab() {
         return gameState.ab >= unlockRequirement;
     });
     
-    // Hide focus workstations until meditation is unlocked
-    const isMeditationUnlocked = gameState.prestigeCount >= 1;
-    if (!isMeditationUnlocked) {
-        unlockedWorkstations = unlockedWorkstations.filter(prod => 
-            !prod.id.includes('focus') && !prod.id.includes('focus_mill')
-        );
-    }
+    // Focus is only gained through meditation, no workstations needed
     
     console.log('Unlocked workstations:', unlockedWorkstations.length, 'of', PRODUCERS.length, 'total');
     
@@ -2703,16 +2880,21 @@ function getTierAppropriateStyle(itemTier) {
 
 /**
  * Get tier for a workstation based on its position in PRODUCERS array
- * Tier 0: indices 0-4, Tier 1: 5-9, Tier 2: 10-14, Tier 3: 15-19, Tier 4: 20-24, Tier 5: 25+
+ * Tier 0: indices 0-4 (5 workstations)
+ * Tier 1: indices 5-9 (5 workstations)
+ * Tier 2: indices 10-14 (5 workstations)
+ * Tier 3: indices 15-19 (5 workstations)
+ * Tier 4: indices 20-24 (5 workstations)
  */
 function getWorkstationTier(prodData) {
     const index = PRODUCERS.findIndex(p => p.id === prodData.id);
-    if (index <= 4) return 0;  // Tier 0: 5 workstations (indices 0-4)
-    if (index <= 9) return 1;  // Tier 1: 5 workstations (indices 5-9)
-    if (index <= 14) return 2; // Tier 2: 5 workstations (indices 10-14)
-    if (index <= 19) return 3; // Tier 3: 5 workstations (indices 15-19)
-    if (index <= 24) return 4; // Tier 4: 5 workstations (indices 20-24)
-    return 5;                   // Tier 5: workstations (indices 25+)
+    if (index === -1) return -1; // Not found
+    if (index <= 4) return 0;   // Tier 0: 5 workstations (indices 0-4)
+    if (index <= 9) return 1;    // Tier 1: 5 workstations (indices 5-9)
+    if (index <= 14) return 2;   // Tier 2: 5 workstations (indices 10-14)
+    if (index <= 19) return 3;  // Tier 3: 5 workstations (indices 15-19)
+    if (index <= 24) return 4;  // Tier 4: 5 workstations (indices 20-24)
+    return -1; // Invalid tier (should not happen with current structure)
 }
 
 /**
@@ -2863,7 +3045,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                 </div>
             `;
             
-                // Attach event listeners directly
+                // Ensure buttons are clickable - unified handler will handle clicks
                 const buttons = card.querySelectorAll('button[data-action]');
                 buttons.forEach(btn => {
                     // Ensure button is clickable
@@ -2873,35 +3055,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                     btn.style.cursor = 'pointer';
                     btn.style.visibility = 'visible';
                     btn.style.display = 'inline-block';
-                    
-                    btn.addEventListener('click', (e) => {
-                        // Mark button as handled BEFORE processing to prevent unified handler from firing
-                        btn.dataset.handled = 'true';
-                        
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        const action = btn.dataset.action;
-                        const wsId = btn.dataset.wsId;
-                        
-                        console.log('Button clicked:', { action, wsId, button: btn });
-                        
-                        if (action === 'craft' && typeof window.craftWorkstation === 'function') {
-                            const amount = parseInt(btn.dataset.amount, 10) || 1;
-                            console.log('Traditional rendering button clicked:', { action, wsId, amount });
-                            window.craftWorkstation(wsId, amount, btn);
-                        } else if (action === 'craft-max' && typeof window.craftWorkstationMax === 'function') {
-                            console.log('Traditional rendering max button clicked:', { wsId });
-                            window.craftWorkstationMax(wsId);
-                        } else {
-                            console.error('Button action handler not found:', { action, wsId });
-                        }
-                        
-                        // Clear handled flag after a short delay
-                        setTimeout(() => {
-                            delete btn.dataset.handled;
-                        }, 200);
-                    }, { capture: true }); // Use capture phase to fire before unified handler
+                    // Unified handler in initUI() will handle all clicks
                 });
             
             container.appendChild(card);
@@ -3493,6 +3647,7 @@ function updateExperimentTab() {
     if (expButton) {
         // Explicitly set button text to ensure no emoji (prevents caching issues)
         expButton.textContent = 'Try Experiment';
+        expButton.title = 'Discover new preservation techniques through experimentation';
         
         // Remove any existing handlers to prevent duplicates
         expButton.onclick = null;
@@ -3917,8 +4072,8 @@ function getIngredientElement(ingId) {
     // Crystal: Chambers
     if (wsId.includes('crystal') || wsId.includes('chamber')) return 'crystal';
     
-    // Aether: Reactors and Focus Mills
-    if (wsId.includes('aether') || wsId.includes('reactor') || wsId.includes('focus')) return 'aether';
+    // Aether: Reactors
+    if (wsId.includes('aether') || wsId.includes('reactor')) return 'aether';
     
     return null;
 }
@@ -4340,6 +4495,12 @@ function updateMeditationVisibility() {
     if (!gameState) return;
     
     const isUnlocked = gameState.prestigeCount >= 1;
+    
+    // Show meditation story introduction on first unlock
+    if (isUnlocked && !localStorage.getItem('hasSeenMeditationStory')) {
+        showMeditationStoryIntroduction();
+        localStorage.setItem('hasSeenMeditationStory', 'true');
+    }
     
     // Update meditation tab
     const meditationTabButton = document.querySelector('.tab-btn[data-tab="meditation"]');
@@ -4904,10 +5065,10 @@ function showElementSpecializationChoice() {
     
     content.innerHTML = `
         <h2 style="text-align: center; margin-bottom: 20px; color: var(--accent, #6c5ce7); font-size: 28px;">
-            Choose Your Elemental Affinity
+            Choose Your Preservation Strategy
         </h2>
         <p style="text-align: center; margin-bottom: 30px; color: var(--text-secondary, #aaa); font-size: 16px;">
-            Select a path to specialize in. This choice will provide permanent bonuses until your next ascension.
+            This plane is too far gone. You've learned all you can here. As you prepare to Ascend to other realms where magic still exists, you must choose how you'll approach preservation in the next realm. Each element offers a different strategy for fighting the fading.
         </p>
         <div class="element-choices" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 20px;">
             ${Object.values(ELEMENT_SPECIALIZATIONS).map(spec => `
@@ -5346,6 +5507,276 @@ function showWelcomeBack(elapsed, abGained) {
 }
 
 // Show prestige modal
+/**
+ * Show story introduction modal on first launch
+ */
+function showStoryIntroduction() {
+    if (!gameState) return;
+    
+    // Check if story introduction was already shown
+    const hasSeenStory = localStorage.getItem('hasSeenStoryIntroduction') === 'true';
+    if (hasSeenStory) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'story-intro-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+        backdrop-filter: blur(10px);
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'story-intro-content';
+    content.style.cssText = `
+        background: var(--bg-primary, #1a1a2e);
+        border: 2px solid var(--accent, #6c5ce7);
+        border-radius: 15px;
+        padding: 40px;
+        max-width: 600px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    `;
+    
+    content.innerHTML = `
+        <h1 style="color: var(--accent, #6c5ce7); font-size: 36px; margin-bottom: 20px;">Spellwright</h1>
+        <p style="color: var(--text-primary, #fff); font-size: 18px; line-height: 1.6; margin-bottom: 15px;">
+            Magic is dying. The world's spell energy is fading, and once it's gone, it won't return.
+        </p>
+        <p style="color: var(--text-primary, #fff); font-size: 18px; line-height: 1.6; margin-bottom: 15px;">
+            You are a <strong style="color: var(--success, #00d4aa);">Spellwright</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
+        </p>
+        <p style="color: var(--text-secondary, #aaa); font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Every spell you cast pulls energy from a dwindling pool. If you don't act, magic will be gone forever.
+        </p>
+        <p style="color: var(--text-secondary, #aaa); font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+            Your workstations are preservation chambers—structures that capture and hold spell energy before it fades.
+        </p>
+        <button class="btn-primary" onclick="closeStoryIntroduction()" style="
+            padding: 15px 40px;
+            font-size: 18px;
+            background: var(--accent, #6c5ce7);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        ">Begin Preservation</button>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Mark as seen
+    localStorage.setItem('hasSeenStoryIntroduction', 'true');
+}
+
+/**
+ * Close story introduction modal
+ */
+window.closeStoryIntroduction = function() {
+    const modal = document.querySelector('.story-intro-modal');
+    if (modal) modal.remove();
+};
+
+/**
+ * Show meditation story introduction when meditation unlocks
+ */
+function showMeditationStoryIntroduction() {
+    const modal = document.createElement('div');
+    modal.className = 'meditation-story-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+        backdrop-filter: blur(10px);
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'meditation-story-content';
+    content.style.cssText = `
+        background: var(--bg-primary, #1a1a2e);
+        border: 2px solid var(--accent, #6c5ce7);
+        border-radius: 15px;
+        padding: 40px;
+        max-width: 600px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    `;
+    
+    content.innerHTML = `
+        <h1 style="color: var(--accent, #6c5ce7); font-size: 36px; margin-bottom: 20px;">The Mental Defense</h1>
+        <p style="color: var(--text-primary, #fff); font-size: 18px; line-height: 1.6; margin-bottom: 15px;">
+            As magic fades, the chaos and despair create <strong style="color: var(--error, #ff4757);">Distractions</strong>—mental intrusions that break your focus.
+        </p>
+        <p style="color: var(--text-primary, #fff); font-size: 18px; line-height: 1.6; margin-bottom: 15px;">
+            The fading doesn't just drain magic; it attacks your mind. Doubt, despair, and chaos seep in, making it harder to preserve what remains.
+        </p>
+        <p style="color: var(--text-secondary, #aaa); font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            You've learned to defend your mind. <strong style="color: var(--success, #00d4aa);">Meditation</strong> is your mental fortress—a space where you use preserved materials to build towers of focus.
+        </p>
+        <p style="color: var(--text-secondary, #aaa); font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+            These towers defend your <strong style="color: var(--success, #00d4aa);">Tranquility</strong> against waves of Distractions. The more focused you are, the better you can preserve magic.
+        </p>
+        <button class="btn-primary" onclick="closeMeditationStory()" style="
+            padding: 15px 40px;
+            font-size: 18px;
+            background: var(--accent, #6c5ce7);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        ">Enter Meditation</button>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+/**
+ * Close meditation story introduction modal
+ */
+window.closeMeditationStory = function() {
+    const modal = document.querySelector('.meditation-story-modal');
+    if (modal) modal.remove();
+};
+
+/**
+ * Show full story modal
+ */
+function showFullStoryModal() {
+    const modal = document.createElement('div');
+    modal.className = 'full-story-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+        backdrop-filter: blur(10px);
+        overflow-y: auto;
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'full-story-content';
+    content.style.cssText = `
+        background: var(--bg-primary, #1a1a2e);
+        border: 2px solid var(--accent, #6c5ce7);
+        border-radius: 15px;
+        padding: 40px;
+        max-width: 800px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+        margin: 20px;
+    `;
+    
+    content.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: var(--accent, #6c5ce7); font-size: 36px; margin-bottom: 10px;">Spellwright</h1>
+            <p style="color: var(--text-secondary, #aaa); font-size: 18px;">The Story of The Fading</p>
+        </div>
+        
+        <div style="color: var(--text-primary, #fff); font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
+            <h2 style="color: var(--accent, #6c5ce7); font-size: 24px; margin-top: 30px; margin-bottom: 15px;">The Premise</h2>
+            <p style="margin-bottom: 15px;">
+                Magic is dying. The world's spell energy is fading, and once it's gone, it won't return. You are a <strong style="color: var(--success, #00d4aa);">Spellwright</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
+            </p>
+            
+            <h2 style="color: var(--accent, #6c5ce7); font-size: 24px; margin-top: 30px; margin-bottom: 15px;">The Urgency</h2>
+            <p style="margin-bottom: 15px;">
+                Every spell you cast pulls energy from a dwindling pool. If you don't act, magic will be gone forever. Your workstations are preservation chambers—structures that capture and hold spell energy before it fades.
+            </p>
+            
+            <h2 style="color: var(--accent, #6c5ce7); font-size: 24px; margin-top: 30px; margin-bottom: 15px;">The Journey</h2>
+            
+            <h3 style="color: var(--success, #00d4aa); font-size: 20px; margin-top: 20px; margin-bottom: 10px;">Early Game</h3>
+            <p style="margin-bottom: 15px;">
+                You cast desperate spells, gathering what elemental essences remain. Fire, Water, Air, Crystal—each element fades at a different rate. You build basic workstations (Forges, Wells, Generators, Chambers) to stabilize these essences into materials that won't fade.
+            </p>
+            
+            <h3 style="color: var(--success, #00d4aa); font-size: 20px; margin-top: 20px; margin-bottom: 10px;">Mid Game</h3>
+            <p style="margin-bottom: 15px;">
+                You've learned to combine preserved materials into more stable forms. Some workstations can generate Arcane Bits—they're not just preserving magic, they're creating self-sustaining loops that slow the fading.
+            </p>
+            
+            <h3 style="color: var(--success, #00d4aa); font-size: 20px; margin-top: 20px; margin-bottom: 10px;">Late Game</h3>
+            <p style="margin-bottom: 15px;">
+                You're building quantum and void-level structures—the most stable forms possible. These are your last hope to preserve magic in forms that might outlast the fading.
+            </p>
+            
+            <h3 style="color: var(--success, #00d4aa); font-size: 20px; margin-top: 20px; margin-bottom: 10px;">Meditation - The Mental Defense</h3>
+            <p style="margin-bottom: 15px;">
+                As magic fades, the chaos and despair create <strong style="color: var(--error, #ff4757);">Distractions</strong>—mental intrusions that break your focus. The fading doesn't just drain magic; it attacks your mind. Doubt, despair, and chaos seep in, making it harder to preserve what remains.
+            </p>
+            <p style="margin-bottom: 15px;">
+                After your first Ascension, you learn to defend your mind. <strong style="color: var(--success, #00d4aa);">Meditation</strong> is your mental fortress—a space where you use preserved materials to build towers of focus. These towers defend your <strong style="color: var(--success, #00d4aa);">Tranquility</strong> against waves of Distractions.
+            </p>
+            
+            <h3 style="color: var(--success, #00d4aa); font-size: 20px; margin-top: 20px; margin-bottom: 10px;">Ascension - The Elemental Choice</h3>
+            <p style="margin-bottom: 15px;">
+                This plane is too far gone. You've learned all you can here. As you prepare to Ascend to other realms where magic still exists, you must choose how you'll approach preservation in the next realm. Each element offers a different strategy for fighting the fading:
+            </p>
+            <ul style="margin-left: 20px; margin-bottom: 15px; list-style: none;">
+                <li style="margin-bottom: 10px;"><strong style="color: var(--primary, #FF2DAA);">🔥 Fire Path:</strong> Preserve through intensity. Build aggressive preservation structures that burn bright and fast.</li>
+                <li style="margin-bottom: 10px;"><strong style="color: var(--secondary, #22E3FF);">💧 Water Path:</strong> Preserve through efficiency. Build balanced structures that flow smoothly.</li>
+                <li style="margin-bottom: 10px;"><strong style="color: var(--accent, #FFDB6E);">💨 Air Path:</strong> Preserve through speed. Unlock preservation techniques faster—time is running out.</li>
+                <li style="margin-bottom: 10px;"><strong style="color: var(--success, #3CE3C5);">💎 Crystal Path:</strong> Preserve through stability. Build universal foundations that support all elements.</li>
+            </ul>
+            <p style="margin-bottom: 15px;">
+                You carry your chosen preservation technique forward. Each realm teaches you more, but the fading follows you—you must work faster, build better, preserve more.
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn-primary" onclick="closeFullStory()" style="
+                padding: 15px 40px;
+                font-size: 18px;
+                background: var(--accent, #6c5ce7);
+                border: none;
+                border-radius: 8px;
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s;
+            ">Close</button>
+        </div>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+/**
+ * Close full story modal
+ */
+window.closeFullStory = function() {
+    const modal = document.querySelector('.full-story-modal');
+    if (modal) modal.remove();
+};
+
 window.showPrestigeModal = () => {
     if (!gameState || !prestigeModal) return;
     document.getElementById('prestige-ek').textContent = gameState.prestigePoints;
@@ -5359,21 +5790,7 @@ window.showPrestigeModal = () => {
     prestigeModal.style.opacity = '1';
 };
 
-// Debug: Log all clicks to see if they're being registered
-document.addEventListener('click', (e) => {
-    console.log('CLICK DETECTED:', {
-        target: e.target,
-        targetTag: e.target.tagName,
-        targetClass: e.target.className,
-        targetId: e.target.id,
-        currentTarget: e.currentTarget,
-        path: e.composedPath().map(el => ({
-            tag: el.tagName,
-            class: el.className,
-            id: el.id
-        })).slice(0, 5)
-    });
-}, true);
+// Debug click listener removed - was causing interference with click handling
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {

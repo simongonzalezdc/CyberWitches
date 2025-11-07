@@ -8,7 +8,7 @@ export const ELEMENT_SPECIALIZATIONS = {
         id: 'fire',
         name: 'Fire Path: Forge Master',
         icon: '🔥',
-        description: 'Aggressive production, fast automation, currency focus',
+        description: 'Preserve through intensity. Build aggressive preservation structures that burn bright and fast. Rush to automation, maximize what you can save before it\'s gone.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Fire production
             abProductionMult: 1.25,        // +25% AB from Fire reactors
@@ -28,7 +28,7 @@ export const ELEMENT_SPECIALIZATIONS = {
         id: 'water',
         name: 'Water Path: Flow Master',
         icon: '💧',
-        description: 'Balanced production, resource efficiency, sustainability',
+        description: 'Preserve through efficiency. Build balanced structures that flow smoothly. Reduce waste—every bit of magic matters. Sustainable growth means more magic preserved overall.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Water production
             globalProductionMult: 1.25,   // +25% all production
@@ -48,7 +48,7 @@ export const ELEMENT_SPECIALIZATIONS = {
         id: 'air',
         name: 'Air Path: Speed Master',
         icon: '💨',
-        description: 'Fast progression, quick unlocks, rapid scaling',
+        description: 'Preserve through speed. Unlock preservation techniques faster—time is running out. Your structures work faster, unlocking new tiers before the fading catches up.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Air production
             unlockSpeedMult: 0.7,          // Unlock 30% earlier (0.7x AB requirement)
@@ -68,7 +68,7 @@ export const ELEMENT_SPECIALIZATIONS = {
         id: 'crystal',
         name: 'Crystal Path: Foundation Master',
         icon: '💎',
-        description: 'Universal bonuses, bottleneck management, foundation building',
+        description: 'Preserve through stability. Build universal foundations that support all elements. Crystal structures are the most stable—they resist the fading better than others.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Crystal production
             universalIngredientMult: 1.25, // +25% universal ingredients
