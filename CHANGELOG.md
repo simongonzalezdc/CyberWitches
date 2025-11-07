@@ -39,7 +39,7 @@
 ### Core Files
 - `js/game.js` - Main game logic, removed search/filter, fixed syntax errors
 - `js/designTierSystem.js` - Design tier system implementation
-- `js/searchFilter.js` - Removed from imports (file still exists but unused)
+- `js/searchFilter.js` - Archived (moved to `archive/code/searchFilter.js`)
 - `index.html` - UI reorganization, removed searchFilter script tag
 
 ### Styling

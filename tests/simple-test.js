@@ -49,7 +49,8 @@ async function runTests() {
         // Test 1: Import modules
         console.log('Testing module imports...');
         const { default: GameState } = await import('../js/gameState.js');
-        const { default: CovenSystem } = await import('../js/covenSystem.js');
+        // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
+        // const { default: CovenSystem } = await import('../js/covenSystem.js'); // Archived
         console.log('✅ Modules imported successfully');
         
         // Test 2: Create game state

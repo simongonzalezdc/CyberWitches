@@ -27,7 +27,7 @@ This comprehensive testing guide covers all new features implemented in CyberWit
 - For mobile testing: Chrome DevTools device mode or actual mobile device
 
 ### Initial Setup
-1. Navigate to `http://localhost:3000/index-full.html` (full feature version)
+1. Navigate to `http://localhost:3000/index.html` (main game file)
 2. Open browser DevTools (F12) for console access
 3. For mobile testing, use DevTools device mode or test on actual device
 
@@ -546,8 +546,8 @@ Debug console commands:
 - **Verify**: Local server is running on correct port
 
 #### Features Not Working
-- **Check**: If using `index.html` vs `index-full.html`
-- **Solution**: Use `index-full.html` for all features
+- **Check**: Ensure you're using `index.html` (the main game file)
+- **Solution**: Use `index.html` for all features
 - **Verify**: All required JavaScript files are included
 
 #### Performance Issues

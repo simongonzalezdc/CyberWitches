@@ -26,12 +26,12 @@ const CACHE_URLS = [
     '/js/comboSystem.js',
     '/js/dailyRituals.js',
     '/js/eventSystem.js',
-    // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
+    // Coven system files archived - see ARCHIVED_COVEN_FEATURES.md
     // '/js/covenSystem.js',
     // '/js/covenChat.js',
     // '/js/covenEvents.js',
     // '/js/covenAchievements.js',
-    '/js/socialLeaderboards.js',
+    // '/js/socialLeaderboards.js', // Archived
     // Meditation system
     '/js/meditationState.js',
     '/js/meditationUI.js',

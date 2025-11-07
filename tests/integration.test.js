@@ -4,7 +4,8 @@
  */
 
 import { GameState } from '../js/gameState.js';
-import { CovenSystem } from '../js/covenSystem.js';
+// Coven system archived - see ARCHIVED_COVEN_FEATURES.md
+// import { CovenSystem } from '../js/covenSystem.js'; // Archived - see archive/code/covenSystem.js
 
 // Mock modules
 jest.mock('../js/data.js', () => ({

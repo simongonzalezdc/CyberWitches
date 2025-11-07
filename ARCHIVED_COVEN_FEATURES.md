@@ -799,12 +799,12 @@ covenSystem.onRitualCompleted = (ritual) => {
 
 ## Coven-Related Files
 
-### Core Files (Currently Disabled)
-- `js/covenSystem.js` - Core coven management system
-- `js/covenChat.js` - Chat system implementation
-- `js/covenEvents.js` - Event system implementation
-- `js/covenAchievements.js` - Achievement system
-- `js/socialLeaderboards.js` - Leaderboard system
+### Core Files (Archived)
+- `archive/code/covenSystem.js` - Core coven management system
+- `archive/code/covenChat.js` - Chat system implementation
+- `archive/code/covenEvents.js` - Event system implementation
+- `archive/code/covenAchievements.js` - Achievement system
+- `archive/code/socialLeaderboards.js` - Leaderboard system
 
 ### Integration Files (Modified)
 - `js/gameState.js` - Coven system initialization and integration (commented out)
@@ -821,9 +821,16 @@ covenSystem.onRitualCompleted = (ritual) => {
 
 ## Re-enabling Instructions
 
-### Step 1: Uncomment Coven System in gameState.js
+### Step 1: Restore Coven System Files
 
-1. Uncomment the import:
+1. Move coven system files from `archive/code/` back to `js/`:
+   - `covenSystem.js`
+   - `covenChat.js`
+   - `covenEvents.js`
+   - `covenAchievements.js`
+   - `socialLeaderboards.js`
+
+2. Uncomment the import in `gameState.js`:
 ```javascript
 import { CovenSystem } from './covenSystem.js';
 ```

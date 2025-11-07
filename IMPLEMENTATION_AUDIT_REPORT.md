@@ -71,7 +71,7 @@ Many features recommended in the audit have been **implemented in code** but are
 ### ⚠️ **Status: IMPLEMENTED BUT NOT VISIBLE**
 
 **What's Implemented:**
-- `js/searchFilter.js` - Full search/filter system
+- `js/searchFilter.js` - Archived (moved to `archive/code/searchFilter.js`)
 - Search/filter code in `updateWorkstationsTab()` (line 2449)
 - Filter logic for affordable/owned/unowned
 

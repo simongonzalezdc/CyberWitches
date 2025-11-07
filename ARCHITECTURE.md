@@ -311,7 +311,7 @@ CyberWitches/
 │   ├── accessibility.js   # Accessibility features
 │   ├── errorRecovery.js   # Error recovery
 │   ├── privacyControls.js # Privacy controls
-│   ├── searchFilter.js    # Search/filter functionality
+│   ├── searchFilter.js    # Archived - see archive/code/searchFilter.js
 │   ├── progressIndicators.js # Progress indicators
 │   ├── featureIndicators.js  # Feature indicators
 │   ├── sustainableDesign.js # Sustainable design
