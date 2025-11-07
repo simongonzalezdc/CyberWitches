@@ -315,8 +315,15 @@ export class ParticleEffectsSystem {
      * @private
      */
     startAnimationLoop() {
+        // Stop if already running
+        if (this.animationId) {
+            return;
+        }
+        
         const animate = (currentTime) => {
-            if (!this.isRunning) {
+            // Stop if not running or tab is hidden (save CPU)
+            if (!this.isRunning || document.hidden) {
+                this.animationId = null;
                 return;
             }
             
@@ -329,8 +336,29 @@ export class ParticleEffectsSystem {
             this.animationId = requestAnimationFrame(animate);
         };
         
-        this.animationId = requestAnimationFrame(animate);
-        this.lastFrameTime = performance.now();
+        // Only start if tab is visible
+        if (!document.hidden) {
+            this.animationId = requestAnimationFrame(animate);
+            this.lastFrameTime = performance.now();
+        }
+        
+        // Listen for visibility changes to pause/resume
+        if (!this.visibilityHandler) {
+            this.visibilityHandler = () => {
+                if (document.hidden) {
+                    // Tab hidden - stop animation loop (save CPU)
+                    if (this.animationId) {
+                        cancelAnimationFrame(this.animationId);
+                        this.animationId = null;
+                    }
+                } else if (this.isRunning && !this.animationId) {
+                    // Tab visible - restart animation loop
+                    this.lastFrameTime = performance.now();
+                    this.animationId = requestAnimationFrame(animate);
+                }
+            };
+            document.addEventListener('visibilitychange', this.visibilityHandler);
+        }
     }
     
     /**
@@ -342,6 +370,12 @@ export class ParticleEffectsSystem {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
+        }
+        
+        // Remove visibility handler
+        if (this.visibilityHandler) {
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
+            this.visibilityHandler = null;
         }
     }
     

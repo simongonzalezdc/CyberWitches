@@ -423,6 +423,7 @@ export class MeditationState {
         this.distractions = [];
         
         // Start music if music is enabled and at Tier 4+ (uses normal tier 4 music)
+        // Update music for meditation mode (mute sparkle/typing, slow tempo, add tier 2 layer)
         if (window.audioSystem) {
             const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
             console.log('Meditation session starting - Current tier:', currentTier);
@@ -436,7 +437,13 @@ export class MeditationState {
                     console.log('Music not enabled, attempting to enable...');
                     window.audioSystem.enableMusic().then(() => {
                         console.log('Music enabled successfully');
-                        window.audioSystem.startMusic().catch(err => {
+                        // Wait for startMusic() to complete before updating for meditation mode
+                        window.audioSystem.startMusic().then(() => {
+                            // Update music for meditation mode after music is fully initialized
+                            if (window.audioSystem.updateMusicForMeditation) {
+                                window.audioSystem.updateMusicForMeditation();
+                            }
+                        }).catch(err => {
                             console.error('Failed to start music:', err);
                         });
                     }).catch(err => {
@@ -446,9 +453,20 @@ export class MeditationState {
                     // Music is already enabled, just start it (if not already playing)
                     if (window.audioSystem.musicNodes.length === 0) {
                         console.log('Music already enabled, starting music...');
-                        window.audioSystem.startMusic().catch(err => {
+                        // Wait for startMusic() to complete before updating for meditation mode
+                        window.audioSystem.startMusic().then(() => {
+                            // Update music for meditation mode after music is fully initialized
+                            if (window.audioSystem.updateMusicForMeditation) {
+                                window.audioSystem.updateMusicForMeditation();
+                            }
+                        }).catch(err => {
                             console.error('Failed to start music:', err);
                         });
+                    } else {
+                        // Music is already playing, just update it for meditation mode
+                        if (window.audioSystem.updateMusicForMeditation) {
+                            window.audioSystem.updateMusicForMeditation();
+                        }
                     }
                 }
             } else {
@@ -474,8 +492,10 @@ export class MeditationState {
         this.waveActive = false;
         this.distractions = [];
         
-        // Music continues playing (uses normal tier 4 music)
-        // No need to switch modes anymore
+        // Update music back to normal mode (restore sparkle/typing, normal tempo, remove tier 2 layer)
+        if (window.audioSystem && window.audioSystem.updateMusicForMeditation) {
+            window.audioSystem.updateMusicForMeditation();
+        }
         
         // Calculate rewards based on performance
         this.calculateSessionRewards();
@@ -502,6 +522,11 @@ export class MeditationState {
         
         if (this.onWaveChanged) {
             this.onWaveChanged(this.currentWave);
+        }
+        
+        // Play wave start sound (Tier 2+)
+        if (window.audioSystem && window.audioSystem.playSound) {
+            window.audioSystem.playSound('wave_start');
         }
     }
     
@@ -548,6 +573,12 @@ export class MeditationState {
                 // Wave complete
                 this.waveActive = false;
                 this.totalWavesCompleted++;
+                
+                // Play wave complete sound (Tier 2+)
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    window.audioSystem.playSound('wave_complete');
+                }
+                
                 setTimeout(() => {
                     this.startWave();
                 }, 3000);
@@ -671,6 +702,11 @@ export class MeditationState {
         };
         
         this.distractions.push(distraction);
+        
+        // Play distraction spawn sound (Tier 2+)
+        if (window.audioSystem && window.audioSystem.playSound) {
+            window.audioSystem.playSound('distraction_spawn', { volume: 0.2 }); // Lower volume for frequent spawns
+        }
     }
     
     /**
@@ -690,6 +726,11 @@ export class MeditationState {
                 this.tranquility = Math.max(0, this.tranquility - dist.damage);
                 if (this.onTranquilityChanged) {
                     this.onTranquilityChanged(this.tranquility, this.tranquilityMax);
+                }
+                
+                // Play tranquility damage sound (Tier 2+)
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    window.audioSystem.playSound('tranquility_damage');
                 }
                 
                 // Remove distraction
@@ -787,6 +828,11 @@ export class MeditationState {
                 this.addMeditationIngredient(ingId, distraction.reward[ingId]);
             }
         }
+        
+        // Play distraction death sound (Tier 2+)
+        if (window.audioSystem && window.audioSystem.playSound) {
+            window.audioSystem.playSound('distraction_death');
+        }
     }
     
     /**
@@ -815,6 +861,11 @@ export class MeditationState {
                     
                     // Consume attack cost
                     this.consumeTowerCost(tower);
+                    
+                    // Play tower attack sound (Tier 2+)
+                    if (window.audioSystem && window.audioSystem.playSound) {
+                        window.audioSystem.playSound('tower_attack', { volume: 0.2 }); // Lower volume for frequent attacks
+                    }
                 }
             }
         }
@@ -917,6 +968,11 @@ export class MeditationState {
         // Track tower placement for daily tasks
         if (typeof window.updateDailyProgress === 'function') {
             window.updateDailyProgress('meditation_towers', '', this.towers.length);
+        }
+        
+        // Play tower place sound (Tier 2+)
+        if (window.audioSystem && window.audioSystem.playSound) {
+            window.audioSystem.playSound('tower_place');
         }
         
         return true;
@@ -1080,6 +1136,11 @@ export class MeditationState {
         
         // Save state
         this.saveState();
+        
+        // Play tower upgrade sound (Tier 2+)
+        if (window.audioSystem && window.audioSystem.playSound) {
+            window.audioSystem.playSound('tower_upgrade');
+        }
         
         return true;
     }

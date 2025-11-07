@@ -1461,6 +1461,13 @@ button::before {
     align-items: start;
 }
 
+/* Inventory list - compact layout for better density */
+#inventory-list {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 4px !important;
+    padding: 12px !important;
+}
+
 /* Responsive grid adjustments */
 @media (min-width: 1600px) {
     .content-list {
@@ -1771,6 +1778,14 @@ button::before {
     box-sizing: border-box;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+}
+
+/* Compact tier headers for inventory */
+#inventory-list > .tier-header {
+    margin: 2px 0 !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
 }
 
 .content-list > .tier-header:first-child {
@@ -3046,7 +3061,7 @@ button::before {
 
 .meditation-grid-container {
     position: relative;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     background-image: url('images/meditation/meditation-canvas-bg.png');
     background-size: cover;
     background-position: center;

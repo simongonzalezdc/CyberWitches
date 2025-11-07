@@ -68,7 +68,11 @@
 - **Wax Bits**: 1.0 per cast
 - **Wick Fiber**: 1.0 per cast
 - **Crystal Dust**: 0.5 per cast
-- **Aether Essence**: 0.5 per cast
+- **Fire Essence**: 0.5 per cast
+- **Water Essence**: 0.5 per cast
+- **Air Essence**: 0.5 per cast
+
+**Note:** Aether is not generated from CAST. It must be synthesized by combining Fire, Water, Air, and Earth (Crystal) elements in the Aether Synthesizer workstation.
 
 **Tier 1 (Crafted Ingredients):**
 - **Wax Block**: Crafted from Wax Bits (10 Wax Bits)
@@ -116,11 +120,11 @@ Workstations are automated producers that generate ingredients and AB over time.
 - **Produces**: 0.20 Shaped Crystal/s
 - **Strategy**: Produces Shaped Crystals for advanced crafting
 
-#### 4. **Aether Still** (Unlocks at 50 AB)
-- **Recipe**: 10 Aether Essence
+#### 4. **Aether Synthesizer** (Unlocks at 50 SE)
+- **Recipe**: 2 Fire Essence + 2 Water Essence + 2 Air Essence + 2 Crystal Dust
 - **Growth**: 1.12x
 - **Produces**: 0.20 Distilled Aether/s
-- **Strategy**: Produces Distilled Aether for advanced recipes
+- **Strategy**: Synthesizes Aether from the four basic elements. Essential for advanced recipes that require Aether.
 
 #### 5. **Digital Candle Farm** (Unlocks at 100 AB) ⭐ **First AB Producer**
 - **Recipe**: 5 Wax Block, 1 Braided Wick, 2 Distilled Aether

@@ -2,6 +2,7 @@ import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } fr
 import { Balance } from './utils.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { GAME_CONSTANTS } from './codeOrganization.js';
+import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
 
@@ -28,6 +29,10 @@ export class GameState {
         this.prestigePoints = 0;
         this.prestigeLifetimeEarned = 0.0;
         this.prestigeBonuses = {};
+        
+        // Element Specialization
+        this.elementSpecialization = null; // 'fire', 'water', 'air', 'crystal', or null
+        this.specializationBonuses = {};
         this.prestigeCount = 0; // Track number of ascensions (prestige completions)
         
         // Buffs
@@ -81,11 +86,52 @@ export class GameState {
     
     /**
      * Start the game tick loop with optimized timing
+     * Pauses when tab is hidden to save CPU (similar to audio loops stopping)
      */
     startTickLoop() {
-        this.tickInterval = setInterval(() => {
+        // Clear existing interval if any
+        if (this.tickInterval) {
+            clearInterval(this.tickInterval);
+        }
+        
+        const tick = () => {
+            // Skip tick if tab is hidden (save CPU)
+            if (document.hidden) {
+                return;
+            }
             this.tick();
-        }, GAME_CONSTANTS.TICK_RATE);
+        };
+        
+        this.tickInterval = setInterval(tick, GAME_CONSTANTS.TICK_RATE);
+        
+        // Listen for visibility changes to pause/resume
+        if (!this.visibilityHandler) {
+            this.visibilityHandler = () => {
+                if (document.hidden) {
+                    // Tab hidden - ticks will be skipped automatically
+                    // No need to clear interval, just skip processing
+                } else {
+                    // Tab visible - ticks will resume automatically
+                }
+            };
+            document.addEventListener('visibilitychange', this.visibilityHandler);
+        }
+    }
+    
+    /**
+     * Stop the game tick loop
+     */
+    stopTickLoop() {
+        if (this.tickInterval) {
+            clearInterval(this.tickInterval);
+            this.tickInterval = null;
+        }
+        
+        // Remove visibility handler
+        if (this.visibilityHandler) {
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
+            this.visibilityHandler = null;
+        }
     }
     
     /**
@@ -128,6 +174,12 @@ export class GameState {
     calculateTotalProduction(delta, eventMultiplier = 1.0) {
         const totalOutput = {};
         
+        // Apply Air specialization speed bonus to delta
+        let effectiveDelta = delta;
+        if (this.elementSpecialization === 'air' && this.specializationBonuses.productionSpeedMult) {
+            effectiveDelta *= this.specializationBonuses.productionSpeedMult;
+        }
+        
         for (const wsId in this.workstations) {
             const owned = this.workstations[wsId];
             if (!owned || owned <= 0) continue;
@@ -142,15 +194,53 @@ export class GameState {
                 // Apply multipliers
                 const mult = this.getProductionMultiplier(wsId);
                 
+                // Apply element specialization bonuses
+                let specializationMult = 1.0;
+                if (this.elementSpecialization) {
+                    const spec = this.specializationBonuses;
+                    const element = getWorkstationElement(wsId);
+                    const ingredientElement = getIngredientElement(outputId);
+                    
+                    // Element-specific production multiplier
+                    if (element === this.elementSpecialization || ingredientElement === this.elementSpecialization) {
+                        specializationMult *= spec.baseProductionMult;
+                    }
+                    
+                    // Water: Global production multiplier
+                    if (this.elementSpecialization === 'water' && spec.globalProductionMult) {
+                        specializationMult *= spec.globalProductionMult;
+                    }
+                    
+                    // Crystal: Universal ingredient multiplier
+                    if (this.elementSpecialization === 'crystal' && isUniversalIngredient(outputId)) {
+                        specializationMult *= spec.universalIngredientMult;
+                    }
+                    
+                    // Crystal: Crystal building multiplier
+                    if (this.elementSpecialization === 'crystal' && element === 'crystal' && spec.crystalBuildingMult) {
+                        specializationMult *= spec.crystalBuildingMult;
+                    }
+                    
+                    // Fire: AB production multiplier for Fire-based reactors
+                    if (this.elementSpecialization === 'fire' && isABProducer(wsId) && element === 'fire' && spec.abProductionMult) {
+                        specializationMult *= spec.abProductionMult;
+                    }
+                    
+                    // Water: Ingredient production multiplier
+                    if (this.elementSpecialization === 'water' && spec.ingredientProductionMult && outputId !== 'ab') {
+                        specializationMult *= spec.ingredientProductionMult;
+                    }
+                }
+                
                 // Apply event multiplier
-                const finalMult = mult * eventMultiplier;
+                const finalMult = mult * specializationMult * eventMultiplier;
                 
                 const finalRate = baseRate * finalMult * owned;
                 
                 if (!totalOutput[outputId]) {
                     totalOutput[outputId] = 0.0;
                 }
-                totalOutput[outputId] += finalRate * delta;
+                totalOutput[outputId] += finalRate * effectiveDelta;
             }
         }
         
@@ -312,6 +402,7 @@ export class GameState {
             'infinity_production_elixir': { type: 'production', value: 5.0, duration: 4 * 60 * 60 },
             'void_speed_surge': { type: 'cast_speed', value: 5.0, duration: 2 * 60 * 60 },
             'ab_infinity_boost': { type: 'ab_production', value: 20.0, duration: 3 * 60 * 60 },
+            'ab_eternal_boost': { type: 'ab_production', value: 10.0, duration: 2 * 60 * 60 },
             'infinity_catalyst': { type: 'ingredient_production', value: 4.0, duration: 4 * 60 * 60 },
             'prestige_mastery': { type: 'prestige_gain', value: 1.0, duration: 6 * 60 * 60 }
         };
@@ -442,14 +533,20 @@ export class GameState {
     cast(comboMultiplier = 1.0, eventMultiplier = 1.0) {
         this.totalTaps++;
         
-        // Base tier-0 ingredients (all 5 alchemical elements)
-        const baseAmounts = {
+        // Base tier-0 ingredients (4 alchemical elements - Aether is synthesized from these)
+        let baseAmounts = {
             crystal_dust: 0.5,
-            aether_ess: 0.5,
             fire_essence: 0.5,
             water_essence: 0.5,
             air_essence: 0.5
         };
+        
+        // Apply Fire specialization cast reward multiplier
+        if (this.elementSpecialization === 'fire' && this.specializationBonuses.castRewardMult) {
+            for (const ingId in baseAmounts) {
+                baseAmounts[ingId] *= this.specializationBonuses.castRewardMult;
+            }
+        }
         
         // Variable reward system (dopamine maximization)
         const bonusRoll = Math.random();
@@ -604,6 +701,10 @@ export class GameState {
         this.prestigePoints += ekGain;
         this.prestigeCount++; // Increment prestige count (number of ascensions)
         
+        // Reset element specialization (player will choose new one)
+        this.elementSpecialization = null;
+        this.specializationBonuses = {};
+        
         // Reset run
         this.ab = 0.0;
         this.abTotalEarned = 0.0;
@@ -618,8 +719,33 @@ export class GameState {
         // Apply prestige start bonuses
         this.applyPrestigeStartBonuses();
         
+        // Trigger specialization choice UI (will be handled in game.js)
         if (this.onPrestigeCompleted) this.onPrestigeCompleted(ekGain);
         this.saveGameState();
+    }
+    
+    /**
+     * Choose element specialization (called from UI after ascension)
+     * @param {string} element - 'fire', 'water', 'air', or 'crystal'
+     * @returns {boolean} - Whether the choice was successful
+     */
+    chooseElementSpecialization(element) {
+        if (!['fire', 'water', 'air', 'crystal'].includes(element)) {
+            console.error('Invalid element specialization:', element);
+            return false;
+        }
+        
+        this.elementSpecialization = element;
+        const spec = ELEMENT_SPECIALIZATIONS[element];
+        if (spec) {
+            this.specializationBonuses = spec.bonuses;
+        } else {
+            console.error('Element specialization not found:', element);
+            return false;
+        }
+        
+        this.saveGameState();
+        return true;
     }
     
     applyPrestigeStartBonuses() {
@@ -671,6 +797,12 @@ export class GameState {
             }
             
             if (hasAll) {
+                // Cap discovered recipes array to prevent unbounded memory growth
+                const MAX_DISCOVERED_RECIPES = 100;
+                if (this.discoveredRecipes.length >= MAX_DISCOVERED_RECIPES) {
+                    // Remove oldest recipe (FIFO)
+                    this.discoveredRecipes.shift();
+                }
                 this.discoveredRecipes.push(recipe.id);
                 if (this.onRecipeDiscovered) this.onRecipeDiscovered(recipe.id);
                 return {
@@ -731,6 +863,7 @@ export class GameState {
      * Save game state to localStorage with error handling
      */
     saveGameState() {
+        // Include element specialization in save
         try {
             // Show loading state if available
             let loadingId = null;
@@ -761,6 +894,9 @@ export class GameState {
                 milestones: {
                     unlocked: Array.from(this.unlockedMilestones)
                 },
+                // Element Specialization
+                elementSpecialization: this.elementSpecialization,
+                specializationBonuses: { ...this.specializationBonuses },
                 // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
                 coven: null, // this.covenSystem ? this.covenSystem.saveCovenData() : null,
                 timestamp: Date.now() / 1000,
@@ -867,6 +1003,21 @@ export class GameState {
             this.prestigePoints = prestigeData.points || 0;
             this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
             this.prestigeBonuses = prestigeData.bonuses || {};
+            
+            // Load element specialization
+            this.elementSpecialization = data.elementSpecialization || null;
+            if (this.elementSpecialization) {
+                const spec = ELEMENT_SPECIALIZATIONS[this.elementSpecialization];
+                if (spec) {
+                    this.specializationBonuses = spec.bonuses;
+                } else {
+                    // Invalid specialization, reset it
+                    this.elementSpecialization = null;
+                    this.specializationBonuses = {};
+                }
+            } else {
+                this.specializationBonuses = {};
+            }
             
             // Load prestige count, with fallback: if missing but has prestige points, assume at least 1 ascension
             let prestigeCountInferred = false;
@@ -1123,6 +1274,8 @@ export class GameState {
             experiments: data.experiments,
             stats: data.stats,
             milestones: data.milestones,
+            elementSpecialization: data.elementSpecialization,
+            specializationBonuses: data.specializationBonuses,
             timestamp: data.timestamp,
             version: data.version
         };

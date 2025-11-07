@@ -9,8 +9,9 @@
   → Produces: 0.2/s shaped_crys
 
 #### [Aether]
-- **Aether Still** [Still]
+- **Aether Synthesizer** [Synthesizer]
   → Produces: 0.2/s dist_aether
+  → Input: fire_essence + water_essence + air_essence + crystal_dust
 
 #### [Fire]
 - **Fire Still** [Still]
@@ -141,9 +142,12 @@
 - T0 - Zephyr Collector [Air] → 0.2/s ethereal_gust
 - T1 - Aqua Collector [Water] → 0.2/s liquid_essence
 
-### [Still] (2 workstations)
-- T0 - Aether Still [Aether] → 0.2/s dist_aether
+### [Still] (1 workstation)
 - T0 - Fire Still [Fire] → 0.2/s dist_fire
+
+### [Synthesizer] (1 workstation)
+- T0 - Aether Synthesizer [Aether] → 0.2/s dist_aether
+  → Input: fire_essence + water_essence + air_essence + crystal_dust
 
 ### [Forge] (9 workstations)
 - T1 - Digital Candle Forge [Fire] → 0.4/s dig_candle
@@ -256,7 +260,8 @@ T4: Void Crystal Chamber → void_crystal
 
 ### Aether Element Chain
 ```
-T0: Aether Still → dist_aether
+T0: Aether Synthesizer → dist_aether
+    (Input: fire_essence + water_essence + air_essence + crystal_dust)
 T1: Aether Well → aether_well
 T3: Aether Flux Reactor → aether_flux
 T4: Quantum Essence Lab → quantum_essence

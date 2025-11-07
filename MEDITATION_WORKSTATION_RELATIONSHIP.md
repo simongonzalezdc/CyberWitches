@@ -15,9 +15,9 @@ Meditation towers are built using ingredients produced by main game workstations
 | Meditation Tower Tier | Tower Name | Required Ingredients | Workstation Sources |
 |----------------------|------------|---------------------|---------------------|
 | **Tier 0** | Peace Circle | `fire_essence` (T0) | Fire Forge (T0) |
-| **Tier 0** | Focus Ring | `crystal_dust` (T0), `aether_ess` (T0) | Crystal Chamber (T0), Aether Reactor (T0) |
+| **Tier 0** | Focus Ring | `crystal_dust` (T0), `fire_essence` (T0), `water_essence` (T0), `air_essence` (T0) | Crystal Chamber (T0), Fire Forge (T0), Aqua Well (T0), Zephyr Generator (T0) |
 | **Tier 1** | Tranquility Shrine | `dist_fire` (T1), `dig_candle` (T1), `shaped_crys` (T1) | Fire Forge (T0), Digital Candle Forge (T1), Crystal Chamber (T0) |
-| **Tier 1** | Serenity Altar | `dig_candle` (T1), `crystal_orb` (T1), `dist_aether` (T1) | Digital Candle Forge (T1), Crystal Orb Chamber (T1), Aether Reactor (T0) |
+| **Tier 1** | Serenity Altar | `dig_candle` (T1), `crystal_orb` (T1), `dist_aether` (T1) | Digital Candle Forge (T1), Crystal Orb Chamber (T1), Aether Synthesizer (T0) |
 | **Tier 2** | Zen Pavilion | `enhanced_candle` (T2), `crystal_core` (T2), `aether_flux` (T2) | Enhanced Candle Forge (T2), Crystal Core Chamber (T2), **Aether Flux Reactor (T2)** |
 | **Tier 2** | Meditation Temple | `wax_hex` (T2), `crystal_core` (T2), `aether_flux` (T2) | **Fire Hex Forge (T2)**, Crystal Core Chamber (T2), **Aether Flux Reactor (T2)** |
 | **Tier 3** | Quantum Sanctum | `quantum_candle` (T3), `quantum_essence` (T3), `quantum_aether` (T3) | Quantum Candle Forge (T3), **quantum_essence (NOT PRODUCED)**, **quantum_aether (NOT PRODUCED)** |

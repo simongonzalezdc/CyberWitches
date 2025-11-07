@@ -317,7 +317,7 @@ export class MeditationUI {
             .sort((a, b) => b[1] - a[1]);
         
         if (items.length === 0) {
-            this.meditationInventoryList.innerHTML = '<div class="empty-message">No meditation ingredients</div>';
+            this.meditationInventoryList.innerHTML = '<div class="empty-message">No ingredients yet</div>';
             return;
         }
         

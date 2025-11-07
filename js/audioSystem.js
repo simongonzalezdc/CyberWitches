@@ -220,7 +220,71 @@ export class AudioSystem {
                 id: 'daily_complete',
                 name: 'Daily Complete',
                 url: this.generateDailyCompleteSound(),
-                volume: 0.5, // Increased overall volume
+                volume: 0.5,
+                loop: false
+            },
+            // Meditation-specific sound effects (Tier 2+)
+            {
+                id: 'tower_attack',
+                name: 'Tower Attack',
+                url: this.generateTowerAttackSound(),
+                volume: 0.3,
+                loop: false
+            },
+            {
+                id: 'tower_place',
+                name: 'Tower Place',
+                url: this.generateTowerPlaceSound(),
+                volume: 0.4,
+                loop: false
+            },
+            {
+                id: 'tower_upgrade',
+                name: 'Tower Upgrade',
+                url: this.generateTowerUpgradeSound(),
+                volume: 0.5,
+                loop: false
+            },
+            {
+                id: 'distraction_spawn',
+                name: 'Distraction Spawn',
+                url: this.generateDistractionSpawnSound(),
+                volume: 0.3,
+                loop: false
+            },
+            {
+                id: 'distraction_hit',
+                name: 'Distraction Hit',
+                url: this.generateDistractionHitSound(),
+                volume: 0.25,
+                loop: false
+            },
+            {
+                id: 'distraction_death',
+                name: 'Distraction Death',
+                url: this.generateDistractionDeathSound(),
+                volume: 0.4,
+                loop: false
+            },
+            {
+                id: 'wave_start',
+                name: 'Wave Start',
+                url: this.generateWaveStartSound(),
+                volume: 0.5,
+                loop: false
+            },
+            {
+                id: 'wave_complete',
+                name: 'Wave Complete',
+                url: this.generateWaveCompleteSound(),
+                volume: 0.5,
+                loop: false
+            },
+            {
+                id: 'tranquility_damage',
+                name: 'Tranquility Damage',
+                url: this.generateTranquilityDamageSound(),
+                volume: 0.3,
                 loop: false
             },
             {
@@ -722,6 +786,372 @@ export class AudioSystem {
             const sample = (
                 Math.sin(2 * Math.PI * baseFreq * t) * 0.32 +
                 Math.sin(2 * Math.PI * freq2 * t) * 0.18 +
+                noise
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a tower attack sound using Web Audio API
+     * @returns {string} Data URL for tower attack sound
+     * @private
+     */
+    generateTowerAttackSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.15; // 150ms - quick attack sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate quick percussive attack - like a light zap or hit
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Sharp percussive envelope: instant attack, quick decay
+            const envelope = Math.exp(-t * 25) * (1 - Math.exp(-t * 300));
+            
+            // Light noise transient at start
+            const noise = i < 10 ? (Math.random() * 2 - 1) * 0.2 * (1 - t * 10) : 0;
+            
+            // Use pentatonic scale: C5, E5, G5 for attack sound
+            const pentatonicNotes = [523.25, 659.25, 783.99]; // C5, E5, G5
+            const noteIndex = Math.min(Math.floor(t * 15), pentatonicNotes.length - 1);
+            const frequency = pentatonicNotes[noteIndex];
+            
+            const sample = (
+                Math.sin(2 * Math.PI * frequency * t) * 0.25 +
+                noise
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a tower place sound using Web Audio API
+     * @returns {string} Data URL for tower place sound
+     * @private
+     */
+    generateTowerPlaceSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.3; // 300ms - satisfying placement sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate gentle placement sound - like a soft chime
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Gentle envelope: slow attack, medium decay
+            const envelope = Math.exp(-t * 8) * (1 - Math.exp(-t * 50));
+            
+            // Use pentatonic scale: C4, E4, G4 ascending for placement
+            const pentatonicNotes = [261.63, 329.63, 392.00]; // C4, E4, G4
+            const noteIndex = Math.min(Math.floor(t * 6), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            const freq2 = baseFreq * 2; // Octave for harmony
+            
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.3 +
+                Math.sin(2 * Math.PI * freq2 * t) * 0.15
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a tower upgrade sound using Web Audio API
+     * @returns {string} Data URL for tower upgrade sound
+     * @private
+     */
+    generateTowerUpgradeSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.4; // 400ms - satisfying upgrade sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate ascending upgrade sound - like a level up
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Medium envelope: slow attack, medium decay
+            const envelope = Math.exp(-t * 6) * (1 - Math.exp(-t * 40));
+            
+            // Use pentatonic scale: C4, D4, E4, G4, A4 ascending for upgrade
+            const pentatonicNotes = [261.63, 293.66, 329.63, 392.00, 440.00]; // C4, D4, E4, G4, A4
+            const noteIndex = Math.min(Math.floor(t * 8), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            const freq2 = baseFreq * 2; // Octave for harmony
+            
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.35 +
+                Math.sin(2 * Math.PI * freq2 * t) * 0.2
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a distraction spawn sound using Web Audio API
+     * @returns {string} Data URL for distraction spawn sound
+     * @private
+     */
+    generateDistractionSpawnSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.2; // 200ms - quick spawn sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate subtle spawn sound - like a light whoosh or pop
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Quick envelope: instant attack, quick decay
+            const envelope = Math.exp(-t * 20) * (1 - Math.exp(-t * 200));
+            
+            // Light noise transient for whoosh/pop character
+            const noise = i < 15 ? (Math.random() * 2 - 1) * 0.15 * (1 - t * 15) : 0;
+            
+            // Use pentatonic scale: A3, C4 for spawn sound (lower, more subtle)
+            const pentatonicNotes = [220.00, 261.63]; // A3, C4
+            const noteIndex = Math.min(Math.floor(t * 8), pentatonicNotes.length - 1);
+            const frequency = pentatonicNotes[noteIndex];
+            
+            const sample = (
+                Math.sin(2 * Math.PI * frequency * t) * 0.2 +
+                noise
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a distraction hit sound using Web Audio API
+     * @returns {string} Data URL for distraction hit sound
+     * @private
+     */
+    generateDistractionHitSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.1; // 100ms - very quick hit sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate quick hit sound - like a light tap
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Very sharp percussive envelope: instant attack, very quick decay
+            const envelope = Math.exp(-t * 30) * (1 - Math.exp(-t * 400));
+            
+            // Light noise transient
+            const noise = i < 5 ? (Math.random() * 2 - 1) * 0.15 * (1 - t * 5) : 0;
+            
+            // Use pentatonic scale: E4, G4 for hit sound
+            const pentatonicNotes = [329.63, 392.00]; // E4, G4
+            const noteIndex = Math.min(Math.floor(t * 12), pentatonicNotes.length - 1);
+            const frequency = pentatonicNotes[noteIndex];
+            
+            const sample = (
+                Math.sin(2 * Math.PI * frequency * t) * 0.2 +
+                noise
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a distraction death sound using Web Audio API
+     * @returns {string} Data URL for distraction death sound
+     * @private
+     */
+    generateDistractionDeathSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.25; // 250ms - satisfying death sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate descending death sound - like a fade out
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Medium envelope: instant attack, medium decay
+            const envelope = Math.exp(-t * 12) * (1 - Math.exp(-t * 150));
+            
+            // Use pentatonic scale: G4, E4, C4 descending for death
+            const pentatonicNotes = [392.00, 329.63, 261.63]; // G4, E4, C4
+            const noteIndex = Math.min(Math.floor(t * 10), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.3
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a wave start sound using Web Audio API
+     * @returns {string} Data URL for wave start sound
+     * @private
+     */
+    generateWaveStartSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.5; // 500ms - satisfying wave start
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate ascending wave start sound - like a fanfare
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Medium envelope: slow attack, medium decay
+            const envelope = Math.exp(-t * 5) * (1 - Math.exp(-t * 30));
+            
+            // Use pentatonic scale: C4, D4, E4, G4, A4 ascending for wave start
+            const pentatonicNotes = [261.63, 293.66, 329.63, 392.00, 440.00]; // C4, D4, E4, G4, A4
+            const noteIndex = Math.min(Math.floor(t * 6), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            const freq2 = baseFreq * 2; // Octave for harmony
+            
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.4 +
+                Math.sin(2 * Math.PI * freq2 * t) * 0.2
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a wave complete sound using Web Audio API
+     * @returns {string} Data URL for wave complete sound
+     * @private
+     */
+    generateWaveCompleteSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.6; // 600ms - satisfying completion
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate ascending completion sound - like a victory fanfare
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Medium envelope: slow attack, medium decay
+            const envelope = Math.exp(-t * 4) * (1 - Math.exp(-t * 25));
+            
+            // Use pentatonic scale: C4, E4, G4, C5 ascending for completion
+            const pentatonicNotes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+            const noteIndex = Math.min(Math.floor(t * 5), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            const freq2 = baseFreq * 2; // Octave for harmony
+            
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.4 +
+                Math.sin(2 * Math.PI * freq2 * t) * 0.25
+            ) * envelope;
+            
+            channelData[i] = sample;
+        }
+        
+        return this.bufferToDataUrl(buffer);
+    }
+    
+    /**
+     * Generate a tranquility damage sound using Web Audio API
+     * @returns {string} Data URL for tranquility damage sound
+     * @private
+     */
+    generateTranquilityDamageSound() {
+        if (!this.isInitialized) {
+            return '';
+        }
+        
+        const sampleRate = this.audioContext.sampleRate;
+        const duration = 0.3; // 300ms - warning damage sound
+        const numSamples = sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, numSamples, sampleRate);
+        
+        // Generate descending warning sound - like a low thud
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < numSamples; i++) {
+            const t = i / sampleRate;
+            
+            // Medium envelope: instant attack, medium decay
+            const envelope = Math.exp(-t * 10) * (1 - Math.exp(-t * 120));
+            
+            // Strong noise transient for impact character
+            const noise = i < 20 ? (Math.random() * 2 - 1) * 0.3 * (1 - t * 20) : 0;
+            
+            // Use pentatonic scale: A3, G3, E3 descending for damage (lower, more ominous)
+            const pentatonicNotes = [220.00, 196.00, 164.81]; // A3, G3, E3
+            const noteIndex = Math.min(Math.floor(t * 8), pentatonicNotes.length - 1);
+            const baseFreq = pentatonicNotes[noteIndex];
+            
+            const sample = (
+                Math.sin(2 * Math.PI * baseFreq * t) * 0.3 +
                 noise
             ) * envelope;
             
@@ -2274,11 +2704,13 @@ export class AudioSystem {
         
         // Set initial volumes to very low for fade-in effect
         // Target volumes (will be reached after fade-in)
+        // In meditation mode, mute sparkle and typing beat
+        const isMeditationMode = window.meditationState && window.meditationState.activeSession;
         const targetVolumes = {
             bassPad: 2,      // Bass pad target
             midPad: -2,      // Mid pad target
-            sparkle: -20,    // Sparkle target
-            typingBeat: -12  // Typing beat target
+            sparkle: isMeditationMode ? -60 : -20,    // Sparkle target (muted in meditation)
+            typingBeat: isMeditationMode ? -60 : -12  // Typing beat target (muted in meditation)
         };
         
         // Start all volumes at very low (-60 dB) for smooth fade-in
@@ -2301,15 +2733,25 @@ export class AudioSystem {
         midPad.volume.linearRampToValueAtTime(-60, now + 1);
         midPad.volume.linearRampToValueAtTime(targetVolumes.midPad, now + 1 + fadeInDuration);
         
-        // Sparkle fades in after 2 seconds
+        // Sparkle fades in after 2 seconds (or stays muted in meditation)
         sparkle.volume.setValueAtTime(-60, now);
-        sparkle.volume.linearRampToValueAtTime(-60, now + 2);
-        sparkle.volume.linearRampToValueAtTime(targetVolumes.sparkle, now + 2 + fadeInDuration);
+        if (!isMeditationMode) {
+            sparkle.volume.linearRampToValueAtTime(-60, now + 2);
+            sparkle.volume.linearRampToValueAtTime(targetVolumes.sparkle, now + 2 + fadeInDuration);
+        } else {
+            // Keep muted in meditation mode
+            sparkle.volume.setValueAtTime(-60, now);
+        }
         
-        // Typing beat fades in after 1.5 seconds
+        // Typing beat fades in after 1.5 seconds (or stays muted in meditation)
         typingBeat.volume.setValueAtTime(-60, now);
-        typingBeat.volume.linearRampToValueAtTime(-60, now + 1.5);
-        typingBeat.volume.linearRampToValueAtTime(targetVolumes.typingBeat, now + 1.5 + fadeInDuration);
+        if (!isMeditationMode) {
+            typingBeat.volume.linearRampToValueAtTime(-60, now + 1.5);
+            typingBeat.volume.linearRampToValueAtTime(targetVolumes.typingBeat, now + 1.5 + fadeInDuration);
+        } else {
+            // Keep muted in meditation mode
+            typingBeat.volume.setValueAtTime(-60, now);
+        }
         
         console.log('Volume fade-ins scheduled:', {
             bassPad: '0s → 3s',
@@ -2333,9 +2775,11 @@ export class AudioSystem {
             console.log('Bass LFO started after fade-in');
         }, 3000); // Start after 3 seconds (when fade-in completes)
         
-        // Set tempo to 110 BPM (10 BPM lower than default 120)
-        Tone.Transport.bpm.value = 110;
-        console.log('Tone Transport BPM set to:', Tone.Transport.bpm.value);
+        // Set tempo based on mode: 95 BPM for meditation (15 BPM slower), 110 BPM for normal
+        // isMeditationMode already defined above
+        const baseBPM = isMeditationMode ? 95 : 110;
+        Tone.Transport.bpm.value = baseBPM;
+        console.log('Tone Transport BPM set to:', Tone.Transport.bpm.value, isMeditationMode ? '(meditation mode)' : '(normal mode)');
         
         // Stop and reset Transport to ensure clean start timing
         if (Tone.Transport.state === 'started') {
@@ -2498,6 +2942,85 @@ export class AudioSystem {
                     this.activeSounds.splice(index, 1);
                 }
             });
+        }
+    }
+    
+    /**
+     * Update music for meditation mode
+     * Adjusts tempo and stops sparkle/typing loops (saves CPU)
+     */
+    updateMusicForMeditation() {
+        if (!this.toneMusic || !Tone.Transport) return;
+        
+        const isMeditationMode = window.meditationState && window.meditationState.activeSession;
+        
+        // Update tempo: 95 BPM for meditation (15 BPM slower), 110 BPM for normal
+        const targetBPM = isMeditationMode ? 95 : 110;
+        Tone.Transport.bpm.rampTo(targetBPM, 1); // Smooth transition over 1 second
+        console.log('Music tempo updated to:', targetBPM, isMeditationMode ? '(meditation mode)' : '(normal mode)');
+        
+        if (isMeditationMode) {
+            // Stop sparkle and typing beat loops in meditation (saves CPU, not RAM)
+            if (this.toneMusic.sparkleLoop) {
+                try {
+                    this.toneMusic.sparkleLoop.stop();
+                    console.log('Sparkle loop stopped (meditation mode)');
+                } catch (e) {
+                    console.warn('Error stopping sparkle loop:', e);
+                }
+            }
+            if (this.toneMusic.typingLoop) {
+                try {
+                    this.toneMusic.typingLoop.stop();
+                    console.log('Typing loop stopped (meditation mode)');
+                } catch (e) {
+                    console.warn('Error stopping typing loop:', e);
+                }
+            }
+            
+            // Also mute the synths to ensure no lingering notes
+            const now = Tone.Transport.now();
+            if (this.toneMusic.sparkle) {
+                this.toneMusic.sparkle.volume.cancelScheduledValues(now);
+                this.toneMusic.sparkle.volume.setValueAtTime(this.toneMusic.sparkle.volume.value, now);
+                this.toneMusic.sparkle.volume.linearRampToValueAtTime(-60, now + 0.5); // Quick fade out
+            }
+            if (this.toneMusic.typingBeat) {
+                this.toneMusic.typingBeat.volume.cancelScheduledValues(now);
+                this.toneMusic.typingBeat.volume.setValueAtTime(this.toneMusic.typingBeat.volume.value, now);
+                this.toneMusic.typingBeat.volume.linearRampToValueAtTime(-60, now + 0.5); // Quick fade out
+            }
+        } else {
+            // Restore sparkle and typing beat loops in normal mode
+            if (this.toneMusic.sparkleLoop) {
+                try {
+                    this.toneMusic.sparkleLoop.start('12n'); // Restart at original position
+                    console.log('Sparkle loop restarted (normal mode)');
+                } catch (e) {
+                    console.warn('Error restarting sparkle loop:', e);
+                }
+            }
+            if (this.toneMusic.typingLoop) {
+                try {
+                    this.toneMusic.typingLoop.start('8n'); // Restart at original position
+                    console.log('Typing loop restarted (normal mode)');
+                } catch (e) {
+                    console.warn('Error restarting typing loop:', e);
+                }
+            }
+            
+            // Restore sparkle and typing beat volumes in normal mode
+            const now = Tone.Transport.now();
+            if (this.toneMusic.sparkle) {
+                this.toneMusic.sparkle.volume.cancelScheduledValues(now);
+                this.toneMusic.sparkle.volume.setValueAtTime(this.toneMusic.sparkle.volume.value, now);
+                this.toneMusic.sparkle.volume.linearRampToValueAtTime(-20, now + 1); // Fade in over 1 second
+            }
+            if (this.toneMusic.typingBeat) {
+                this.toneMusic.typingBeat.volume.cancelScheduledValues(now);
+                this.toneMusic.typingBeat.volume.setValueAtTime(this.toneMusic.typingBeat.volume.value, now);
+                this.toneMusic.typingBeat.volume.linearRampToValueAtTime(-12, now + 1); // Fade in over 1 second
+            }
         }
     }
     

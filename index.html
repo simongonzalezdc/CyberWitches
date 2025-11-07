@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A magical idle game about casting spells and building workstations. Install to play offline and enjoy a full desktop app experience!">
+    <meta name="description" content="Cast spells, build workstations, and grow your cyber coven. Play offline anytime!">
     <meta name="theme-color" content="#FF2DAA">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -89,11 +89,12 @@
     <div class="hud">
         <div class="hud-content">
             <div class="currency-display">
-                <span id="ab-display" title="Spell Energy - Energy gathered from casting spells. Use it to build workstations and power your cyber coven.">SE: 0</span>
-                <span id="abps-display" class="seps-display" title="Spell Energy per second">0.0 SE/s</span>
+                <span id="ab-display" title="Arcane Bits - Earned from casting. Build workstations to make more.">AB: 0</span>
+                <span id="abps-display" class="seps-display" title="Arcane Bits per second">0.0 AB/s</span>
+                <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" title="Elemental Affinity"></span>
             </div>
                 <div class="hud-controls">
-                    <button id="install-app-button" class="btn-install" style="display: none;" title="Install Cyber Witches as an app for offline play" aria-label="Install App">
+                    <button id="install-app-button" class="btn-install" style="display: none;" title="Install to play offline" aria-label="Install App">
                         <span class="install-icon">📱</span> Install
                     </button>
                     <button id="cast-button" class="btn-cast">
@@ -111,15 +112,15 @@
         
         <!-- Tab Navigation -->
         <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="workstations" title="Workstations - Craft and manage production buildings" aria-label="Workstations tab"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
-            <button class="tab-btn" data-tab="inscriptions" title="Inscriptions - Purchase permanent upgrades" aria-label="Inscriptions tab"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
-            <button class="tab-btn" data-tab="inventory" title="Inventory - View your collected ingredients" aria-label="Inventory tab"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
-            <button class="tab-btn" data-tab="experiment" title="Experiment - Discover new recipes through experimentation" aria-label="Experiment tab"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
-            <button class="tab-btn" data-tab="dailies" title="Rituals - Complete daily tasks for rewards" aria-label="Rituals tab"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
+            <button class="tab-btn active" data-tab="workstations" title="Build workstations that make ingredients" aria-label="Workstations tab"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
+            <button class="tab-btn" data-tab="inscriptions" title="Buy permanent upgrades" aria-label="Inscriptions tab"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
+            <button class="tab-btn" data-tab="inventory" title="Your collected ingredients" aria-label="Inventory tab"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
+            <button class="tab-btn" data-tab="experiment" title="Try experiments to find new recipes" aria-label="Experiment tab"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
+            <button class="tab-btn" data-tab="dailies" title="Daily tasks for rewards" aria-label="Rituals tab"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
             <!-- Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
-            <button class="tab-btn" data-tab="boons" title="Boons - Purchase powerful permanent bonuses with Eldritch Keys" aria-label="Boons tab"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
-            <button class="tab-btn" data-tab="meditation" title="Meditation - Defend against waves in this tower defense mini-game" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
-            <button class="tab-btn" data-tab="stats" title="Stats - View your game statistics and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
+            <button class="tab-btn" data-tab="boons" title="Buy permanent bonuses with Eldritch Keys" aria-label="Boons tab"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
+            <button class="tab-btn" data-tab="meditation" title="Tower defense mini-game" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
+            <button class="tab-btn" data-tab="stats" title="Your stats and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
         </div>
 
         <!-- Tab Content -->
@@ -226,7 +227,7 @@
                             <option value="3">Tier 3: Full Graphics</option>
                             <option value="4">Tier 4: Music</option>
                         </select>
-                        <p class="settings-note">You can only select tiers you've unlocked</p>
+                        <p class="settings-note">Only unlocked tiers available</p>
                     </div>
 
                         <!-- Sustainable Design Settings -->
@@ -237,7 +238,7 @@
                                     <input type="checkbox" id="low-power-mode-toggle" class="setting-checkbox">
                                     <span>Low Power Mode</span>
                                 </label>
-                                <p class="settings-note">Reduces animations and effects to save battery</p>
+                                    <p class="settings-note">Saves battery by reducing effects</p>
                             </div>
                             <div class="setting-item">
                                 <label class="setting-label" for="animation-quality-select">
@@ -248,7 +249,7 @@
                                     <option value="medium">Medium</option>
                                     <option value="low">Low</option>
                                 </select>
-                                <p class="settings-note">Lower quality uses less battery</p>
+                                <p class="settings-note">Lower = less battery</p>
                             </div>
                         </div>
 
@@ -298,7 +299,7 @@
                     <!-- Tutorial Section -->
                     <div class="settings-section">
                         <h3><span class="settings-icon">📚</span> Tutorial</h3>
-                        <p class="settings-note">Learn the basics of the game with an interactive tutorial.</p>
+                        <p class="settings-note">Learn how to play</p>
                         <button id="start-tutorial-button" class="btn-primary">
                             <span class="settings-icon">▶</span> Start Tutorial
                         </button>
@@ -310,11 +311,11 @@
                     <!-- Reset Progress Section -->
                     <div class="settings-section settings-section-danger">
                         <h3><span class="settings-icon settings-icon-warning css-icon-warning"></span> Danger Zone</h3>
-                        <p class="settings-warning">The following actions cannot be undone!</p>
+                        <p class="settings-warning">These actions cannot be undone!</p>
                         <button id="reset-all-progress-button" class="btn-danger">
                             <span class="settings-icon settings-icon-reset css-icon-reset"></span> Reset All Progress
                         </button>
-                        <p class="settings-note">This will permanently delete all your game progress, including prestige points and achievements.</p>
+                        <p class="settings-note">Deletes all progress, prestige points, and achievements.</p>
                     </div>
                 </div>
             </div>
@@ -326,7 +327,7 @@
         <div class="modal-content">
             <h2>⚡ Ascend</h2>
             <p>Eldritch Keys: <span id="prestige-ek">0</span></p>
-            <p>Next Ascend: +<span id="prestige-gain">0</span> EK</p>
+            <p>You'll get: +<span id="prestige-gain">0</span> EK</p>
             <div class="modal-buttons">
                 <button id="ascend-button" class="btn-primary">Ascend</button>
                 <button id="close-prestige-button" class="btn-secondary">Close</button>
@@ -337,7 +338,7 @@
     <div id="welcome-back-modal" class="modal">
         <div class="modal-content">
             <h2>🌙 Welcome Back!</h2>
-            <p id="welcome-time">⏰ Away for: 0s</p>
+            <p id="welcome-time">⏰ Away: 0s</p>
             <p id="welcome-ab">✨ Earned: 0 SE</p>
             <button id="close-welcome-button" class="btn-primary">Close</button>
         </div>

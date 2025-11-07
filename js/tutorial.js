@@ -91,7 +91,7 @@ class TutorialSystem {
             {
                 id: 'welcome',
                 title: 'Welcome to Cyber Witches!',
-                message: 'Welcome to your magical workshop! Let\'s learn the basics.',
+                message: 'Cast spells, build workstations, grow your coven.',
                 target: null,
                 position: 'center',
                 action: null
@@ -99,7 +99,7 @@ class TutorialSystem {
             {
                 id: 'cast_button',
                 title: 'Cast Your First Spell',
-                message: 'Click the Cast button to earn your first ingredients and AB!',
+                message: 'Click Cast to earn ingredients and Spell Energy.',
                 target: '#cast-button',
                 position: 'bottom',
                 action: () => {
@@ -114,7 +114,7 @@ class TutorialSystem {
             {
                 id: 'workstations',
                 title: 'Build Workstations',
-                message: 'Craft workstations to automatically produce ingredients!',
+                message: 'Workstations make ingredients automatically.',
                 target: '.tab-btn[data-tab="workstations"]',
                 position: 'bottom',
                 action: () => {
@@ -127,7 +127,7 @@ class TutorialSystem {
             {
                 id: 'craft_workstation',
                 title: 'Craft Your First Workstation',
-                message: 'Click "Craft x1" to build your first workstation!',
+                message: 'Click "Craft x1" to build one.',
                 target: '.card button[data-action="craft"]',
                 position: 'top',
                 action: null
@@ -135,7 +135,7 @@ class TutorialSystem {
             {
                 id: 'inscriptions',
                 title: 'Purchase Upgrades',
-                message: 'Visit the Inscriptions tab to buy permanent upgrades!',
+                message: 'Buy permanent upgrades in Inscriptions.',
                 target: '.tab-btn[data-tab="inscriptions"]',
                 position: 'bottom',
                 action: () => {
@@ -147,7 +147,7 @@ class TutorialSystem {
             {
                 id: 'complete',
                 title: 'Tutorial Complete!',
-                message: 'You\'re ready to play! Explore all the tabs and features.',
+                message: 'You\'re ready! Explore tabs and experiment.',
                 target: null,
                 position: 'center',
                 action: null

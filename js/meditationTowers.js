@@ -165,13 +165,46 @@ export class MeditationTowers {
     
     /**
      * Start animation loop
+     * Stops when tab is hidden to save CPU (similar to audio loops stopping)
      */
     startAnimationLoop() {
+        // Stop if already running
+        if (this.animationFrame) {
+            return;
+        }
+        
         const animate = () => {
+            // Stop if tab is hidden (save CPU)
+            if (document.hidden) {
+                this.animationFrame = null;
+                return;
+            }
+            
             this.render();
             this.animationFrame = requestAnimationFrame(animate);
         };
-        animate();
+        
+        // Only start if tab is visible
+        if (!document.hidden) {
+            this.animationFrame = requestAnimationFrame(animate);
+        }
+        
+        // Listen for visibility changes to pause/resume
+        if (!this.visibilityHandler) {
+            this.visibilityHandler = () => {
+                if (document.hidden) {
+                    // Tab hidden - stop animation loop (save CPU)
+                    if (this.animationFrame) {
+                        cancelAnimationFrame(this.animationFrame);
+                        this.animationFrame = null;
+                    }
+                } else if (!this.animationFrame) {
+                    // Tab visible - restart animation loop
+                    this.animationFrame = requestAnimationFrame(animate);
+                }
+            };
+            document.addEventListener('visibilitychange', this.visibilityHandler);
+        }
     }
     
     /**
@@ -181,6 +214,12 @@ export class MeditationTowers {
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
             this.animationFrame = null;
+        }
+        
+        // Remove visibility handler
+        if (this.visibilityHandler) {
+            document.removeEventListener('visibilitychange', this.visibilityHandler);
+            this.visibilityHandler = null;
         }
     }
     
@@ -321,56 +360,260 @@ export class MeditationTowers {
      * Draw towers
      */
     drawTowers() {
+        const designTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        const isEnhanced = designTier >= 3;
+        
         for (const tower of this.meditationState.towers) {
             if (!tower || !tower.data) continue;
             
             const x = tower.x * this.cellSize;
             const y = tower.y * this.cellSize;
             const radius = this.cellSize * 0.3;
+            const level = tower.upgradeLevel || 0;
             
             // Draw tower range (if active) - use current tower stats
             if (this.meditationState.activeSession && this.meditationState.waveActive) {
                 const stats = this.meditationState.getTowerStats(tower);
                 const range = stats.range * this.cellSize;
-                const rangeGradient = this.ctx.createRadialGradient(x, y, 0, x, y, range);
-                rangeGradient.addColorStop(0, 'rgba(0, 255, 255, 0.1)');
-                rangeGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
                 
-                this.ctx.fillStyle = rangeGradient;
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, range, 0, Math.PI * 2);
-                this.ctx.fill();
+                if (isEnhanced) {
+                    // Enhanced range visualization with pulsing effect
+                    const time = Date.now() * 0.001;
+                    const pulse = 0.1 + Math.sin(time * 2) * 0.05;
+                    const rangeGradient = this.ctx.createRadialGradient(x, y, 0, x, y, range);
+                    rangeGradient.addColorStop(0, `rgba(0, 255, 255, ${0.15 + pulse})`);
+                    rangeGradient.addColorStop(0.5, `rgba(0, 255, 255, ${0.08 + pulse * 0.5})`);
+                    rangeGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+                    
+                    this.ctx.fillStyle = rangeGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, range, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Draw range ring
+                    this.ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 + pulse})`;
+                    this.ctx.lineWidth = 1;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, range, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                } else {
+                    // Basic range visualization
+                    const rangeGradient = this.ctx.createRadialGradient(x, y, 0, x, y, range);
+                    rangeGradient.addColorStop(0, 'rgba(0, 255, 255, 0.1)');
+                    rangeGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+                    
+                    this.ctx.fillStyle = rangeGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, range, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
             }
             
-            // Draw tower circle - color based on tower type
             const towerColor = this.getTowerColor(tower.id);
-            this.ctx.fillStyle = towerColor;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, radius, 0, Math.PI * 2);
-            this.ctx.fill();
             
-            // Draw tower border
-            this.ctx.strokeStyle = towerColor;
-            this.ctx.lineWidth = 2;
-            this.ctx.stroke();
-            
-            // Draw tower level indicator if upgraded
-            const level = tower.upgradeLevel || 0;
-            if (level > 0) {
-                this.ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
-                this.ctx.font = `${radius * 0.4}px Arial`;
+            if (isEnhanced) {
+                // Enhanced tower design with glow, gradients, and unique shapes
+                this.drawEnhancedTower(x, y, radius, tower, towerColor, level);
+            } else {
+                // Basic tower design
+                this.ctx.fillStyle = towerColor;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.strokeStyle = towerColor;
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // Draw tower level indicator if upgraded
+                if (level > 0) {
+                    this.ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
+                    this.ctx.font = `${radius * 0.4}px Arial`;
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(level.toString(), x, y - radius * 0.3);
+                }
+                
+                // Draw tower icon (simple symbol)
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                this.ctx.font = `${radius * 0.6}px Arial`;
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
-                this.ctx.fillText(level.toString(), x, y - radius * 0.3);
+                this.ctx.fillText('○', x, y);
             }
-            
-            // Draw tower icon (simple symbol)
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            this.ctx.font = `${radius * 0.6}px Arial`;
+        }
+    }
+    
+    /**
+     * Draw enhanced tower design (Tier 3+)
+     */
+    drawEnhancedTower(x, y, radius, tower, baseColor, level) {
+        const time = Date.now() * 0.001;
+        
+        // Extract RGBA from base color
+        const colorMatch = baseColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (!colorMatch) return;
+        
+        const r = parseInt(colorMatch[1]);
+        const g = parseInt(colorMatch[2]);
+        const b = parseInt(colorMatch[3]);
+        const a = colorMatch[4] ? parseFloat(colorMatch[4]) : 0.8;
+        
+        // Draw outer glow
+        const glowGradient = this.ctx.createRadialGradient(x, y, 0, x, y, radius * 1.8);
+        glowGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${a * 0.4})`);
+        glowGradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${a * 0.2})`);
+        glowGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+        this.ctx.fillStyle = glowGradient;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, radius * 1.8, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw main tower shape based on type
+        const towerShape = this.getTowerShape(tower.id);
+        
+        // Draw gradient fill
+        const fillGradient = this.ctx.createRadialGradient(x, y - radius * 0.3, 0, x, y, radius);
+        fillGradient.addColorStop(0, `rgba(${Math.min(255, r + 50)}, ${Math.min(255, g + 50)}, ${Math.min(255, b + 50)}, ${a})`);
+        fillGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${a})`);
+        this.ctx.fillStyle = fillGradient;
+        
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        
+        // Draw shape-specific design
+        if (towerShape === 'hexagon') {
+            // Hexagon shape for Peace Circle
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const px = Math.cos(angle) * radius;
+                const py = Math.sin(angle) * radius;
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
+            this.ctx.fill();
+        } else if (towerShape === 'ring') {
+            // Ring shape for Focus Ring
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            this.ctx.fill();
+            // Inner ring
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2);
+            this.ctx.fill();
+        } else if (towerShape === 'shrine') {
+            // Shrine shape for Tranquility Shrine (tiered)
+            this.ctx.beginPath();
+            // Bottom tier
+            this.ctx.rect(-radius, radius * 0.3, radius * 2, radius * 0.4);
+            this.ctx.fill();
+            // Middle tier
+            this.ctx.rect(-radius * 0.7, 0, radius * 1.4, radius * 0.4);
+            this.ctx.fill();
+            // Top tier
+            this.ctx.beginPath();
+            this.ctx.arc(0, -radius * 0.2, radius * 0.6, 0, Math.PI * 2);
+            this.ctx.fill();
+        } else if (towerShape === 'pavilion') {
+            // Pavilion shape for Zen Pavilion (octagon with center)
+            this.ctx.beginPath();
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI / 4) * i;
+                const px = Math.cos(angle) * radius;
+                const py = Math.sin(angle) * radius;
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
+            this.ctx.fill();
+            // Center circle
+            this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a * 0.5})`;
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, radius * 0.4, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+        
+        this.ctx.restore();
+        
+        // Draw animated border with pulsing effect
+        const pulse = 0.8 + Math.sin(time * 3) * 0.2;
+        this.ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * pulse})`;
+        this.ctx.lineWidth = 2 + level * 0.5;
+        this.ctx.beginPath();
+        if (towerShape === 'hexagon') {
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const px = x + Math.cos(angle) * radius;
+                const py = y + Math.sin(angle) * radius;
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
+        } else if (towerShape === 'ring') {
+            this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+        } else if (towerShape === 'shrine') {
+            this.ctx.rect(x - radius, y - radius * 0.5, radius * 2, radius);
+        } else if (towerShape === 'pavilion') {
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI / 4) * i;
+                const px = x + Math.cos(angle) * radius;
+                const py = y + Math.sin(angle) * radius;
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
+        }
+        this.ctx.stroke();
+        
+        // Draw level indicator with enhanced styling
+        if (level > 0) {
+            this.ctx.fillStyle = `rgba(255, 255, 0, ${0.9 + Math.sin(time * 4) * 0.1})`;
+            this.ctx.strokeStyle = 'rgba(255, 200, 0, 0.9)';
+            this.ctx.lineWidth = 1;
+            this.ctx.font = `bold ${radius * 0.5}px Arial`;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
-            this.ctx.fillText('○', x, y);
+            const levelY = y - radius * 0.4;
+            this.ctx.strokeText(level.toString(), x, levelY);
+            this.ctx.fillText(level.toString(), x, levelY);
         }
+        
+        // Draw tower symbol/icon
+        const symbol = this.getTowerSymbol(tower.id);
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${0.9 + Math.sin(time * 2) * 0.1})`;
+        this.ctx.font = `${radius * 0.7}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(symbol, x, y);
+    }
+    
+    /**
+     * Get tower shape type for enhanced rendering
+     */
+    getTowerShape(towerId) {
+        const shapes = {
+            'peace_circle': 'hexagon',
+            'focus_ring': 'ring',
+            'tranquility_shrine': 'shrine',
+            'zen_pavilion': 'pavilion'
+        };
+        return shapes[towerId] || 'hexagon';
+    }
+    
+    /**
+     * Get tower symbol/icon
+     */
+    getTowerSymbol(towerId) {
+        const symbols = {
+            'peace_circle': '☮',
+            'focus_ring': '◎',
+            'tranquility_shrine': '◉',
+            'zen_pavilion': '◈'
+        };
+        return symbols[towerId] || '○';
     }
     
     /**
@@ -420,52 +663,251 @@ export class MeditationTowers {
      * Draw distractions - different shape and color from towers
      */
     drawDistractions() {
+        const designTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        const isEnhanced = designTier >= 3;
+        
         for (const dist of this.meditationState.distractions) {
             if (!dist) continue;
             
             const x = dist.x * this.cellSize;
             const y = dist.y * this.cellSize;
-            const size = this.cellSize * 0.25; // Size for square/diamond
+            const size = this.cellSize * 0.25;
             
             // Draw health bar
             const healthPercent = dist.health / dist.maxHealth;
             const barWidth = this.cellSize * 0.6;
-            const barHeight = 4;
+            const barHeight = isEnhanced ? 5 : 4;
             const barX = x - barWidth / 2;
-            const barY = y - size - 10;
+            const barY = y - size - (isEnhanced ? 12 : 10);
             
-            // Background
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            this.ctx.fillRect(barX, barY, barWidth, barHeight);
+            if (isEnhanced) {
+                // Enhanced health bar with border and gradient
+                // Background with border
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                this.ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
+                
+                // Health gradient
+                const healthGradient = this.ctx.createLinearGradient(barX, barY, barX + barWidth * healthPercent, barY);
+                if (healthPercent > 0.5) {
+                    healthGradient.addColorStop(0, 'rgba(0, 255, 100, 0.9)');
+                    healthGradient.addColorStop(1, 'rgba(0, 200, 80, 0.9)');
+                } else if (healthPercent > 0.25) {
+                    healthGradient.addColorStop(0, 'rgba(255, 255, 0, 0.9)');
+                    healthGradient.addColorStop(1, 'rgba(255, 200, 0, 0.9)');
+                } else {
+                    healthGradient.addColorStop(0, 'rgba(255, 50, 50, 0.9)');
+                    healthGradient.addColorStop(1, 'rgba(200, 0, 0, 0.9)');
+                }
+                this.ctx.fillStyle = healthGradient;
+                this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+            } else {
+                // Basic health bar
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(barX, barY, barWidth, barHeight);
+                
+                this.ctx.fillStyle = healthPercent > 0.5 ? 'rgba(0, 255, 0, 0.8)' : healthPercent > 0.25 ? 'rgba(255, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
+                this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+            }
             
-            // Health
-            this.ctx.fillStyle = healthPercent > 0.5 ? 'rgba(0, 255, 0, 0.8)' : healthPercent > 0.25 ? 'rgba(255, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
-            this.ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+            if (isEnhanced) {
+                // Enhanced distraction design
+                this.drawEnhancedDistraction(x, y, size, dist);
+            } else {
+                // Basic distraction design
+                const distractionColor = this.getDistractionColor(dist.tier);
+                this.ctx.fillStyle = distractionColor;
+                this.ctx.strokeStyle = distractionColor;
+                this.ctx.lineWidth = 2;
+                
+                // Draw diamond shape (rotated square)
+                this.ctx.save();
+                this.ctx.translate(x, y);
+                this.ctx.rotate(Math.PI / 4); // Rotate 45 degrees
+                this.ctx.beginPath();
+                this.ctx.rect(-size / 2, -size / 2, size, size);
+                this.ctx.fill();
+                this.ctx.stroke();
+                this.ctx.restore();
+                
+                // Draw distraction icon (X symbol) on top
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                this.ctx.font = `${size * 0.6}px Arial`;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText('✗', x, y);
+            }
+        }
+    }
+    
+    /**
+     * Draw enhanced distraction design (Tier 3+)
+     */
+    drawEnhancedDistraction(x, y, size, dist) {
+        const time = Date.now() * 0.001;
+        const distractionColor = this.getDistractionColor(dist.tier);
+        
+        // Extract RGBA from color
+        const colorMatch = distractionColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (!colorMatch) return;
+        
+        const r = parseInt(colorMatch[1]);
+        const g = parseInt(colorMatch[2]);
+        const b = parseInt(colorMatch[3]);
+        const a = colorMatch[4] ? parseFloat(colorMatch[4]) : 0.9;
+        
+        // Draw outer glow/pulse effect
+        const pulse = 0.3 + Math.sin(time * 4) * 0.2;
+        const glowGradient = this.ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+        glowGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${a * pulse})`);
+        glowGradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${a * pulse * 0.5})`);
+        glowGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+        this.ctx.fillStyle = glowGradient;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, size * 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw main shape with rotation animation
+        const rotation = time * 0.5; // Slow rotation
+        
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.rotate(rotation);
+        
+        // Draw shape based on tier
+        const shapeType = this.getDistractionShape(dist.tier);
+        
+        if (shapeType === 'spike') {
+            // Spike/star shape for higher tiers
+            this.ctx.beginPath();
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI / 4) * i;
+                const outerRadius = size;
+                const innerRadius = size * 0.5;
+                const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                const px = Math.cos(angle) * radius;
+                const py = Math.sin(angle) * radius;
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
             
-            // Draw distraction as a diamond/square shape (different from tower circles)
-            // Use red/orange color scheme to distinguish from towers
-            const distractionColor = this.getDistractionColor(dist.tier);
-            this.ctx.fillStyle = distractionColor;
-            this.ctx.strokeStyle = distractionColor;
-            this.ctx.lineWidth = 2;
+            // Fill with gradient
+            const fillGradient = this.ctx.createRadialGradient(0, 0, 0, 0, 0, size);
+            fillGradient.addColorStop(0, `rgba(${Math.min(255, r + 30)}, ${Math.min(255, g + 30)}, ${Math.min(255, b + 30)}, ${a})`);
+            fillGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${a})`);
+            this.ctx.fillStyle = fillGradient;
+            this.ctx.fill();
+        } else if (shapeType === 'crystal') {
+            // Crystal shape (diamond with facets)
+            this.ctx.beginPath();
+            // Top point
+            this.ctx.moveTo(0, -size);
+            // Right point
+            this.ctx.lineTo(size * 0.7, 0);
+            // Bottom point
+            this.ctx.lineTo(0, size);
+            // Left point
+            this.ctx.lineTo(-size * 0.7, 0);
+            this.ctx.closePath();
             
-            // Draw diamond shape (rotated square)
-            this.ctx.save();
-            this.ctx.translate(x, y);
-            this.ctx.rotate(Math.PI / 4); // Rotate 45 degrees
+            const fillGradient = this.ctx.createLinearGradient(-size, -size, size, size);
+            fillGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${a * 0.8})`);
+            fillGradient.addColorStop(0.5, `rgba(${Math.min(255, r + 50)}, ${Math.min(255, g + 50)}, ${Math.min(255, b + 50)}, ${a})`);
+            fillGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${a * 0.8})`);
+            this.ctx.fillStyle = fillGradient;
+            this.ctx.fill();
+            
+            // Draw facets
+            this.ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * 0.6})`;
+            this.ctx.lineWidth = 1;
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, -size);
+            this.ctx.lineTo(size * 0.35, 0);
+            this.ctx.moveTo(0, -size);
+            this.ctx.lineTo(-size * 0.35, 0);
+            this.ctx.stroke();
+        } else {
+            // Diamond shape (rotated square) for basic tiers
             this.ctx.beginPath();
             this.ctx.rect(-size / 2, -size / 2, size, size);
-            this.ctx.fill();
-            this.ctx.stroke();
-            this.ctx.restore();
             
-            // Draw distraction icon (X symbol) on top
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            this.ctx.font = `${size * 0.6}px Arial`;
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
-            this.ctx.fillText('✗', x, y);
+            const fillGradient = this.ctx.createRadialGradient(0, 0, 0, 0, 0, size);
+            fillGradient.addColorStop(0, `rgba(${Math.min(255, r + 40)}, ${Math.min(255, g + 40)}, ${Math.min(255, b + 40)}, ${a})`);
+            fillGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${a})`);
+            this.ctx.fillStyle = fillGradient;
+            this.ctx.fill();
         }
+        
+        this.ctx.restore();
+        
+        // Draw animated border
+        const pulseBorder = 0.7 + Math.sin(time * 5) * 0.3;
+        this.ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a * pulseBorder})`;
+        this.ctx.lineWidth = 2;
+        
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.rotate(rotation);
+        
+        if (shapeType === 'spike') {
+            this.ctx.beginPath();
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI / 4) * i;
+                const radius = i % 2 === 0 ? size : size * 0.5;
+                const px = Math.cos(angle) * radius;
+                const py = Math.sin(angle) * radius;
+                if (i === 0) this.ctx.moveTo(px, py);
+                else this.ctx.lineTo(px, py);
+            }
+            this.ctx.closePath();
+        } else if (shapeType === 'crystal') {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, -size);
+            this.ctx.lineTo(size * 0.7, 0);
+            this.ctx.lineTo(0, size);
+            this.ctx.lineTo(-size * 0.7, 0);
+            this.ctx.closePath();
+        } else {
+            this.ctx.beginPath();
+            this.ctx.rect(-size / 2, -size / 2, size, size);
+        }
+        this.ctx.stroke();
+        this.ctx.restore();
+        
+        // Draw distraction icon with pulsing effect
+        const iconPulse = 0.9 + Math.sin(time * 3) * 0.1;
+        const icon = this.getDistractionIcon(dist.tier);
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${iconPulse})`;
+        this.ctx.font = `bold ${size * 0.7}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(icon, x, y);
+    }
+    
+    /**
+     * Get distraction shape type for enhanced rendering
+     */
+    getDistractionShape(tier) {
+        if (tier >= 3) return 'spike';
+        if (tier >= 2) return 'crystal';
+        return 'diamond';
+    }
+    
+    /**
+     * Get distraction icon
+     */
+    getDistractionIcon(tier) {
+        const icons = {
+            0: '✗',
+            1: '⚠',
+            2: '⚡',
+            3: '☠',
+            4: '💀'
+        };
+        return icons[tier] || '✗';
     }
     
     /**
@@ -487,6 +929,9 @@ export class MeditationTowers {
      * Draw tower attacks
      */
     drawTowerAttacks(delta) {
+        const designTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        const isEnhanced = designTier >= 3;
+        
         for (let i = this.towerAttacks.length - 1; i >= 0; i--) {
             const attack = this.towerAttacks[i];
             attack.progress += delta * 3; // Speed
@@ -496,22 +941,86 @@ export class MeditationTowers {
                 continue;
             }
             
-            // Draw attack line
+            // Calculate current position
             const x = attack.fromX + (attack.toX - attack.fromX) * attack.progress;
             const y = attack.fromY + (attack.toY - attack.fromY) * attack.progress;
             
-            this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
-            this.ctx.lineWidth = 2;
-            this.ctx.beginPath();
-            this.ctx.moveTo(attack.fromX, attack.fromY);
-            this.ctx.lineTo(x, y);
-            this.ctx.stroke();
-            
-            // Draw attack projectile
-            this.ctx.fillStyle = 'rgba(0, 255, 255, 0.9)';
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, 3, 0, Math.PI * 2);
-            this.ctx.fill();
+            if (isEnhanced) {
+                // Enhanced attack visuals with trail and glow
+                const time = Date.now() * 0.001;
+                
+                // Draw trail
+                const trailLength = 15;
+                const trailGradient = this.ctx.createLinearGradient(
+                    x - (attack.toX - attack.fromX) * 0.1,
+                    y - (attack.toY - attack.fromY) * 0.1,
+                    x, y
+                );
+                trailGradient.addColorStop(0, 'rgba(0, 255, 255, 0)');
+                trailGradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.4)');
+                trailGradient.addColorStop(1, 'rgba(0, 255, 255, 0.8)');
+                
+                this.ctx.strokeStyle = trailGradient;
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(attack.fromX, attack.fromY);
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+                
+                // Draw main attack line with glow
+                this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.9)';
+                this.ctx.shadowBlur = 10;
+                this.ctx.shadowColor = 'rgba(0, 255, 255, 0.8)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(attack.fromX, attack.fromY);
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+                this.ctx.shadowBlur = 0;
+                
+                // Draw enhanced projectile with pulsing glow
+                const pulse = 0.8 + Math.sin(time * 8 + attack.progress * 10) * 0.2;
+                const projectileSize = 4 + pulse;
+                
+                // Outer glow
+                const projectileGradient = this.ctx.createRadialGradient(x, y, 0, x, y, projectileSize * 2);
+                projectileGradient.addColorStop(0, `rgba(0, 255, 255, ${0.6 * pulse})`);
+                projectileGradient.addColorStop(0.5, `rgba(0, 200, 255, ${0.3 * pulse})`);
+                projectileGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+                this.ctx.fillStyle = projectileGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, projectileSize * 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Main projectile
+                this.ctx.fillStyle = `rgba(0, 255, 255, ${0.9 * pulse})`;
+                this.ctx.shadowBlur = 8;
+                this.ctx.shadowColor = 'rgba(0, 255, 255, 0.9)';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, projectileSize, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.shadowBlur = 0;
+                
+                // Inner core
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, projectileSize * 0.5, 0, Math.PI * 2);
+                this.ctx.fill();
+            } else {
+                // Basic attack visuals
+                this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(attack.fromX, attack.fromY);
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+                
+                // Draw attack projectile
+                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.9)';
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 3, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
         }
     }
     

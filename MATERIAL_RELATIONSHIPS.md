@@ -99,9 +99,8 @@ CAST → air_essence (T0)
 ### ✨ AETHER ELEMENT
 
 ```
-CAST → aether_ess (T0)
-        ↓
-[Aether Still] → dist_aether (T1)
+[Aether Synthesizer] → dist_aether (T0)
+  Input: fire_essence + water_essence + air_essence + crystal_dust
         ↓
 [Aether Well] → aether_well (T1)
         ↓
@@ -111,6 +110,8 @@ CAST → aether_ess (T0)
         ↓
 [Infinity Flux Forge] → infinity_flux (T4)
 ```
+
+**Note:** Aether is not generated from CAST. It must be synthesized by combining all four basic elements (Fire, Water, Air, Earth) in the Aether Synthesizer.
 
 ---
 
@@ -155,10 +156,12 @@ CAST (Manual Action)
   ├─→ wax_bits (Fire T0)
   ├─→ wick_fiber (Fire T0)
   ├─→ crystal_dust (Earth T0)
-  ├─→ aether_ess (Aether T0)
   ├─→ fire_essence (Fire T0)
   ├─→ water_essence (Water T0)
   └─→ air_essence (Air T0)
+
+Aether Synthesis (Workstation)
+  fire_essence + water_essence + air_essence + crystal_dust → [Aether Synthesizer] → dist_aether
 
 Tier 0 → Tier 1 (Single Workstation)
   wax_bits → [Wax Melter] → wax_block

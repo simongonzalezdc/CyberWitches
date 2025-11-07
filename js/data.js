@@ -90,12 +90,17 @@ export const PRODUCERS = [
         growth: 1.12,
         outputs: { shaped_crys: 0.20 }
     },
-    // Aether - Reactor
+    // Aether - Synthesizer (combines all 4 elements to create Aether)
     {
-        id: "ws_aether_reactor",
-        displayName: "Aether Reactor",
-        unlockAtAb: 45.0,
-        recipe: { aether_ess: 10 },
+        id: "ws_aether_synthesizer",
+        displayName: "Aether Synthesizer",
+        unlockAtAb: 50.0,
+        recipe: { 
+            fire_essence: 2,
+            water_essence: 2,
+            air_essence: 2,
+            crystal_dust: 2
+        },
         growth: 1.12,
         outputs: { dist_aether: 0.20 }
     },
@@ -113,7 +118,7 @@ export const PRODUCERS = [
     // Water - Well
     {
         id: "ws_aqua_well_t1",
-        displayName: "Aqua Well",
+        displayName: "Deep Aqua Well",
         unlockAtAb: 100.0,
         recipe: { liquid_essence: 3, shaped_crys: 2 },
         growth: 1.14,
@@ -122,7 +127,7 @@ export const PRODUCERS = [
     // Air - Generator
     {
         id: "ws_zephyr_generator_t1",
-        displayName: "Zephyr Generator",
+        displayName: "Enhanced Zephyr Generator",
         unlockAtAb: 125.0,
         recipe: { ethereal_gust: 3, shaped_crys: 2 },
         growth: 1.14,
@@ -133,7 +138,7 @@ export const PRODUCERS = [
         id: "ws_crystal_chamber_t1",
         displayName: "Crystal Orb Chamber",
         unlockAtAb: 150.0,
-        recipe: { shaped_crys: 2, dist_aether: 2 },
+        recipe: { shaped_crys: 3, dist_fire: 1, dist_aether: 1 },
         growth: 1.14,
         outputs: { crystal_orb: 0.4 }
     },
@@ -147,7 +152,17 @@ export const PRODUCERS = [
         outputs: { aether_well: 0.4 }
     },
     
-    // Tier 2 - Mid Game Producers (5 workstations: one per element + Spell Energy producer)
+    // Tier 1 - Early AB Producer (first automated AB production)
+    {
+        id: "ws_arcane_bit_reactor_t1",
+        displayName: "Arcane Bit Reactor",
+        unlockAtAb: 1000.0,
+        recipe: { dig_candle: 2, crystal_orb: 1, aether_well: 1 },
+        growth: 1.15,
+        outputs: { ab: 1.5 }
+    },
+    
+    // Tier 2 - Mid Game Producers (5 workstations: one per element + Arcane Bits producer)
     // Fire - Forge
     {
         id: "ws_enhanced_candle_forge",
@@ -184,12 +199,12 @@ export const PRODUCERS = [
         growth: 1.17,
         outputs: { crystal_core: 0.4 }
     },
-    // Aether - Reactor (Spell Energy Producer - requires all 4 other elements)
+    // Aether - Reactor (Arcane Bits Producer - requires all 4 other elements + Aether)
     {
         id: "ws_arcane_bit_reactor",
-        displayName: "Spell Energy Reactor",
+        displayName: "Arcane Bit Reactor",
         unlockAtAb: 10000.0,
-        recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2 },
+        recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
         outputs: { ab: 5.0 }
     },
@@ -204,7 +219,7 @@ export const PRODUCERS = [
         outputs: { focus: 0.2 }
     },
     
-    // Tier 3 - Late Game Producers (5 workstations: one per element + Spell Energy producer)
+    // Tier 3 - Late Game Producers (5 workstations: one per element + Arcane Bits producer)
     // Fire - Forge
     {
         id: "ws_quantum_candle_forge",
@@ -241,12 +256,12 @@ export const PRODUCERS = [
         growth: 1.21,
         outputs: { quantum_crystal: 0.3 }
     },
-    // Aether - Reactor (Spell Energy Producer - requires all 4 other elements)
+    // Aether - Reactor (Arcane Bits Producer - requires all 4 other elements + Aether)
     {
         id: "ws_etheric_bit_reactor",
         displayName: "Etheric Energy Reactor",
         unlockAtAb: 200000.0,
-        recipe: { quantum_candle: 3, quantum_water: 3, quantum_air: 3, quantum_crystal: 3 },
+        recipe: { quantum_candle: 3, quantum_water: 3, quantum_air: 3, quantum_crystal: 3, aether_well: 3 },
         growth: 1.22,
         outputs: { ab: 25.0 }
     },
@@ -318,14 +333,14 @@ export const PRODUCERS = [
         growth: 1.29,
         outputs: { infinity_core: 0.15 }
     },
-    // Aether - Reactor (Spell Energy Producer - requires all 4 other elements)
+    // Aether - Reactor (Arcane Bits Producer - requires all 4 other elements + Aether)
     {
         id: "ws_infinity_bit_reactor",
         displayName: "Infinity Energy Reactor",
         unlockAtAb: 20000000.0,
-        recipe: { eternal_flame: 5, infinity_core: 5, void_liquid: 5, void_breath: 5 },
+        recipe: { eternal_flame: 5, infinity_core: 5, void_liquid: 5, void_breath: 5, aether_well: 5 },
         growth: 1.30,
-        outputs: { ab: 2000.0 }
+        outputs: { ab: 750.0 }
     },
     
     // Tier 4 - Focus Producer
@@ -354,7 +369,7 @@ export const UPGRADES = [
     {
         id: "u_global_1",
         displayName: "Hex Compiler v1",
-        description: "Increases all production by 50%",
+        description: "+50% all production",
         affects: "global",
         type: "multiplier",
         value: 1.5,
@@ -364,7 +379,7 @@ export const UPGRADES = [
     {
         id: "u_click_1",
         displayName: "Sigil Stroke",
-        description: "Adds +1 to all cast rewards",
+        description: "+1 cast rewards",
         affects: "click",
         type: "additive",
         value: 1.0,
@@ -374,7 +389,7 @@ export const UPGRADES = [
     {
         id: "u_click_2",
         displayName: "Enhanced Sigil",
-        description: "Adds +2 to all cast rewards",
+        description: "+2 cast rewards",
         affects: "click",
         type: "additive",
         value: 2.0,
@@ -386,7 +401,7 @@ export const UPGRADES = [
     {
         id: "u_digcandle_forge_1",
         displayName: "Candle Algorithm",
-        description: "Doubles Digital Candle Forge production",
+        description: "×2 Digital Candle Forge",
         affects: "producer:ws_digcandle_forge",
         type: "multiplier",
         value: 2.0,
@@ -396,8 +411,8 @@ export const UPGRADES = [
     {
         id: "u_crystal_1",
         displayName: "Orb Optimization",
-        description: "Doubles Crystal Orb Forge production",
-        affects: "producer:ws_crystal",
+        description: "×2 Crystal Orb Forge",
+        affects: "producer:ws_crystal_chamber_t1",
         type: "multiplier",
         value: 2.0,
         recipe: { crystal_orb: 3, shaped_crys: 5 },
@@ -406,8 +421,8 @@ export const UPGRADES = [
     {
         id: "u_cauldron_1",
         displayName: "Well Enhancement",
-        description: "Doubles Aether Well production",
-        affects: "producer:ws_cauldron",
+        description: "×2 Aether Well",
+        affects: "producer:ws_aether_reactor_t1",
         type: "multiplier",
         value: 2.0,
         recipe: { aether_well: 3, dist_aether: 5 },
@@ -416,8 +431,8 @@ export const UPGRADES = [
     {
         id: "u_candle_1",
         displayName: "Bit Forge Boost",
-        description: "Doubles Arcane Bit Forge production",
-        affects: "producer:ws_candle",
+        description: "×2 Arcane Bit Reactor",
+        affects: "producer:ws_arcane_bit_reactor_t1",
         type: "multiplier",
         value: 2.0,
         recipe: { dig_candle: 3, crystal_orb: 2, aether_well: 2 },
@@ -427,8 +442,8 @@ export const UPGRADES = [
     {
         id: "u_digcandle_forge_t2_1",
         displayName: "Enhanced Candle Boost",
-        description: "Doubles Enhanced Candle Forge production",
-        affects: "producer:ws_digcandle_forge_t2",
+        description: "×2 Enhanced Candle Forge",
+        affects: "producer:ws_enhanced_candle_forge",
         type: "multiplier",
         value: 2.0,
         recipe: { enhanced_candle: 3, dig_candle: 5 },
@@ -437,8 +452,8 @@ export const UPGRADES = [
     {
         id: "u_coreforge_1",
         displayName: "Core Enhancement",
-        description: "Doubles Crystal Core Forge production",
-        affects: "producer:ws_coreforge",
+        description: "×2 Crystal Core Forge",
+        affects: "producer:ws_crystal_core_chamber",
         type: "multiplier",
         value: 2.0,
         recipe: { crystal_core: 2, crystal_orb: 3 },
@@ -447,7 +462,7 @@ export const UPGRADES = [
     {
         id: "u_fluxreactor_1",
         displayName: "Flux Overdrive",
-        description: "Doubles Flowing Current Well production",
+        description: "×2 Flowing Current Well",
         affects: "producer:ws_flowing_current_well",
         type: "multiplier",
         value: 2.0,
@@ -457,7 +472,7 @@ export const UPGRADES = [
     {
         id: "u_hexforge_1",
         displayName: "Hex Optimization",
-        description: "Doubles Wind Spiral Generator production",
+        description: "×2 Wind Spiral Generator",
         affects: "producer:ws_wind_spiral_generator",
         type: "multiplier",
         value: 2.0,
@@ -467,11 +482,11 @@ export const UPGRADES = [
     {
         id: "u_sigilforge_1",
         displayName: "Reactor Boost",
-        description: "Doubles Etheric Bit Reactor production",
-        affects: "producer:ws_sigilforge",
+        description: "×2 Etheric Bit Reactor",
+        affects: "producer:ws_etheric_bit_reactor",
         type: "multiplier",
         value: 2.0,
-        recipe: { enhanced_candle: 3, crystal_core: 2, aether_flux: 2 },
+        recipe: { enhanced_candle: 3, crystal_core: 2, aether_well: 2 },
         unlockAtAb: 100000.0
     },
     
@@ -479,7 +494,7 @@ export const UPGRADES = [
     {
         id: "u_global_2",
         displayName: "Sigil Cache",
-        description: "Increases all production by 80%",
+        description: "+80% all production",
         affects: "global",
         type: "multiplier",
         value: 1.8,
@@ -489,7 +504,7 @@ export const UPGRADES = [
     {
         id: "u_global_3",
         displayName: "Coven Pact",
-        description: "Increases all production by 150%",
+        description: "+150% all production",
         affects: "global",
         type: "multiplier",
         value: 2.5,
@@ -499,7 +514,7 @@ export const UPGRADES = [
     {
         id: "u_global_4",
         displayName: "Eldritch Binding",
-        description: "Increases all production by 300%",
+        description: "+300% all production",
         affects: "global",
         type: "multiplier",
         value: 4.0,
@@ -509,7 +524,7 @@ export const UPGRADES = [
     {
         id: "u_global_5",
         displayName: "Infinity Nexus",
-        description: "Increases all production by 500%",
+        description: "+500% all production",
         affects: "global",
         type: "multiplier",
         value: 6.0,
@@ -521,8 +536,8 @@ export const UPGRADES = [
     {
         id: "u_quantumlab_candle_1",
         displayName: "Quantum Candle Boost",
-        description: "Triples Quantum Candle Forge production",
-        affects: "producer:ws_quantumlab_candle",
+        description: "×3 Quantum Candle Forge",
+        affects: "producer:ws_quantum_candle_forge",
         type: "multiplier",
         value: 3.0,
         recipe: { quantum_candle: 3, enhanced_candle: 5 },
@@ -531,7 +546,7 @@ export const UPGRADES = [
     {
         id: "u_quantumlab_1",
         displayName: "Quantum Resonance",
-        description: "Triples Quantum Crystal Chamber production",
+        description: "×3 Quantum Crystal Chamber",
         affects: "producer:ws_quantum_crystal_chamber",
         type: "multiplier",
         value: 3.0,
@@ -541,7 +556,7 @@ export const UPGRADES = [
     {
         id: "u_quantumlab_aether_1",
         displayName: "Quantum Aether Amplifier",
-        description: "Triples Quantum Water Well production",
+        description: "×3 Quantum Water Well",
         affects: "producer:ws_quantum_water_well",
         type: "multiplier",
         value: 3.0,
@@ -551,7 +566,7 @@ export const UPGRADES = [
     {
         id: "u_eldritchforge_1",
         displayName: "Eldritch Power",
-        description: "Triples Quantum Air Generator production",
+        description: "×3 Quantum Air Generator",
         affects: "producer:ws_quantum_air_generator",
         type: "multiplier",
         value: 3.0,
@@ -561,7 +576,7 @@ export const UPGRADES = [
     {
         id: "u_covenaltar_1",
         displayName: "Nexus Boost",
-        description: "Triples Etheric Bit Reactor production",
+        description: "×3 Etheric Bit Reactor",
         affects: "producer:ws_etheric_bit_reactor",
         type: "multiplier",
         value: 3.0,
@@ -573,7 +588,7 @@ export const UPGRADES = [
     {
         id: "u_arcanetower_1",
         displayName: "Arcane Mastery",
-        description: "Triples Arcane Candle Forge production",
+        description: "×3 Arcane Candle Forge",
         affects: "producer:ws_arcane_candle_forge",
         type: "multiplier",
         value: 3.0,
@@ -583,7 +598,7 @@ export const UPGRADES = [
     {
         id: "u_voidchamber_1",
         displayName: "Void Mastery",
-        description: "Triples Void Crystal Chamber production",
+        description: "×3 Void Crystal Chamber",
         affects: "producer:ws_void_crystal_chamber",
         type: "multiplier",
         value: 3.0,
@@ -595,7 +610,7 @@ export const UPGRADES = [
     {
         id: "u_voidliquid_1",
         displayName: "Void Liquid Mastery",
-        description: "Triples Void Liquid Well production",
+        description: "×3 Void Liquid Well",
         affects: "producer:ws_void_liquid_well",
         type: "multiplier",
         value: 3.0,
@@ -605,7 +620,7 @@ export const UPGRADES = [
     {
         id: "u_voidbreath_1",
         displayName: "Void Breath Mastery",
-        description: "Triples Void Breath Generator production",
+        description: "×3 Void Breath Generator",
         affects: "producer:ws_void_breath_generator",
         type: "multiplier",
         value: 3.0,
@@ -615,7 +630,7 @@ export const UPGRADES = [
     {
         id: "u_eternalflame_1",
         displayName: "Eternal Flame Mastery",
-        description: "Triples Eternal Flame Forge production",
+        description: "×3 Eternal Flame Forge",
         affects: "producer:ws_eternal_flame_forge",
         type: "multiplier",
         value: 3.0,
@@ -625,7 +640,7 @@ export const UPGRADES = [
     {
         id: "u_infinitycore_1",
         displayName: "Infinity Core Mastery",
-        description: "Triples Infinity Core Chamber production",
+        description: "×3 Infinity Core Chamber",
         affects: "producer:ws_infinity_core_chamber",
         type: "multiplier",
         value: 3.0,
@@ -635,7 +650,7 @@ export const UPGRADES = [
     {
         id: "u_infinitycore_ab_1",
         displayName: "Infinity Engine Boost",
-        description: "Triples Infinity Bit Reactor production",
+        description: "×3 Infinity Bit Reactor",
         affects: "producer:ws_infinity_bit_reactor",
         type: "multiplier",
         value: 3.0,
@@ -647,21 +662,21 @@ export const UPGRADES = [
     {
         id: "u_click_3",
         displayName: "Master Sigil",
-        description: "Adds +5 to all cast rewards",
+        description: "+5 cast rewards",
         affects: "click",
         type: "additive",
         value: 5.0,
-        recipe: { quantum_candle: 10, crystal_core: 5 },
+        recipe: { enhanced_candle: 10, crystal_core: 5 },
         unlockAtAb: 100000.0
     },
     {
         id: "u_click_4",
         displayName: "Eldritch Sigil",
-        description: "Adds +10 to all cast rewards",
+        description: "+10 cast rewards",
         affects: "click",
         type: "additive",
         value: 10.0,
-        recipe: { quantum_air: 10, arcane_candle: 5 },
+        recipe: { quantum_candle: 10, quantum_crystal: 5 },
         unlockAtAb: 1000000.0
     },
     
@@ -669,7 +684,7 @@ export const UPGRADES = [
     {
         id: "u_focus_production_1",
         displayName: "Focus Amplification",
-        description: "Doubles all Focus production",
+        description: "×2 Focus production",
         affects: "producer_focus",
         type: "multiplier",
         value: 2.0,
@@ -679,7 +694,7 @@ export const UPGRADES = [
     {
         id: "u_focus_production_2",
         displayName: "Focus Mastery",
-        description: "Triples all Focus production",
+        description: "×3 Focus production",
         affects: "producer_focus",
         type: "multiplier",
         value: 3.0,
@@ -689,7 +704,7 @@ export const UPGRADES = [
     {
         id: "u_focus_production_3",
         displayName: "Focus Transcendence",
-        description: "Quadruples all Focus production",
+        description: "×4 Focus production",
         affects: "producer_focus",
         type: "multiplier",
         value: 4.0,
@@ -699,7 +714,7 @@ export const UPGRADES = [
     {
         id: "u_focus_meditation_1",
         displayName: "Meditative Focus",
-        description: "Increases meditation Focus generation by 50%",
+        description: "+50% meditation Focus",
         affects: "meditation_focus",
         type: "multiplier",
         value: 1.5,
@@ -709,7 +724,7 @@ export const UPGRADES = [
     {
         id: "u_focus_conversion_1",
         displayName: "Focus Conversion",
-        description: "Convert Focus to Spell Energy (1 SE per 100 Focus)",
+        description: "Convert Focus to SE (1 SE = 100 Focus)",
         affects: "focus_to_ab",
         type: "conversion",
         value: 0.01, // 100 focus = 1 SE
@@ -718,8 +733,8 @@ export const UPGRADES = [
     },
     {
         id: "u_ab_mult_1",
-        displayName: "Spell Energy Multiplier",
-        description: "Increases all Spell Energy production by 50%",
+        displayName: "Arcane Bits Multiplier",
+        description: "+50% AB production",
         affects: "ab_production",
         type: "multiplier",
         value: 1.5,
@@ -728,8 +743,8 @@ export const UPGRADES = [
     },
     {
         id: "u_ab_mult_2",
-        displayName: "Spell Energy Amplifier",
-        description: "Increases all Spell Energy production by 100%",
+        displayName: "Arcane Bits Amplifier",
+        description: "+100% AB production",
         affects: "ab_production",
         type: "multiplier",
         value: 2.0,
@@ -738,8 +753,8 @@ export const UPGRADES = [
     },
     {
         id: "u_ab_mult_3",
-        displayName: "Spell Energy Transcendence",
-        description: "Increases all Spell Energy production by 200%",
+        displayName: "Arcane Bits Transcendence",
+        description: "+200% AB production",
         affects: "ab_production",
         type: "multiplier",
         value: 3.0,
@@ -748,8 +763,8 @@ export const UPGRADES = [
     },
     {
         id: "u_ab_mult_4",
-        displayName: "Spell Energy Infinity",
-        description: "Increases all Spell Energy production by 500%",
+        displayName: "Arcane Bits Infinity",
+        description: "+500% AB production",
         affects: "ab_production",
         type: "multiplier",
         value: 6.0,
@@ -763,7 +778,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_global_1",
         displayName: "Coven's Oath",
-        description: "+10% global production per level",
+        description: "+10% all production / level",
         type: "global_mult",
         value: 0.10,
         baseCostPp: 10.0,
@@ -772,7 +787,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_global_2",
         displayName: "Eldritch Pact",
-        description: "+25% global production per level",
+        description: "+25% all production / level",
         type: "global_mult",
         value: 0.25,
         baseCostPp: 50.0,
@@ -781,7 +796,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_global_3",
         displayName: "Infinity Binding",
-        description: "+50% global production per level",
+        description: "+50% all production / level",
         type: "global_mult",
         value: 0.50,
         baseCostPp: 200.0,
@@ -792,7 +807,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_bits",
         displayName: "Seeded Spellbook",
-        description: "+1000 SE at start per level",
+        description: "+1000 SE at start / level",
         type: "starting_currency",
         value: 1000.0,
         baseCostPp: 5.0,
@@ -801,7 +816,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_bits_2",
         displayName: "Enchanted Tome",
-        description: "+10000 SE at start per level",
+        description: "+10K SE at start / level",
         type: "starting_currency",
         value: 10000.0,
         baseCostPp: 25.0,
@@ -810,7 +825,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_bits_3",
         displayName: "Arcane Library",
-        description: "+100000 SE at start per level",
+        description: "+100K SE at start / level",
         type: "starting_currency",
         value: 100000.0,
         baseCostPp: 100.0,
@@ -821,7 +836,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_digcandle_forge_mult",
         displayName: "Candle Moon",
-        description: "+5% Digital Candle Forge production per level",
+        description: "+5% Digital Candle / level",
         type: "producer_mult",
         param: "ws_digcandle_forge",
         value: 0.05,
@@ -831,9 +846,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_crystal_mult",
         displayName: "Orb Star",
-        description: "+5% Crystal Orb Forge production per level",
+        description: "+5% Crystal Orb / level",
         type: "producer_mult",
-        param: "ws_crystal",
+        param: "ws_crystal_chamber_t1",
         value: 0.05,
         baseCostPp: 8.0,
         costGrowth: 1.5
@@ -841,9 +856,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_cauldron_mult",
         displayName: "Well Constellation",
-        description: "+5% Aether Well production per level",
+        description: "+5% Aether Well / level",
         type: "producer_mult",
-        param: "ws_cauldron",
+        param: "ws_aether_reactor_t1",
         value: 0.05,
         baseCostPp: 8.0,
         costGrowth: 1.5
@@ -851,9 +866,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_candle_mult",
         displayName: "Bit Forge Star",
-        description: "+5% Arcane Bit Forge production per level",
+        description: "+5% Arcane Bit Reactor / level",
         type: "producer_mult",
-        param: "ws_candle",
+        param: "ws_arcane_bit_reactor_t1",
         value: 0.05,
         baseCostPp: 10.0,
         costGrowth: 1.5
@@ -861,9 +876,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_sigilforge_mult",
         displayName: "Reactor Star",
-        description: "+5% Etheric Bit Reactor production per level",
+        description: "+5% Etheric Reactor / level",
         type: "producer_mult",
-        param: "ws_sigilforge",
+        param: "ws_etheric_bit_reactor",
         value: 0.05,
         baseCostPp: 15.0,
         costGrowth: 1.5
@@ -871,9 +886,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_quantumlab_mult",
         displayName: "Quantum Constellation",
-        description: "+5% Quantum Essence Lab production per level",
+        description: "+5% Quantum Crystal Chamber / level",
         type: "producer_mult",
-        param: "ws_quantumlab",
+        param: "ws_quantum_crystal_chamber",
         value: 0.05,
         baseCostPp: 25.0,
         costGrowth: 1.5
@@ -881,9 +896,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_covenaltar_mult",
         displayName: "Nexus Star",
-        description: "+5% Cosmic Bit Nexus production per level",
+        description: "+5% Etheric Energy Reactor / level",
         type: "producer_mult",
-        param: "ws_covenaltar",
+        param: "ws_etheric_bit_reactor",
         value: 0.05,
         baseCostPp: 50.0,
         costGrowth: 1.5
@@ -891,9 +906,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_eldritchforge_mult",
         displayName: "Eldritch Star",
-        description: "+5% Eldritch Wax Forge production per level",
+        description: "+5% Quantum Candle Forge / level",
         type: "producer_mult",
-        param: "ws_eldritchforge",
+        param: "ws_quantum_candle_forge",
         value: 0.05,
         baseCostPp: 50.0,
         costGrowth: 1.5
@@ -901,9 +916,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_arcanetower_mult",
         displayName: "Arcane Star",
-        description: "+5% Arcane Candle Tower production per level",
+        description: "+5% Arcane Candle Forge / level",
         type: "producer_mult",
-        param: "ws_arcanetower",
+        param: "ws_arcane_candle_forge",
         value: 0.05,
         baseCostPp: 100.0,
         costGrowth: 1.5
@@ -911,9 +926,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_voidchamber_mult",
         displayName: "Void Star",
-        description: "+5% Void Crystal Chamber production per level",
+        description: "+5% Void Crystal Chamber / level",
         type: "producer_mult",
-        param: "ws_voidchamber",
+        param: "ws_void_crystal_chamber",
         value: 0.05,
         baseCostPp: 200.0,
         costGrowth: 1.5
@@ -921,9 +936,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_infinitycore_mult",
         displayName: "Infinity Star",
-        description: "+5% Infinity Flux Core production per level",
+        description: "+5% Infinity Core Chamber / level",
         type: "producer_mult",
-        param: "ws_infinitycore",
+        param: "ws_infinity_core_chamber",
         value: 0.05,
         baseCostPp: 500.0,
         costGrowth: 1.5
@@ -931,9 +946,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_infinitycore_ab_mult",
         displayName: "Engine Star",
-        description: "+5% Infinity Bit Engine production per level",
+        description: "+5% Infinity Energy Reactor / level",
         type: "producer_mult",
-        param: "ws_infinitycore_ab",
+        param: "ws_infinity_bit_reactor",
         value: 0.05,
         baseCostPp: 1000.0,
         costGrowth: 1.5
@@ -943,7 +958,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_ingred",
         displayName: "Pocket Satchel",
-        description: "+100 Fire Essence at start per level",
+        description: "+100 Fire Essence / level",
         type: "start_ingredient",
         param: "fire_essence",
         value: 100.0,
@@ -953,7 +968,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_ingred_2",
         displayName: "Enchanted Pouch",
-        description: "+1000 Fire Essence at start per level",
+        description: "+1K Fire Essence / level",
         type: "start_ingredient",
         param: "fire_essence",
         value: 1000.0,
@@ -963,7 +978,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_crystal",
         displayName: "Crystal Cache",
-        description: "+50 Crystal Cores at start per level",
+        description: "+50 Crystal Cores / level",
         type: "start_ingredient",
         param: "crystal_core",
         value: 50.0,
@@ -973,9 +988,9 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_start_sigil",
         displayName: "Sigil Reserve",
-        description: "+10 Sigil Charges at start per level",
+        description: "+10 Focus / level",
         type: "start_ingredient",
-        param: "sigil_charge",
+        param: "focus",
         value: 10.0,
         baseCostPp: 50.0,
         costGrowth: 1.5
@@ -984,8 +999,8 @@ export const PRESTIGE_BONUSES = [
     // Special bonuses
     {
         id: "pp_ab_mult",
-        displayName: "Spell Energy Amplifier",
-        description: "+10% Spell Energy production per level",
+        displayName: "Arcane Bits Amplifier",
+        description: "+10% SE production / level",
         type: "ab_production_mult",
         value: 0.10,
         baseCostPp: 25.0,
@@ -994,7 +1009,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_click_mult",
         displayName: "Cast Mastery",
-        description: "+5% cast rewards per level",
+        description: "+5% cast rewards / level",
         type: "click_mult",
         value: 0.05,
         baseCostPp: 15.0,
@@ -1003,7 +1018,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_prestige_speed",
         displayName: "Ascension Speed",
-        description: "+1% prestige point gain per level",
+        description: "+1% EK gain / level",
         type: "prestige_speed",
         value: 0.01,
         baseCostPp: 100.0,
@@ -1014,7 +1029,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_focus_production_1",
         displayName: "Focus Mill Boost",
-        description: "+10% Focus production per level",
+        description: "+10% Focus / level",
         type: "producer_focus_mult",
         value: 0.10,
         baseCostPp: 15.0,
@@ -1023,7 +1038,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_focus_production_2",
         displayName: "Focus Mastery",
-        description: "+25% Focus production per level",
+        description: "+25% Focus / level",
         type: "producer_focus_mult",
         value: 0.25,
         baseCostPp: 40.0,
@@ -1032,7 +1047,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_meditation_focus_1",
         displayName: "Meditative Focus",
-        description: "+20% meditation Focus generation per level",
+        description: "+20% meditation Focus / level",
         type: "meditation_focus_mult",
         value: 0.20,
         baseCostPp: 20.0,
@@ -1041,7 +1056,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: "pp_focus_conversion_1",
         displayName: "Focus Conversion",
-        description: "Improves Focus to Spell Energy conversion rate by 10% per level",
+        description: "+10% Focus→SE conversion / level",
         type: "focus_conversion_mult",
         value: 0.10,
         baseCostPp: 30.0,
@@ -1054,24 +1069,24 @@ export const DAILY_TASKS_POOL = [
     {
         id: "d_kindle",
         displayName: "Kindle the Flame",
-        description: "Craft 3 Fire Stills",
-        condition: "craft:workstation:ws_fire_still:3",
+        description: "Craft 3 Fire Forges",
+        condition: "craft:workstation:ws_fire_forge:3",
         rewardType: "ab",
         rewardValue: 5000.0
     },
     {
         id: "d_shape",
         displayName: "Crystal Shaping",
-        description: "Craft 2 Crystal Shapers",
-        condition: "craft:workstation:ws_shaper:2",
+        description: "Craft 2 Crystal Chambers",
+        condition: "craft:workstation:ws_crystal_chamber:2",
         rewardType: "ab",
         rewardValue: 7500.0
     },
     {
         id: "d_still",
-        displayName: "Aether Distillation",
-        description: "Craft 2 Aether Stills",
-        condition: "craft:workstation:ws_still:2",
+        displayName: "Aether Synthesis",
+        description: "Craft 2 Aether Synthesizers",
+        condition: "craft:workstation:ws_aether_synthesizer:2",
         rewardType: "ab",
         rewardValue: 7500.0
     },
@@ -1081,7 +1096,7 @@ export const DAILY_TASKS_POOL = [
         id: "d_song",
         displayName: "Crystal Song",
         description: "Own 3 Crystal Orb Forges",
-        condition: "own:workstation:ws_crystal:3",
+        condition: "own:workstation:ws_crystal_chamber:3",
         rewardType: "buff",
         rewardValue: 900.0,
         buffMultiplier: 0.10
@@ -1098,7 +1113,7 @@ export const DAILY_TASKS_POOL = [
         id: "d_well",
         displayName: "Aether Well",
         description: "Own 2 Aether Wells",
-        condition: "own:workstation:ws_cauldron:2",
+        condition: "own:workstation:ws_aether_reactor_t1:2",
         rewardType: "buff",
         rewardValue: 1200.0,
         buffMultiplier: 0.12
@@ -1109,15 +1124,15 @@ export const DAILY_TASKS_POOL = [
         id: "d_enhanced",
         displayName: "Enhanced Production",
         description: "Craft 2 Enhanced Candle Forges",
-        condition: "craft:workstation:ws_digcandle_forge_t2:2",
+        condition: "craft:workstation:ws_enhanced_candle_forge:2",
         rewardType: "ab",
         rewardValue: 25000.0
     },
     {
         id: "d_core",
         displayName: "Core Forging",
-        description: "Own 2 Crystal Core Forges",
-        condition: "own:workstation:ws_coreforge:2",
+        description: "Own 2 Crystal Core Chambers",
+        condition: "own:workstation:ws_crystal_core_chamber:2",
         rewardType: "buff",
         rewardValue: 1800.0,
         buffMultiplier: 0.15
@@ -1125,8 +1140,8 @@ export const DAILY_TASKS_POOL = [
     {
         id: "d_flux",
         displayName: "Flux Reactor",
-        description: "Craft 1 Aether Flux Reactor",
-        condition: "craft:workstation:ws_fluxreactor:1",
+        description: "Craft 1 Arcane Bit Reactor",
+        condition: "craft:workstation:ws_arcane_bit_reactor:1",
         rewardType: "ab",
         rewardValue: 30000.0
     },
@@ -1136,15 +1151,15 @@ export const DAILY_TASKS_POOL = [
         id: "d_quantum",
         displayName: "Quantum Forging",
         description: "Craft 1 Quantum Candle Forge",
-        condition: "craft:workstation:ws_quantumlab_candle:1",
+        condition: "craft:workstation:ws_quantum_candle_forge:1",
         rewardType: "ab",
         rewardValue: 50000.0
     },
     {
         id: "d_essence",
         displayName: "Quantum Essence",
-        description: "Own 1 Quantum Essence Lab",
-        condition: "own:workstation:ws_quantumlab:1",
+        description: "Own 1 Quantum Crystal Chamber",
+        condition: "own:workstation:ws_quantum_crystal_chamber:1",
         rewardType: "buff",
         rewardValue: 2400.0,
         buffMultiplier: 0.20
@@ -1154,8 +1169,8 @@ export const DAILY_TASKS_POOL = [
     {
         id: "d_arcane",
         displayName: "Arcane Tower",
-        description: "Craft 1 Arcane Candle Tower",
-        condition: "craft:workstation:ws_arcanetower:1",
+        description: "Craft 1 Arcane Candle Forge",
+        condition: "craft:workstation:ws_arcane_candle_forge:1",
         rewardType: "ab",
         rewardValue: 100000.0
     },
@@ -1163,7 +1178,7 @@ export const DAILY_TASKS_POOL = [
         id: "d_void",
         displayName: "Void Crystal",
         description: "Own 1 Void Crystal Chamber",
-        condition: "own:workstation:ws_voidchamber:1",
+        condition: "own:workstation:ws_void_crystal_chamber:1",
         rewardType: "buff",
         rewardValue: 3600.0,
         buffMultiplier: 0.25
@@ -1284,8 +1299,8 @@ export const HIDDEN_RECIPES = [
         id: "ab_amplifier_potion",
         inputs: { crystal_orb: 5, aether_well: 3 },
         outputs: { ab_amplifier: 1 },
-        name: "Spell Energy Amplifier Potion",
-        description: "💰 TEMPORARY: +200% Spell Energy production for 20 minutes"
+        name: "Arcane Bits Amplifier Potion",
+        description: "💰 TEMPORARY: +200% Arcane Bits production for 20 minutes"
     },
     
     // Tier 2 - Temporary Buff Potions
@@ -1307,8 +1322,8 @@ export const HIDDEN_RECIPES = [
         id: "ab_turbo_charge",
         inputs: { crystal_core: 5, flowing_current: 3, wind_spiral: 3 },
         outputs: { ab_turbo_charge: 1 },
-        name: "Spell Energy Turbo Charge",
-        description: "💰 TEMPORARY: +500% Spell Energy production for 45 minutes"
+        name: "Arcane Bits Turbo Charge",
+        description: "💰 TEMPORARY: +500% Arcane Bits production for 45 minutes"
     },
     {
         id: "rare_material_catalyst",
@@ -1337,8 +1352,8 @@ export const HIDDEN_RECIPES = [
         id: "ab_overdrive",
         inputs: { quantum_water: 5, quantum_air: 5, quantum_crystal: 3 },
         outputs: { ab_overdrive: 1 },
-        name: "Spell Energy Overdrive",
-        description: "💰 TEMPORARY: +1000% Spell Energy production for 1.5 hours"
+        name: "Arcane Bits Overdrive",
+        description: "💰 TEMPORARY: +1000% Arcane Bits production for 1.5 hours"
     },
     {
         id: "master_catalyst",
@@ -1425,15 +1440,15 @@ export const HIDDEN_RECIPES = [
         id: "ab_infinity_boost",
         inputs: { void_crystal: 5, void_liquid: 3, void_breath: 3 },
         outputs: { ab_infinity_boost: 1 },
-        name: "Spell Energy Infinity Boost",
-        description: "💰 TEMPORARY: +2000% Spell Energy production for 3 hours"
+        name: "Arcane Bits Infinity Boost",
+        description: "💰 TEMPORARY: +2000% Arcane Bits production for 3 hours"
     },
     {
         id: "ab_eternal_boost",
         inputs: { eternal_flame: 5, infinity_core: 5, void_liquid: 3, void_breath: 3 },
         outputs: { ab_eternal_boost: 1 },
-        name: "Spell Energy Eternal Boost",
-        description: "💰 TEMPORARY: +5000% Spell Energy production for 5 hours"
+        name: "Arcane Bits Eternal Boost",
+        description: "💰 TEMPORARY: +1000% Arcane Bits production for 2 hours"
     },
     {
         id: "infinity_catalyst",
@@ -1478,7 +1493,12 @@ export const MEDITATION_TOWERS = [
     {
         id: "focus_ring",
         displayName: "Focus Ring",
-        recipe: { crystal_dust: 5, aether_ess: 5 },
+        recipe: { 
+            crystal_dust: 3,
+            fire_essence: 2,
+            water_essence: 2,
+            air_essence: 2
+        },
         baseDamage: 15,
         baseRange: 2.5,
         baseAttackSpeed: 1.2,

@@ -8,6 +8,7 @@ import { MeditationUI } from './meditationUI.js';
 import { MeditationTowers } from './meditationTowers.js';
 import { DesignTierSystem } from './designTierSystem.js';
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
+import { ELEMENT_SPECIALIZATIONS } from './elementSpecialization.js';
 import { formatShort, formatPrecise, formatTimeDuration, formatOneDecimal } from './utils.js';
 import { pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
 // Particle effects removed for memory optimization - see VISUAL_ALTERNATIVES.md
@@ -347,7 +348,11 @@ function defineGlobalFunctions() {
             // Check why it failed
             const owned = gameState.upgradesOwned[upgId] || false;
             const canAfford = gameState.canAfford ? gameState.canAfford(upgrade.recipe) : false;
-            const unlocked = gameState.ab >= upgrade.unlockAtAb;
+            let unlockRequirement = upgrade.unlockAtAb;
+            if (gameState.elementSpecialization === 'air' && gameState.specializationBonuses.unlockSpeedMult) {
+                unlockRequirement *= gameState.specializationBonuses.unlockSpeedMult;
+            }
+            const unlocked = gameState.ab >= unlockRequirement;
             
             console.warn('Inscription failure reasons:', { owned, canAfford, unlocked, ab: gameState.ab, unlockAtAb: upgrade.unlockAtAb });
             
@@ -1632,7 +1637,7 @@ function initUI() {
                 animateNumber(abDisplay, previousAb, newValue, 200);
             } else {
                 // Direct update for small changes (faster)
-                abDisplay.textContent = `SE: ${formatShort(newValue)}`;
+                abDisplay.textContent = `AB: ${formatShort(newValue)}`;
             }
             
             previousAb = newValue;
@@ -1650,6 +1655,9 @@ function initUI() {
     };
     
     gameState.onPrestigeCompleted = (ekGained) => {
+        // Show element specialization choice UI
+        showElementSpecializationChoice();
+        
         // Check if meditation should be unlocked after this ascension
         if (gameState.prestigeCount >= 1 && !meditationState) {
             // Initialize meditation after first ascension
@@ -1980,18 +1988,21 @@ function initUI() {
     window.UPGRADES = UPGRADES;
     window.INGREDIENTS = INGREDIENTS;
     
-    // Initial Spell Energy display
+    // Initial Arcane Bits display
     if (abDisplay && gameState) {
-        abDisplay.textContent = `SE: ${formatShort(gameState.ab)}`;
+        abDisplay.textContent = `AB: ${formatShort(gameState.ab)}`;
         previousAb = gameState.ab;
     }
     
-    // Initial SE/s display
+    // Initial AB/s display
     if (abpsDisplay && gameState) {
         const abps = gameState.getAbPerSecond();
-        abpsDisplay.textContent = `${formatOneDecimal(abps)} SE/s`;
+        abpsDisplay.textContent = `${formatOneDecimal(abps)} AB/s`;
         previousAbps = abps;
     }
+    
+    // Update specialization indicator
+    updateSpecializationIndicator();
     
     // Initial element counters display
     if (gameState) {
@@ -2206,6 +2217,20 @@ function switchTab(tabName) {
             meditationUI.stopUpdateIntervals();
             console.log('Meditation UI update intervals stopped');
         }
+        
+        // Stop meditation towers animation loop to save CPU (similar to audio loops stopping)
+        if (window.meditationTowers && typeof window.meditationTowers.stopAnimationLoop === 'function') {
+            window.meditationTowers.stopAnimationLoop();
+            console.log('Meditation towers animation loop stopped (tab hidden)');
+        }
+    }
+    
+    // Start meditation towers animation loop when entering meditation tab
+    if (!wasMeditationActive && isMeditationActive) {
+        if (window.meditationTowers && typeof window.meditationTowers.startAnimationLoop === 'function') {
+            window.meditationTowers.startAnimationLoop();
+            console.log('Meditation towers animation loop started (tab visible)');
+        }
     }
     
     // Update panes
@@ -2413,8 +2438,14 @@ function updateWorkstationsTab() {
         minHeight: containerComputed.minHeight
     });
     
-    // Filter unlocked workstations
-    let unlockedWorkstations = PRODUCERS.filter(prod => gameState.ab >= prod.unlockAtAb);
+    // Filter unlocked workstations (with Air specialization unlock speed bonus)
+    let unlockedWorkstations = PRODUCERS.filter(prod => {
+        let unlockRequirement = prod.unlockAtAb;
+        if (gameState.elementSpecialization === 'air' && gameState.specializationBonuses.unlockSpeedMult) {
+            unlockRequirement *= gameState.specializationBonuses.unlockSpeedMult;
+        }
+        return gameState.ab >= unlockRequirement;
+    });
     
     // Hide focus workstations until meditation is unlocked
     const isMeditationUnlocked = gameState.prestigeCount >= 1;
@@ -2710,7 +2741,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
         container.innerHTML = `
             <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
                 <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
-                <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">No workstations unlocked yet. Start casting to unlock more!</p>
+                <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">No workstations yet. Cast spells to unlock them!</p>
             </div>
         `;
         return;
@@ -2739,7 +2770,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             const tierStyle = getTierAppropriateStyle(tier);
             const tierHeader = document.createElement('div');
             tierHeader.className = 'tier-header';
-            tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>${tierNames[tier]} Workstations`;
+            tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span> Tier ${tier}`;
             container.appendChild(tierHeader);
             
             // Render workstations for this tier
@@ -2775,7 +2806,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
             if (Object.keys(inscriptionBonusRates).length > 0) {
                 const bonusEntries = Object.entries(inscriptionBonusRates);
                 inscriptionBonusHTML = `
-                    <div class="card-label" style="color: var(--success); font-size: 12px; margin-bottom: 6px;"><span class="css-icon-scroll"></span> Inscription Bonuses:</div>
+                    <div class="card-label" style="color: var(--success); font-size: 12px; margin-bottom: 6px;"><span class="css-icon-scroll"></span> Bonuses:</div>
                     <div class="inscription-bonuses">
                         ${bonusEntries.map(([outputId, bonusRate]) => {
                             const ingredient = INGREDIENTS.find(ing => ing.id === outputId);
@@ -2799,7 +2830,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                 <div class="card-description">${stripEmojisIfLowTier('⚙️')} Owned: ${owned}</div>
                 <div class="card-content-left">
                     <div class="card-section">
-                        <div class="card-label">Produces:</div>
+                        <div class="card-label">Makes:</div>
                         ${Object.entries(prodData.outputs).map(([id, rate]) => {
                             const baseTotal = rate * owned;
                             const actualRate = owned > 0 ? baseTotal : rate;
@@ -2811,7 +2842,7 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
                 </div>
                 <div class="card-content-right">
                     <div class="card-section">
-                        <div class="card-label">Recipe for next:</div>
+                        <div class="card-label">Cost:</div>
                         ${Object.entries(recipe).map(([ingId, amount]) => {
                             const have = gameState.inventory[ingId] || 0;
                             const canAfford = have >= amount;
@@ -2900,7 +2931,13 @@ function updateInscriptionsTab() {
     container.style.gap = '15px';
     
     // Filter unlocked upgrades
-    let unlockedUpgrades = UPGRADES.filter(upg => gameState.ab >= upg.unlockAtAb);
+    let unlockedUpgrades = UPGRADES.filter(upg => {
+        let unlockRequirement = upg.unlockAtAb;
+        if (gameState.elementSpecialization === 'air' && gameState.specializationBonuses.unlockSpeedMult) {
+            unlockRequirement *= gameState.specializationBonuses.unlockSpeedMult;
+        }
+        return gameState.ab >= unlockRequirement;
+    });
     
     // Hide focus upgrades until meditation is unlocked
     const isMeditationUnlocked = gameState.prestigeCount >= 1;
@@ -3002,7 +3039,7 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
         const tierStyle = getTierAppropriateStyle(tier);
         const tierHeader = document.createElement('div');
         tierHeader.className = 'tier-header';
-        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span>Tier ${tier} Inscriptions`;
+        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span> Tier ${tier}`;
         container.appendChild(tierHeader);
         
         // Render upgrades for this tier
@@ -3039,10 +3076,10 @@ function updateInscriptionsTabTraditional(container, unlockedUpgrades) {
                 <div class="card-title">${upgData.displayName} ${owned ? stripEmojisIfLowTier('✓') : ''}</div>
                 <div class="card-description">${upgData.description}</div>
                 <div class="card-section">
-                    <div class="card-label">Effect: ${effectText}</div>
+                    <div class="card-label">${effectText}</div>
                 </div>
                 <div class="card-section">
-                    <div class="card-label">Recipe:</div>
+                    <div class="card-label">Cost:</div>
                     ${Object.entries(upgData.recipe).map(([ingId, amount]) => {
                         const have = gameState.inventory[ingId] || 0;
                         const canAfford = have >= amount;
@@ -3148,8 +3185,8 @@ function updateInventoryTab() {
     
     // Ensure container is visible - use grid layout for compact display
     container.style.display = 'grid';
-    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
-    container.style.gap = '6px';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(140px, 1fr))';
+    container.style.gap = '4px';
     container.style.visibility = 'visible';
     container.style.opacity = '1';
     container.innerHTML = '';
@@ -3158,7 +3195,7 @@ function updateInventoryTab() {
         container.innerHTML = `
             <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; grid-column: 1 / -1;">
                 <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
-                <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">Your inventory is empty. Start crafting to collect items!</p>
+                <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">Inventory empty. Craft workstations to get ingredients!</p>
             </div>
         `;
         return;
@@ -3214,32 +3251,41 @@ function updateInventoryTab() {
     
     const headerCard = document.createElement('div');
     headerCard.className = 'card inventory-header';
-    headerCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; grid-column: 1 / -1; padding: 12px 16px;';
+    headerCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; grid-column: 1 / -1; padding: 8px 12px;';
     
     if (isTier0) {
-        // Tier 0: Monochrome, no gradients, no shadows
-    headerCard.innerHTML = `
-            <div class="card-title" style="font-size: 18px; color: #FFFFFF; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                <span style="font-size: 20px;">◈</span> Inventory
-        </div>
-            <div class="card-description" style="font-size: 12px; color: #FFFFFF;">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
+        // Tier 0: Monochrome, no gradients, no shadows - compact single line
+        headerCard.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 16px;">◈</span>
+                    <span style="font-size: 16px; font-weight: 600; color: #FFFFFF;">Inventory</span>
+                </div>
+                <div style="font-size: 12px; color: #FFFFFF; opacity: 0.8;">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
+            </div>
         `;
     } else if (isTier1Or2) {
-        // Tier 1-2: Colors but no gradients/shadows
+        // Tier 1-2: Colors but no gradients/shadows - compact single line
         headerCard.innerHTML = `
-            <div class="card-title" style="font-size: 18px; color: var(--primary); display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                <span style="font-size: 20px;">◈</span> Inventory
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 16px;">◈</span>
+                    <span style="font-size: 16px; font-weight: 600; color: var(--primary);">Inventory</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-dim);">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
             </div>
-            <div class="card-description" style="font-size: 12px;">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
         `;
     } else {
-        // Tier 3-4: Full effects (gradients and shadows)
+        // Tier 3-4: Full effects (gradients and shadows) - compact single line
         headerCard.innerHTML = `
-            <div class="card-title" style="font-size: 18px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                <span style="font-size: 20px; filter: drop-shadow(0 0 6px var(--primary));">◈</span> Inventory
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 16px; filter: drop-shadow(0 0 6px var(--primary));">◈</span>
+                    <span style="font-size: 16px; font-weight: 600; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Inventory</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-dim);">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
             </div>
-            <div class="card-description" style="font-size: 12px;">${items.length} items • ${formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
-    `;
+        `;
     }
     fragment.appendChild(headerCard);
     
@@ -3256,13 +3302,12 @@ function updateInventoryTab() {
         
         const tierHeader = document.createElement('div');
         tierHeader.className = 'tier-header';
-        tierHeader.style.cssText = 'grid-column: 1 / -1; padding: 6px 12px; font-size: 13px; font-weight: 600; margin-top: 4px;';
-        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 6px; font-size: 16px;">${tierSymbol.symbol}</span>Tier ${tier}`;
+        tierHeader.style.cssText = 'grid-column: 1 / -1; padding: 4px 8px; font-size: 11px; font-weight: 600; margin-top: 2px;';
+        tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 4px; font-size: 14px;">${tierSymbol.symbol}</span>Tier ${tier}`;
         fragment.appendChild(tierHeader);
         
         // Create items for this tier
         for (const item of itemsByTier[tier]) {
-            const percentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
             const cardId = `inventory-item-${item.id}`;
             
             // Check current design tier for restrictions
@@ -3360,67 +3405,45 @@ function updateInventoryTab() {
             
             const contentDiv = document.createElement('div');
             contentDiv.className = 'inventory-item-content';
-            contentDiv.style.cssText = 'position: relative; z-index: 2; padding: 10px 12px;';
+            contentDiv.style.cssText = 'position: relative; z-index: 2; padding: 6px 8px;';
             
-            // Apply tier-appropriate content styling
+            // Apply tier-appropriate content styling - compact single-line layout
             if (isTier0) {
-                // Tier 0: Monochrome, no shadows, no animations
-            contentDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 20px; color: #FFFFFF; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
-                            <div style="min-width: 0; flex: 1;">
-                                <div class="card-label" style="font-size: 14px; font-weight: 600; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.displayName}</div>
-                                <div class="card-description" style="font-size: 10px; color: #FFFFFF; margin-top: 1px; opacity: 0.7;">T${tier}</div>
+                // Tier 0: Monochrome, no shadows, no animations - single line
+                contentDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 16px; color: #FFFFFF; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div class="card-label" style="font-size: 12px; font-weight: 600; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
+                        </div>
+                        <div class="inventory-amount" style="font-size: 14px; font-weight: 700; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; flex-shrink: 0;">
+                            ${formatShort(item.amount)}
                         </div>
                     </div>
-                        <div class="inventory-amount" style="font-size: 16px; font-weight: 700; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; margin-left: 8px; flex-shrink: 0;">
-                        ${formatShort(item.amount)}
-                    </div>
-                </div>
-                    <div class="progress-bar-container" style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 4px; overflow: hidden; position: relative; margin-top: 4px; box-shadow: none;">
-                        <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: #FFFFFF; border-radius: 4px; transition: none; box-shadow: none; position: relative; overflow: hidden;">
-                    </div>
-                </div>
                 `;
             } else if (isTier1Or2) {
-                // Tier 1-2: Colors but no shadows/glows, no transitions
+                // Tier 1-2: Colors but no shadows/glows, no transitions - single line
                 contentDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 20px; color: ${tierStyle.color}; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
-                            <div style="min-width: 0; flex: 1;">
-                                <div class="card-label" style="font-size: 14px; font-weight: 600; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.displayName}</div>
-                                <div class="card-description" style="font-size: 10px; color: var(--text-dim); margin-top: 1px; opacity: 0.7;">T${tier}</div>
-                            </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 16px; color: ${tierStyle.color}; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div class="card-label" style="font-size: 12px; font-weight: 600; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
                         </div>
-                        <div class="inventory-amount" style="font-size: 16px; font-weight: 700; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', monospace; margin-left: 8px; flex-shrink: 0;">
+                        <div class="inventory-amount" style="font-size: 14px; font-weight: 700; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', monospace; flex-shrink: 0;">
                             ${formatShort(item.amount)}
                         </div>
                     </div>
-                    <div class="progress-bar-container" style="width: 100%; height: 6px; background: rgba(0, 0, 0, 0.5); border-radius: 4px; overflow: hidden; position: relative; margin-top: 4px; box-shadow: none;">
-                        <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: ${tierStyle.gradient}; border-radius: 4px; transition: none; box-shadow: none; position: relative; overflow: hidden;">
-                        </div>
-                </div>
-            `;
+                `;
             } else {
-                // Tier 3-4: Full effects (colors, shadows, glows, transitions)
+                // Tier 3-4: Full effects (colors, shadows, glows, transitions) - single line
                 contentDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
-                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 20px; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; flex-shrink: 0;">${tierStyle.symbol}</span>
-                            <div style="min-width: 0; flex: 1;">
-                                <div class="card-label" style="font-size: 14px; font-weight: 600; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.displayName}</div>
-                                <div class="card-description" style="font-size: 10px; color: var(--text-dim); margin-top: 1px; opacity: 0.7;">T${tier}</div>
-                            </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 16px; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div class="card-label" style="font-size: 12px; font-weight: 600; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
                         </div>
-                        <div class="inventory-amount" style="font-size: 16px; font-weight: 700; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', monospace; margin-left: 8px; flex-shrink: 0;">
+                        <div class="inventory-amount" style="font-size: 14px; font-weight: 700; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', monospace; flex-shrink: 0;">
                             ${formatShort(item.amount)}
-                        </div>
-                    </div>
-                    <div class="progress-bar-container" style="width: 100%; height: 6px; background: rgba(0, 0, 0, 0.5); border-radius: 4px; overflow: hidden; position: relative; margin-top: 4px; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);">
-                        <div class="progress-bar-fill inventory-progress" style="height: 100%; width: ${percentage}%; background: ${tierStyle.gradient}; border-radius: 4px; transition: ${tierStyle.transition}; box-shadow: ${tierStyle.boxShadow}, inset 0 1px 0 rgba(255, 255, 255, 0.2); position: relative; overflow: hidden;">
-                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); animation: shimmer 2s infinite;"></div>
                         </div>
                     </div>
                 `;
@@ -3544,13 +3567,13 @@ function updateExperimentTab() {
                 console.error('Error in experiment:', error);
                 const resultLabel = document.getElementById('experiment-result');
                 if (resultLabel) {
-                    resultLabel.innerHTML = `<div class="result-label error" style="color: var(--danger); padding: 15px; font-size: 16px; text-align: center;">Experiment failed due to an error. Check console for details.</div>`;
+                    resultLabel.innerHTML = `<div class="result-label error" style="color: var(--danger); padding: 15px; font-size: 16px; text-align: center;">Experiment failed. Try again.</div>`;
                     resultLabel.className = 'result-box';
                     resultLabel.style.display = 'block';
                     resultLabel.style.visibility = 'visible';
                     resultLabel.style.opacity = '1';
                 }
-                showNotification('Experiment failed due to an error', 'error');
+                showNotification('Experiment failed. Try again.', 'error');
             }
         });
     }
@@ -3569,7 +3592,7 @@ function updateExperimentTab() {
             <div class="card-title">${recipe.name}</div>
             <div class="card-description">${recipe.description}</div>
             <div class="card-section">
-                <div class="card-label">Costs:</div>
+                        <div class="card-label">Cost:</div>
                 ${Object.entries(recipe.inputs).map(([ingId, amount]) => {
                     const have = gameState.inventory[ingId] || 0;
                     const canAfford = have >= amount;
@@ -3580,7 +3603,7 @@ function updateExperimentTab() {
                 }).join('')}
             </div>
             <div class="card-section">
-                <div class="card-label">Produces:</div>
+                        <div class="card-label">Makes:</div>
                 ${Object.entries(recipe.outputs).map(([outputId, amount]) =>
                     `<div class="card-value">${outputId}: ${formatShort(amount)}</div>`
                 ).join('')}
@@ -3666,7 +3689,7 @@ function updateDailiesTab() {
                     rewardText = `+${Math.floor(task.buffMultiplier * 100)}% for ${formatTimeDuration(task.rewardValue)}`;
                     break;
                 case 'ek_frag':
-                    rewardText = `${Math.floor(task.rewardValue)} EK Fragment(s)`;
+                    rewardText = `${Math.floor(task.rewardValue)} EK Fragment${Math.floor(task.rewardValue) !== 1 ? 's' : ''}`;
                     break;
             }
             
@@ -3686,7 +3709,7 @@ function updateDailiesTab() {
                     <div class="card-label">Reward: ${rewardText}</div>
                 </div>
                 <button class="btn-primary" data-action="claim-task" data-task-id="${task.id}" ${progress >= target && !claimed ? '' : 'disabled'}>
-                    ${claimed ? 'Claimed' : progress >= target ? 'Claim' : 'Incomplete'}
+                    ${claimed ? 'Claimed' : progress >= target ? 'Claim' : 'Not Ready'}
                 </button>
             `;
             
@@ -3781,10 +3804,10 @@ function updateBoonsTab() {
                 <div class="card-title">${boonData.displayName} (Lv. ${currentLevel})</div>
                 <div class="card-description">${boonData.description}</div>
                 <div class="card-section">
-                    <div class="card-label">Effect: ${effectText}</div>
+                    <div class="card-label">${effectText}</div>
                 </div>
                 <div class="card-section">
-                    <div class="card-label">Cost: ${Math.floor(cost)} EK</div>
+                    <div class="card-label">${Math.floor(cost)} EK</div>
                 </div>
                 <button class="btn-primary" data-action="purchase-boon" data-boon-id="${boonData.id}" ${gameState.prestigePoints >= cost ? '' : 'disabled'}>
                     Purchase
@@ -4064,7 +4087,7 @@ function updateStatsTab() {
     
     const rightColumnStats = [
         { label: 'Workstations Crafted', value: gameState.totalWorkstationsCrafted },
-        { label: 'Current Spell Energy', value: formatShort(gameState.ab) },
+        { label: 'Current Arcane Bits', value: formatShort(gameState.ab) },
         { label: 'Prestige Points', value: gameState.prestigePoints },
         { label: 'Max Combo', value: comboSystem ? comboSystem.maxCombo : 0 }
     ];
@@ -4182,7 +4205,7 @@ function updateStatsTab() {
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'card-section';
             emptyMsg.style.cssText = 'padding: 10px; color: var(--text-dim); grid-column: 1 / -1;';
-            emptyMsg.textContent = 'No achievements available yet.';
+            emptyMsg.textContent = 'No achievements yet.';
             achievementsContainer.appendChild(emptyMsg);
             return;
         }
@@ -4285,6 +4308,28 @@ function updateAllUI() {
     updateStatsTab();
     updateMeditationVisibility(); // Update meditation tab visibility
     updateElementCounters(); // Update element counters
+    updateSpecializationIndicator(); // Update specialization indicator
+}
+
+/**
+ * Update specialization indicator in HUD
+ */
+function updateSpecializationIndicator() {
+    const indicator = document.getElementById('specialization-indicator');
+    if (!indicator || !gameState) return;
+    
+    if (gameState.elementSpecialization) {
+        const spec = ELEMENT_SPECIALIZATIONS[gameState.elementSpecialization];
+        if (spec) {
+            indicator.textContent = spec.icon;
+            indicator.style.display = 'inline-block';
+            indicator.title = `${spec.name}\n${spec.description}`;
+        } else {
+            indicator.style.display = 'none';
+        }
+    } else {
+        indicator.style.display = 'none';
+    }
 }
 
 /**
@@ -4816,6 +4861,119 @@ function getScaledRecipe(baseRecipe, owned, growth) {
         scaled[ingId] = Math.ceil(baseCost * Math.pow(growth, owned));
     }
     return scaled;
+}
+
+/**
+ * Show element specialization choice modal after ascension
+ */
+function showElementSpecializationChoice() {
+    // Don't show if already has specialization (shouldn't happen, but safety check)
+    if (gameState.elementSpecialization) {
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'specialization-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        backdrop-filter: blur(5px);
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'specialization-content';
+    content.style.cssText = `
+        background: var(--bg-primary, #1a1a2e);
+        border: 2px solid var(--accent, #6c5ce7);
+        border-radius: 15px;
+        padding: 30px;
+        max-width: 800px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    `;
+    
+    content.innerHTML = `
+        <h2 style="text-align: center; margin-bottom: 20px; color: var(--accent, #6c5ce7); font-size: 28px;">
+            Choose Your Elemental Affinity
+        </h2>
+        <p style="text-align: center; margin-bottom: 30px; color: var(--text-secondary, #aaa); font-size: 16px;">
+            Select a path to specialize in. This choice will provide permanent bonuses until your next ascension.
+        </p>
+        <div class="element-choices" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 20px;">
+            ${Object.values(ELEMENT_SPECIALIZATIONS).map(spec => `
+                <div class="element-choice" data-element="${spec.id}" style="
+                    background: var(--bg-secondary, #16213e);
+                    border: 2px solid var(--accent, #6c5ce7);
+                    border-radius: 10px;
+                    padding: 20px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    text-align: center;
+                ">
+                    <div class="element-icon" style="font-size: 48px; margin-bottom: 10px;">${spec.icon}</div>
+                    <h3 style="margin: 10px 0; color: var(--text-primary, #fff); font-size: 18px;">${spec.name}</h3>
+                    <p style="margin: 10px 0; color: var(--text-secondary, #aaa); font-size: 12px; line-height: 1.4;">${spec.description}</p>
+                    <div class="element-bonuses" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border, #333);">
+                        ${Object.entries(spec.bonuses).map(([key, value]) => {
+                            let display = '';
+                            if (key === 'baseProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ${spec.id} production`;
+                            else if (key === 'abProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% AB from ${spec.id} reactors`;
+                            else if (key === 'costReduction') display = `-${(value * 100).toFixed(0)}% ${spec.id} costs`;
+                            else if (key === 'castRewardMult') display = `+${((value - 1) * 100).toFixed(0)}% cast rewards`;
+                            else if (key === 'globalProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% all production`;
+                            else if (key === 'ingredientProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ingredient production`;
+                            else if (key === 'unlockSpeedMult') display = `Unlock ${((1 - value) * 100).toFixed(0)}% earlier`;
+                            else if (key === 'productionSpeedMult') display = `+${((value - 1) * 100).toFixed(0)}% production speed`;
+                            else if (key === 'castSpeedMult') display = `+${((value - 1) * 100).toFixed(0)}% cast speed`;
+                            else if (key === 'universalIngredientMult') display = `+${((value - 1) * 100).toFixed(0)}% universal ingredients`;
+                            else if (key === 'bottleneckCostReduction') display = `-${(value * 100).toFixed(0)}% bottleneck costs`;
+                            else if (key === 'crystalBuildingMult') display = `+${((value - 1) * 100).toFixed(0)}% Crystal building production`;
+                            return `<div style="font-size: 11px; color: var(--success, #00d4aa); margin: 3px 0;">${display}</div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    
+    // Add hover effects
+    const choices = modal.querySelectorAll('.element-choice');
+    choices.forEach(choice => {
+        choice.addEventListener('mouseenter', () => {
+            choice.style.transform = 'scale(1.05)';
+            choice.style.borderColor = 'var(--success, #00d4aa)';
+            choice.style.boxShadow = '0 5px 20px rgba(0, 212, 170, 0.3)';
+        });
+        choice.addEventListener('mouseleave', () => {
+            choice.style.transform = 'scale(1)';
+            choice.style.borderColor = 'var(--accent, #6c5ce7)';
+            choice.style.boxShadow = 'none';
+        });
+        choice.addEventListener('click', () => {
+            const element = choice.dataset.element;
+            if (gameState.chooseElementSpecialization(element)) {
+                modal.remove();
+                if (window.showNotification) {
+                    const spec = ELEMENT_SPECIALIZATIONS[element];
+                    window.showNotification(`${spec.icon} ${spec.name} chosen!`, 'success');
+                }
+                debouncedUIUpdate('allUI', updateAllUI);
+            }
+        });
+    });
 }
 
 function updateDailyProgress(conditionType, param, value) {
