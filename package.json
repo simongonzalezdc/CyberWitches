@@ -11,9 +11,9 @@
     "build:prod": "node build.js --production",
     "preview": "npx http-server dist -p 3000 -o",
     "package": "bash package-for-friend.sh || ./package-for-friend.sh",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "optimize:images": "node optimize-backgrounds.js",
     "lint": "eslint js/**/*.js",
     "lint:fix": "eslint js/**/*.js --fix",
@@ -38,17 +38,5 @@
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
     "jsdoc": "^4.0.0"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "transform": {},
-    "setupFilesAfterEnv": [
-      "<rootDir>/tests/setup.js"
-    ],
-    "testEnvironmentOptions": {
-      "customExportConditions": [
-        ""
-      ]
-    }
   }
 }
