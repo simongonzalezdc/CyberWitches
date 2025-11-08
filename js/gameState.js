@@ -902,14 +902,17 @@ export class GameState {
                 timestamp: Date.now() / 1000,
                 version: "2.1" // Updated version for save data validation
             };
-            
+
             // Validate save data before saving
             if (!this.validateSaveData(saveData)) {
                 console.error('Save data validation failed!', saveData);
                 handleError(new Error('Save data validation failed'), 'save', true);
                 return;
             }
-            
+
+            // Add checksum for integrity verification
+            saveData.checksum = this.calculateChecksum(saveData);
+
             // Compress save data before storing
             const compressedData = this.compressSaveData(saveData);
             localStorage.setItem('cyberWitchesSave', compressedData);
@@ -951,7 +954,7 @@ export class GameState {
             let data;
             try {
                 data = JSON.parse(saveDataStr);
-                
+
                 // Check for save conflicts (multiple saves)
                 this.checkSaveConflicts();
             } catch (parseError) {
@@ -965,7 +968,25 @@ export class GameState {
                 }
                 return;
             }
-            
+
+            // Verify checksum for data integrity
+            if (!this.verifyChecksum(data)) {
+                console.error('Save data checksum verification failed - data may be corrupted');
+                // Create backup before clearing
+                try {
+                    localStorage.setItem('cyberWitchesSave_corrupted_' + Date.now(), saveDataStr);
+                } catch (e) {
+                    console.error('Failed to create corrupted save backup:', e);
+                }
+
+                // Show error to user if possible
+                if (window.showNotification) {
+                    window.showNotification('Save data appears to be corrupted. Starting fresh. A backup has been created.', 'error');
+                }
+
+                return;
+            }
+
             // Migrate save data if needed
             if (data.version && this.migrateSaveData) {
                 if (!this.migrateSaveData(data)) {
@@ -973,7 +994,7 @@ export class GameState {
                     return;
                 }
             }
-            
+
             // Validate save data structure
             if (!this.validateSaveData(data)) {
                 console.warn('Invalid save data detected, starting fresh');
@@ -1168,44 +1189,192 @@ export class GameState {
      */
     validateSaveData(data) {
         // Check basic structure
-        if (!data || typeof data !== 'object') {
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+            console.error('Save validation failed: Invalid data structure');
             return false;
         }
-        
+
         // Check version exists and is valid
         if (!data.version || typeof data.version !== 'string') {
             console.warn('Save data missing version, attempting migration');
             // Try to migrate old save data
             return this.migrateSaveData(data);
         }
-        
+
         // Validate numeric values
         const numericFields = ['ab', 'abTotal', 'timestamp'];
         for (const field of numericFields) {
-            if (data[field] !== undefined && (typeof data[field] !== 'number' || isNaN(data[field]))) {
-                return false;
+            if (data[field] !== undefined) {
+                if (typeof data[field] !== 'number' || isNaN(data[field])) {
+                    console.error(`Save validation failed: Invalid ${field} value`);
+                    return false;
+                }
+
+                // Check for bounded values (prevent negative/overflow)
+                if (field === 'ab' || field === 'abTotal') {
+                    if (data[field] < 0) {
+                        console.error(`Save validation failed: Negative ${field} value`);
+                        return false;
+                    }
+                    if (data[field] > Number.MAX_SAFE_INTEGER) {
+                        console.error(`Save validation failed: ${field} overflow`);
+                        return false;
+                    }
+                }
+
+                // Timestamp validation (reasonable range)
+                if (field === 'timestamp') {
+                    const currentTime = Date.now() / 1000;
+                    const year2020 = 1577836800; // Jan 1, 2020
+                    const futureLimit = currentTime + (365 * 24 * 60 * 60); // 1 year in future
+
+                    if (data[field] < year2020 || data[field] > futureLimit) {
+                        console.error(`Save validation failed: Invalid timestamp (${data[field]})`);
+                        return false;
+                    }
+                }
             }
         }
-        
+
         // Validate nested objects
         const objectFields = ['inventory', 'workstations', 'upgrades', 'prestige', 'experiments', 'stats'];
         for (const field of objectFields) {
-            if (data[field] !== undefined && typeof data[field] !== 'object') {
-                return false;
+            if (data[field] !== undefined) {
+                if (typeof data[field] !== 'object' || data[field] === null) {
+                    console.error(`Save validation failed: Invalid ${field} object`);
+                    return false;
+                }
+
+                // Validate inventory/workstation values are non-negative numbers
+                if (field === 'inventory' || field === 'workstations') {
+                    for (const key in data[field]) {
+                        const value = data[field][key];
+                        if (typeof value !== 'number' || isNaN(value) || value < 0) {
+                            console.error(`Save validation failed: Invalid ${field}.${key} value`);
+                            return false;
+                        }
+                        if (value > Number.MAX_SAFE_INTEGER) {
+                            console.error(`Save validation failed: ${field}.${key} overflow`);
+                            return false;
+                        }
+                    }
+                }
+
+                // Validate prestige data
+                if (field === 'prestige' && data.prestige) {
+                    const prestigeFields = ['points', 'lifetimeEarned', 'count'];
+                    for (const pField of prestigeFields) {
+                        if (data.prestige[pField] !== undefined) {
+                            if (typeof data.prestige[pField] !== 'number' || isNaN(data.prestige[pField]) || data.prestige[pField] < 0) {
+                                console.error(`Save validation failed: Invalid prestige.${pField} value`);
+                                return false;
+                            }
+                        }
+                    }
+
+                    // Validate bonuses object
+                    if (data.prestige.bonuses && typeof data.prestige.bonuses === 'object') {
+                        for (const bonusId in data.prestige.bonuses) {
+                            const level = data.prestige.bonuses[bonusId];
+                            if (typeof level !== 'number' || isNaN(level) || level < 0 || level > 1000) {
+                                console.error(`Save validation failed: Invalid prestige bonus level for ${bonusId}`);
+                                return false;
+                            }
+                        }
+                    }
+                }
             }
         }
-        
+
         // Validate arrays
         const arrayFields = ['discoveredRecipes'];
         for (const field of arrayFields) {
             if (data[field] !== undefined && !Array.isArray(data[field])) {
+                console.error(`Save validation failed: ${field} is not an array`);
                 return false;
             }
         }
-        
+
+        // Validate experiments.discovered array if it exists
+        if (data.experiments?.discovered !== undefined) {
+            if (!Array.isArray(data.experiments.discovered)) {
+                console.error('Save validation failed: experiments.discovered is not an array');
+                return false;
+            }
+            // Limit array size to prevent memory issues
+            if (data.experiments.discovered.length > 1000) {
+                console.error('Save validation failed: experiments.discovered array too large');
+                return false;
+            }
+        }
+
+        // Validate milestones.unlocked if it exists
+        if (data.milestones?.unlocked !== undefined) {
+            if (!Array.isArray(data.milestones.unlocked)) {
+                console.error('Save validation failed: milestones.unlocked is not an array');
+                return false;
+            }
+            if (data.milestones.unlocked.length > 10000) {
+                console.error('Save validation failed: milestones.unlocked array too large');
+                return false;
+            }
+        }
+
+        // Check data size to prevent localStorage overflow
+        const dataStr = JSON.stringify(data);
+        const dataSizeKB = dataStr.length / 1024;
+        if (dataSizeKB > 4096) { // 4MB limit (localStorage usually has 5-10MB limit)
+            console.error(`Save validation failed: Save data too large (${dataSizeKB.toFixed(2)} KB)`);
+            return false;
+        }
+
         return true;
     }
-    
+
+    /**
+     * Calculate a simple checksum for save data integrity
+     * @param {Object} data - Save data to checksum
+     * @returns {string} Checksum value
+     */
+    calculateChecksum(data) {
+        // Create a clean copy without checksum field
+        const cleanData = { ...data };
+        delete cleanData.checksum;
+
+        // Simple hash function (not cryptographic, just for corruption detection)
+        const str = JSON.stringify(cleanData);
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        return hash.toString(36);
+    }
+
+    /**
+     * Verify save data checksum
+     * @param {Object} data - Save data with checksum
+     * @returns {boolean} True if checksum is valid or missing (old save)
+     */
+    verifyChecksum(data) {
+        // If no checksum exists, it's an old save - allow it
+        if (!data.checksum) {
+            return true;
+        }
+
+        // Calculate expected checksum
+        const expectedChecksum = this.calculateChecksum(data);
+
+        if (data.checksum !== expectedChecksum) {
+            console.error('Save data checksum mismatch! Data may be corrupted.');
+            console.error(`Expected: ${expectedChecksum}, Got: ${data.checksum}`);
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Migrate save data from older versions
      * @param {Object} data - Save data to migrate
@@ -1277,7 +1446,8 @@ export class GameState {
             elementSpecialization: data.elementSpecialization,
             specializationBonuses: data.specializationBonuses,
             timestamp: data.timestamp,
-            version: data.version
+            version: data.version,
+            checksum: data.checksum // Include checksum for integrity
         };
         
         // Remove zero values to save space

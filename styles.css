@@ -5733,3 +5733,94 @@ body.tier-2 #meditation-canvas {
     background: transparent;
     box-shadow: 0.2em 0.2em 0 0 currentColor;
 }
+
+/* ================================================
+   FOOTER STYLES
+   ================================================ */
+
+.game-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 15, 30, 0.95);
+    border-top: 1px solid rgba(255, 45, 170, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    z-index: 100;
+    font-size: 12px;
+}
+
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.footer-link:hover {
+    color: #FF2DAA;
+    background: rgba(255, 45, 170, 0.1);
+}
+
+.footer-separator {
+    color: rgba(255, 255, 255, 0.3);
+    user-select: none;
+}
+
+.footer-info {
+    text-align: center;
+}
+
+.footer-text {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+}
+
+/* Responsive footer */
+@media (max-width: 768px) {
+    .game-footer {
+        padding: 10px 15px;
+        font-size: 11px;
+    }
+    
+    .footer-links {
+        gap: 6px;
+    }
+    
+    .footer-separator {
+        display: none;
+    }
+    
+    .footer-link {
+        padding: 3px 6px;
+    }
+    
+    .footer-text {
+        font-size: 10px;
+    }
+}
+
+/* Make space for footer in main game area */
+.main-game {
+    padding-bottom: 80px !important;
+}
