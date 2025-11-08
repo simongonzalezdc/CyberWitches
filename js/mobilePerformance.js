@@ -111,9 +111,9 @@ class MobilePerformanceManager {
         document.documentElement.style.removeProperty('--animation-duration');
         document.documentElement.style.removeProperty('--transition-duration');
         
-        // Enable particle effects
+        // Particle effects disabled for performance
         if (window.particleEffects) {
-            window.particleEffects.enable();
+            window.particleEffects.disable();
         }
         
         // Restore canvas quality

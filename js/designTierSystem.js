@@ -290,20 +290,23 @@ export class DesignTierSystem {
             window.audioSystem.enableSoundEffects();
         }
         
-        // Enable animations and particle effects
+        // Enable animations (particle effects disabled for performance)
         document.body.classList.add('full-animations');
         
-        // Enable particle canvas
+        // Disable particle canvas (removed for performance)
         const particleCanvas = document.getElementById('particle-canvas');
         if (particleCanvas) {
-            particleCanvas.style.display = 'block';
+            particleCanvas.style.display = 'none';
         }
         
-        // Try multiple possible names for particle system
+        // Disable particle systems
         if (window.particleSystem) {
-            window.particleSystem.enable();
+            window.particleSystem.disable();
         }
-        // Particle effects removed for memory optimization
+        if (window.particleEffects) {
+            window.particleEffects.disable();
+        }
+        // Particle effects removed for memory optimization and performance
     }
     
     async applyTier4() {
@@ -318,20 +321,23 @@ export class DesignTierSystem {
             window.audioSystem.enableSoundEffects();
         }
         
-        // Enable animations and particle effects
+        // Enable animations (particle effects disabled for performance)
         document.body.classList.add('full-animations');
         
-        // Enable particle canvas
+        // Disable particle canvas (removed for performance)
         const particleCanvas = document.getElementById('particle-canvas');
         if (particleCanvas) {
-            particleCanvas.style.display = 'block';
+            particleCanvas.style.display = 'none';
         }
         
-        // Try multiple possible names for particle system
+        // Disable particle systems
         if (window.particleSystem) {
-            window.particleSystem.enable();
+            window.particleSystem.disable();
         }
-        // Particle effects removed for memory optimization
+        if (window.particleEffects) {
+            window.particleEffects.disable();
+        }
+        // Particle effects removed for memory optimization and performance
         
         // Enable background music (the only difference from Tier 3)
         if (window.audioSystem) {

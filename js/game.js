@@ -973,9 +973,6 @@ function initUI() {
     // Make updateAutoCastInterval accessible globally for event system
     window.updateAutoCastInterval = updateAutoCastInterval;
     
-    // Make updateAutoCastVisualFeedback accessible globally
-    window.updateAutoCastVisualFeedback = updateAutoCastVisualFeedback;
-    
     // Function to update visual feedback for auto-cast
     const updateAutoCastVisualFeedback = () => {
         if (autoCastEnabled) {
@@ -1001,6 +998,9 @@ function initUI() {
             }
         }
     };
+    
+    // Make updateAutoCastVisualFeedback accessible globally
+    window.updateAutoCastVisualFeedback = updateAutoCastVisualFeedback;
     
     // Query for tab buttons - try both class names for compatibility
     tabButtons = document.querySelectorAll('.tab-btn');

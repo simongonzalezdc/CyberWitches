@@ -145,9 +145,9 @@ class SustainableDesignManager {
             document.documentElement.style.removeProperty('--transition-duration');
             document.documentElement.classList.remove('low-power-mode');
             
-            // Enable particle effects
+            // Particle effects disabled for performance
             if (window.particleEffects) {
-                window.particleEffects.enable();
+                window.particleEffects.disable();
             }
         }
         

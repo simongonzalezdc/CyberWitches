@@ -109,7 +109,7 @@ body.tier-3::before {
     will-change: transform;
     /* Override night sky background for glitch effect */
     background-image: none !important;
-    animation: none !important;
+    /* Animation will be set by specific tier rules */
 }
 
 /* Tier 0: Heavy, frequent, monochrome */
@@ -118,13 +118,16 @@ body.tier-0::before {
     background: repeating-linear-gradient(
         0deg,
         transparent,
-        transparent 3px,
-        rgba(255, 255, 255, 0.15) 3px,
-        rgba(255, 255, 255, 0.15) 6px
+        transparent 2px,
+        rgba(255, 255, 255, 0.3) 2px,
+        rgba(255, 255, 255, 0.3) 4px
     ) !important;
     background-image: none !important;
     animation: screenTearHeavy 0.08s infinite !important;
     z-index: 9999 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Tier 1: Heavy, frequent, colored */
@@ -133,13 +136,16 @@ body.tier-1::before {
     background: repeating-linear-gradient(
         0deg,
         transparent,
-        transparent 3px,
-        rgba(255, 45, 170, 0.2) 3px,
-        rgba(255, 45, 170, 0.2) 6px
+        transparent 2px,
+        rgba(255, 45, 170, 0.4) 2px,
+        rgba(255, 45, 170, 0.4) 4px
     ) !important;
     background-image: none !important;
     animation: screenTearHeavy 0.1s infinite !important;
     z-index: 9999 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Tier 2: Moderate, less frequent */
@@ -256,14 +262,17 @@ body.tier-3::after {
 body.tier-0::after {
     background: repeating-linear-gradient(
         0deg,
-        rgba(0, 0, 0, 0.1),
-        rgba(0, 0, 0, 0.1) 1px,
+        rgba(0, 0, 0, 0.2),
+        rgba(0, 0, 0, 0.2) 1px,
         transparent 1px,
         transparent 2px
     ) !important;
     background-image: none !important;
     animation: scanlinesHeavy 0.1s infinite !important;
     z-index: 9998 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Tier 1: Heavy, flickering, colored */
@@ -643,54 +652,37 @@ body.tier-4 .fading-theme-overlay {
     }
 }
 
-/* Particle Fade Effect (Tier 3+) */
+/* Particle Fade Effect - DISABLED (removed from background) */
 .fading-particle {
-    position: fixed;
-    width: 2px;
-    height: 2px;
-    background: radial-gradient(circle, rgba(255, 45, 170, 0.6) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 1;
-    transition: opacity 0.1s ease-out, transform 0.1s ease-out;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
-.fading-particle.preserved {
-    animation: preserveFlash 1.5s ease-out;
-}
-
-@keyframes preserveFlash {
-    0%, 100% {
-        opacity: 0.6;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.5);
-    }
-}
-
-/* Hide particles in Tier 0-2 */
+/* Hide particles in all tiers */
 .tier-0 .fading-particle,
 .tier-1 .fading-particle,
-.tier-2 .fading-particle {
+.tier-2 .fading-particle,
+.tier-3 .fading-particle,
+.tier-4 .fading-particle {
     display: none !important;
 }
 
-/* Element Fade Indicators (Tier 1+) */
+/* Element Fade Indicators - DISABLED (removed) */
 .element-fade-indicator {
-    width: 40px;
-    height: 3px;
-    background: currentColor;
-    border-radius: 2px;
-    opacity: 0.4;
-    margin-top: 4px;
-    pointer-events: none;
-    display: none;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
-/* Hide indicators in Tier 0 */
-.tier-0 .element-fade-indicator {
+/* Hide indicators in all tiers */
+.tier-0 .element-fade-indicator,
+.tier-1 .element-fade-indicator,
+.tier-2 .element-fade-indicator,
+.tier-3 .element-fade-indicator,
+.tier-4 .element-fade-indicator {
     display: none !important;
 }
 
@@ -4132,7 +4124,14 @@ body.tier-0::after {
     animation: none !important;
 }
 
-/* Disable particle effects canvas */
+/* Disable particle effects canvas - ALWAYS DISABLED FOR PERFORMANCE */
+#particle-canvas {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 body.tier-0 #particle-canvas {
     display: none !important;
     pointer-events: none !important;

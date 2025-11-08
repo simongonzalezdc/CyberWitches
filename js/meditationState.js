@@ -744,16 +744,55 @@ export class MeditationState {
             const dy = pathDir.nextY - dist.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // If very close to target tile (within 0.15 tiles), snap to it
-            // Tighter snapping ensures distractions stay on path
-            if (distance < 0.15) {
-                // Snap to target tile
+            // Check if stuck (next position is same as current position)
+            const isStuck = distance < 0.01 || (Math.round(dist.x) === pathDir.nextX && Math.round(dist.y) === pathDir.nextY && distance < 0.2);
+            
+            if (isStuck) {
+                // Try to find an alternative path by checking adjacent tiles directly
+                const currentTileKey = `${Math.round(dist.x)},${Math.round(dist.y)}`;
+                const currentDistance = this.pathDistances.get(currentTileKey) ?? Infinity;
+                
+                // Find all adjacent path tiles with lower distance
+                const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                let bestTile = null;
+                let bestDistance = Infinity;
+                
+                for (const [dx, dy] of directions) {
+                    const nx = Math.round(dist.x) + dx;
+                    const ny = Math.round(dist.y) + dy;
+                    const neighborKey = `${nx},${ny}`;
+                    
+                    if (this.pathTiles.has(neighborKey)) {
+                        const neighborDistance = this.pathDistances.get(neighborKey) ?? Infinity;
+                        if (neighborDistance < currentDistance && neighborDistance < bestDistance) {
+                            bestDistance = neighborDistance;
+                            bestTile = { x: nx, y: ny };
+                        }
+                    }
+                }
+                
+                if (bestTile) {
+                    // Move to best adjacent tile
+                    dist.x = bestTile.x;
+                    dist.y = bestTile.y;
+                } else {
+                    // If still stuck, force movement toward center
+                    const centerDx = centerX - dist.x;
+                    const centerDy = centerY - dist.y;
+                    const centerDist = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
+                    if (centerDist > 0.1) {
+                        const moveSpeed = dist.speed * delta * 0.5;
+                        dist.x += (centerDx / centerDist) * moveSpeed;
+                        dist.y += (centerDy / centerDist) * moveSpeed;
+                    }
+                }
+            } else if (distance < 0.15) {
+                // Snap to target tile if very close
                 dist.x = pathDir.nextX;
                 dist.y = pathDir.nextY;
-            } else if (distance > 0.05) {
+            } else {
                 // Move toward next path tile (normalized movement)
-                // Limit movement speed to prevent overshooting path tiles
-                const moveSpeed = Math.min(dist.speed * delta * 0.8, distance * 0.8); // Slower, more controlled movement
+                const moveSpeed = Math.min(dist.speed * delta * 0.8, distance * 0.8);
                 dist.x += (dx / distance) * moveSpeed;
                 dist.y += (dy / distance) * moveSpeed;
                 
@@ -762,13 +801,11 @@ export class MeditationState {
                 if (!this.pathTiles.has(currentTileKey)) {
                     // Snap to nearest path tile if we've drifted off
                     const pathDirCorrected = this.getPathDirection(dist.x, dist.y);
-                    dist.x = pathDirCorrected.nextX;
-                    dist.y = pathDirCorrected.nextY;
+                    if (pathDirCorrected.nextX !== Math.round(dist.x) || pathDirCorrected.nextY !== Math.round(dist.y)) {
+                        dist.x = pathDirCorrected.nextX;
+                        dist.y = pathDirCorrected.nextY;
+                    }
                 }
-            } else {
-                // Very close but not snapped, snap it
-                dist.x = pathDir.nextX;
-                dist.y = pathDir.nextY;
             }
             
             // Safety check: if stuck at edge, snap to nearest path tile

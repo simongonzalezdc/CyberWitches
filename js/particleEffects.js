@@ -46,55 +46,38 @@ export class ParticleEffectsSystem {
         this.ctx = null;
         this.effects = new Map();
         this.particles = [];
-        this.isRunning = false;
+        this.isRunning = false; // Disabled by default for performance
         this.lastFrameTime = 0;
         this.animationId = null;
         
         // Performance settings
-        this.maxParticles = 500;
-        this.maxEffects = 20;
-        this.isLowPerformanceMode = false;
+        this.maxParticles = 0; // Disabled for performance
+        this.maxEffects = 0; // Disabled for performance
+        this.isLowPerformanceMode = true; // Always in low performance mode
         
         // Effect templates
         this.effectTemplates = new Map();
-        this.initializeEffectTemplates();
+        // Don't initialize templates - disabled for performance
         
         // Particle pool for performance
         this.particlePool = [];
-        this.poolSize = 100;
-        
-        // Initialize particle pool
-        this.initializeParticlePool();
+        this.poolSize = 0; // Disabled for performance
     }
     
     /**
-     * Initialize the particle system
+     * Initialize the particle system (DISABLED for performance)
      * @param {HTMLCanvasElement} canvas - Canvas element for rendering
      */
     initialize(canvas) {
-        try {
-            this.canvas = canvas;
-            this.ctx = canvas.getContext('2d');
-            
-            if (!this.ctx) {
-                throw new Error('Could not get 2D context from canvas');
-            }
-            
-            this.resizeCanvas();
-            this.startAnimationLoop();
-            
-            // Listen for resize events
-            window.addEventListener('resize', () => {
-                this.resizeCanvas();
-            });
-            
-            // Detect performance capabilities
-            this.detectPerformanceCapabilities();
-            
-            this.isRunning = true;
-        } catch (error) {
-            handleError(error, 'particleEffectsInitialize');
+        // Particle effects disabled for performance
+        if (this.canvas) {
+            this.canvas.style.display = 'none';
         }
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
+        this.disable();
+        return;
     }
     
     /**
@@ -311,54 +294,17 @@ export class ParticleEffectsSystem {
     }
     
     /**
-     * Start the animation loop
+     * Start the animation loop (DISABLED for performance)
      * @private
      */
     startAnimationLoop() {
-        // Stop if already running
+        // Particle effects disabled for performance - do nothing
+        this.isRunning = false;
         if (this.animationId) {
-            return;
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
         }
-        
-        const animate = (currentTime) => {
-            // Stop if not running or tab is hidden (save CPU)
-            if (!this.isRunning || document.hidden) {
-                this.animationId = null;
-                return;
-            }
-            
-            const deltaTime = currentTime - this.lastFrameTime;
-            this.lastFrameTime = currentTime;
-            
-            this.update(deltaTime);
-            this.render();
-            
-            this.animationId = requestAnimationFrame(animate);
-        };
-        
-        // Only start if tab is visible
-        if (!document.hidden) {
-            this.animationId = requestAnimationFrame(animate);
-            this.lastFrameTime = performance.now();
-        }
-        
-        // Listen for visibility changes to pause/resume
-        if (!this.visibilityHandler) {
-            this.visibilityHandler = () => {
-                if (document.hidden) {
-                    // Tab hidden - stop animation loop (save CPU)
-                    if (this.animationId) {
-                        cancelAnimationFrame(this.animationId);
-                        this.animationId = null;
-                    }
-                } else if (this.isRunning && !this.animationId) {
-                    // Tab visible - restart animation loop
-                    this.lastFrameTime = performance.now();
-                    this.animationId = requestAnimationFrame(animate);
-                }
-            };
-            document.addEventListener('visibilitychange', this.visibilityHandler);
-        }
+        return;
     }
     
     /**
@@ -380,11 +326,15 @@ export class ParticleEffectsSystem {
     }
     
     /**
-     * Update all particles and effects
+     * Update all particles and effects (DISABLED for performance)
      * @param {number} deltaTime - Time since last frame in milliseconds
      * @private
      */
     update(deltaTime) {
+        // Particle effects disabled for performance - do nothing
+        if (!this.isRunning) {
+            return;
+        }
         const dt = deltaTime / 1000; // Convert to seconds
         
         // Update effects
@@ -517,10 +467,14 @@ export class ParticleEffectsSystem {
     }
     
     /**
-     * Render all particles and effects
+     * Render all particles and effects (DISABLED for performance)
      * @private
      */
     render() {
+        // Particle effects disabled for performance - do nothing
+        if (!this.isRunning) {
+            return;
+        }
         if (!this.ctx) {
             return;
         }
@@ -895,16 +849,19 @@ export class ParticleEffectsSystem {
     }
     
     /**
-     * Enable particle effects system
+     * Enable particle effects system (DISABLED for performance)
      */
     enable() {
-        this.isRunning = true;
+        // Particle effects disabled for performance - do nothing
+        this.isRunning = false;
         if (this.canvas) {
-            this.canvas.style.display = 'block';
+            this.canvas.style.display = 'none';
         }
-        if (!this.animationId && this.canvas) {
-            this.startAnimationLoop();
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
         }
+        return;
     }
     
     /**
@@ -923,5 +880,7 @@ export class ParticleEffectsSystem {
     }
 }
 
-// Create global particle effects instance
+// Create global particle effects instance (disabled for performance)
 export const particleEffects = new ParticleEffectsSystem();
+// Disable particle effects by default for performance
+particleEffects.disable();

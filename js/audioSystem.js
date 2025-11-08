@@ -51,8 +51,12 @@ export class AudioSystem {
         this.musicTierMonitor = null; // Interval for monitoring tier
         
         // Performance settings
-        this.maxConcurrentSounds = 8;
+        this.maxConcurrentSounds = 5; // Reduced from 8 to prevent crackling
         this.activeSounds = [];
+        
+        // Sound throttling (prevent too many sounds of same type)
+        this.soundCooldowns = new Map(); // Map of soundId -> lastPlayTime
+        this.soundCooldownTimes = new Map(); // Map of soundId -> cooldown duration in ms
         
         // Lazy loading flags
         this.soundsLoaded = false;
@@ -306,6 +310,25 @@ export class AudioSystem {
         // Load all sounds asynchronously
         const loadPromises = defaultSounds.map(soundData => this.loadSound(soundData));
         await Promise.all(loadPromises);
+        
+        // Configure sound cooldowns to prevent crackling (especially for meditation sounds)
+        this.configureSoundCooldowns();
+    }
+    
+    /**
+     * Configure sound cooldowns to prevent too many sounds playing at once
+     * @private
+     */
+    configureSoundCooldowns() {
+        // Meditation sounds that can play frequently - add cooldowns
+        this.soundCooldownTimes.set('tower_attack', 100); // 100ms cooldown (max 10 per second)
+        this.soundCooldownTimes.set('distraction_spawn', 200); // 200ms cooldown (max 5 per second)
+        this.soundCooldownTimes.set('distraction_death', 150); // 150ms cooldown (max ~6 per second)
+        this.soundCooldownTimes.set('tranquility_damage', 300); // 300ms cooldown (max ~3 per second)
+        
+        // Other frequent sounds
+        this.soundCooldownTimes.set('cast', 50); // 50ms cooldown for cast sound
+        this.soundCooldownTimes.set('click', 30); // 30ms cooldown for click sound
     }
     
     /**
@@ -1341,6 +1364,19 @@ export class AudioSystem {
             // Check if we have too many concurrent sounds
             if (this.activeSounds.length >= this.maxConcurrentSounds) {
                 return false;
+            }
+            
+            // Check sound cooldown (throttle frequent sounds to prevent crackling)
+            const cooldownTime = this.soundCooldownTimes.get(soundId) || 0;
+            if (cooldownTime > 0) {
+                const lastPlayTime = this.soundCooldowns.get(soundId) || 0;
+                const now = Date.now();
+                if (now - lastPlayTime < cooldownTime) {
+                    // Still in cooldown, skip this sound
+                    return false;
+                }
+                // Update last play time
+                this.soundCooldowns.set(soundId, now);
             }
             
             // Clone audio element to allow overlapping sounds

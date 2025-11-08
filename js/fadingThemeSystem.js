@@ -12,8 +12,8 @@ export class FadingThemeSystem {
         // Settings state (loaded from localStorage)
         this.settings = {
             gradientEnabled: true,
-            particlesEnabled: true,
-            indicatorsEnabled: true
+            particlesEnabled: false, // Particle effects disabled
+            indicatorsEnabled: false // Element fade indicators disabled
         };
         
         // Effect elements
@@ -37,8 +37,14 @@ export class FadingThemeSystem {
             if (saved) {
                 this.settings = { ...this.settings, ...JSON.parse(saved) };
             }
+            // Force particles to be disabled (removed from background)
+            this.settings.particlesEnabled = false;
+            // Force indicators to be disabled (removed)
+            this.settings.indicatorsEnabled = false;
         } catch (error) {
             console.error('Failed to load fading theme settings:', error);
+            // Ensure particles are disabled even on error
+            this.settings.particlesEnabled = false;
         }
     }
     
@@ -66,15 +72,21 @@ export class FadingThemeSystem {
         // Create gradient overlay
         this.createGradientOverlay();
         
-        // Create particle system (will be initialized when Tier 3+ is reached)
+        // Create particle system (disabled - particles removed from background)
         this.particleSystem = {
             particles: [],
             enabled: false,
             maxParticles: 15,
-            spawnRate: 2000, // Spawn a particle every 2 seconds
+            spawnRate: 2000,
             spawnInterval: null,
             updateInterval: null
         };
+        
+        // Clean up any existing particles in the DOM
+        this.cleanupExistingParticles();
+        
+        // Ensure particles are disabled
+        this.disableParticles();
         
         // Create element indicators
         this.createElementIndicators();
@@ -154,19 +166,11 @@ export class FadingThemeSystem {
             this.disableGradient();
         }
         
-        // Particles: Available in Tier 3+
-        if (tier >= 3 && this.settings.particlesEnabled) {
-            this.enableParticles();
-        } else {
-            this.disableParticles();
-        }
+        // Particles: Disabled (removed from background)
+        this.disableParticles();
         
-        // Indicators: Available in Tier 1+
-        if (tier >= 1 && this.settings.indicatorsEnabled) {
-            this.enableIndicators();
-        } else {
-            this.disableIndicators();
-        }
+        // Indicators: Disabled (removed)
+        this.disableIndicators();
     }
     
     /**
@@ -252,38 +256,11 @@ export class FadingThemeSystem {
     }
     
     /**
-     * Spawn a new particle
+     * Spawn a new particle (DISABLED - particles removed from background)
      */
     spawnParticle() {
-        // Check tier before spawning
-        const tier = this.designTierSystem?.currentTier || 0;
-        if (tier < 3) return; // Only spawn in Tier 3+
-        
-        const particle = {
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            opacity: 0.6,
-            size: 2 + Math.random() * 2,
-            fadeRate: 0.01 + Math.random() * 0.02,
-            element: document.createElement('div')
-        };
-        
-        particle.element.className = 'fading-particle';
-        particle.element.style.cssText = `
-            position: fixed;
-            left: ${particle.x}px;
-            top: ${particle.y}px;
-            width: ${particle.size}px;
-            height: ${particle.size}px;
-            background: radial-gradient(circle, rgba(255, 45, 170, 0.6) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: ${particle.opacity};
-        `;
-        
-        document.body.appendChild(particle.element);
-        this.particleSystem.particles.push(particle);
+        // Particles are disabled - do nothing
+        return;
     }
     
     /**
@@ -330,6 +307,24 @@ export class FadingThemeSystem {
                 particle.element.parentNode.removeChild(particle.element);
             }
         });
+    }
+    
+    /**
+     * Clean up any existing particles in the DOM
+     */
+    cleanupExistingParticles() {
+        // Remove all fading-particle elements from the DOM
+        const existingParticles = document.querySelectorAll('.fading-particle');
+        existingParticles.forEach(particle => {
+            if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+            }
+        });
+        
+        // Clear particle array
+        if (this.particleSystem) {
+            this.particleSystem.particles = [];
+        }
     }
     
     /**
@@ -401,49 +396,9 @@ export class FadingThemeSystem {
             });
         }
         
-        // Particles toggle
-        const particlesToggle = document.getElementById('fading-particles-toggle');
-        if (particlesToggle) {
-            particlesToggle.checked = this.settings.particlesEnabled;
-            // Remove existing listeners
-            const newParticlesToggle = particlesToggle.cloneNode(true);
-            particlesToggle.parentNode.replaceChild(newParticlesToggle, particlesToggle);
-            
-            newParticlesToggle.addEventListener('change', (e) => {
-                this.settings.particlesEnabled = e.target.checked;
-                this.saveSettings();
-                const tier = this.designTierSystem?.currentTier || 0;
-                if (tier >= 3 && this.settings.particlesEnabled) {
-                    this.enableParticles();
-                } else {
-                    this.disableParticles();
-                }
-                // Update toggle disabled state
-                this.updateToggleStates();
-            });
-        }
+        // Particles toggle removed - particle effects disabled
         
-        // Indicators toggle
-        const indicatorsToggle = document.getElementById('fading-indicators-toggle');
-        if (indicatorsToggle) {
-            indicatorsToggle.checked = this.settings.indicatorsEnabled;
-            // Remove existing listeners
-            const newIndicatorsToggle = indicatorsToggle.cloneNode(true);
-            indicatorsToggle.parentNode.replaceChild(newIndicatorsToggle, indicatorsToggle);
-            
-            newIndicatorsToggle.addEventListener('change', (e) => {
-                this.settings.indicatorsEnabled = e.target.checked;
-                this.saveSettings();
-                const tier = this.designTierSystem?.currentTier || 0;
-                if (tier >= 1 && this.settings.indicatorsEnabled) {
-                    this.enableIndicators();
-                } else {
-                    this.disableIndicators();
-                }
-                // Update toggle disabled state
-                this.updateToggleStates();
-            });
-        }
+        // Indicators toggle removed - element fade indicators disabled
         
         // Update toggle states based on current tier
         this.updateToggleStates();
@@ -466,27 +421,9 @@ export class FadingThemeSystem {
             }
         }
         
-        // Particles: Available in Tier 3+
-        const particlesToggle = document.getElementById('fading-particles-toggle');
-        if (particlesToggle) {
-            particlesToggle.disabled = tier < 3;
-            if (tier < 3) {
-                particlesToggle.checked = false;
-                this.settings.particlesEnabled = false;
-                this.saveSettings();
-            }
-        }
+        // Particles: Disabled (removed from background)
         
-        // Indicators: Available in Tier 1+
-        const indicatorsToggle = document.getElementById('fading-indicators-toggle');
-        if (indicatorsToggle) {
-            indicatorsToggle.disabled = tier < 1;
-            if (tier < 1) {
-                indicatorsToggle.checked = false;
-                this.settings.indicatorsEnabled = false;
-                this.saveSettings();
-            }
-        }
+        // Indicators: Disabled (removed)
     }
     
     /**
