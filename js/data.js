@@ -20,6 +20,11 @@ export const INGREDIENTS = [
     { id: "ethereal_gust", displayName: "Ethereal Gust", tier: 1 },
     { id: "zephyr_totem", displayName: "Zephyr Totem", tier: 1 },
     
+    // Tier 1.5 - Mid-game transition ingredients (NEW - fills content gap)
+    { id: "fused_aether", displayName: "Fused Aether", tier: 1.5 },
+    { id: "resonant_crystal", displayName: "Resonant Crystal", tier: 1.5 },
+    { id: "harmonic_essence", displayName: "Harmonic Essence", tier: 1.5 },
+
     // Tier 2 - Advanced ingredients
     { id: "enhanced_candle", displayName: "Enhanced Candle", tier: 2 },
     { id: "crystal_core", displayName: "Crystal Core", tier: 2 },
@@ -152,7 +157,58 @@ export const PRODUCERS = [
         growth: 1.15,
         outputs: { aether_well: 0.4 }
     },
-    
+
+    // ===== NEW: Tier 1.5 - Mid-Game Bridge Producers (fills 200-5000 AB gap) =====
+    // Aether Fusion Chamber - Combines multiple Tier 1 ingredients
+    {
+        id: "ws_aether_fusion_chamber",
+        displayName: "Aether Fusion Chamber",
+        description: "A complex preservation chamber that fuses multiple aether sources into a more stable form. This represents a breakthrough in preservation technology.",
+        unlockAtAb: 500.0,
+        recipe: {
+            aether_well: 3,
+            dist_aether: 5,
+            crystal_orb: 2,
+            dig_candle: 2
+        },
+        growth: 1.145,
+        outputs: { fused_aether: 0.5 }
+    },
+    // Resonance Crystallizer - Creates resonant crystals
+    {
+        id: "ws_resonance_crystallizer",
+        displayName: "Resonance Crystallizer",
+        description: "Uses harmonic vibrations to create crystals that resonate with magical frequencies. These crystals are far more stable than ordinary ones.",
+        unlockAtAb: 750.0,
+        recipe: {
+            crystal_orb: 4,
+            shaped_crys: 8,
+            zephyr_totem: 3,
+            fused_aether: 2
+        },
+        growth: 1.15,
+        outputs: { resonant_crystal: 0.45 }
+    },
+    // Harmonic Stabilizer - Produces harmonic essence AND AB
+    {
+        id: "ws_harmonic_stabilizer",
+        displayName: "Harmonic Stabilizer",
+        description: "A sophisticated chamber that uses resonant frequencies to stabilize magic. It produces both harmonic essence and small amounts of Arcane Bits.",
+        unlockAtAb: 1000.0,
+        recipe: {
+            fused_aether: 3,
+            resonant_crystal: 2,
+            dig_candle: 3,
+            aqua_well: 3,
+            zephyr_totem: 3
+        },
+        growth: 1.155,
+        outputs: {
+            harmonic_essence: 0.35,
+            ab: 0.5  // Small AB production to help progression
+        }
+    },
+
     // Tier 2 - Mid Game Producers (5 workstations: one per element + Arcane Bits producer)
     // Fire - Forge
     {
