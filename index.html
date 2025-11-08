@@ -63,6 +63,12 @@
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
 </head>
 <body>
+    <!-- Skip to main content link for screen readers -->
+    <a href="#main-game" class="skip-link">Skip to main content</a>
+
+    <!-- Screen reader announcements (ARIA live region) -->
+    <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
     <!-- Night Sky Stars Background -->
     <div id="night-sky-stars" class="night-sky-stars"></div>
     <!-- Floating Sparkles Canvas -->
@@ -131,12 +137,12 @@
     </div>
 
     <!-- HUD - Top Bar -->
-    <div class="hud">
+    <div class="hud" role="banner">
         <div class="hud-content">
-            <div class="currency-display">
-                <span id="ab-display" title="Arcane Bits - Preserved energy captured from fading magic. Use it to build preservation structures.">AB: 0</span>
-                <span id="abps-display" class="seps-display" title="Arcane Bits per second">0.0 AB/s</span>
-                <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" title="Elemental Affinity"></span>
+            <div class="currency-display" role="group" aria-label="Resources">
+                <span id="ab-display" aria-live="polite" aria-atomic="true" title="Arcane Bits - Preserved energy captured from fading magic. Use it to build preservation structures.">AB: 0</span>
+                <span id="abps-display" class="seps-display" aria-live="polite" aria-atomic="false" title="Arcane Bits per second">0.0 AB/s</span>
+                <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" aria-live="polite" title="Elemental Affinity"></span>
             </div>
                 <div class="hud-controls">
                     <button id="install-app-button" class="btn-install" style="display: none;" title="Install to play offline" aria-label="Install App">
@@ -151,38 +157,38 @@
     </div>
 
     <!-- Main Game Area -->
-    <div class="main-game">
+    <main id="main-game" class="main-game" role="main">
         <!-- Particle Effects Canvas -->
         <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none;"></canvas>
         
         <!-- Tab Navigation -->
-        <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="workstations" title="Preservation chambers that capture and hold spell energy before it fades" aria-label="Workstations tab"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
-            <button class="tab-btn" data-tab="inscriptions" title="Refine your preservation techniques with permanent upgrades" aria-label="Inscriptions tab"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
-            <button class="tab-btn" data-tab="inventory" title="Your preserved materials that resist the fading" aria-label="Inventory tab"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
-            <button class="tab-btn" data-tab="experiment" title="Discover new preservation techniques through experimentation" aria-label="Experiment tab"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
-            <button class="tab-btn" data-tab="dailies" title="Maintenance rituals to keep preserved magic stable" aria-label="Rituals tab"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
+        <div class="tabs-nav" role="tablist" aria-label="Game sections">
+            <button class="tab-btn active" data-tab="workstations" role="tab" aria-selected="true" aria-controls="workstations-tab" id="workstations-tab-btn" title="Preservation chambers that capture and hold spell energy before it fades"><span class="tab-icon tab-icon-workstations" aria-hidden="true">⚙</span> Workstations</button>
+            <button class="tab-btn" data-tab="inscriptions" role="tab" aria-selected="false" aria-controls="inscriptions-tab" id="inscriptions-tab-btn" title="Refine your preservation techniques with permanent upgrades"><span class="tab-icon tab-icon-inscriptions" aria-hidden="true">◇</span> Inscriptions</button>
+            <button class="tab-btn" data-tab="inventory" role="tab" aria-selected="false" aria-controls="inventory-tab" id="inventory-tab-btn" title="Your preserved materials that resist the fading"><span class="tab-icon tab-icon-inventory" aria-hidden="true">■</span> Inventory</button>
+            <button class="tab-btn" data-tab="experiment" role="tab" aria-selected="false" aria-controls="experiment-tab" id="experiment-tab-btn" title="Discover new preservation techniques through experimentation"><span class="tab-icon tab-icon-experiment" aria-hidden="true"><span class="css-icon-lightning"></span></span> Experiment</button>
+            <button class="tab-btn" data-tab="dailies" role="tab" aria-selected="false" aria-controls="dailies-tab" id="dailies-tab-btn" title="Maintenance rituals to keep preserved magic stable"><span class="tab-icon tab-icon-dailies" aria-hidden="true">●</span> Rituals</button>
             <!-- Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
-            <button class="tab-btn" data-tab="boons" title="Buy permanent bonuses with Eldritch Keys" aria-label="Boons tab"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
-            <button class="tab-btn" data-tab="meditation" title="Defend your mind from the mental toll of the fading" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
-            <button class="tab-btn" data-tab="stats" title="Your preservation milestones and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
+            <button class="tab-btn" data-tab="boons" role="tab" aria-selected="false" aria-controls="boons-tab" id="boons-tab-btn" title="Buy permanent bonuses with Eldritch Keys"><span class="tab-icon tab-icon-boons" aria-hidden="true">▲</span> Boons</button>
+            <button class="tab-btn" data-tab="meditation" role="tab" aria-selected="false" aria-controls="meditation-tab" id="meditation-tab-btn" title="Defend your mind from the mental toll of the fading"><span class="tab-icon tab-icon-meditation" aria-hidden="true">◐</span> Meditation</button>
+            <button class="tab-btn" data-tab="stats" role="tab" aria-selected="false" aria-controls="stats-tab" id="stats-tab-btn" title="Your preservation milestones and achievements"><span class="tab-icon tab-icon-stats" aria-hidden="true">▣</span> Stats</button>
         </div>
 
         <!-- Tab Content -->
         <div class="tabs-content">
             <!-- Workstations Tab -->
-            <div id="workstations-tab" class="tab-panel active">
-                <div id="workstation-list" class="content-list"></div>
+            <div id="workstations-tab" class="tab-panel active" role="tabpanel" aria-labelledby="workstations-tab-btn" tabindex="0">
+                <div id="workstation-list" class="content-list" role="list"></div>
             </div>
 
             <!-- Inscriptions Tab -->
-            <div id="inscriptions-tab" class="tab-panel">
-                <div id="upgrade-list" class="content-list"></div>
+            <div id="inscriptions-tab" class="tab-panel" role="tabpanel" aria-labelledby="inscriptions-tab-btn" aria-hidden="true">
+                <div id="upgrade-list" class="content-list" role="list"></div>
             </div>
 
             <!-- Inventory Tab -->
-            <div id="inventory-tab" class="tab-panel">
-                <div id="inventory-list" class="content-list"></div>
+            <div id="inventory-tab" class="tab-panel" role="tabpanel" aria-labelledby="inventory-tab-btn" aria-hidden="true">
+                <div id="inventory-list" class="content-list" role="list"></div>
             </div>
 
             <!-- Experiment Tab -->

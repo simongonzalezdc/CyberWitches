@@ -5824,3 +5824,101 @@ body.tier-2 #meditation-canvas {
 .main-game {
     padding-bottom: 80px !important;
 }
+
+/* ================================================
+   ENHANCED ACCESSIBILITY - FOCUS INDICATORS
+   ================================================ */
+
+/* Enhanced focus styles for better visibility */
+.tab-btn:focus,
+.btn-primary:focus,
+.btn-secondary:focus,
+.btn-danger:focus,
+.btn-cast:focus,
+.btn-install:focus {
+    outline: 3px solid #FF2DAA !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 45, 170, 0.3) !important;
+}
+
+/* Focus for interactive elements */
+button:focus,
+a:focus,
+[role="button"]:focus,
+[tabindex="0"]:focus {
+    outline: 2px solid #FF2DAA;
+    outline-offset: 2px;
+}
+
+/* Focus for form elements */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #00d4aa;
+    outline-offset: 1px;
+    box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.2);
+}
+
+/* Skip to main content link (for screen readers) */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #FF2DAA;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    z-index: 10000;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid white;
+    outline-offset: -3px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .tab-btn:focus,
+    button:focus,
+    a:focus {
+        outline: 4px solid currentColor;
+        outline-offset: 4px;
+    }
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Ensure interactive elements have sufficient touch targets */
+@media (pointer: coarse) {
+    button,
+    .tab-btn,
+    [role="button"],
+    a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
