@@ -6441,3 +6441,14 @@ if (typeof window !== 'undefined') {
     window.addEventListener('beforeunload', cleanup);
     window.addEventListener('pagehide', cleanup);
 }
+
+// Export utility functions for testing
+export {
+    getTierSymbol,
+    getTierAppropriateStyle,
+    getWorkstationTier,
+    getUpgradeTier,
+    getIngredientElement,
+    calculateElementTotals,
+    getScaledRecipe
+};

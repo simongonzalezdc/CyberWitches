@@ -89,6 +89,21 @@ Object.defineProperty(global.navigator, 'onLine', {
   value: true,
 });
 
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => {},
+  }),
+});
+
 // Mock Math.random for deterministic tests
 const originalMathRandom = Math.random;
 global.mockMathRandom = (value) => {
