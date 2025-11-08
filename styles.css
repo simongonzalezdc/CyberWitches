@@ -5733,3 +5733,295 @@ body.tier-2 #meditation-canvas {
     background: transparent;
     box-shadow: 0.2em 0.2em 0 0 currentColor;
 }
+
+/* ================================================
+   FOOTER STYLES
+   ================================================ */
+
+.game-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 15, 30, 0.95);
+    border-top: 1px solid rgba(255, 45, 170, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    z-index: 100;
+    font-size: 12px;
+}
+
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-link {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.footer-link:hover {
+    color: #FF2DAA;
+    background: rgba(255, 45, 170, 0.1);
+}
+
+.footer-separator {
+    color: rgba(255, 255, 255, 0.3);
+    user-select: none;
+}
+
+.footer-info {
+    text-align: center;
+}
+
+.footer-text {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+}
+
+/* Responsive footer */
+@media (max-width: 768px) {
+    .game-footer {
+        padding: 10px 15px;
+        font-size: 11px;
+    }
+    
+    .footer-links {
+        gap: 6px;
+    }
+    
+    .footer-separator {
+        display: none;
+    }
+    
+    .footer-link {
+        padding: 3px 6px;
+    }
+    
+    .footer-text {
+        font-size: 10px;
+    }
+}
+
+/* Make space for footer in main game area */
+.main-game {
+    padding-bottom: 80px !important;
+}
+
+/* ================================================
+   ENHANCED ACCESSIBILITY - FOCUS INDICATORS
+   ================================================ */
+
+/* Enhanced focus styles for better visibility */
+.tab-btn:focus,
+.btn-primary:focus,
+.btn-secondary:focus,
+.btn-danger:focus,
+.btn-cast:focus,
+.btn-install:focus {
+    outline: 3px solid #FF2DAA !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 45, 170, 0.3) !important;
+}
+
+/* Focus for interactive elements */
+button:focus,
+a:focus,
+[role="button"]:focus,
+[tabindex="0"]:focus {
+    outline: 2px solid #FF2DAA;
+    outline-offset: 2px;
+}
+
+/* Focus for form elements */
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid #00d4aa;
+    outline-offset: 1px;
+    box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.2);
+}
+
+/* Skip to main content link (for screen readers) */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #FF2DAA;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    z-index: 10000;
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 3px solid white;
+    outline-offset: -3px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .tab-btn:focus,
+    button:focus,
+    a:focus {
+        outline: 4px solid currentColor;
+        outline-offset: 4px;
+    }
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Ensure interactive elements have sufficient touch targets */
+@media (pointer: coarse) {
+    button,
+    .tab-btn,
+    [role="button"],
+    a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* ================================================
+   HELP MODAL STYLES
+   ================================================ */
+
+.help-sections {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.help-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.help-section:last-child {
+    border-bottom: none;
+}
+
+.help-section h3 {
+    color: #FF2DAA;
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.help-section p, .help-section li {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.help-section ol, .help-section ul {
+    margin-left: 20px;
+}
+
+.help-section li {
+    margin-bottom: 6px;
+}
+
+.help-section a {
+    color: #00d4aa;
+    text-decoration: none;
+}
+
+.help-section a:hover {
+    text-decoration: underline;
+}
+
+.help-section kbd {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #fff;
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    line-height: 28px;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #FF2DAA;
+}
+
+#close-help-button {
+    margin-top: 16px;
+    width: 100%;
+}
+
+/* Scrollbar styling for help modal */
+.help-sections::-webkit-scrollbar {
+    width: 8px;
+}
+
+.help-sections::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.help-sections::-webkit-scrollbar-thumb {
+    background: rgba(255, 45, 170, 0.5);
+    border-radius: 4px;
+}
+
+.help-sections::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 45, 170, 0.7);
+}

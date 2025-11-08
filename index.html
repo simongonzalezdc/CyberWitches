@@ -3,21 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. Play offline anytime!">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';
+                   style-src 'self' 'unsafe-inline';
+                   img-src 'self' data: blob:;
+                   font-src 'self' data:;
+                   connect-src 'self';
+                   media-src 'self';
+                   object-src 'none';
+                   frame-src 'none';
+                   base-uri 'self';
+                   form-action 'self';">
+
+    <!-- Primary Meta Tags -->
+    <title>Spellwright - Idle Magic Crafting Game | Play Free Online</title>
+    <meta name="title" content="Spellwright - Idle Magic Crafting Game">
+    <meta name="description" content="Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. Play offline anytime! Free incremental/idle game.">
+    <meta name="keywords" content="idle game, incremental game, magic game, crafting game, browser game, offline game, free game, spellwright, magic crafting, prestige game">
+    <meta name="author" content="Spellwright Contributors">
+    <meta name="language" content="English">
+    <link rel="canonical" href="https://yourdomain.com/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com/">
+    <meta property="og:title" content="Spellwright - Idle Magic Crafting Game">
+    <meta property="og:description" content="Magic is fading. Cast spells, build preservation chambers, and fight the fading. Free incremental/idle game with offline support!">
+    <meta property="og:image" content="https://yourdomain.com/images/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Spellwright">
+
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yourdomain.com/">
+    <meta property="twitter:title" content="Spellwright - Idle Magic Crafting Game">
+    <meta property="twitter:description" content="Magic is fading. Cast spells, build preservation chambers, and fight the fading. Free incremental/idle game!">
+    <meta property="twitter:image" content="https://yourdomain.com/images/twitter-card.png">
+
+    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#FF2DAA">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Spellwright">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>Spellwright</title>
+    <meta name="application-name" content="Spellwright">
+
+    <!-- Favicons & Icons -->
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <!-- Tone.js for better ambient music -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
+
+    <!-- Tone.js for audio -->
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
 </head>
 <body>
+    <!-- Skip to main content link for screen readers -->
+    <a href="#main-game" class="skip-link">Skip to main content</a>
+
+    <!-- Screen reader announcements (ARIA live region) -->
+    <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
     <!-- Night Sky Stars Background -->
     <div id="night-sky-stars" class="night-sky-stars"></div>
     <!-- Floating Sparkles Canvas -->
@@ -86,14 +137,17 @@
     </div>
 
     <!-- HUD - Top Bar -->
-    <div class="hud">
+    <div class="hud" role="banner">
         <div class="hud-content">
-            <div class="currency-display">
-                <span id="ab-display" title="Arcane Bits - Preserved energy captured from fading magic. Use it to build preservation structures.">AB: 0</span>
-                <span id="abps-display" class="seps-display" title="Arcane Bits per second">0.0 AB/s</span>
-                <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" title="Elemental Affinity"></span>
+            <div class="currency-display" role="group" aria-label="Resources">
+                <span id="ab-display" aria-live="polite" aria-atomic="true" title="Arcane Bits - Preserved energy captured from fading magic. Use it to build preservation structures.">AB: 0</span>
+                <span id="abps-display" class="seps-display" aria-live="polite" aria-atomic="false" title="Arcane Bits per second">0.0 AB/s</span>
+                <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" aria-live="polite" title="Elemental Affinity"></span>
             </div>
                 <div class="hud-controls">
+                    <button id="help-button" class="btn-secondary" title="How to play" aria-label="Open help menu" style="margin-right: 8px;">
+                        ❓ Help
+                    </button>
                     <button id="install-app-button" class="btn-install" style="display: none;" title="Install to play offline" aria-label="Install App">
                         <span class="install-icon">📱</span> Install
                     </button>
@@ -106,38 +160,38 @@
     </div>
 
     <!-- Main Game Area -->
-    <div class="main-game">
+    <main id="main-game" class="main-game" role="main">
         <!-- Particle Effects Canvas -->
         <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none;"></canvas>
         
         <!-- Tab Navigation -->
-        <div class="tabs-nav">
-            <button class="tab-btn active" data-tab="workstations" title="Preservation chambers that capture and hold spell energy before it fades" aria-label="Workstations tab"><span class="tab-icon tab-icon-workstations">⚙</span> Workstations</button>
-            <button class="tab-btn" data-tab="inscriptions" title="Refine your preservation techniques with permanent upgrades" aria-label="Inscriptions tab"><span class="tab-icon tab-icon-inscriptions">◇</span> Inscriptions</button>
-            <button class="tab-btn" data-tab="inventory" title="Your preserved materials that resist the fading" aria-label="Inventory tab"><span class="tab-icon tab-icon-inventory">■</span> Inventory</button>
-            <button class="tab-btn" data-tab="experiment" title="Discover new preservation techniques through experimentation" aria-label="Experiment tab"><span class="tab-icon tab-icon-experiment"><span class="css-icon-lightning"></span></span> Experiment</button>
-            <button class="tab-btn" data-tab="dailies" title="Maintenance rituals to keep preserved magic stable" aria-label="Rituals tab"><span class="tab-icon tab-icon-dailies">●</span> Rituals</button>
+        <div class="tabs-nav" role="tablist" aria-label="Game sections">
+            <button class="tab-btn active" data-tab="workstations" role="tab" aria-selected="true" aria-controls="workstations-tab" id="workstations-tab-btn" title="Preservation chambers that capture and hold spell energy before it fades"><span class="tab-icon tab-icon-workstations" aria-hidden="true">⚙</span> Workstations</button>
+            <button class="tab-btn" data-tab="inscriptions" role="tab" aria-selected="false" aria-controls="inscriptions-tab" id="inscriptions-tab-btn" title="Refine your preservation techniques with permanent upgrades"><span class="tab-icon tab-icon-inscriptions" aria-hidden="true">◇</span> Inscriptions</button>
+            <button class="tab-btn" data-tab="inventory" role="tab" aria-selected="false" aria-controls="inventory-tab" id="inventory-tab-btn" title="Your preserved materials that resist the fading"><span class="tab-icon tab-icon-inventory" aria-hidden="true">■</span> Inventory</button>
+            <button class="tab-btn" data-tab="experiment" role="tab" aria-selected="false" aria-controls="experiment-tab" id="experiment-tab-btn" title="Discover new preservation techniques through experimentation"><span class="tab-icon tab-icon-experiment" aria-hidden="true"><span class="css-icon-lightning"></span></span> Experiment</button>
+            <button class="tab-btn" data-tab="dailies" role="tab" aria-selected="false" aria-controls="dailies-tab" id="dailies-tab-btn" title="Maintenance rituals to keep preserved magic stable"><span class="tab-icon tab-icon-dailies" aria-hidden="true">●</span> Rituals</button>
             <!-- Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
-            <button class="tab-btn" data-tab="boons" title="Buy permanent bonuses with Eldritch Keys" aria-label="Boons tab"><span class="tab-icon tab-icon-boons">▲</span> Boons</button>
-            <button class="tab-btn" data-tab="meditation" title="Defend your mind from the mental toll of the fading" aria-label="Meditation tab"><span class="tab-icon tab-icon-meditation">◐</span> Meditation</button>
-            <button class="tab-btn" data-tab="stats" title="Your preservation milestones and achievements" aria-label="Stats tab"><span class="tab-icon tab-icon-stats">▣</span> Stats</button>
+            <button class="tab-btn" data-tab="boons" role="tab" aria-selected="false" aria-controls="boons-tab" id="boons-tab-btn" title="Buy permanent bonuses with Eldritch Keys"><span class="tab-icon tab-icon-boons" aria-hidden="true">▲</span> Boons</button>
+            <button class="tab-btn" data-tab="meditation" role="tab" aria-selected="false" aria-controls="meditation-tab" id="meditation-tab-btn" title="Defend your mind from the mental toll of the fading"><span class="tab-icon tab-icon-meditation" aria-hidden="true">◐</span> Meditation</button>
+            <button class="tab-btn" data-tab="stats" role="tab" aria-selected="false" aria-controls="stats-tab" id="stats-tab-btn" title="Your preservation milestones and achievements"><span class="tab-icon tab-icon-stats" aria-hidden="true">▣</span> Stats</button>
         </div>
 
         <!-- Tab Content -->
         <div class="tabs-content">
             <!-- Workstations Tab -->
-            <div id="workstations-tab" class="tab-panel active">
-                <div id="workstation-list" class="content-list"></div>
+            <div id="workstations-tab" class="tab-panel active" role="tabpanel" aria-labelledby="workstations-tab-btn" tabindex="0">
+                <div id="workstation-list" class="content-list" role="list"></div>
             </div>
 
             <!-- Inscriptions Tab -->
-            <div id="inscriptions-tab" class="tab-panel">
-                <div id="upgrade-list" class="content-list"></div>
+            <div id="inscriptions-tab" class="tab-panel" role="tabpanel" aria-labelledby="inscriptions-tab-btn" aria-hidden="true">
+                <div id="upgrade-list" class="content-list" role="list"></div>
             </div>
 
             <!-- Inventory Tab -->
-            <div id="inventory-tab" class="tab-panel">
-                <div id="inventory-list" class="content-list"></div>
+            <div id="inventory-tab" class="tab-panel" role="tabpanel" aria-labelledby="inventory-tab-btn" aria-hidden="true">
+                <div id="inventory-list" class="content-list" role="list"></div>
             </div>
 
             <!-- Experiment Tab -->
@@ -378,6 +432,111 @@
 
     <!-- Notifications Container -->
     <div id="notifications-container"></div>
+
+    <!-- Help/Tutorial Modal -->
+    <div id="help-modal" class="modal" role="dialog" aria-labelledby="help-modal-title" aria-modal="true">
+        <div class="modal-content" style="max-width: 700px;">
+            <button class="modal-close" aria-label="Close help modal">&times;</button>
+            <h2 id="help-modal-title">How to Play Spellwright</h2>
+
+            <div class="help-sections">
+                <section class="help-section">
+                    <h3>🎯 Goal</h3>
+                    <p>Magic is fading from the world. As a Spellwright, your job is to preserve it by capturing spell energy before it disappears forever.</p>
+                </section>
+
+                <section class="help-section">
+                    <h3>⚡ Getting Started</h3>
+                    <ol>
+                        <li><strong>Cast Spells</strong> - Click the "Cast" button to gather elemental essences (Fire, Water, Air, Crystal, Aether)</li>
+                        <li><strong>Build Workstations</strong> - Use essences to craft preservation chambers that automatically generate Arcane Bits (AB)</li>
+                        <li><strong>Earn AB</strong> - Arcane Bits are the currency for advanced workstations and upgrades</li>
+                    </ol>
+                </section>
+
+                <section class="help-section">
+                    <h3>📑 Tabs Explained</h3>
+                    <ul>
+                        <li><strong>Workstations</strong> - Build preservation chambers to generate resources automatically</li>
+                        <li><strong>Inscriptions</strong> - Permanent upgrades that boost your production</li>
+                        <li><strong>Inventory</strong> - View all your collected materials</li>
+                        <li><strong>Experiment</strong> - Discover new recipes by combining ingredients</li>
+                        <li><strong>Rituals</strong> - Daily tasks for bonus rewards</li>
+                        <li><strong>Boons</strong> - Spend Eldritch Keys on permanent bonuses</li>
+                        <li><strong>Meditation</strong> - Tower defense mini-game to earn Focus</li>
+                        <li><strong>Stats</strong> - Track your achievements and milestones</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>⏫ Progression Path</h3>
+                    <ol>
+                        <li>Cast spells → Gather essences</li>
+                        <li>Craft basic workstations (Candle, Cauldron)</li>
+                        <li>Earn AB from workstations</li>
+                        <li>Build advanced workstations</li>
+                        <li>Unlock Inscriptions for permanent boosts</li>
+                        <li>Experiment to discover new recipes</li>
+                        <li>Ascend (Prestige) to earn Eldritch Keys</li>
+                        <li>Spend Keys on powerful Boons</li>
+                    </ol>
+                </section>
+
+                <section class="help-section">
+                    <h3>⌨️ Keyboard Shortcuts</h3>
+                    <ul>
+                        <li><kbd>1-8</kbd> - Switch between tabs</li>
+                        <li><kbd>Ctrl</kbd> + <kbd>,</kbd> - Open Settings</li>
+                        <li><kbd>Esc</kbd> - Close modals</li>
+                        <li><kbd>Tab</kbd> - Navigate between elements</li>
+                        <li><kbd>Enter</kbd>/<kbd>Space</kbd> - Activate buttons</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>💡 Tips</h3>
+                    <ul>
+                        <li>The game continues running when you're away - offline progress included!</li>
+                        <li>Focus on one type of workstation at first to maximize efficiency</li>
+                        <li>Inscriptions are expensive but give permanent benefits</li>
+                        <li>Experiment often - some recipes are very powerful</li>
+                        <li>Meditation is optional but provides useful Focus bonuses</li>
+                        <li>Don't rush to Ascend - build up first for better returns</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>💾 Saving</h3>
+                    <p>Your game saves automatically every few seconds to your browser's local storage. You can also export/import saves from the Settings tab.</p>
+                </section>
+
+                <section class="help-section">
+                    <h3>❓ Need More Help?</h3>
+                    <p>Check the <a href="https://github.com/yourusername/spellwright/wiki" target="_blank" rel="noopener">Wiki</a> for detailed guides, or join our <a href="https://discord.gg/spellwright" target="_blank" rel="noopener">Discord</a> community!</p>
+                </section>
+            </div>
+
+            <button class="btn-primary" id="close-help-button">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="game-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="PRIVACY.md" class="footer-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                <span class="footer-separator">•</span>
+                <a href="TERMS.md" class="footer-link" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+                <span class="footer-separator">•</span>
+                <a href="LICENSE" class="footer-link" target="_blank" rel="noopener noreferrer">License (MIT)</a>
+                <span class="footer-separator">•</span>
+                <a href="ATTRIBUTION.md" class="footer-link" target="_blank" rel="noopener noreferrer">Credits & Attribution</a>
+            </div>
+            <div class="footer-info">
+                <p class="footer-text">Spellwright v1.0.0 • Open Source • Made with ✨ by Spellwright Contributors</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- Scripts -->
     <script type="module" src="js/loadingState.js"></script>

@@ -1037,7 +1037,56 @@ function initUI() {
     
     prestigeModal = document.getElementById('prestige-modal');
     welcomeBackModal = document.getElementById('welcome-back-modal');
-    
+    const helpModal = document.getElementById('help-modal');
+
+    // Set up help modal
+    const helpButton = document.getElementById('help-button');
+    const closeHelpButton = document.getElementById('close-help-button');
+    const helpModalClose = helpModal?.querySelector('.modal-close');
+
+    if (helpButton && helpModal) {
+        helpButton.addEventListener('click', () => {
+            helpModal.style.display = 'flex';
+            helpModal.classList.add('active');
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Help menu opened', 'polite');
+            }
+        });
+    }
+
+    if (closeHelpButton && helpModal) {
+        closeHelpButton.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+            helpModal.classList.remove('active');
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Help menu closed', 'polite');
+            }
+        });
+    }
+
+    if (helpModalClose && helpModal) {
+        helpModalClose.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+            helpModal.classList.remove('active');
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Help menu closed', 'polite');
+            }
+        });
+    }
+
+    // Close help modal when clicking outside
+    if (helpModal) {
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.style.display = 'none';
+                helpModal.classList.remove('active');
+                if (window.announceToScreenReader) {
+                    window.announceToScreenReader('Help menu closed', 'polite');
+                }
+            }
+        });
+    }
+
     // Initialize game state
     gameState = new GameState();
     gameState.start(); // Start the game tick loop
@@ -2467,10 +2516,11 @@ function switchTab(tabName) {
     
     console.log('Found', tabButtons.length, 'tab buttons and', tabPanes.length, 'tab panes');
     
-    // Update buttons
+    // Update buttons with ARIA states
     tabButtons.forEach(btn => {
         const isActive = btn.dataset.tab === tabName;
         btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
     
     // Check if we're switching away from meditation tab
@@ -2514,11 +2564,13 @@ function switchTab(tabName) {
         }
     }
     
-    // Update panes
+    // Update panes with ARIA states
     tabPanes.forEach(pane => {
         const isActive = pane.id === `${tabName}-tab`;
         pane.classList.toggle('active', isActive);
-        
+        pane.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+        pane.setAttribute('tabindex', isActive ? '0' : '-1');
+
         // Force visibility for active tab
         if (isActive) {
             pane.style.display = 'block';
@@ -2532,9 +2584,15 @@ function switchTab(tabName) {
             pane.style.opacity = '0';
             pane.style.pointerEvents = 'none';
         }
-        
+
         console.log(`Tab panel ${pane.id} isActive:`, isActive, 'has active class:', pane.classList.contains('active'), 'display:', pane.style.display);
     });
+
+    // Announce tab change to screen readers
+    if (window.announceToScreenReader) {
+        const tabLabel = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+        window.announceToScreenReader(`Switched to ${tabLabel} tab`, 'polite');
+    }
     
     // Music continues playing normally (no mode switching needed)
     // Meditation tab now uses the same tier 4 music as the rest of the game
@@ -6236,7 +6294,41 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
             return;
         }
-        
+
+        // Handle Escape key for closing modals
+        if (e.key === 'Escape') {
+            // Close prestige modal
+            if (prestigeModal && prestigeModal.style.display !== 'none') {
+                prestigeModal.style.display = 'none';
+                if (window.announceToScreenReader) {
+                    window.announceToScreenReader('Modal closed', 'polite');
+                }
+                e.preventDefault();
+                return;
+            }
+            // Close welcome back modal
+            if (welcomeBackModal && welcomeBackModal.style.display !== 'none') {
+                welcomeBackModal.style.display = 'none';
+                if (window.announceToScreenReader) {
+                    window.announceToScreenReader('Modal closed', 'polite');
+                }
+                e.preventDefault();
+                return;
+            }
+            // Close any other visible modals
+            const visibleModals = document.querySelectorAll('.modal[style*="display: block"], .modal[style*="display: flex"]');
+            if (visibleModals.length > 0) {
+                visibleModals.forEach(modal => {
+                    modal.style.display = 'none';
+                });
+                if (window.announceToScreenReader) {
+                    window.announceToScreenReader('Modal closed', 'polite');
+                }
+                e.preventDefault();
+                return;
+            }
+        }
+
         // Prevent default for our shortcuts
         if (keyboardShortcuts[e.key]) {
             e.preventDefault();
