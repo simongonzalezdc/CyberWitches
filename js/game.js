@@ -3020,7 +3020,10 @@ function updateWorkstationsTabTraditional(container, unlockedWorkstations) {
     if (unlockedWorkstations.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
-                <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
+                <picture>
+                    <source srcset="images/ui/empty-state.webp" type="image/webp">
+                    <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
+                </picture>
                 <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">No workstations yet. Cast spells to unlock them!</p>
             </div>
         `;
@@ -3446,7 +3449,10 @@ function updateInventoryTab() {
     if (!gameState.inventory || Object.keys(gameState.inventory).length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; grid-column: 1 / -1;">
-                <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
+                <picture>
+                    <source srcset="images/ui/empty-state.webp" type="image/webp">
+                    <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
+                </picture>
                 <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">Inventory empty. Craft workstations to get ingredients!</p>
             </div>
         `;
@@ -3777,7 +3783,10 @@ function updateExperimentTab() {
                 if (result.success) {
                     console.log('Experiment succeeded:', result.recipe.name);
                     resultLabel.innerHTML = `
-                        <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration" style="width: 256px; height: 256px; object-fit: contain; margin: 0 auto 20px; display: block;">
+                        <picture>
+                            <source srcset="images/ui/experiment-result.webp" type="image/webp">
+                            <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration" style="width: 256px; height: 256px; object-fit: contain; margin: 0 auto 20px; display: block;">
+                        </picture>
                         <span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}
                     `;
                     resultLabel.className = 'result-label success';
@@ -5549,7 +5558,10 @@ function createNotificationElement(message, type) {
     if (type === 'success' && message.includes('Achievement')) {
         notification.classList.add('achievement-notification');
         notification.innerHTML = `
-            <img src="images/achievements/achievement-unlock-scene.png" alt="Achievement Unlocked" class="achievement-scene">
+            <picture>
+                <source srcset="images/achievements/achievement-unlock-scene.webp" type="image/webp">
+                <img src="images/achievements/achievement-unlock-scene.png" alt="Achievement Unlocked" class="achievement-scene">
+            </picture>
             <span>${message}</span>
         `;
     } else {

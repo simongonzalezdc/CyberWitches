@@ -124,7 +124,8 @@ body::after {
     left: 0;
     right: 0;
     background: var(--glass-bg);
-    background-image: url('images/backgrounds/hud-bg-pattern.png');
+    background-image: url('images/backgrounds/hud-bg-pattern.png'); /* Fallback */
+    background-image: url('images/backgrounds/hud-bg-pattern.webp'); /* WebP */
     background-repeat: repeat;
     background-size: 512px 512px;
     background-position: 0 0;
@@ -149,7 +150,8 @@ body::after {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/backgrounds/hud-bg-pattern.png');
+    background-image: url('images/backgrounds/hud-bg-pattern.png'); /* Fallback */
+    background-image: url('images/backgrounds/hud-bg-pattern.webp'); /* WebP */
     background-repeat: repeat;
     background-size: 512px 512px;
     opacity: 0.15;
@@ -641,7 +643,8 @@ button::before {
 
 /* Tab Panel Background Images */
 #workstations-tab.tab-panel.active {
-    background-image: url('images/backgrounds/tab-workstations-bg.png');
+    background-image: url('images/backgrounds/tab-workstations-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-workstations-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -655,7 +658,8 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/backgrounds/tab-workstations-bg.png');
+    background-image: url('images/backgrounds/tab-workstations-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-workstations-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     opacity: 0.3;
@@ -665,7 +669,8 @@ button::before {
 }
 
 #inscriptions-tab.tab-panel.active {
-    background-image: url('images/backgrounds/tab-inscriptions-bg.png');
+    background-image: url('images/backgrounds/tab-inscriptions-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-inscriptions-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -679,7 +684,8 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/backgrounds/tab-inscriptions-bg.png');
+    background-image: url('images/backgrounds/tab-inscriptions-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-inscriptions-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     opacity: 0.3;
@@ -689,7 +695,8 @@ button::before {
 }
 
 #boons-tab.tab-panel.active {
-    background-image: url('images/backgrounds/tab-boons-bg.png');
+    background-image: url('images/backgrounds/tab-boons-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-boons-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -703,7 +710,8 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/backgrounds/tab-boons-bg.png');
+    background-image: url('images/backgrounds/tab-boons-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-boons-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     opacity: 0.3;
@@ -713,7 +721,8 @@ button::before {
 }
 
 #coven-tab.tab-panel.active {
-    background-image: url('images/backgrounds/tab-coven-bg.png');
+    background-image: url('images/backgrounds/tab-coven-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-coven-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -727,7 +736,8 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/backgrounds/tab-coven-bg.png');
+    background-image: url('images/backgrounds/tab-coven-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-coven-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     opacity: 0.3;
@@ -737,7 +747,8 @@ button::before {
 }
 
 #experiment-tab.tab-panel.active {
-    background-image: url('images/backgrounds/tab-experiment-bg.png');
+    background-image: url('images/backgrounds/tab-experiment-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-experiment-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -751,7 +762,8 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/backgrounds/tab-experiment-bg.png');
+    background-image: url('images/backgrounds/tab-experiment-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-experiment-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     opacity: 0.3;
@@ -1193,7 +1205,8 @@ button::before {
 
 /* Modal Background Images */
 #prestige-modal .modal-content {
-    background-image: url('images/modals/prestige-scene.png');
+    background-image: url('images/modals/prestige-scene.png'); /* Fallback */
+    background-image: url('images/modals/prestige-scene.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -1207,7 +1220,8 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/modals/prestige-scene.png');
+    background-image: url('images/modals/prestige-scene.png'); /* Fallback */
+    background-image: url('images/modals/prestige-scene.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     opacity: 0.4;
@@ -1217,7 +1231,8 @@ button::before {
 }
 
 #welcome-back-modal .modal-content {
-    background-image: url('images/modals/welcome-back-scene.png');
+    background-image: url('images/modals/welcome-back-scene.png'); /* Fallback */
+    background-image: url('images/modals/welcome-back-scene.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -1231,7 +1246,8 @@ button::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('images/modals/welcome-back-scene.png');
+    background-image: url('images/modals/welcome-back-scene.png'); /* Fallback */
+    background-image: url('images/modals/welcome-back-scene.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     opacity: 0.4;
@@ -1719,7 +1735,8 @@ button::before {
 .meditation-grid-container {
     position: relative;
     background: rgba(0, 0, 0, 0.5);
-    background-image: url('images/meditation/meditation-canvas-bg.png');
+    background-image: url('images/meditation/meditation-canvas-bg.png'); /* Fallback */
+    background-image: url('images/meditation/meditation-canvas-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -1736,7 +1753,8 @@ button::before {
     height: 100%;
     min-height: 600px;
     display: block;
-    background-image: url('images/meditation/meditation-canvas-bg.png');
+    background-image: url('images/meditation/meditation-canvas-bg.png'); /* Fallback */
+    background-image: url('images/meditation/meditation-canvas-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2467,7 +2485,8 @@ body.tier-4::before {
 /* Tab Panel Backgrounds - Only on Tier 3+ */
 body.tier-3 #workstations-tab.active,
 body.tier-4 #workstations-tab.active {
-    background-image: url('images/backgrounds/tab-workstations-bg.png');
+    background-image: url('images/backgrounds/tab-workstations-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-workstations-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2476,7 +2495,8 @@ body.tier-4 #workstations-tab.active {
 
 body.tier-3 #inscriptions-tab.active,
 body.tier-4 #inscriptions-tab.active {
-    background-image: url('images/backgrounds/tab-inscriptions-bg.png');
+    background-image: url('images/backgrounds/tab-inscriptions-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-inscriptions-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2485,7 +2505,8 @@ body.tier-4 #inscriptions-tab.active {
 
 body.tier-3 #experiment-tab.active,
 body.tier-4 #experiment-tab.active {
-    background-image: url('images/backgrounds/tab-experiment-bg.png');
+    background-image: url('images/backgrounds/tab-experiment-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-experiment-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2494,7 +2515,8 @@ body.tier-4 #experiment-tab.active {
 
 body.tier-3 #coven-tab.active,
 body.tier-4 #coven-tab.active {
-    background-image: url('images/backgrounds/tab-coven-bg.png');
+    background-image: url('images/backgrounds/tab-coven-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-coven-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2503,7 +2525,8 @@ body.tier-4 #coven-tab.active {
 
 body.tier-3 #boons-tab.active,
 body.tier-4 #boons-tab.active {
-    background-image: url('images/backgrounds/tab-boons-bg.png');
+    background-image: url('images/backgrounds/tab-boons-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/tab-boons-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -2513,7 +2536,8 @@ body.tier-4 #boons-tab.active {
 /* Meditation Canvas Background - Only on Tier 3+ */
 body.tier-3 #meditation-canvas,
 body.tier-4 #meditation-canvas {
-    background-image: url('images/backgrounds/meditation-canvas-bg.png');
+    background-image: url('images/backgrounds/meditation-canvas-bg.png'); /* Fallback */
+    background-image: url('images/backgrounds/meditation-canvas-bg.webp'); /* WebP */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
