@@ -1037,7 +1037,56 @@ function initUI() {
     
     prestigeModal = document.getElementById('prestige-modal');
     welcomeBackModal = document.getElementById('welcome-back-modal');
-    
+    const helpModal = document.getElementById('help-modal');
+
+    // Set up help modal
+    const helpButton = document.getElementById('help-button');
+    const closeHelpButton = document.getElementById('close-help-button');
+    const helpModalClose = helpModal?.querySelector('.modal-close');
+
+    if (helpButton && helpModal) {
+        helpButton.addEventListener('click', () => {
+            helpModal.style.display = 'flex';
+            helpModal.classList.add('active');
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Help menu opened', 'polite');
+            }
+        });
+    }
+
+    if (closeHelpButton && helpModal) {
+        closeHelpButton.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+            helpModal.classList.remove('active');
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Help menu closed', 'polite');
+            }
+        });
+    }
+
+    if (helpModalClose && helpModal) {
+        helpModalClose.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+            helpModal.classList.remove('active');
+            if (window.announceToScreenReader) {
+                window.announceToScreenReader('Help menu closed', 'polite');
+            }
+        });
+    }
+
+    // Close help modal when clicking outside
+    if (helpModal) {
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.style.display = 'none';
+                helpModal.classList.remove('active');
+                if (window.announceToScreenReader) {
+                    window.announceToScreenReader('Help menu closed', 'polite');
+                }
+            }
+        });
+    }
+
     // Initialize game state
     gameState = new GameState();
     gameState.start(); // Start the game tick loop

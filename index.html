@@ -145,6 +145,9 @@
                 <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" aria-live="polite" title="Elemental Affinity"></span>
             </div>
                 <div class="hud-controls">
+                    <button id="help-button" class="btn-secondary" title="How to play" aria-label="Open help menu" style="margin-right: 8px;">
+                        ❓ Help
+                    </button>
                     <button id="install-app-button" class="btn-install" style="display: none;" title="Install to play offline" aria-label="Install App">
                         <span class="install-icon">📱</span> Install
                     </button>
@@ -429,6 +432,93 @@
 
     <!-- Notifications Container -->
     <div id="notifications-container"></div>
+
+    <!-- Help/Tutorial Modal -->
+    <div id="help-modal" class="modal" role="dialog" aria-labelledby="help-modal-title" aria-modal="true">
+        <div class="modal-content" style="max-width: 700px;">
+            <button class="modal-close" aria-label="Close help modal">&times;</button>
+            <h2 id="help-modal-title">How to Play Spellwright</h2>
+
+            <div class="help-sections">
+                <section class="help-section">
+                    <h3>🎯 Goal</h3>
+                    <p>Magic is fading from the world. As a Spellwright, your job is to preserve it by capturing spell energy before it disappears forever.</p>
+                </section>
+
+                <section class="help-section">
+                    <h3>⚡ Getting Started</h3>
+                    <ol>
+                        <li><strong>Cast Spells</strong> - Click the "Cast" button to gather elemental essences (Fire, Water, Air, Crystal, Aether)</li>
+                        <li><strong>Build Workstations</strong> - Use essences to craft preservation chambers that automatically generate Arcane Bits (AB)</li>
+                        <li><strong>Earn AB</strong> - Arcane Bits are the currency for advanced workstations and upgrades</li>
+                    </ol>
+                </section>
+
+                <section class="help-section">
+                    <h3>📑 Tabs Explained</h3>
+                    <ul>
+                        <li><strong>Workstations</strong> - Build preservation chambers to generate resources automatically</li>
+                        <li><strong>Inscriptions</strong> - Permanent upgrades that boost your production</li>
+                        <li><strong>Inventory</strong> - View all your collected materials</li>
+                        <li><strong>Experiment</strong> - Discover new recipes by combining ingredients</li>
+                        <li><strong>Rituals</strong> - Daily tasks for bonus rewards</li>
+                        <li><strong>Boons</strong> - Spend Eldritch Keys on permanent bonuses</li>
+                        <li><strong>Meditation</strong> - Tower defense mini-game to earn Focus</li>
+                        <li><strong>Stats</strong> - Track your achievements and milestones</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>⏫ Progression Path</h3>
+                    <ol>
+                        <li>Cast spells → Gather essences</li>
+                        <li>Craft basic workstations (Candle, Cauldron)</li>
+                        <li>Earn AB from workstations</li>
+                        <li>Build advanced workstations</li>
+                        <li>Unlock Inscriptions for permanent boosts</li>
+                        <li>Experiment to discover new recipes</li>
+                        <li>Ascend (Prestige) to earn Eldritch Keys</li>
+                        <li>Spend Keys on powerful Boons</li>
+                    </ol>
+                </section>
+
+                <section class="help-section">
+                    <h3>⌨️ Keyboard Shortcuts</h3>
+                    <ul>
+                        <li><kbd>1-8</kbd> - Switch between tabs</li>
+                        <li><kbd>Ctrl</kbd> + <kbd>,</kbd> - Open Settings</li>
+                        <li><kbd>Esc</kbd> - Close modals</li>
+                        <li><kbd>Tab</kbd> - Navigate between elements</li>
+                        <li><kbd>Enter</kbd>/<kbd>Space</kbd> - Activate buttons</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>💡 Tips</h3>
+                    <ul>
+                        <li>The game continues running when you're away - offline progress included!</li>
+                        <li>Focus on one type of workstation at first to maximize efficiency</li>
+                        <li>Inscriptions are expensive but give permanent benefits</li>
+                        <li>Experiment often - some recipes are very powerful</li>
+                        <li>Meditation is optional but provides useful Focus bonuses</li>
+                        <li>Don't rush to Ascend - build up first for better returns</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>💾 Saving</h3>
+                    <p>Your game saves automatically every few seconds to your browser's local storage. You can also export/import saves from the Settings tab.</p>
+                </section>
+
+                <section class="help-section">
+                    <h3>❓ Need More Help?</h3>
+                    <p>Check the <a href="https://github.com/yourusername/spellwright/wiki" target="_blank" rel="noopener">Wiki</a> for detailed guides, or join our <a href="https://discord.gg/spellwright" target="_blank" rel="noopener">Discord</a> community!</p>
+                </section>
+            </div>
+
+            <button class="btn-primary" id="close-help-button">Got it!</button>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="game-footer">

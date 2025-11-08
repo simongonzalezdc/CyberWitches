@@ -5922,3 +5922,106 @@ textarea:focus {
         min-width: 44px;
     }
 }
+
+/* ================================================
+   HELP MODAL STYLES
+   ================================================ */
+
+.help-sections {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.help-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.help-section:last-child {
+    border-bottom: none;
+}
+
+.help-section h3 {
+    color: #FF2DAA;
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.help-section p, .help-section li {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.help-section ol, .help-section ul {
+    margin-left: 20px;
+}
+
+.help-section li {
+    margin-bottom: 6px;
+}
+
+.help-section a {
+    color: #00d4aa;
+    text-decoration: none;
+}
+
+.help-section a:hover {
+    text-decoration: underline;
+}
+
+.help-section kbd {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #fff;
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 32px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    line-height: 28px;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #FF2DAA;
+}
+
+#close-help-button {
+    margin-top: 16px;
+    width: 100%;
+}
+
+/* Scrollbar styling for help modal */
+.help-sections::-webkit-scrollbar {
+    width: 8px;
+}
+
+.help-sections::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.help-sections::-webkit-scrollbar-thumb {
+    background: rgba(255, 45, 170, 0.5);
+    border-radius: 4px;
+}
+
+.help-sections::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 45, 170, 0.7);
+}
