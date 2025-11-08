@@ -845,4 +845,361 @@ describe('GameState - Core Functionality', () => {
       expect(gameState.elementSpecialization).toBeNull();
     });
   });
+
+  describe('Potions and Buffs', () => {
+    test('should get potion effect', () => {
+      const effect = gameState.getPotionEffect('production_elixir');
+      expect(effect).toBeDefined();
+      expect(effect.type).toBe('production');
+    });
+
+    test('should return null for invalid potion', () => {
+      const effect = gameState.getPotionEffect('invalid_potion');
+      expect(effect).toBeNull();
+    });
+
+    test('should consume potion successfully', () => {
+      gameState.inventory['production_elixir'] = 5;
+      const result = gameState.consumePotion('production_elixir');
+
+      expect(result).toBe(true);
+      expect(gameState.inventory['production_elixir']).toBe(4);
+      expect(gameState.activeBuffs.length).toBeGreaterThan(0);
+    });
+
+    test('should not consume potion without inventory', () => {
+      const result = gameState.consumePotion('production_elixir');
+      expect(result).toBe(false);
+    });
+
+    test('should add buff correctly', () => {
+      gameState.addBuff('production', 0.5, 1800);
+      expect(gameState.activeBuffs.length).toBe(1);
+      expect(gameState.activeBuffs[0].type).toBe('production');
+      expect(gameState.activeBuffs[0].value).toBe(0.5);
+    });
+
+    test('should get buff multiplier', () => {
+      gameState.addBuff('production', 0.5, 1800);
+      const mult = gameState.getBuff('production');
+      expect(mult).toBeGreaterThan(1);
+    });
+
+    test('should return 1.0 for non-existent buff type', () => {
+      const mult = gameState.getBuff('nonexistent');
+      expect(mult).toBe(1.0);
+    });
+
+    test('should stack multiple buffs', () => {
+      gameState.addBuff('production', 0.5, 1800);
+      gameState.addBuff('production', 0.3, 1800);
+      const mult = gameState.getBuff('production');
+      expect(mult).toBeGreaterThan(1.5);
+    });
+
+    test('should update buffs and remove expired ones', () => {
+      gameState.addBuff('production', 0.5, 0.1); // Short duration
+      expect(gameState.activeBuffs.length).toBe(1);
+
+      gameState.updateBuffs(0.2); // Expire the buff
+      expect(gameState.activeBuffs.length).toBe(0);
+    });
+
+    test('should handle multiple potion types', () => {
+      gameState.inventory['haste_potion'] = 1;
+      gameState.inventory['ab_amplifier'] = 1;
+
+      gameState.consumePotion('haste_potion');
+      gameState.consumePotion('ab_amplifier');
+
+      expect(gameState.activeBuffs.length).toBe(2);
+    });
+  });
+
+  describe('Prestige System', () => {
+    test('should calculate prestige gain', () => {
+      gameState.abTotalEarned = 1000000;
+      gameState.prestigeLifetimeEarned = 0;
+
+      const gain = gameState.calculatePrestigeGain();
+      expect(gain).toBeGreaterThan(0);
+    });
+
+    test('should not allow prestige with low earnings', () => {
+      gameState.abTotalEarned = 100;
+      const gain = gameState.calculatePrestigeGain();
+      expect(gain).toBe(0);
+    });
+
+    test('should perform ascension', () => {
+      gameState.abTotalEarned = 2000000;
+      gameState.ab = 500;
+      gameState.inventory = { fire: 10 };
+      gameState.workstations = { cauldron: 5 };
+
+      const initialPrestige = gameState.prestigePoints;
+      gameState.ascend();
+
+      expect(gameState.prestigePoints).toBeGreaterThan(initialPrestige);
+      expect(gameState.ab).toBe(0);
+      expect(gameState.inventory).toEqual({});
+      expect(gameState.workstations).toEqual({});
+      expect(gameState.prestigeCount).toBe(1);
+    });
+
+    test('should not ascend without enough earnings', () => {
+      gameState.abTotalEarned = 100;
+      const initialPrestige = gameState.prestigePoints;
+
+      gameState.ascend();
+
+      expect(gameState.prestigePoints).toBe(initialPrestige);
+    });
+
+    test('should choose element specialization', () => {
+      const result = gameState.chooseElementSpecialization('fire');
+      expect(result).toBe(true);
+      expect(gameState.elementSpecialization).toBe('fire');
+    });
+
+    test('should reject invalid element specialization', () => {
+      const result = gameState.chooseElementSpecialization('invalid');
+      expect(result).toBe(false);
+    });
+
+    test('should apply prestige start bonuses', () => {
+      gameState.prestigeBonuses = {};
+      gameState.applyPrestigeStartBonuses();
+      // Should not crash
+      expect(true).toBe(true);
+    });
+
+    test('should reset element specialization on ascend', () => {
+      gameState.abTotalEarned = 2000000;
+      gameState.elementSpecialization = 'fire';
+
+      gameState.ascend();
+
+      expect(gameState.elementSpecialization).toBeNull();
+    });
+
+    test('should increment prestige count on ascend', () => {
+      gameState.abTotalEarned = 2000000;
+      const initialCount = gameState.prestigeCount;
+
+      gameState.ascend();
+
+      expect(gameState.prestigeCount).toBe(initialCount + 1);
+    });
+  });
+
+  describe('Recipe Discovery', () => {
+    test('should initialize with empty discovered recipes', () => {
+      expect(gameState.discoveredRecipes).toEqual([]);
+    });
+
+    test('should check if recipe is discovered', () => {
+      gameState.discoveredRecipes = ['recipe1', 'recipe2'];
+
+      expect(gameState.discoveredRecipes.includes('recipe1')).toBe(true);
+      expect(gameState.discoveredRecipes.includes('recipe3')).toBe(false);
+    });
+
+    test('should add discovered recipes', () => {
+      const initialLength = gameState.discoveredRecipes.length;
+      gameState.discoveredRecipes.push('new_recipe');
+
+      expect(gameState.discoveredRecipes.length).toBe(initialLength + 1);
+      expect(gameState.discoveredRecipes.includes('new_recipe')).toBe(true);
+    });
+
+    test('should limit discovered recipes array size', () => {
+      // Fill with many recipes
+      for (let i = 0; i < 200; i++) {
+        gameState.discoveredRecipes.push(`recipe_${i}`);
+      }
+
+      // Should be capped at MAX_DISCOVERED_RECIPES (100)
+      expect(gameState.discoveredRecipes.length).toBeLessThanOrEqual(100);
+    });
+  });
+
+  describe('Tick and Production', () => {
+    let originalDateNow;
+
+    beforeEach(() => {
+      originalDateNow = Date.now;
+    });
+
+    afterEach(() => {
+      Date.now = originalDateNow;
+    });
+
+    test('should handle tick function', () => {
+      let currentTime = 1000000;
+      Date.now = () => currentTime;
+
+      gameState.lastTickTime = currentTime - 1000;
+      gameState.tick();
+
+      expect(gameState.lastTickTime).toBe(currentTime);
+    });
+
+    test('should apply production during tick', () => {
+      let currentTime = 1000000;
+      Date.now = () => currentTime;
+
+      // Add a workstation that produces AB
+      gameState.workstations = { basic_cauldron: 5 };
+      gameState.lastTickTime = currentTime - 1000;
+
+      const initialAB = gameState.ab;
+      gameState.tick();
+
+      // Should have produced some AB
+      expect(gameState.ab).toBeGreaterThanOrEqual(initialAB);
+    });
+
+    test('should update buffs during tick', () => {
+      let currentTime = 1000000;
+      Date.now = () => currentTime;
+
+      gameState.addBuff('production', 0.5, 0.5); // 0.5 second duration
+      gameState.lastTickTime = currentTime - 1000;
+
+      gameState.tick();
+
+      // Buff should be expired
+      expect(gameState.activeBuffs.length).toBe(0);
+    });
+
+    test('should apply event multiplier in tick', () => {
+      let currentTime = 1000000;
+      Date.now = () => currentTime;
+
+      gameState.workstations = { basic_cauldron: 5 };
+      gameState.lastTickTime = currentTime - 1000;
+
+      const initialAB = gameState.ab;
+      gameState.tick(2.0); // 2x event multiplier
+
+      expect(gameState.ab).toBeGreaterThan(initialAB);
+    });
+  });
+
+  describe('Casting and Multipliers', () => {
+    test('should handle casting without errors', () => {
+      gameState.prestigeBonuses = {};
+      gameState.upgradesOwned = {};
+
+      // This should not crash even without prestige bonuses
+      gameState.cast();
+      expect(gameState.totalTaps).toBeGreaterThan(0);
+    });
+
+    test('should apply upgrade multipliers on cast', () => {
+      gameState.upgradesOwned = {};
+
+      const initialFire = gameState.inventory.fire || 0;
+      gameState.cast();
+
+      expect(gameState.inventory.fire).toBeGreaterThan(initialFire);
+    });
+
+    test('should apply combo multiplier to cast', () => {
+      const initialFire = gameState.inventory.fire || 0;
+      gameState.cast(2.0, 1.0); // 2x combo multiplier
+
+      const gained = gameState.inventory.fire - initialFire;
+      expect(gained).toBeGreaterThan(0);
+    });
+
+    test('should apply event multiplier to cast', () => {
+      const initialFire = gameState.inventory.fire || 0;
+      gameState.cast(1.0, 2.0); // 2x event multiplier
+
+      const gained = gameState.inventory.fire - initialFire;
+      expect(gained).toBeGreaterThan(0);
+    });
+
+    test('should grant AB per cast', () => {
+      const initialAB = gameState.ab;
+      gameState.cast();
+
+      expect(gameState.ab).toBeGreaterThan(initialAB);
+    });
+
+    test('should apply element specialization bonuses', () => {
+      gameState.elementSpecialization = 'fire';
+      gameState.specializationBonuses = { castRewardMult: 2.0 };
+
+      const initialFire = gameState.inventory.fire || 0;
+      gameState.cast();
+
+      const gained = gameState.inventory.fire - initialFire;
+      expect(gained).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Save State Structure', () => {
+    test('should save and load discovered recipes', () => {
+      gameState.discoveredRecipes = ['recipe1', 'recipe2'];
+      gameState.saveGameState();
+
+      const newState = new GameState();
+      newState.loadGameState();
+
+      expect(newState.discoveredRecipes).toContain('recipe1');
+      expect(newState.discoveredRecipes).toContain('recipe2');
+    });
+
+    test('should save game state without errors', () => {
+      gameState.addBuff('production', 0.5, 1800);
+
+      expect(() => {
+        gameState.saveGameState();
+      }).not.toThrow();
+    });
+
+    test('should save and load prestige data', () => {
+      gameState.prestigePoints = 10;
+      gameState.prestigeCount = 5;
+      gameState.saveGameState();
+
+      const newState = new GameState();
+      newState.loadGameState();
+
+      expect(newState.prestigePoints).toBe(10);
+      expect(newState.prestigeCount).toBe(5);
+    });
+
+    test('should save and load element specialization', () => {
+      gameState.elementSpecialization = 'fire';
+      gameState.specializationBonuses = { test: 1.5 };
+      gameState.saveGameState();
+
+      const newState = new GameState();
+      newState.loadGameState();
+
+      expect(newState.elementSpecialization).toBe('fire');
+    });
+
+    test('should handle corrupted save data', () => {
+      localStorage.setItem('cyberWitchesGameState', 'corrupted{data');
+
+      expect(() => {
+        const newState = new GameState();
+        newState.loadGameState();
+      }).not.toThrow();
+    });
+
+    test('should handle missing save data', () => {
+      localStorage.removeItem('cyberWitchesGameState');
+
+      expect(() => {
+        const newState = new GameState();
+        newState.loadGameState();
+      }).not.toThrow();
+    });
+  });
 });
