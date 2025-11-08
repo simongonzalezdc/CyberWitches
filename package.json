@@ -42,9 +42,6 @@
   "jest": {
     "testEnvironment": "jsdom",
     "transform": {},
-    "extensionsToTreatAsEsm": [
-      ".js"
-    ],
     "setupFilesAfterEnv": [
       "<rootDir>/tests/setup.js"
     ],
