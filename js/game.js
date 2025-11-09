@@ -1857,46 +1857,49 @@ function initUI() {
     
     // Comprehensive button verification function
     function verifyAllButtons() {
+        // Note: Buttons use addEventListener, not onclick attributes
+        // This verification only checks if buttons exist, not if they have handlers
+        // (Checking for event listeners is not reliable without browser dev tools)
         const buttons = {
             'cast-button': () => {
                 const btn = document.getElementById('cast-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'auto-cast-toggle': () => {
                 const btn = document.getElementById('auto-cast-toggle');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'experiment-button': () => {
                 const btn = document.getElementById('experiment-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'start-meditation-button': () => {
                 const btn = document.getElementById('start-meditation-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'end-meditation-button': () => {
                 const btn = document.getElementById('end-meditation-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'ascend-button': () => {
                 const btn = document.getElementById('ascend-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'close-prestige-button': () => {
                 const btn = document.getElementById('close-prestige-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'close-welcome-button': () => {
                 const btn = document.getElementById('close-welcome-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'reset-all-progress-button': () => {
                 const btn = document.getElementById('reset-all-progress-button');
-                return btn && (btn.onclick !== null || btn.hasAttribute('onclick'));
+                return btn !== null;
             },
             'tier-selector': () => {
                 const selector = document.getElementById('tier-selector');
-                return selector && (selector.onchange !== null || selector.hasAttribute('onchange'));
+                return selector !== null;
             }
         };
         
@@ -1912,13 +1915,13 @@ function initUI() {
         
         console.log('Button verification:', results);
         
-        // Log any issues
+        // Log any issues (only log if button doesn't exist)
         results.staticButtons.forEach(({ id, exists, hasHandler }) => {
             if (!exists) {
                 console.warn(`Button ${id} not found in DOM!`);
-            } else if (!hasHandler) {
-                console.warn(`Button ${id} exists but may not have a handler!`);
             }
+            // Note: We don't check for handlers since buttons use addEventListener
+            // which doesn't set onclick attributes
         });
         
         if (!results.tabButtons.working) {
@@ -3499,10 +3502,19 @@ function updateInventoryTab() {
     // Ensure container is visible - use grid layout for compact display
     container.style.display = 'grid';
     container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(140px, 1fr))';
-    container.style.gap = '4px';
+    container.style.gap = '3px';
     container.style.visibility = 'visible';
     container.style.opacity = '1';
     container.innerHTML = '';
+    
+    // Clean up zero-amount items from inventory before rendering (no empty boxes)
+    if (gameState.inventory) {
+        for (const ingId in gameState.inventory) {
+            if ((gameState.inventory[ingId] || 0) <= 0) {
+                delete gameState.inventory[ingId];
+            }
+        }
+    }
     
     if (!gameState.inventory || Object.keys(gameState.inventory).length === 0) {
         container.innerHTML = `
@@ -3527,7 +3539,12 @@ function updateInventoryTab() {
     
     for (const ingId in gameState.inventory) {
         const amount = gameState.inventory[ingId];
-        if (amount <= 0) continue;
+        // Skip items with zero or negative amounts (no empty boxes)
+        if (amount <= 0) {
+            // Clean up zero-amount items from inventory
+            delete gameState.inventory[ingId];
+            continue;
+        }
         
         // Skip focus-related ingredients if meditation is not unlocked
         if (!isMeditationUnlocked && (ingId === 'focus' || ingId.includes('focus'))) {
@@ -3636,7 +3653,7 @@ function updateInventoryTab() {
             card.setAttribute('data-tier', tier);
             card.setAttribute('data-item-id', item.id);
             
-            // Apply tier-appropriate styling
+            // Apply tier-appropriate styling - compact
             if (isTier0) {
                 // Tier 0: Strictly monochrome, no shadows, no transitions
             card.style.cssText = `
@@ -3650,6 +3667,7 @@ function updateInventoryTab() {
                     box-shadow: none;
                     transition: none;
                     overflow: hidden;
+                    min-height: auto;
                 `;
             } else if (isTier1Or2) {
                 // Tier 1-2: Colors but no shadows/glows, no transitions
@@ -3664,6 +3682,7 @@ function updateInventoryTab() {
                     box-shadow: none;
                     transition: none;
                     overflow: hidden;
+                    min-height: auto;
                 `;
             } else {
                 // Tier 3-4: Full effects (colors, shadows, glows, transitions)
@@ -3678,6 +3697,7 @@ function updateInventoryTab() {
                     box-shadow: ${tierStyle.boxShadow}, inset 0 1px 0 rgba(255, 255, 255, 0.1);
                     transition: ${tierStyle.transition};
                 overflow: hidden;
+                min-height: auto;
             `;
             }
             
@@ -3721,44 +3741,44 @@ function updateInventoryTab() {
             
             const contentDiv = document.createElement('div');
             contentDiv.className = 'inventory-item-content';
-            contentDiv.style.cssText = 'position: relative; z-index: 2; padding: 6px 8px;';
+            contentDiv.style.cssText = 'position: relative; z-index: 2; padding: 4px 6px;';
             
-            // Apply tier-appropriate content styling - compact single-line layout
+            // Apply tier-appropriate content styling - number under title
             if (isTier0) {
-                // Tier 0: Monochrome, no shadows, no animations - single line
+                // Tier 0: Monochrome, no shadows, no animations - number under title
                 contentDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 16px; color: #FFFFFF; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
-                            <div class="card-label" style="font-size: 12px; font-weight: 600; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 12px; color: #FFFFFF; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div class="card-label" style="font-size: 11px; font-weight: 600; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
                         </div>
-                        <div class="inventory-amount" style="font-size: 14px; font-weight: 700; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; flex-shrink: 0;">
+                        <div class="inventory-amount" style="font-size: 13px; font-weight: 700; color: #FFFFFF; text-shadow: none; font-family: 'Courier New', monospace; white-space: nowrap; text-align: left; padding-left: 16px;">
                             ${formatShort(item.amount)}
                         </div>
                     </div>
                 `;
             } else if (isTier1Or2) {
-                // Tier 1-2: Colors but no shadows/glows, no transitions - single line
+                // Tier 1-2: Colors but no shadows/glows, no transitions - number under title
                 contentDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 16px; color: ${tierStyle.color}; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
-                            <div class="card-label" style="font-size: 12px; font-weight: 600; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 12px; color: ${tierStyle.color}; text-shadow: none; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div class="card-label" style="font-size: 11px; font-weight: 600; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
                         </div>
-                        <div class="inventory-amount" style="font-size: 14px; font-weight: 700; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', monospace; flex-shrink: 0;">
+                        <div class="inventory-amount" style="font-size: 13px; font-weight: 700; color: ${tierStyle.color}; text-shadow: none; font-family: 'Orbitron', monospace; white-space: nowrap; text-align: left; padding-left: 16px;">
                             ${formatShort(item.amount)}
                         </div>
                     </div>
                 `;
             } else {
-                // Tier 3-4: Full effects (colors, shadows, glows, transitions) - single line
+                // Tier 3-4: Full effects (colors, shadows, glows, transitions) - number under title
                 contentDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;">
-                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 16px; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; flex-shrink: 0;">${tierStyle.symbol}</span>
-                            <div class="card-label" style="font-size: 12px; font-weight: 600; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span class="inventory-icon tier-icon-${tier}" style="font-size: 12px; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; flex-shrink: 0;">${tierStyle.symbol}</span>
+                            <div class="card-label" style="font-size: 11px; font-weight: 600; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">${item.displayName}</div>
                         </div>
-                        <div class="inventory-amount" style="font-size: 14px; font-weight: 700; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', monospace; flex-shrink: 0;">
+                        <div class="inventory-amount" style="font-size: 13px; font-weight: 700; color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; font-family: 'Orbitron', monospace; white-space: nowrap; text-align: left; padding-left: 16px;">
                             ${formatShort(item.amount)}
                         </div>
                     </div>
@@ -4314,7 +4334,7 @@ function updateElementCounters() {
         }
     }
     
-    // Update Focus counter (with 1 decimal place) - only if meditation is unlocked
+    // Update Focus counter to show meditation production bonus - only if meditation is unlocked
     const isMeditationUnlocked = gameState.prestigeCount >= 1;
     const focusCounter = document.getElementById('element-counter-focus');
     if (focusCounter) {
@@ -4325,20 +4345,31 @@ function updateElementCounters() {
             focusCounter.style.opacity = '1';
             
             const focusAmountElement = focusCounter.querySelector('.element-amount');
-            if (focusAmountElement && gameState.inventory) {
-                const focusAmount = gameState.inventory['focus'] || 0;
-                const formattedFocus = formatOneDecimal(focusAmount);
-                const previousFocus = previousElementTotals['focus'] || 0;
+            if (focusAmountElement && window.meditationState) {
+                // Get meditation production bonus
+                const meditationBonus = window.meditationState.getMeditationProductionBonus();
+                const bonusPercent = ((meditationBonus - 1.0) * 100).toFixed(1);
+                const formattedBonus = `+${bonusPercent}%`;
+                const previousBonus = previousElementTotals['meditationBonus'] || 0;
                 
-                if (Math.abs(focusAmount - previousFocus) > 0.01) {
-                    if (previousFocus > 0 && Math.abs(focusAmount - previousFocus) > 0.1) {
-                        animateNumberWithFormatter(focusAmountElement, previousFocus, focusAmount, 500, formatOneDecimal);
+                if (Math.abs(meditationBonus - previousBonus) > 0.001) {
+                    if (previousBonus > 0 && Math.abs(meditationBonus - previousBonus) > 0.01) {
+                        // Animate the bonus change
+                        const startPercent = ((previousBonus - 1.0) * 100).toFixed(1);
+                        const endPercent = bonusPercent;
+                        animateNumberWithFormatter(
+                            focusAmountElement,
+                            parseFloat(startPercent),
+                            parseFloat(endPercent),
+                            500,
+                            (val) => `+${val.toFixed(1)}%`
+                        );
                     } else {
-                        focusAmountElement.textContent = formattedFocus;
+                        focusAmountElement.textContent = formattedBonus;
                     }
-                    previousElementTotals['focus'] = focusAmount;
-                } else if (focusAmountElement.textContent.trim() !== formattedFocus) {
-                    focusAmountElement.textContent = formattedFocus;
+                    previousElementTotals['meditationBonus'] = meditationBonus;
+                } else if (focusAmountElement.textContent.trim() !== formattedBonus) {
+                    focusAmountElement.textContent = formattedBonus;
                 }
             }
         } else {

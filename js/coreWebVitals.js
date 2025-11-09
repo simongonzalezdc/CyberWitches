@@ -40,9 +40,10 @@ class CoreWebVitalsOptimizer {
                     const lastEntry = entries[entries.length - 1];
                     this.metrics.lcp = lastEntry.renderTime || lastEntry.loadTime;
                     
-                    // Log if LCP is poor (>2.5s)
-                    if (this.metrics.lcp > 2500) {
-                        console.warn('LCP is poor:', this.metrics.lcp, 'ms');
+                    // Log if LCP is poor (>2.5s) - only log once per session to reduce spam
+                    if (this.metrics.lcp > 2500 && !this._lcpLogged) {
+                        console.warn('LCP is poor:', this.metrics.lcp, 'ms', '- Largest Contentful Paint is slow (expected for game with many assets)');
+                        this._lcpLogged = true;
                     }
                 });
                 
@@ -94,9 +95,10 @@ class CoreWebVitalsOptimizer {
                     });
                     this.metrics.cls = clsValue;
                     
-                    // Log if CLS is poor (>0.1)
-                    if (this.metrics.cls > 0.1) {
-                        console.warn('CLS is poor:', this.metrics.cls);
+                    // Log if CLS is poor (>0.1) - only log once per session to reduce spam
+                    if (this.metrics.cls > 0.1 && !this._clsLogged) {
+                        console.warn('CLS is poor:', this.metrics.cls.toFixed(4), '- Layout shifts detected (expected for dynamic game content)');
+                        this._clsLogged = true;
                     }
                 });
                 
@@ -157,14 +159,9 @@ class CoreWebVitalsOptimizer {
      * Preload critical resources
      */
     preloadCriticalResources() {
-        // Preload fonts
-        const fontLink = document.createElement('link');
-        fontLink.rel = 'preload';
-        fontLink.as = 'font';
-        fontLink.type = 'font/woff2';
-        fontLink.crossOrigin = 'anonymous';
-        fontLink.href = 'https://fonts.gstatic.com/s/orbitron/v25/yMJMMIlzdpvBhQDB_SCLX1EMKJID_GAQ.woff2';
-        document.head.appendChild(fontLink);
+        // Fonts are loaded via @import in CSS, no need to preload specific font files
+        // The browser will automatically load the fonts from Google Fonts when needed
+        // Removing hardcoded font preload to avoid 404 errors if font URLs change
     }
     
     /**

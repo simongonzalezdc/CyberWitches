@@ -47,25 +47,27 @@ const CACHE_URLS = [
     '/js/debug.js',
     '/js/easterEggs.js',
     // External dependencies (CDN)
-    'https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js'
+    'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
 ];
 
 // Install event
 self.addEventListener('install', (event) => {
     console.log('Service Worker installing...');
     self.skipWaiting();
-    event.waitUntil(caches.open(CACHE_NAME))
-        .then((cache) => {
-            console.log('Service Worker installed, cache opened');
-            return cache.addAll(CACHE_URLS.map(url => new Request(url)));
-        })
-        .then(() => {
-            console.log('Service Worker installed, files cached');
-            self.skipWaiting();
-        })
-        .catch((error) => {
-            console.error('Service Worker installation failed:', error);
-        });
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                console.log('Service Worker installed, cache opened');
+                return cache.addAll(CACHE_URLS.map(url => new Request(url)));
+            })
+            .then(() => {
+                console.log('Service Worker installed, files cached');
+                self.skipWaiting();
+            })
+            .catch((error) => {
+                console.error('Service Worker installation failed:', error);
+            })
+    );
 });
 
 // Activate event - Clean up old caches

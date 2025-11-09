@@ -7,12 +7,13 @@
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self';
-                   script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';
-                   style-src 'self' 'unsafe-inline';
+                   script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' blob:;
+                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                    img-src 'self' data: blob:;
-                   font-src 'self' data:;
+                   font-src 'self' data: https://fonts.gstatic.com;
                    connect-src 'self';
                    media-src 'self';
+                   worker-src 'self' blob:;
                    object-src 'none';
                    frame-src 'none';
                    base-uri 'self';
@@ -60,12 +61,9 @@
     <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
 
     <!-- Tone.js for audio -->
-    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js"></script>
 </head>
 <body>
-    <!-- Skip to main content link for screen readers -->
-    <a href="#main-game" class="skip-link">Skip to main content</a>
-
     <!-- Screen reader announcements (ARIA live region) -->
     <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
 
@@ -249,6 +247,10 @@
                         <canvas id="meditation-canvas"></canvas>
                     </div>
                     <div class="meditation-sidebar">
+                        <div class="meditation-upgrades">
+                            <h3>Meditation Upgrades</h3>
+                            <div id="meditation-upgrade-list" class="meditation-upgrade-list"></div>
+                        </div>
                         <div class="tower-selection">
                             <h3>Towers</h3>
                             <div id="tower-list" class="tower-list"></div>
@@ -256,10 +258,6 @@
                         <div class="meditation-inventory">
                             <h3>Meditation Inventory</h3>
                             <div id="meditation-inventory-list" class="meditation-inventory-list"></div>
-                        </div>
-                        <div class="meditation-upgrades">
-                            <h3>Meditation Upgrades</h3>
-                            <div id="meditation-upgrade-list" class="meditation-upgrade-list"></div>
                         </div>
                     </div>
                 </div>

@@ -208,7 +208,7 @@ No environment variables currently needed - the game is fully client-side.
 ## CDN Dependencies
 
 The game uses:
-- Tone.js: Loaded from `https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js`
+- Tone.js: Loaded from `https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js`
 
 Ensure this CDN is accessible in your deployment environment.
 

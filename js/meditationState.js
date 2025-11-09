@@ -3,7 +3,7 @@ import { handleError, safeFunction } from './errorHandler.js';
 
 /**
  * Meditation State Manager - Manages meditation tower defense mode
- * Separate game mode with rhythm-based mechanics and tower defense gameplay
+ * Separate game mode with tower defense gameplay
  */
 export class MeditationState {
     constructor(gameState) {
@@ -236,6 +236,9 @@ export class MeditationState {
         
         // Calculate distances from center using BFS
         this.calculatePathDistances();
+        
+        // Optimize path for smoother movement (remove redundant waypoints)
+        this.optimizePath();
     }
     
     /**
@@ -288,6 +291,30 @@ export class MeditationState {
         }
         
         console.log(`Calculated distances for ${this.pathDistances.size} path tiles`);
+    }
+    
+    /**
+     * Optimize path for smoother movement by removing redundant waypoints
+     * This creates a cleaner path that's easier to follow
+     */
+    optimizePath() {
+        // Create a simplified path by removing redundant intermediate points
+        // This helps distractions move more smoothly along the path
+        const optimizedPath = [];
+        const visited = new Set();
+        
+        // Group path segments by direction to find straight segments
+        for (const segment of this.path) {
+            const key = `${segment.x},${segment.y}`;
+            if (!visited.has(key)) {
+                visited.add(key);
+                optimizedPath.push(segment);
+            }
+        }
+        
+        // Update path with optimized version (keep original for reference)
+        this.path = optimizedPath;
+        console.log(`Path optimized: ${this.path.length} segments`);
     }
     
     /**
@@ -396,14 +423,67 @@ export class MeditationState {
             }
         }
         
-        // If no valid adjacent tiles, stay put (shouldn't happen, but safety check)
+        // If no valid adjacent tiles, try to find any path tile closer to center
         if (adjacentTiles.length === 0) {
+            // Fallback: find any path tile that's closer to center
+            let fallbackTile = null;
+            let fallbackDist = Infinity;
+            
+            for (const tileStr of this.pathTiles) {
+                const [tx, ty] = tileStr.split(',').map(Number);
+                const tileDist = this.pathDistances.get(tileStr) ?? Infinity;
+                
+                // Check if this tile is closer to center than current
+                if (tileDist < currentDistance && tileDist < fallbackDist) {
+                    // Check if it's reachable (within reasonable distance)
+                    const reachDist = Math.abs(tx - currentTile.x) + Math.abs(ty - currentTile.y);
+                    if (reachDist <= 2) { // Allow up to 2 tiles away
+                        fallbackTile = { x: tx, y: ty };
+                        fallbackDist = tileDist;
+                    }
+                }
+            }
+            
+            if (fallbackTile) {
+                return { nextX: fallbackTile.x, nextY: fallbackTile.y };
+            }
+            
+            // Last resort: move toward center directly
+            const centerDx = centerX - currentTile.x;
+            const centerDy = centerY - currentTile.y;
+            const centerDist = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
+            
+            if (centerDist > 0.001) {
+                // Move one step toward center
+                const stepX = centerDx > 0 ? 1 : centerDx < 0 ? -1 : 0;
+                const stepY = centerDy > 0 ? 1 : centerDy < 0 ? -1 : 0;
+                const nextX = Math.max(0, Math.min(this.gridSize - 1, currentTile.x + stepX));
+                const nextY = Math.max(0, Math.min(this.gridSize - 1, currentTile.y + stepY));
+                return { nextX, nextY };
+            }
+            
+            // Stay put as last resort
             return { nextX: currentTile.x, nextY: currentTile.y };
         }
         
         // Choose the adjacent tile with the lowest distance (closest to center)
+        // If multiple tiles have the same distance, prefer the one that's more directly toward center
         const bestTile = adjacentTiles.reduce((best, tile) => {
-            return tile.distance < best.distance ? tile : best;
+            if (tile.distance < best.distance) {
+                return tile;
+            } else if (tile.distance === best.distance) {
+                // If same distance, prefer the one that's more directly toward center
+                const bestDx = best.x - centerX;
+                const bestDy = best.y - centerY;
+                const tileDx = tile.x - centerX;
+                const tileDy = tile.y - centerY;
+                const bestDistToCenter = Math.sqrt(bestDx * bestDx + bestDy * bestDy);
+                const tileDistToCenter = Math.sqrt(tileDx * tileDx + tileDy * tileDy);
+                
+                // Prefer the tile that's closer to center
+                return tileDistToCenter < bestDistToCenter ? tile : best;
+            }
+            return best;
         });
         
         return { nextX: bestTile.x, nextY: bestTile.y };
@@ -422,15 +502,31 @@ export class MeditationState {
         this.tranquility = this.tranquilityMax;
         this.distractions = [];
         
-        // Start music if music is enabled and at Tier 4+ (uses normal tier 4 music)
-        // Update music for meditation mode (mute sparkle/typing, slow tempo, add tier 2 layer)
+        // Enable sound effects if at Tier 2+ (required for meditation sound effects)
         if (window.audioSystem) {
             const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
             console.log('Meditation session starting - Current tier:', currentTier);
             console.log('Music enabled:', window.audioSystem.musicEnabled);
+            console.log('Sound effects enabled:', window.audioSystem.soundEffectsEnabled);
             console.log('Audio context state:', window.audioSystem.audioContext ? window.audioSystem.audioContext.state : 'no context');
             console.log('Is muted:', window.audioSystem.isMuted);
             
+            // Enable sound effects if at Tier 2+ (required for meditation sound effects)
+            if (currentTier >= 2) {
+                console.log('Enabling sound effects for meditation...');
+                // Always call enableSoundEffects to ensure initialization, even if already enabled
+                window.audioSystem.enableSoundEffects().then(() => {
+                    console.log('Sound effects enabled and initialized for meditation');
+                    console.log('Tone.js synths initialized:', window.audioSystem.toneSynths ? window.audioSystem.toneSynths.size : 0);
+                    console.log('SFX Master gain:', window.audioSystem.toneSfxMaster ? window.audioSystem.toneSfxMaster.gain.value : 'not initialized');
+                    console.log('SFX Reverb:', window.audioSystem.toneSfxReverb ? 'initialized' : 'not initialized');
+                }).catch(err => {
+                    console.error('Failed to enable sound effects for meditation:', err);
+                });
+            }
+            
+            // Start music if music is enabled and at Tier 4+ (uses normal tier 4 music)
+            // Update music for meditation mode (mute sparkle/typing, slow tempo, add tier 2 layer)
             if (currentTier >= 4) {
                 // If music is not enabled, try to enable it
                 if (!window.audioSystem.musicEnabled) {
@@ -484,13 +580,19 @@ export class MeditationState {
     
     /**
      * End meditation session
+     * @param {boolean} tranquilityLost - Whether the session ended due to losing all tranquility
      */
-    endSession() {
+    endSession(tranquilityLost = false) {
         if (!this.activeSession) return;
         
         this.activeSession = false;
         this.waveActive = false;
         this.distractions = [];
+        
+        // Show notification if tranquility was lost
+        if (tranquilityLost && window.showNotification) {
+            window.showNotification('Meditation ended - All tranquility lost!', 'error');
+        }
         
         // Update music back to normal mode (restore sparkle/typing, normal tempo, remove tier 2 layer)
         if (window.audioSystem && window.audioSystem.updateMusicForMeditation) {
@@ -586,7 +688,7 @@ export class MeditationState {
             
             // Check if tranquility reached 0
             if (this.tranquility <= 0) {
-                this.endSession();
+                this.endSession(true); // Pass true to indicate tranquility loss
             }
         }
     }
@@ -698,7 +800,9 @@ export class MeditationState {
             y: y,
             targetX: this.gridSize / 2 - 0.5, // Center of grid
             targetY: this.gridSize / 2 - 0.5,
-            progress: 0.0 // 0.0 to 1.0 (progress to center)
+            progress: 0.0, // 0.0 to 1.0 (progress to center)
+            lastMoveTime: Date.now(), // Track when last moved
+            stuckCount: 0 // Track how many times stuck
         };
         
         this.distractions.push(distraction);
@@ -738,72 +842,84 @@ export class MeditationState {
                 continue;
             }
             
-            // Follow path using distance-based pathfinding
+            // Follow path using distance-based pathfinding with smooth interpolation
             const pathDir = this.getPathDirection(dist.x, dist.y);
-            const dx = pathDir.nextX - dist.x;
-            const dy = pathDir.nextY - dist.y;
+            const targetX = pathDir.nextX;
+            const targetY = pathDir.nextY;
+            const dx = targetX - dist.x;
+            const dy = targetY - dist.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Check if stuck (next position is same as current position)
-            const isStuck = distance < 0.01 || (Math.round(dist.x) === pathDir.nextX && Math.round(dist.y) === pathDir.nextY && distance < 0.2);
+            // Check if distraction is stuck (not moving for too long)
+            const now = Date.now();
+            const timeSinceLastMove = now - (dist.lastMoveTime || now);
+            const hasMoved = distance > 0.01; // Check if actually moving
             
-            if (isStuck) {
-                // Try to find an alternative path by checking adjacent tiles directly
-                const currentTileKey = `${Math.round(dist.x)},${Math.round(dist.y)}`;
-                const currentDistance = this.pathDistances.get(currentTileKey) ?? Infinity;
+            if (!hasMoved && timeSinceLastMove > 1000) {
+                // Stuck for more than 1 second - force movement
+                dist.stuckCount = (dist.stuckCount || 0) + 1;
                 
-                // Find all adjacent path tiles with lower distance
-                const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-                let bestTile = null;
-                let bestDistance = Infinity;
-                
-                for (const [dx, dy] of directions) {
-                    const nx = Math.round(dist.x) + dx;
-                    const ny = Math.round(dist.y) + dy;
-                    const neighborKey = `${nx},${ny}`;
-                    
-                    if (this.pathTiles.has(neighborKey)) {
-                        const neighborDistance = this.pathDistances.get(neighborKey) ?? Infinity;
-                        if (neighborDistance < currentDistance && neighborDistance < bestDistance) {
-                            bestDistance = neighborDistance;
-                            bestTile = { x: nx, y: ny };
-                        }
-                    }
-                }
-                
-                if (bestTile) {
-                    // Move to best adjacent tile
-                    dist.x = bestTile.x;
-                    dist.y = bestTile.y;
-                } else {
-                    // If still stuck, force movement toward center
+                // If stuck multiple times, try to find alternative path
+                if (dist.stuckCount > 3) {
+                    // Force move toward center directly as last resort
                     const centerDx = centerX - dist.x;
                     const centerDy = centerY - dist.y;
                     const centerDist = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
-                    if (centerDist > 0.1) {
-                        const moveSpeed = dist.speed * delta * 0.5;
-                        dist.x += (centerDx / centerDist) * moveSpeed;
-                        dist.y += (centerDy / centerDist) * moveSpeed;
+                    
+                    if (centerDist > 0.001) {
+                        const forceMoveSpeed = dist.speed * delta * 2.0; // Faster movement when stuck
+                        dist.x += (centerDx / centerDist) * forceMoveSpeed;
+                        dist.y += (centerDy / centerDist) * forceMoveSpeed;
+                        dist.lastMoveTime = now;
+                        dist.stuckCount = 0; // Reset stuck count after forced move
+                        continue;
                     }
                 }
-            } else if (distance < 0.15) {
+            } else if (hasMoved) {
+                // Reset stuck tracking if moving
+                dist.lastMoveTime = now;
+                dist.stuckCount = 0;
+            }
+            
+            // Improved movement with smooth interpolation
+            // Use a lerp factor for smoother movement (higher = faster, more responsive)
+            const lerpFactor = Math.min(1.0, dist.speed * delta * 2.0); // Smooth interpolation
+            
+            // Check if very close to target (snap threshold)
+            const snapThreshold = 0.1;
+            if (distance < snapThreshold) {
                 // Snap to target tile if very close
-                dist.x = pathDir.nextX;
-                dist.y = pathDir.nextY;
+                dist.x = targetX;
+                dist.y = targetY;
+                dist.lastMoveTime = now;
             } else {
-                // Move toward next path tile (normalized movement)
-                const moveSpeed = Math.min(dist.speed * delta * 0.8, distance * 0.8);
-                dist.x += (dx / distance) * moveSpeed;
-                dist.y += (dy / distance) * moveSpeed;
+                // Smooth movement toward target using interpolation
+                const moveSpeed = dist.speed * delta;
+                const moveDistance = Math.min(moveSpeed, distance);
                 
-                // Ensure we're still on a path tile after movement
+                // Normalize direction and apply movement
+                if (distance > 0.001) {
+                    dist.x += (dx / distance) * moveDistance;
+                    dist.y += (dy / distance) * moveDistance;
+                    dist.lastMoveTime = now;
+                }
+                
+                // Ensure we stay on path (gentle correction if we drift)
                 const currentTileKey = `${Math.round(dist.x)},${Math.round(dist.y)}`;
                 if (!this.pathTiles.has(currentTileKey)) {
-                    // Snap to nearest path tile if we've drifted off
+                    // Find nearest path tile and gently correct
                     const pathDirCorrected = this.getPathDirection(dist.x, dist.y);
-                    if (pathDirCorrected.nextX !== Math.round(dist.x) || pathDirCorrected.nextY !== Math.round(dist.y)) {
-                        dist.x = pathDirCorrected.nextX;
-                        dist.y = pathDirCorrected.nextY;
+                    const correctionX = pathDirCorrected.nextX - dist.x;
+                    const correctionY = pathDirCorrected.nextY - dist.y;
+                    const correctionDist = Math.sqrt(correctionX * correctionX + correctionY * correctionY);
+                    
+                    if (correctionDist > 0.5) {
+                        // Only correct if significantly off path
+                        const correctionSpeed = Math.min(moveSpeed * 0.5, correctionDist * 0.3);
+                        if (correctionDist > 0.001) {
+                            dist.x += (correctionX / correctionDist) * correctionSpeed;
+                            dist.y += (correctionY / correctionDist) * correctionSpeed;
+                        }
                     }
                 }
             }
@@ -899,10 +1015,20 @@ export class MeditationState {
                     // Consume attack cost
                     this.consumeTowerCost(tower);
                     
-                    // Play tower attack sound (Tier 2+)
-                    if (window.audioSystem && window.audioSystem.playSound) {
-                        window.audioSystem.playSound('tower_attack', { volume: 0.2 }); // Lower volume for frequent attacks
+                    // Show projectile visualization
+                    if (window.meditationTowers && window.meditationTowers.addTowerAttack) {
+                        window.meditationTowers.addTowerAttack(tower.x, tower.y, nearestDist.x, nearestDist.y);
                     }
+                    
+                    // Show damage number
+                    if (window.meditationTowers && window.meditationTowers.addDamageNumber) {
+                        const pixelX = nearestDist.x * (window.meditationTowers.cellSize || 30);
+                        const pixelY = nearestDist.y * (window.meditationTowers.cellSize || 30);
+                        window.meditationTowers.addDamageNumber(pixelX, pixelY, stats.damage);
+                    }
+                    
+                    // Sound is now played when projectile visually hits (in meditationTowers.js)
+                    // This ensures better sync between visual and audio
                 }
             }
         }

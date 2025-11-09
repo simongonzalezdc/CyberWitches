@@ -62,6 +62,33 @@ export class AudioSystem {
         this.soundsLoaded = false;
         this.audioInitialized = false;
         
+        // Tone.js sound design system (unified with Tier 4 music)
+        this.toneSynths = new Map(); // Reusable Tone.js synths for sound effects
+        this.toneSfxReverb = null; // Reverb for sound effects (100% in meditation mode, 50% in normal mode)
+        this.toneSfxDelay = null; // Delay for sound effects (meditation mode: 400ms, normal mode: 200ms)
+        this.toneSfxChorus = null; // Chorus for sound effects (meditation mode only)
+        this.toneSfxCompressor = null; // Compression for sound effects (normal mode only)
+        this.toneSfxHighPass = null; // High-pass filter for clarity (normal mode only)
+        this.toneSfxDistortion = null; // Distortion for purchases/upgrades (normal mode only)
+        this.toneSfxTremolo = null; // Tremolo for achievements (normal mode only)
+        this.toneSfxVibrato = null; // Vibrato for melodic sounds (normal mode only)
+        this.soundDesignConfig = {
+            // Pentatonic scale matching Tier 4 music: C, D, E, G, A
+            pentatonicNotes: ['C', 'D', 'E', 'G', 'A'],
+            // Octaves for different sound types
+            octaves: {
+                low: 3,    // C3, D3, E3, G3, A3 - for bass/percussive sounds
+                mid: 4,    // C4, D4, E4, G4, A4 - for main sounds
+                high: 5    // C5, D5, E5, G5, A5 - for sparkle/attack sounds
+            },
+            // Rhythmic quantization (matches music grid)
+            quantization: {
+                tight: '8n',   // Eighth note - for tight integration
+                normal: '16n', // Sixteenth note - for normal sounds
+                loose: '4n'    // Quarter note - for important sounds
+            }
+        };
+        
         // Don't initialize audio or load sounds until needed (Tier 2+ for SFX, Tier 4+ for Music)
         // This saves ~15-25 MB of memory on startup
         
@@ -114,10 +141,255 @@ export class AudioSystem {
             this.initializeAudio();
         }
         
-        // Load default sounds
+        // Initialize Tone.js if available (for unified sound design)
+        if (typeof Tone !== 'undefined') {
+            await this.initializeToneSynths();
+        }
+        
+        // Load default sounds (now using Tone.js)
         await this.loadDefaultSounds();
         this.soundsLoaded = true;
         console.log('Sound effects loaded (lazy loaded for Tier 2+)');
+    }
+    
+    /**
+     * Initialize Tone.js synths for sound effects (unified with music system)
+     * @private
+     */
+    async initializeToneSynths() {
+        if (typeof Tone === 'undefined') {
+            return; // Tone.js not available
+        }
+        
+        // Ensure Tone.js context is started
+        if (Tone.context.state !== 'running') {
+            try {
+                await Tone.start();
+            } catch (err) {
+                console.warn('Could not start Tone.js context:', err);
+                return;
+            }
+        }
+        
+        // Create master gain for sound effects (separate from music)
+        // This allows unified volume control for all sound effects
+        if (!this.toneSfxMaster) {
+            // Convert SFX volume to dB scale to match music volume system
+            // Music uses: musicVolume * masterVolume * 20 - 20 (dB)
+            // SFX should use similar scale for balance
+            const sfxVolumeLinear = this.sfxVolume * this.masterVolume;
+            // Convert to dB: linear * 20 - 20, but reduce by 6 dB to balance with music
+            const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6; // -6 dB reduction for balance
+            this.toneSfxMaster = new Tone.Gain().toDestination();
+            this.toneSfxMaster.gain.value = Tone.dbToGain(sfxVolumeDb); // Convert dB to linear gain
+        }
+        
+        // Create reusable synths for different sound types
+        // These match the music system's character for cohesive sound design
+        
+        // Create reverb for sound effects (100% in meditation mode, 50% in normal mode)
+        // Check meditation mode for reverb settings
+        const isMeditationMode = window.meditationState && window.meditationState.activeSession;
+        const sfxReverbRoomSize = isMeditationMode ? 1.0 : 0.5; // Reduced from 0.65 to 0.5 for normal mode
+        const sfxReverbDampening = isMeditationMode ? 2000 : 5000; // Warmer (lower dampening) in meditation mode, brighter (higher dampening) in normal mode
+        
+        // Determine output chain based on mode
+        // Meditation mode: synths -> chorus -> delay -> reverb -> master
+        // Normal mode: synths -> reverb -> master
+        let sfxOutput = this.toneSfxMaster;
+        
+        if (isMeditationMode) {
+            // Create chorus for meditation mode (thickening effect)
+            if (!this.toneSfxChorus) {
+                this.toneSfxChorus = new Tone.Chorus({
+                    frequency: 1.5,
+                    delayTime: 0.02,
+                    depth: 0.3,
+                    wet: 0.5 // 50% wet signal
+                });
+            }
+            
+            // Create delay for meditation mode (echo effect)
+            if (!this.toneSfxDelay) {
+                this.toneSfxDelay = new Tone.FeedbackDelay({
+                    delayTime: 0.4, // 400ms delay
+                    feedback: 0.15 // Gentle feedback
+                });
+            }
+            
+            // Create reverb for meditation mode
+            if (!this.toneSfxReverb) {
+                this.toneSfxReverb = new Tone.Reverb({
+                    roomSize: sfxReverbRoomSize,
+                    dampening: sfxReverbDampening
+                });
+            }
+            
+            // Chain: chorus -> delay -> reverb -> master
+            this.toneSfxChorus.connect(this.toneSfxDelay);
+            this.toneSfxDelay.connect(this.toneSfxReverb);
+            this.toneSfxReverb.connect(this.toneSfxMaster);
+            sfxOutput = this.toneSfxChorus;
+            
+            // Generate reverb (async)
+            this.toneSfxReverb.generate().then(() => {
+                console.log('SFX effects chain generated (meditation mode): chorus -> delay -> reverb -> master');
+            }).catch(err => {
+                console.error('Failed to generate SFX reverb:', err);
+            });
+        } else {
+            // Normal mode: just reverb
+            if (!this.toneSfxReverb) {
+                this.toneSfxReverb = new Tone.Reverb({
+                    roomSize: sfxReverbRoomSize,
+                    dampening: sfxReverbDampening
+                }).connect(this.toneSfxMaster);
+            }
+            
+            sfxOutput = this.toneSfxReverb;
+            
+            // Generate reverb (async)
+            this.toneSfxReverb.generate().then(() => {
+                console.log('SFX reverb generated (normal mode - 65% reverb)');
+            }).catch(err => {
+                console.error('Failed to generate SFX reverb:', err);
+            });
+        }
+        
+        // Adjust envelope and filter parameters based on meditation mode
+        // Meditation mode: softer attack, longer release, lower filter frequencies
+        const attackTime = isMeditationMode ? 0.05 : 0.001; // Softer attack in meditation
+        const releaseTimePercussive = isMeditationMode ? 2.0 : 1.4; // Longer release in meditation
+        const releaseTimeMelodic = isMeditationMode ? 2.5 : 0.8; // Longer release in meditation
+        const releaseTimeSparkle = isMeditationMode ? 1.5 : 0.3; // Longer release in meditation
+        const releaseTimeAmbient = isMeditationMode ? 2.5 : 1.0; // Longer release in meditation
+        const filterFreq = isMeditationMode ? 1200 : 2000; // Lower frequency (warmer) in meditation
+        
+        // Percussive sounds (click, cast, purchase, etc.) - use MembraneSynth for drum-like character
+        // In normal mode, purchases/upgrades get subtle distortion
+        const percussiveSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.05,
+            octaves: 6,
+            oscillator: {
+                type: 'sine'
+            },
+            envelope: {
+                attack: attackTime,
+                decay: 0.4,
+                sustain: 0.01,
+                release: releaseTimePercussive
+            }
+        });
+        
+        // For purchases/upgrades in normal mode, add distortion
+        if (!isMeditationMode) {
+            // Create distortion for purchases/upgrades
+            if (!this.toneSfxDistortion) {
+                this.toneSfxDistortion = new Tone.Distortion({
+                    distortion: 0.2, // Subtle grit
+                    oversample: '2x' // Prevents aliasing
+                });
+                // Connect distortion to the normal mode chain
+                this.toneSfxDistortion.connect(sfxOutput);
+            }
+            // Note: We'll need to route purchase/upgrade sounds through distortion separately
+            // For now, all percussive sounds go through the main chain
+        }
+        
+        percussiveSynth.connect(sfxOutput);
+        this.toneSynths.set('percussive', percussiveSynth);
+        
+        // Melodic sounds (achievement, level_up, etc.) - use Synth for clean tones
+        // In normal mode, add vibrato for expressiveness
+        const melodicSynth = new Tone.Synth({
+            oscillator: {
+                type: 'sine'
+            },
+            envelope: {
+                attack: isMeditationMode ? 0.1 : 0.1, // Keep same attack for melodic
+                decay: 0.2,
+                sustain: 0.5,
+                release: releaseTimeMelodic
+            }
+        });
+        
+        // Add vibrato to melodic sounds in normal mode
+        if (!isMeditationMode) {
+            if (!this.toneSfxVibrato) {
+                this.toneSfxVibrato = new Tone.Vibrato({
+                    frequency: 6, // 6 Hz - moderate speed
+                    depth: 0.15 // 15% depth - subtle
+                });
+            }
+            melodicSynth.connect(this.toneSfxVibrato);
+            this.toneSfxVibrato.connect(sfxOutput);
+        } else {
+            melodicSynth.connect(sfxOutput);
+        }
+        
+        this.toneSynths.set('melodic', melodicSynth);
+        
+        // Sparkle/attack sounds (tower_attack, etc.) - use MonoSynth for bright tones
+        this.toneSynths.set('sparkle', new Tone.MonoSynth({
+            oscillator: {
+                type: 'triangle'
+            },
+            envelope: {
+                attack: attackTime,
+                decay: 0.1,
+                sustain: 0.1,
+                release: releaseTimeSparkle
+            },
+            filter: {
+                type: 'highpass',
+                frequency: filterFreq, // Lower frequency in meditation mode
+                Q: 2
+            }
+        }).connect(sfxOutput));
+        
+        // Ambient/placement sounds (tower_place, etc.) - use Synth with longer release
+        this.toneSynths.set('ambient', new Tone.Synth({
+            oscillator: {
+                type: 'sine'
+            },
+            envelope: {
+                attack: isMeditationMode ? 0.2 : 0.2, // Keep same attack for ambient
+                decay: 0.3,
+                sustain: 0.4,
+                release: releaseTimeAmbient
+            }
+        }).connect(sfxOutput));
+        
+        // Noise-based sounds (distraction_spawn, etc.) - use Noise with filter
+        this.toneSynths.set('noise', new Tone.Noise({
+            type: 'pink',
+            volume: -10
+        }).connect(new Tone.Filter({
+            type: 'bandpass',
+            frequency: 1000,
+            Q: 2
+        }).connect(sfxOutput)));
+        
+        console.log('Tone.js sound effect synths initialized');
+    }
+    
+    /**
+     * Get the next quantized time for a given subdivision
+     * @param {string} subdivision - Tone.js time string (e.g., '16n', '8n')
+     * @returns {number} Next quantized time in seconds (from Tone.Transport start)
+     */
+    getNextQuantizedTime(subdivision = '16n') {
+        if (typeof Tone === 'undefined' || !Tone.Transport || Tone.Transport.state !== 'started') {
+            return Date.now() / 1000; // Return current time if Transport not running
+        }
+        
+        const now = Tone.Transport.seconds;
+        const subdivisionTime = Tone.Time(subdivision).toSeconds();
+        const currentBeat = Math.floor(now / subdivisionTime);
+        const nextBeat = (currentBeat + 1) * subdivisionTime;
+        
+        // Return as absolute time (seconds since Transport started)
+        return nextBeat;
     }
     
     /**
@@ -165,151 +437,188 @@ export class AudioSystem {
     }
     
     /**
-     * Load default sound effects
+     * Load default sound effects (now using Tone.js - no need to generate buffers)
      * @private
      */
     async loadDefaultSounds() {
-        // Define sound effects with data URLs (simplified for demo)
+        // Define sound effects with Tone.js configuration
+        // All sounds use pentatonic scale (C, D, E, G, A) to match Tier 4 music
         const defaultSounds = [
             {
                 id: 'click',
                 name: 'Click',
-                url: this.generateClickSound(),
-                volume: 0.3, // Increased overall volume
-                loop: false
+                synthType: 'percussive',
+                note: 'C4',
+                duration: '16n',
+                volume: 0.3,
+                quantization: 'normal'
             },
             {
                 id: 'cast',
                 name: 'Spell Cast',
-                url: this.generateCastSound(),
-                volume: 0.4, // Increased overall volume
-                loop: false
+                synthType: 'percussive',
+                note: 'C3',
+                duration: '8n',
+                volume: 0.4,
+                quantization: 'normal'
             },
             {
-                id: 'achievement',
-                name: 'Achievement',
-                url: this.generateAchievementSound(),
-                volume: 0.5, // Increased overall volume
-                loop: false
-            },
-            {
-                id: 'level_up',
-                name: 'Level Up',
-                url: this.generateLevelUpSound(),
-                volume: 0.6, // Increased overall volume
-                loop: false
+                id: 'craft',
+                name: 'Craft',
+                synthType: 'percussive',
+                note: 'D3',
+                duration: '8n',
+                volume: 0.4,
+                quantization: 'normal'
             },
             {
                 id: 'purchase',
                 name: 'Purchase',
-                url: this.generatePurchaseSound(),
-                volume: 0.4, // Increased overall volume
-                loop: false
+                synthType: 'percussive',
+                note: 'G3',
+                duration: '16n',
+                volume: 0.4,
+                quantization: 'normal'
             },
             {
-                id: 'error',
-                name: 'Error',
-                url: this.generateErrorSound(),
-                volume: 0.3, // Increased overall volume
-                loop: false
+                id: 'achievement',
+                name: 'Achievement',
+                synthType: 'melodic',
+                notes: ['C4', 'E4', 'G4'],
+                duration: '4n',
+                volume: 0.5,
+                quantization: 'loose'
             },
             {
-                id: 'notification',
-                name: 'Notification',
-                url: this.generateNotificationSound(),
-                volume: 0.4, // Increased overall volume
-                loop: false
+                id: 'level_up',
+                name: 'Level Up',
+                synthType: 'melodic',
+                notes: ['C4', 'D4', 'E4', 'G4', 'A4'],
+                duration: '4n',
+                volume: 0.6,
+                quantization: 'loose'
             },
             {
                 id: 'daily_complete',
                 name: 'Daily Complete',
-                url: this.generateDailyCompleteSound(),
+                synthType: 'melodic',
+                notes: ['C4', 'E4', 'G4'],
+                duration: '4n',
                 volume: 0.5,
-                loop: false
+                quantization: 'loose'
+            },
+            {
+                id: 'success',
+                name: 'Success',
+                synthType: 'melodic',
+                notes: ['C4', 'E4', 'G4'],
+                duration: '8n',
+                volume: 0.4,
+                quantization: 'normal'
+            },
+            {
+                id: 'notification',
+                name: 'Notification',
+                synthType: 'sparkle',
+                note: 'C5',
+                duration: '32n',
+                volume: 0.4,
+                quantization: 'normal'
+            },
+            {
+                id: 'error',
+                name: 'Error',
+                synthType: 'noise',
+                duration: '16n',
+                volume: 0.3,
+                quantization: 'normal'
             },
             // Meditation-specific sound effects (Tier 2+)
             {
                 id: 'tower_attack',
                 name: 'Tower Attack',
-                url: this.generateTowerAttackSound(),
+                synthType: 'sparkle',
+                note: 'C5',
+                duration: '32n',
                 volume: 0.3,
-                loop: false
+                quantization: 'tight'
             },
             {
                 id: 'tower_place',
                 name: 'Tower Place',
-                url: this.generateTowerPlaceSound(),
+                synthType: 'ambient',
+                notes: ['C4', 'E4', 'G4'],
+                duration: '8n',
                 volume: 0.4,
-                loop: false
+                quantization: 'normal'
             },
             {
                 id: 'tower_upgrade',
                 name: 'Tower Upgrade',
-                url: this.generateTowerUpgradeSound(),
+                synthType: 'melodic',
+                notes: ['C4', 'D4', 'E4', 'G4', 'A4'],
+                duration: '4n',
                 volume: 0.5,
-                loop: false
+                quantization: 'loose'
             },
             {
                 id: 'distraction_spawn',
                 name: 'Distraction Spawn',
-                url: this.generateDistractionSpawnSound(),
+                synthType: 'noise',
+                duration: '16n',
                 volume: 0.3,
-                loop: false
+                quantization: 'normal'
             },
             {
                 id: 'distraction_hit',
                 name: 'Distraction Hit',
-                url: this.generateDistractionHitSound(),
+                synthType: 'percussive',
+                note: 'A3',
+                duration: '32n',
                 volume: 0.25,
-                loop: false
+                quantization: 'normal'
             },
             {
                 id: 'distraction_death',
                 name: 'Distraction Death',
-                url: this.generateDistractionDeathSound(),
+                synthType: 'percussive',
+                note: 'G3',
+                duration: '16n',
                 volume: 0.4,
-                loop: false
+                quantization: 'normal'
             },
             {
                 id: 'wave_start',
                 name: 'Wave Start',
-                url: this.generateWaveStartSound(),
+                synthType: 'melodic',
+                notes: ['C4', 'E4', 'G4', 'C5'],
+                duration: '4n',
                 volume: 0.5,
-                loop: false
+                quantization: 'loose'
             },
             {
                 id: 'wave_complete',
                 name: 'Wave Complete',
-                url: this.generateWaveCompleteSound(),
+                synthType: 'melodic',
+                notes: ['C4', 'E4', 'G4', 'A4', 'C5'],
+                duration: '4n',
                 volume: 0.5,
-                loop: false
+                quantization: 'loose'
             },
             {
                 id: 'tranquility_damage',
                 name: 'Tranquility Damage',
-                url: this.generateTranquilityDamageSound(),
+                synthType: 'noise',
+                duration: '16n',
                 volume: 0.3,
-                loop: false
-            },
-            {
-                id: 'craft',
-                name: 'Craft',
-                url: this.generateCraftSound(),
-                volume: 0.4, // Increased overall volume
-                loop: false
-            },
-            {
-                id: 'success',
-                name: 'Success',
-                url: this.generateSuccessSound(),
-                volume: 0.4, // Increased overall volume
-                loop: false
+                quantization: 'normal'
             }
         ];
         
-        // Load all sounds asynchronously
-        const loadPromises = defaultSounds.map(soundData => this.loadSound(soundData));
-        await Promise.all(loadPromises);
+        // Store sound configurations (no need to generate buffers)
+        defaultSounds.forEach(soundData => {
+            this.soundEffects.set(soundData.id, soundData);
+        });
         
         // Configure sound cooldowns to prevent crackling (especially for meditation sounds)
         this.configureSoundCooldowns();
@@ -1262,28 +1571,20 @@ export class AudioSystem {
      */
     async loadSound(soundData) {
         try {
+            // Tone.js sounds don't need audio files - just store the configuration
             const sound = {
                 id: soundData.id,
                 name: soundData.name,
-                url: soundData.url,
-                audio: null,
+                synthType: soundData.synthType,
+                note: soundData.note,
+                notes: soundData.notes,
+                duration: soundData.duration,
                 volume: soundData.volume || 0.5,
-                loop: soundData.loop || false,
-                fadeIn: soundData.fadeIn || 0,
-                fadeOut: soundData.fadeOut || 0
+                quantization: soundData.quantization || 'normal',
+                loop: false,
+                fadeIn: 0,
+                fadeOut: 0
             };
-            
-            // Create audio element
-            if (soundData.url) {
-                sound.audio = new Audio(soundData.url);
-                sound.audio.preload = 'auto';
-                
-                // Wait for audio to load
-                await new Promise((resolve, reject) => {
-                    sound.audio.addEventListener('canplaythrough', resolve);
-                    sound.audio.addEventListener('error', reject);
-                });
-            }
             
             this.soundEffects.set(soundData.id, sound);
             return sound;
@@ -1325,6 +1626,9 @@ export class AudioSystem {
             return false;
         }
         
+        // Check if quantization should be skipped (for immediate playback)
+        const skipQuantization = options.skipQuantization === true;
+        
         // Lazy load sounds if not already loaded
         if (!this.soundsLoaded) {
             await this.lazyLoadSounds();
@@ -1357,9 +1661,20 @@ export class AudioSystem {
         try {
             const sound = this.soundEffects.get(soundId);
             if (!sound) {
-                console.warn(`Sound not found: ${soundId}`);
+                console.warn(`playSound: Sound not found: ${soundId}. Available sounds:`, Array.from(this.soundEffects.keys()));
                 return false;
             }
+            
+            console.log(`playSound: Playing sound ${soundId}`, {
+                soundFound: !!sound,
+                soundType: sound.synthType,
+                tier: currentTier,
+                soundEffectsEnabled: this.soundEffectsEnabled,
+                isMuted: this.isMuted,
+                soundsLoaded: this.soundsLoaded,
+                toneSynthsSize: this.toneSynths ? this.toneSynths.size : 0,
+                hasSynthType: this.toneSynths ? this.toneSynths.has(sound.synthType) : false
+            });
             
             // Check if we have too many concurrent sounds
             if (this.activeSounds.length >= this.maxConcurrentSounds) {
@@ -1389,13 +1704,33 @@ export class AudioSystem {
             const autoTightMode = tier >= 4 && typeof window.autoCastEnabled === 'function' && window.autoCastEnabled();
             
             // Calculate base volume first
-            let baseVolume = (options.volume || sound.volume) * this.sfxVolume * this.masterVolume;
+            // SFX volume is now controlled by toneSfxMaster gain node (converted to dB scale)
+            // We don't need to multiply by sfxVolume/masterVolume here since toneSfxMaster handles it
+            // Just use the sound's individual volume if specified
+            let baseVolume = options.volume || sound.volume || 1.0; // Default to 1.0 (full volume for this sound)
+            
+            // Check if we're in meditation mode
+            const isMeditationMode = window.meditationState && window.meditationState.activeSession;
+            
             if (musicIsPlaying) {
-                // Reduce sound effect volume when music is playing to blend better, but keep them audible
-                baseVolume *= autoTightMode ? 0.4 : 0.35; // Slightly louder when tightly integrated
+                // Reduce sound effect volume when music is playing to blend better
+                // Use 0.7 (70%) to keep SFX audible but not overpowering music
+                baseVolume *= autoTightMode ? 0.7 : 0.7; // Same reduction for both modes
+                
+                // In meditation mode, reduce volume even more to blend with music
+                if (isMeditationMode) {
+                    // Additional 50% reduction in meditation mode (0.7 * 0.5 = 0.35 total reduction)
+                    // This makes meditation sound effects blend into the music better
+                    baseVolume *= 0.5;
+                }
             }
             
-            // Quantize to rhythm when music is playing
+            // Use Tone.js for sound effects if available (unified with music system)
+            if (typeof Tone !== 'undefined' && this.toneSynths.size > 0) {
+                return this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode);
+            }
+            
+            // Quantize to rhythm when music is playing (fallback to old system)
             if (musicIsPlaying && typeof Tone !== 'undefined' && Tone.Transport.state === 'started') {
                 // Calculate quantized time - align to musical grid
                 const now = Tone.Transport.seconds;
@@ -1497,7 +1832,265 @@ export class AudioSystem {
     }
     
     /**
-     * Play a quantized sound effect (scheduled to rhythm)
+     * Play sound using Tone.js synths (unified with music system)
+     * @param {Object} sound - Sound configuration object
+     * @param {string} soundId - Sound ID
+     * @param {Object} options - Playback options
+     * @param {number} baseVolume - Base volume level
+     * @param {boolean} musicIsPlaying - Whether music is currently playing
+     * @param {boolean} autoTightMode - Whether auto-cast tight integration is enabled
+     * @returns {boolean} Whether sound was played successfully
+     * @private
+     */
+    playToneSound(sound, soundId, options = {}, baseVolume, musicIsPlaying = false, autoTightMode = false, skipQuantization = false) {
+        if (typeof Tone === 'undefined') {
+            console.warn(`playToneSound: Tone.js not available for sound ${soundId}`);
+            return false;
+        }
+        
+        // Ensure Tone.js context is started
+        if (Tone.context.state !== 'running') {
+            console.warn(`playToneSound: Tone.js context not running (${Tone.context.state}), attempting to start...`);
+            Tone.start().then(() => {
+                console.log('Tone.js context started, retrying sound...');
+                // Retry playing the sound after context starts
+                setTimeout(() => {
+                    this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode);
+                }, 100);
+            }).catch(err => {
+                console.error('Failed to start Tone.js context:', err);
+            });
+            return false;
+        }
+        
+        if (!this.toneSynths || this.toneSynths.size === 0) {
+            console.warn(`playToneSound: Tone.js synths not initialized for sound ${soundId}, initializing now...`);
+            // Try to initialize synths on the fly
+            this.initializeToneSynths().then(() => {
+                console.log('Tone.js synths initialized, retrying sound...');
+                // Retry playing the sound after synths are initialized
+                setTimeout(() => {
+                    this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode);
+                }, 100);
+            }).catch(err => {
+                console.error('Failed to initialize Tone.js synths:', err);
+            });
+            return false;
+        }
+        
+        if (!this.toneSynths.has(sound.synthType)) {
+            console.warn(`playToneSound: Synth type '${sound.synthType}' not found for sound ${soundId}. Available types:`, Array.from(this.toneSynths.keys()));
+            return false;
+        }
+        
+        // Ensure SFX master gain is initialized
+        if (!this.toneSfxMaster) {
+            console.warn(`playToneSound: SFX master gain not initialized, initializing now...`);
+            // Create master gain on the fly
+            const sfxVolumeLinear = this.sfxVolume * this.masterVolume;
+            const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6;
+            this.toneSfxMaster = new Tone.Gain().toDestination();
+            this.toneSfxMaster.gain.value = Tone.dbToGain(sfxVolumeDb);
+            console.log('SFX master gain created with value:', this.toneSfxMaster.gain.value);
+            
+            // If synths exist but aren't connected, reconnect them
+            if (this.toneSynths && this.toneSynths.size > 0) {
+                console.log('Reconnecting synths to new master gain...');
+                for (const [synthType, synth] of this.toneSynths) {
+                    // Disconnect from old output and reconnect to new master
+                    synth.disconnect();
+                    synth.connect(this.toneSfxMaster);
+                    console.log(`Reconnected ${synthType} synth to master gain`);
+                }
+            }
+        }
+        
+        try {
+            const synth = this.toneSynths.get(sound.synthType);
+            
+            // Verify synth is connected
+            if (!synth.context) {
+                console.warn(`playToneSound: Synth ${sound.synthType} has no context, reconnecting...`);
+                synth.connect(this.toneSfxMaster);
+            }
+            
+            // Set synth volume based on baseVolume
+            // baseVolume accounts for meditation mode reduction and music blending
+            // Master gain (toneSfxMaster) controls overall SFX volume via slider
+            // Individual synth volume (baseVolume) controls per-sound volume for blending
+            // Convert baseVolume (0-1) to dB: baseVolume * 20 - 20, but keep it in a reasonable range
+            // For meditation mode, baseVolume is already reduced (0.15 * 0.7 * 0.5 = 0.0525)
+            const synthVolumeDb = baseVolume > 0 ? (baseVolume * 20 - 20) : -60; // -60 dB = effectively silent
+            synth.volume.value = synthVolumeDb; // Set synth volume in dB
+            
+            // Determine quantization based on sound config and music state
+            let quantization = sound.quantization || 'normal';
+            if (musicIsPlaying && sound.quantization) {
+                quantization = sound.quantization;
+            } else if (musicIsPlaying) {
+                quantization = autoTightMode ? 'tight' : 'normal';
+            }
+            
+            const subdivision = this.soundDesignConfig.quantization[quantization] || '16n';
+            
+            // Play sound with rhythmic quantization if music is playing (unless skipQuantization is true)
+            if (musicIsPlaying && Tone.Transport.state === 'started' && !skipQuantization) {
+                const now = Tone.Transport.seconds;
+                const subdivisionTime = Tone.Time(subdivision).toSeconds();
+                const currentBeat = Math.floor(now / subdivisionTime);
+                const nextBeat = (currentBeat + 1) * subdivisionTime;
+                const quantizedDelay = Math.max(0, nextBeat - now);
+                
+                // Schedule sound to play at quantized time
+                Tone.Transport.schedule((time) => {
+                    this.triggerToneSound(synth, sound, time);
+                    
+                    // If tightly integrated, add accent on music typingBeat
+                    if (autoTightMode && this.toneMusic && this.toneMusic.typingBeat) {
+                        try {
+                            this.toneMusic.typingBeat.triggerAttackRelease('C5', '64n', time);
+                        } catch (_) {
+                            // no-op
+                        }
+                    }
+                }, `+${quantizedDelay}`);
+                
+                return true;
+            } else {
+                // Play immediately (no music playing or skipQuantization is true)
+                console.log(`playToneSound: Playing sound ${soundId} immediately at Tone.now():`, Tone.now());
+                // Use Tone.now() for immediate playback
+                const playTime = Tone.now();
+                this.triggerToneSound(synth, sound, playTime);
+                return true;
+            }
+        } catch (error) {
+            console.warn('Error playing Tone.js sound:', error);
+            return false;
+        }
+    }
+    
+    /**
+     * Trigger a Tone.js sound (handles single notes, chords, and noise)
+     * @param {Tone.Synth} synth - Tone.js synth to use
+     * @param {Object} sound - Sound configuration
+     * @param {number|string} time - Time to trigger (Tone.js time or Transport time)
+     * @private
+     */
+    triggerToneSound(synth, sound, time) {
+        try {
+            // Verify synth is connected before playing
+            if (!synth.context) {
+                console.warn('triggerToneSound: Synth has no context, attempting to reconnect...');
+                if (this.toneSfxMaster) {
+                    // Determine correct output based on mode
+                    const isMeditationMode = window.meditationState && window.meditationState.activeSession;
+                    let output = this.toneSfxMaster;
+                    
+                    if (isMeditationMode && this.toneSfxChorus) {
+                        output = this.toneSfxChorus;
+                    } else if (!isMeditationMode && this.toneSfxHighPass) {
+                        output = this.toneSfxHighPass;
+                    }
+                    
+                    synth.connect(output);
+                    console.log('Synth reconnected to', isMeditationMode ? 'effects chain' : 'normal mode chain');
+                } else {
+                    console.warn('triggerToneSound: Cannot reconnect synth - no master gain');
+                    return;
+                }
+            }
+            
+            // Apply per-sound-type effects in normal mode
+            const isMeditationMode = window.meditationState && window.meditationState.activeSession;
+            if (!isMeditationMode) {
+                // For purchases/upgrades: add subtle distortion
+                if (sound.synthType === 'percussive' && (sound.id === 'purchase' || sound.id === 'upgrade')) {
+                    if (!this.toneSfxDistortion) {
+                        this.toneSfxDistortion = new Tone.Distortion({
+                            distortion: 0.2, // Subtle grit
+                            oversample: '2x' // Prevents aliasing
+                        });
+                        // Connect distortion to the normal mode chain
+                        if (this.toneSfxHighPass) {
+                            this.toneSfxDistortion.connect(this.toneSfxHighPass);
+                        }
+                    }
+                    // Note: We can't easily route individual sounds through different effects
+                    // without creating separate synth instances. For now, distortion is available
+                    // but would need to be applied at synth creation time.
+                }
+                
+                // For achievements: add tremolo
+                if (sound.synthType === 'melodic' && (sound.id === 'achievement' || sound.id === 'level_up')) {
+                    if (!this.toneSfxTremolo) {
+                        this.toneSfxTremolo = new Tone.Tremolo({
+                            frequency: 4, // 4 Hz - moderate speed
+                            depth: 0.3 // 30% depth - subtle pulsing
+                        });
+                        // Connect tremolo to the normal mode chain
+                        if (this.toneSfxHighPass) {
+                            this.toneSfxTremolo.connect(this.toneSfxHighPass);
+                        }
+                    }
+                    // Note: Same limitation as distortion - would need separate synth instances
+                }
+            }
+            
+            console.log(`triggerToneSound: Triggering sound at time ${time}, synthType: ${sound.synthType}`, {
+                hasNote: !!sound.note,
+                hasNotes: !!(sound.notes && Array.isArray(sound.notes)),
+                duration: sound.duration,
+                synthType: sound.synthType,
+                synthConnected: synth.context ? 'yes' : 'no',
+                synthVolume: synth.volume ? synth.volume.value : 'N/A'
+            });
+            
+            if (sound.synthType === 'noise') {
+                // Noise-based sounds
+                console.log(`triggerToneSound: Starting noise sound, will stop at +${sound.duration || '16n'}`);
+                synth.start(time);
+                synth.stop(`+${sound.duration || '16n'}`);
+            } else if (sound.notes && Array.isArray(sound.notes)) {
+                // Chord-based sounds (play notes in sequence for arpeggio effect)
+                // Calculate note duration (divide total duration by number of notes)
+                const totalDuration = Tone.Time(sound.duration || '4n').toSeconds();
+                const noteDuration = totalDuration / sound.notes.length;
+                // Use a simple duration string for each note
+                const noteDurationStr = noteDuration < 0.1 ? '32n' : noteDuration < 0.2 ? '16n' : '8n';
+                
+                // Track the last trigger time to ensure strictly increasing times
+                let lastTriggerTime = time;
+                
+                sound.notes.forEach((note, index) => {
+                    if (index === 0) {
+                        // First note plays at the scheduled time
+                        synth.triggerAttackRelease(note, noteDurationStr, time);
+                        lastTriggerTime = time;
+                    } else {
+                        // Subsequent notes play after previous notes
+                        // Calculate delay in seconds and ensure strictly increasing time
+                        const delaySeconds = noteDuration * index;
+                        // Ensure at least 1ms gap between notes to prevent timing errors
+                        const minDelay = Math.max(delaySeconds, (lastTriggerTime + 0.001) - time);
+                        const nextTime = time + minDelay;
+                        
+                        // Use absolute time instead of relative delay to ensure strict ordering
+                        synth.triggerAttackRelease(note, noteDurationStr, nextTime);
+                        lastTriggerTime = nextTime;
+                    }
+                });
+            } else if (sound.note) {
+                // Single note sounds
+                synth.triggerAttackRelease(sound.note, sound.duration || '16n', time);
+            }
+        } catch (error) {
+            console.warn('Error triggering Tone.js sound:', error);
+        }
+    }
+    
+    /**
+     * Play a quantized sound effect (scheduled to rhythm) - fallback for old system
      * @param {Object} sound - Sound object
      * @param {string} soundId - Sound ID
      * @param {Object} options - Playback options
@@ -1632,10 +2225,20 @@ export class AudioSystem {
         this.masterVolume = Math.max(0, Math.min(1, volume));
         this.saveMasterVolume();
         
-        // Apply volume to all active sounds
+        // Update Tone.js master gain for sound effects
+        if (this.toneSfxMaster) {
+            // Convert SFX volume to dB scale to match music volume system
+            const sfxVolumeLinear = this.sfxVolume * this.masterVolume;
+            // Convert to dB: linear * 20 - 20, but reduce by 6 dB to balance with music
+            const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6; // -6 dB reduction for balance
+            this.toneSfxMaster.gain.value = Tone.dbToGain(sfxVolumeDb); // Convert dB to linear gain
+            console.log('SFX volume updated:', sfxVolumeDb, 'dB (linear:', sfxVolumeLinear, 'sfxVolume:', this.sfxVolume, 'masterVolume:', this.masterVolume, ')');
+        }
+        
+        // Apply volume to all active sounds (fallback for old system)
         for (const activeSound of this.activeSounds) {
             const sound = this.soundEffects.get(activeSound.id);
-            if (sound) {
+            if (sound && activeSound.element) {
                 activeSound.element.volume = sound.volume * this.sfxVolume * this.masterVolume;
             }
         }
@@ -1649,10 +2252,26 @@ export class AudioSystem {
         this.sfxVolume = Math.max(0, Math.min(1, volume));
         this.saveSfxVolume();
         
-        // Apply volume to all active sounds
+        // Ensure Tone.js synths are initialized if sound effects are enabled
+        if (this.soundEffectsEnabled && typeof Tone !== 'undefined' && !this.toneSfxMaster) {
+            // Initialize Tone.js synths if not already initialized
+            this.initializeToneSynths();
+        }
+        
+        // Update Tone.js master gain for sound effects
+        if (this.toneSfxMaster) {
+            // Convert SFX volume to dB scale to match music volume system
+            const sfxVolumeLinear = this.sfxVolume * this.masterVolume;
+            // Convert to dB: linear * 20 - 20, but reduce by 6 dB to balance with music
+            const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6; // -6 dB reduction for balance
+            this.toneSfxMaster.gain.value = Tone.dbToGain(sfxVolumeDb); // Convert dB to linear gain
+            console.log('SFX volume updated:', sfxVolumeDb, 'dB (linear:', sfxVolumeLinear, 'sfxVolume:', this.sfxVolume, 'masterVolume:', this.masterVolume, ')');
+        }
+        
+        // Apply volume to all active sounds (fallback for old system)
         for (const activeSound of this.activeSounds) {
             const sound = this.soundEffects.get(activeSound.id);
-            if (sound) {
+            if (sound && activeSound.element) {
                 activeSound.element.volume = sound.volume * this.sfxVolume * this.masterVolume;
             }
         }
@@ -1770,7 +2389,7 @@ export class AudioSystem {
      */
     getMusicVolume() {
         const volume = localStorage.getItem('cyberWitchesMusicVolume');
-        return volume !== null ? parseFloat(volume) : 0.3;
+        return volume !== null ? parseFloat(volume) : 0.5; // Default to 0.5 (50%) to match SFX volume
     }
     
     /**
@@ -1825,6 +2444,13 @@ export class AudioSystem {
         // Lazy load sounds if not already loaded
         if (!this.soundsLoaded) {
             await this.lazyLoadSounds();
+        }
+        
+        // Ensure Tone.js synths are initialized (they should be initialized in lazyLoadSounds, but double-check)
+        if (typeof Tone !== 'undefined' && (!this.toneSynths || this.toneSynths.size === 0)) {
+            console.log('enableSoundEffects: Tone.js synths not initialized, initializing now...');
+            await this.initializeToneSynths();
+            console.log('enableSoundEffects: Tone.js synths initialized, size:', this.toneSynths ? this.toneSynths.size : 0);
         }
         
         // Ensure audio context is resumed (required by browsers)
@@ -2030,7 +2656,7 @@ export class AudioSystem {
         try {
             // Always use normal tier 4 music
             this.currentMusicMode = 'normal';
-            this.createAmbientMusic();
+            await this.createAmbientMusic();
             console.log('Music started successfully');
         } catch (error) {
             console.error('Error starting music:', error);
@@ -2279,7 +2905,7 @@ export class AudioSystem {
      * Create ambient music using Tone.js for better sound quality
      * @private
      */
-    createAmbientMusic() {
+    async createAmbientMusic() {
         // Check if Tone.js is available
         if (typeof Tone === 'undefined') {
             console.warn('Tone.js not available, falling back to basic Web Audio API');
@@ -2288,8 +2914,8 @@ export class AudioSystem {
         }
         
         try {
-            // Use Tone.js for better ambient music
-            this.createAmbientMusicWithTone();
+            // Use Tone.js for better ambient music (now async in Tone.js 15+)
+            await this.createAmbientMusicWithTone();
         } catch (error) {
             console.error('Error creating ambient music with Tone.js:', error);
             // Fallback to basic Web Audio API
@@ -2301,7 +2927,7 @@ export class AudioSystem {
      * Create ambient music using Tone.js (better quality)
      * @private
      */
-    createAmbientMusicWithTone() {
+    async createAmbientMusicWithTone() {
         // Double-check tier before creating music (Tier 4 only)
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
         if (currentTier < 4 || !this.musicEnabled) {
@@ -2329,23 +2955,40 @@ export class AudioSystem {
             return;
         }
         
-        // Start Tone.js if not already started
+        // Start Tone.js if not already started (Tone.js 15+ requires await)
         if (Tone.context.state !== 'running') {
-            Tone.start();
+            try {
+                await Tone.start();
+                console.log('Tone.js context started');
+            } catch (err) {
+                console.warn('Tone.start() failed, audio may not work:', err);
+            }
         }
         
         // Create a master volume control first
-        const masterVol = new Tone.Volume(musicVolume * 20 - 20).toDestination(); // Convert 0-1 to dB
+        // Music volume calculation: musicVolume * masterVolume (both 0-1)
+        // Convert to dB: (0-1) * 20 - 20 = (-20 to 0 dB)
+        // For better balance with SFX, we'll use a similar range
+        const volumeDb = musicVolume * 20 - 20; // Convert 0-1 to dB (-20 to 0 dB)
+        const masterVol = new Tone.Volume(volumeDb).toDestination();
+        console.log('Music master volume created:', volumeDb, 'dB (from musicVolume:', musicVolume, 'masterVolume:', this.masterVolume, ')');
+        
+        // Check meditation mode for reverb settings (will be redeclared later, but needed here for reverb)
+        const isMeditationModeForReverb = window.meditationState && window.meditationState.activeSession;
         
         // Create a reverb for ambient atmosphere
+        // In meditation mode, use 100% reverb (roomSize: 1.0) for more atmospheric sound
+        const reverbRoomSize = isMeditationModeForReverb ? 1.0 : 0.65;
+        const reverbDampening = isMeditationModeForReverb ? 2000 : 5000; // Warmer (lower dampening) in meditation mode, brighter (higher dampening) in normal mode
         const reverb = new Tone.Reverb({
-            roomSize: 0.7, // Reduced from 0.9 for less reverb
-            dampening: 2000 // Reduced from 3000ms for shorter decay
+            roomSize: reverbRoomSize,
+            dampening: reverbDampening
         }).connect(masterVol);
         
         // Generate reverb (async, but we'll start it)
+        // Note: reverb will be stored in this.toneMusic object later when it's created
         reverb.generate().then(() => {
-            console.log('Reverb generated');
+            console.log('Reverb generated', isMeditationModeForReverb ? '(meditation mode - 100% reverb)' : '(normal mode - 70% reverb)');
         });
         
         // Create a delay for atmosphere
@@ -2811,9 +3454,9 @@ export class AudioSystem {
             console.log('Bass LFO started after fade-in');
         }, 3000); // Start after 3 seconds (when fade-in completes)
         
-        // Set tempo based on mode: 95 BPM for meditation (15 BPM slower), 110 BPM for normal
+        // Set tempo based on mode: 90 BPM for meditation (20 BPM slower), 110 BPM for normal
         // isMeditationMode already defined above
-        const baseBPM = isMeditationMode ? 95 : 110;
+        const baseBPM = isMeditationMode ? 90 : 110;
         Tone.Transport.bpm.value = baseBPM;
         console.log('Tone Transport BPM set to:', Tone.Transport.bpm.value, isMeditationMode ? '(meditation mode)' : '(normal mode)');
         
@@ -2828,8 +3471,17 @@ export class AudioSystem {
         Tone.Transport.position = 0;
         
         // Start Transport to play sequences (REQUIRED for Tone.Sequence to work!)
-        Tone.Transport.start();
-        console.log('Tone Transport started at position 0');
+        if (Tone.Transport.state !== 'started') {
+            Tone.Transport.start();
+            console.log('Tone Transport started at position 0');
+        } else {
+            console.log('Tone Transport already started');
+        }
+        
+        // Verify Transport is actually running
+        console.log('Transport state after start:', Tone.Transport.state);
+        console.log('Transport BPM:', Tone.Transport.bpm.value);
+        console.log('Transport position:', Tone.Transport.position);
         
         // Schedule all loops to start at their staggered times
         // Using time strings makes them relative to Transport position
@@ -2990,10 +3642,21 @@ export class AudioSystem {
         
         const isMeditationMode = window.meditationState && window.meditationState.activeSession;
         
-        // Update tempo: 95 BPM for meditation (15 BPM slower), 110 BPM for normal
-        const targetBPM = isMeditationMode ? 95 : 110;
+        // Update tempo: 90 BPM for meditation (20 BPM slower), 110 BPM for normal
+        const targetBPM = isMeditationMode ? 90 : 110;
         Tone.Transport.bpm.rampTo(targetBPM, 1); // Smooth transition over 1 second
         console.log('Music tempo updated to:', targetBPM, isMeditationMode ? '(meditation mode)' : '(normal mode)');
+        
+        // Update reverb settings for meditation mode (100% reverb) or normal mode (65% reverb)
+        if (this.toneMusic.reverb) {
+            const targetRoomSize = isMeditationMode ? 1.0 : 0.65;
+            const targetDampening = isMeditationMode ? 2000 : 5000; // Warmer (lower dampening) in meditation mode, brighter (higher dampening) in normal mode
+            
+            // Reverb settings can't be changed after creation, so we need to recreate it
+            // For now, we'll just log the change - reverb will be set correctly on next music creation
+            console.log('Reverb settings for', isMeditationMode ? 'meditation mode' : 'normal mode', 
+                '- roomSize:', targetRoomSize, 'dampening:', targetDampening, 'ms');
+        }
         
         if (isMeditationMode) {
             // Stop sparkle and typing beat loops in meditation (saves CPU, not RAM)
@@ -3056,6 +3719,122 @@ export class AudioSystem {
                 this.toneMusic.typingBeat.volume.cancelScheduledValues(now);
                 this.toneMusic.typingBeat.volume.setValueAtTime(this.toneMusic.typingBeat.volume.value, now);
                 this.toneMusic.typingBeat.volume.linearRampToValueAtTime(-12, now + 1); // Fade in over 1 second
+            }
+        }
+        
+        // Update SFX reverb for meditation mode (100% reverb) or normal mode (65% reverb)
+        this.updateSfxReverbForMeditation();
+    }
+    
+    /**
+     * Update SFX reverb for meditation mode
+     * Recreates reverb with 100% roomSize in meditation mode, 65% in normal mode
+     * @private
+     */
+    updateSfxReverbForMeditation() {
+        if (!this.toneSfxMaster || !this.toneSynths || this.toneSynths.size === 0) {
+            return; // SFX system not initialized
+        }
+        
+        const isMeditationMode = window.meditationState && window.meditationState.activeSession;
+        const targetRoomSize = isMeditationMode ? 1.0 : 0.5; // Reduced from 0.65 to 0.5 for normal mode
+        const targetDampening = isMeditationMode ? 2000 : 5000; // Warmer (lower dampening) in meditation mode, brighter (higher dampening) in normal mode
+        
+        // Dispose of old effects if they exist
+        if (this.toneSfxReverb) {
+            try {
+                this.toneSfxReverb.dispose();
+            } catch (e) {
+                // Ignore disposal errors
+            }
+            this.toneSfxReverb = null;
+        }
+        
+        if (this.toneSfxDelay) {
+            try {
+                this.toneSfxDelay.dispose();
+            } catch (e) {
+                // Ignore disposal errors
+            }
+            this.toneSfxDelay = null;
+        }
+        
+        if (this.toneSfxChorus) {
+            try {
+                this.toneSfxChorus.dispose();
+            } catch (e) {
+                // Ignore disposal errors
+            }
+            this.toneSfxChorus = null;
+        }
+        
+        // Disconnect all synths from old output
+        for (const [synthType, synth] of this.toneSynths) {
+            try {
+                synth.disconnect();
+            } catch (err) {
+                console.warn(`Error disconnecting ${synthType} synth:`, err);
+            }
+        }
+        
+        // Determine output chain based on mode
+        let sfxOutput = this.toneSfxMaster;
+        
+        if (isMeditationMode) {
+            // Meditation mode: synths -> chorus -> delay -> reverb -> master
+            this.toneSfxChorus = new Tone.Chorus({
+                frequency: 1.5,
+                delayTime: 0.02,
+                depth: 0.3,
+                wet: 0.5
+            });
+            
+            this.toneSfxDelay = new Tone.FeedbackDelay({
+                delayTime: 0.4,
+                feedback: 0.15
+            });
+            
+            this.toneSfxReverb = new Tone.Reverb({
+                roomSize: targetRoomSize,
+                dampening: targetDampening
+            });
+            
+            // Chain: chorus -> delay -> reverb -> master
+            this.toneSfxChorus.connect(this.toneSfxDelay);
+            this.toneSfxDelay.connect(this.toneSfxReverb);
+            this.toneSfxReverb.connect(this.toneSfxMaster);
+            sfxOutput = this.toneSfxChorus;
+            
+            // Generate reverb (async)
+            this.toneSfxReverb.generate().then(() => {
+                console.log('SFX effects chain updated (meditation mode): chorus -> delay -> reverb -> master');
+            }).catch(err => {
+                console.error('Failed to generate SFX reverb:', err);
+            });
+        } else {
+            // Normal mode: synths -> reverb -> master
+            this.toneSfxReverb = new Tone.Reverb({
+                roomSize: targetRoomSize,
+                dampening: targetDampening
+            }).connect(this.toneSfxMaster);
+            
+            sfxOutput = this.toneSfxReverb;
+            
+            // Generate reverb (async)
+            this.toneSfxReverb.generate().then(() => {
+                console.log('SFX reverb updated (normal mode - 65% reverb)');
+            }).catch(err => {
+                console.error('Failed to generate SFX reverb:', err);
+            });
+        }
+        
+        // Reconnect all synths to new output
+        for (const [synthType, synth] of this.toneSynths) {
+            try {
+                synth.connect(sfxOutput);
+                console.log(`Reconnected ${synthType} synth to ${isMeditationMode ? 'effects chain' : 'reverb'}`);
+            } catch (err) {
+                console.warn(`Error reconnecting ${synthType} synth:`, err);
             }
         }
     }

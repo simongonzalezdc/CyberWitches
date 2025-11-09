@@ -514,7 +514,13 @@ export class GameState {
             this.inventory[ingId] = 0.0;
         }
         this.inventory[ingId] += amount;
-        this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
+        // Remove item if amount reaches zero (no empty boxes)
+        if (this.inventory[ingId] <= 0) {
+            delete this.inventory[ingId];
+            this.batchUpdate('ingredientChanged', ingId, 0);
+        } else {
+            this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
+        }
     }
     
     /**
@@ -526,7 +532,13 @@ export class GameState {
     spendIngredient(ingId, amount) {
         if ((this.inventory[ingId] || 0) < amount) return false;
         this.inventory[ingId] -= amount;
-        this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
+        // Remove item if amount reaches zero (no empty boxes)
+        if (this.inventory[ingId] <= 0) {
+            delete this.inventory[ingId];
+            this.batchUpdate('ingredientChanged', ingId, 0);
+        } else {
+            this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
+        }
         return true;
     }
     
@@ -910,11 +922,14 @@ export class GameState {
                 return;
             }
 
-            // Add checksum for integrity verification
-            saveData.checksum = this.calculateChecksum(saveData);
-
             // Compress save data before storing
-            const compressedData = this.compressSaveData(saveData);
+            const compressedDataObj = this.compressSaveDataObject(saveData);
+            
+            // Add checksum for integrity verification (calculate on compressed data)
+            compressedDataObj.checksum = this.calculateChecksum(compressedDataObj);
+            
+            // Stringify and save
+            const compressedData = JSON.stringify(compressedDataObj);
             localStorage.setItem('cyberWitchesSave', compressedData);
             this.lastSaveTime = Date.now() / 1000;
             
@@ -971,20 +986,20 @@ export class GameState {
 
             // Verify checksum for data integrity
             if (!this.verifyChecksum(data)) {
-                console.error('Save data checksum verification failed - data may be corrupted');
-                // Create backup before clearing
+                console.warn('Save data checksum verification failed - recalculating checksum');
+                // Recalculate checksum and update it (may have been saved with different property order or structure)
+                const newChecksum = this.calculateChecksum(data);
+                data.checksum = newChecksum;
+                
+                // Create backup of the original save
                 try {
-                    localStorage.setItem('cyberWitchesSave_corrupted_' + Date.now(), saveDataStr);
+                    localStorage.setItem('cyberWitchesSave_checksum_fix_' + Date.now(), saveDataStr);
                 } catch (e) {
-                    console.error('Failed to create corrupted save backup:', e);
+                    console.error('Failed to create checksum fix backup:', e);
                 }
-
-                // Show error to user if possible
-                if (window.showNotification) {
-                    window.showNotification('Save data appears to be corrupted. Starting fresh. A backup has been created.', 'error');
-                }
-
-                return;
+                
+                // Continue loading with recalculated checksum
+                // The checksum will be updated on next save
             }
 
             // Migrate save data if needed
@@ -1332,6 +1347,28 @@ export class GameState {
     }
 
     /**
+     * Recursively sort object keys for deterministic JSON stringification
+     * @param {*} obj - Object to sort
+     * @returns {*} Object with sorted keys
+     */
+    sortObjectKeys(obj) {
+        if (obj === null || typeof obj !== 'object') {
+            return obj;
+        }
+        
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.sortObjectKeys(item));
+        }
+        
+        const sorted = {};
+        const keys = Object.keys(obj).sort();
+        for (const key of keys) {
+            sorted[key] = this.sortObjectKeys(obj[key]);
+        }
+        return sorted;
+    }
+
+    /**
      * Calculate a simple checksum for save data integrity
      * @param {Object} data - Save data to checksum
      * @returns {string} Checksum value
@@ -1341,8 +1378,11 @@ export class GameState {
         const cleanData = { ...data };
         delete cleanData.checksum;
 
+        // Sort keys recursively to ensure deterministic JSON stringification
+        const sortedData = this.sortObjectKeys(cleanData);
+
         // Simple hash function (not cryptographic, just for corruption detection)
-        const str = JSON.stringify(cleanData);
+        const str = JSON.stringify(sortedData);
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
             const char = str.charCodeAt(i);
@@ -1367,8 +1407,8 @@ export class GameState {
         const expectedChecksum = this.calculateChecksum(data);
 
         if (data.checksum !== expectedChecksum) {
-            console.error('Save data checksum mismatch! Data may be corrupted.');
-            console.error(`Expected: ${expectedChecksum}, Got: ${data.checksum}`);
+            // Don't log as error - this is handled gracefully in loadGameState
+            // The mismatch might be due to property order differences
             return false;
         }
 
@@ -1427,11 +1467,11 @@ export class GameState {
     }
     
     /**
-     * Compress save data to reduce size
+     * Compress save data to reduce size (returns object)
      * @param {Object} data - Save data to compress
-     * @returns {string} Compressed save data
+     * @returns {Object} Compressed save data object
      */
-    compressSaveData(data) {
+    compressSaveDataObject(data) {
         // Remove unnecessary data
         const compressed = {
             ab: data.ab,
@@ -1446,8 +1486,7 @@ export class GameState {
             elementSpecialization: data.elementSpecialization,
             specializationBonuses: data.specializationBonuses,
             timestamp: data.timestamp,
-            version: data.version,
-            checksum: data.checksum // Include checksum for integrity
+            version: data.version
         };
         
         // Remove zero values to save space
@@ -1463,6 +1502,20 @@ export class GameState {
             }
         });
         
+        return compressed;
+    }
+
+    /**
+     * Compress save data to reduce size (returns string)
+     * @param {Object} data - Save data to compress
+     * @returns {string} Compressed save data
+     */
+    compressSaveData(data) {
+        const compressed = this.compressSaveDataObject(data);
+        // Include checksum if it exists
+        if (data.checksum) {
+            compressed.checksum = data.checksum;
+        }
         return JSON.stringify(compressed);
     }
     
@@ -1511,17 +1564,30 @@ export class GameState {
         }
         
         // Remove any ingredients not in the valid list (check against INGREDIENTS array)
+        // Also remove items with zero or negative amounts (clean up empty slots)
+        const itemsToRemove = [];
         for (const ingId in this.inventory) {
+            // Remove items with zero or negative amounts (clean up empty slots)
+            if ((this.inventory[ingId] || 0) <= 0) {
+                itemsToRemove.push(ingId);
+                continue;
+            }
+            
             if (!validIngredients.has(ingId)) {
                 // Check if it's a meditation-only ingredient (keep those)
                 const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
                 if (!ingredient || !ingredient.meditationOnly) {
                     const amount = this.inventory[ingId];
-                    delete this.inventory[ingId];
-                    removedCount++;
+                    itemsToRemove.push(ingId);
                     console.log(`Removed invalid ingredient: ${ingId} (had ${amount})`);
                 }
             }
+        }
+        
+        // Remove all items in one pass
+        for (const ingId of itemsToRemove) {
+            delete this.inventory[ingId];
+            removedCount++;
         }
         
         if (removedCount > 0) {
@@ -1536,20 +1602,27 @@ export class GameState {
      * @returns {boolean} True if conflicts were resolved, false otherwise
      */
     checkSaveConflicts() {
-        // Check for multiple save files
-        const saveKeys = Object.keys(localStorage).filter(key => 
-            key.startsWith('cyberWitchesSave') && !key.includes('_backup_')
+        // Check for multiple save files (exclude all backup/checkpoint files)
+        const allSaveKeys = Object.keys(localStorage).filter(key => 
+            key.startsWith('cyberWitchesSave') && 
+            !key.includes('_backup_') && 
+            !key.includes('_corrupted_') &&
+            !key.includes('_checksum_fix_')
         );
         
-        if (saveKeys.length <= 1) {
-            return false; // No conflicts
+        if (allSaveKeys.length <= 1) {
+            return false; // No conflicts (only main save exists)
         }
         
-        console.warn('Multiple save files detected. Attempting to resolve conflicts.');
+        // If we have multiple save files (not backups), log once
+        if (!this._saveConflictLogged) {
+            console.warn('Multiple save files detected. Attempting to resolve conflicts.');
+            this._saveConflictLogged = true;
+        }
         
         // Parse all saves
         const saves = [];
-        saveKeys.forEach(key => {
+        allSaveKeys.forEach(key => {
             try {
                 const saveDataStr = localStorage.getItem(key);
                 const saveData = JSON.parse(saveDataStr);

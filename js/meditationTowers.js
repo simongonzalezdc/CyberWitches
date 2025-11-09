@@ -25,6 +25,7 @@ export class MeditationTowers {
         // Visual effects
         this.damageNumbers = []; // Array of {x, y, damage, time}
         this.towerAttacks = []; // Array of {fromX, fromY, toX, toY, progress}
+        this.impactEffects = []; // Array of {x, y, time, type} for impact visualizations
     }
     
     /**
@@ -43,7 +44,9 @@ export class MeditationTowers {
         setTimeout(() => {
             // Set canvas size
             this.resizeCanvas();
-            window.addEventListener('resize', () => this.resizeCanvas());
+            window.addEventListener('resize', () => {
+                this.resizeCanvas();
+            });
             
             // Set up event handlers
             this.setupEventHandlers();
@@ -63,23 +66,39 @@ export class MeditationTowers {
      * Resize canvas
      */
     resizeCanvas() {
-        if (!this.canvas) return;
+        if (!this.canvas || !this.ctx) return;
         
         const container = this.canvas.parentElement;
         if (!container) return;
         
+        // Get container inner dimensions - use clientWidth/clientHeight to exclude borders
+        // This gives us the actual available space inside the container
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
         
-        // Make canvas square, fit to container
+        // Make canvas match container exactly - use full inner container size
+        // Container should already be square, so use the smaller dimension to ensure it fits
         const size = Math.min(containerWidth, containerHeight) || 600; // Default to 600 if container not sized
-        this.canvas.width = size;
-        this.canvas.height = size;
         
-        // Calculate cell size
+        // Set canvas internal resolution (this is what the drawing uses)
+        // Use device pixel ratio for crisp rendering on high-DPI displays
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = size * dpr;
+        this.canvas.height = size * dpr;
+        
+        // Set canvas display size (CSS size) - match container exactly
+        this.canvas.style.width = size + 'px';
+        this.canvas.style.height = size + 'px';
+        
+        // Reset transform to prevent accumulation
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // Scale context to account for device pixel ratio
+        this.ctx.scale(dpr, dpr);
+        
+        // Calculate cell size based on display size (not internal resolution)
         this.cellSize = size / this.meditationState.gridSize;
         
-        console.log('Canvas resized:', size, 'cell size:', this.cellSize);
+        console.log('Canvas resized:', size, 'cell size:', this.cellSize, 'dpr:', dpr, 'container:', containerWidth, 'x', containerHeight);
     }
     
     /**
@@ -258,6 +277,9 @@ export class MeditationTowers {
         
         // Draw tower attacks
         this.drawTowerAttacks(delta);
+        
+        // Draw impact effects
+        this.drawImpactEffects(delta);
         
         // Draw damage numbers
         this.drawDamageNumbers(delta);
@@ -936,7 +958,67 @@ export class MeditationTowers {
             const attack = this.towerAttacks[i];
             attack.progress += delta * 3; // Speed
             
+            // Play sound when projectile is about to hit (at 85% progress)
+            // This "splits the difference" - sound can be quantized, but we sync visual timing
+            if (!attack.soundPlayed && attack.progress >= 0.85) {
+                // Calculate when the projectile will actually hit (in seconds)
+                const projectileSpeed = 3.0; // matches delta * 3
+                const remainingProgress = 1.0 - attack.progress;
+                const timeUntilHit = remainingProgress / projectileSpeed; // Time in seconds until hit
+                
+                // Play sound with timing that accounts for quantization
+                if (window.audioSystem && window.audioSystem.playSound) {
+                    const musicIsPlaying = window.audioSystem.musicEnabled && 
+                                         window.audioSystem.toneMusic && 
+                                         typeof Tone !== 'undefined' &&
+                                         Tone.Transport.state === 'started';
+                    
+                    if (musicIsPlaying && typeof Tone !== 'undefined') {
+                        // Calculate next quantized time (16th note quantization for tighter sync)
+                        const subdivision = '16n';
+                        const subdivisionTime = Tone.Time(subdivision).toSeconds();
+                        const now = Tone.Transport.seconds;
+                        const currentBeat = Math.floor(now / subdivisionTime);
+                        const nextBeat = (currentBeat + 1) * subdivisionTime;
+                        const quantizedDelay = Math.max(0, nextBeat - now); // Delay in seconds
+                        
+                        // If quantization delay is reasonable (< 0.15s) and close to hit time, use it
+                        // Otherwise play immediately to stay in sync with visual
+                        if (quantizedDelay > 0 && quantizedDelay < 0.15 && Math.abs(quantizedDelay - timeUntilHit) < 0.1) {
+                            // Quantized time is close to visual hit time - use quantization
+                            // Slightly adjust visual timing to match quantized sound
+                            const timeDifference = quantizedDelay - timeUntilHit;
+                            if (timeDifference > 0) {
+                                // Sound will play slightly after visual hit - slow down projectile slightly
+                                attack.progress -= timeDifference * projectileSpeed * 0.3; // Gentle adjustment
+                            } else {
+                                // Sound will play slightly before visual hit - speed up projectile slightly
+                                attack.progress -= timeDifference * projectileSpeed * 0.3; // Gentle adjustment
+                            }
+                            
+                            // Play sound at quantized time (will be scheduled by playToneSound)
+                            // Lower volume in meditation mode to blend with music (0.15 instead of 0.2)
+                            window.audioSystem.playSound('tower_attack', { volume: 0.15, skipQuantization: false });
+                        } else {
+                            // Quantization delay too long or not close to hit time - play immediately
+                            // Lower volume in meditation mode to blend with music (0.15 instead of 0.2)
+                            window.audioSystem.playSound('tower_attack', { volume: 0.15, skipQuantization: true });
+                        }
+                    } else {
+                        // No music playing, play immediately when projectile hits
+                        // Use normal volume when no music is playing
+                        window.audioSystem.playSound('tower_attack', { volume: 0.2, skipQuantization: true });
+                    }
+                }
+                
+                attack.soundPlayed = true;
+            }
+            
             if (attack.progress >= 1.0) {
+                // Projectile reached target - add impact effect
+                if (attack.targetX !== undefined && attack.targetY !== undefined) {
+                    this.addImpactEffect(attack.targetX, attack.targetY);
+                }
                 this.towerAttacks.splice(i, 1);
                 continue;
             }
@@ -1025,6 +1107,101 @@ export class MeditationTowers {
     }
     
     /**
+     * Draw impact effects when projectiles hit distractions
+     */
+    drawImpactEffects(delta) {
+        const designTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+        const isEnhanced = designTier >= 3;
+        
+        for (let i = this.impactEffects.length - 1; i >= 0; i--) {
+            const effect = this.impactEffects[i];
+            effect.time += delta;
+            
+            if (effect.time >= 0.3) {
+                // Effect duration: 0.3 seconds
+                this.impactEffects.splice(i, 1);
+                continue;
+            }
+            
+            const progress = effect.time / 0.3; // 0 to 1
+            const alpha = 1.0 - progress; // Fade out
+            
+            if (isEnhanced) {
+                // Enhanced impact effect with expanding rings and particles
+                const time = Date.now() * 0.001;
+                
+                // Draw expanding rings
+                const ringCount = 3;
+                for (let ring = 0; ring < ringCount; ring++) {
+                    const ringProgress = (progress + ring * 0.2) % 1.0;
+                    const ringSize = (10 + ring * 5) * (1.0 + ringProgress * 2.0);
+                    const ringAlpha = alpha * (1.0 - ringProgress) * 0.6;
+                    
+                    this.ctx.strokeStyle = `rgba(0, 255, 255, ${ringAlpha})`;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.arc(effect.x, effect.y, ringSize, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
+                
+                // Draw central impact flash
+                const flashSize = 8 * (1.0 - progress);
+                const flashGradient = this.ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, flashSize);
+                flashGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.9})`);
+                flashGradient.addColorStop(0.5, `rgba(0, 255, 255, ${alpha * 0.6})`);
+                flashGradient.addColorStop(1, `rgba(0, 255, 255, 0)`);
+                
+                this.ctx.fillStyle = flashGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(effect.x, effect.y, flashSize, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Draw particles (small sparks)
+                const particleCount = 8;
+                for (let p = 0; p < particleCount; p++) {
+                    const angle = (Math.PI * 2 / particleCount) * p;
+                    const particleDist = 15 * progress;
+                    const particleX = effect.x + Math.cos(angle) * particleDist;
+                    const particleY = effect.y + Math.sin(angle) * particleDist;
+                    const particleSize = 3 * (1.0 - progress);
+                    
+                    this.ctx.fillStyle = `rgba(0, 255, 255, ${alpha * 0.8})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particleX, particleY, particleSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            } else {
+                // Basic impact effect
+                const impactSize = 8 * (1.0 - progress);
+                this.ctx.fillStyle = `rgba(0, 255, 255, ${alpha * 0.8})`;
+                this.ctx.beginPath();
+                this.ctx.arc(effect.x, effect.y, impactSize, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Draw expanding ring
+                const ringSize = 15 * progress;
+                this.ctx.strokeStyle = `rgba(0, 255, 255, ${alpha * 0.5})`;
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.arc(effect.x, effect.y, ringSize, 0, Math.PI * 2);
+                this.ctx.stroke();
+            }
+        }
+    }
+    
+    /**
+     * Add impact effect when projectile hits distraction
+     */
+    addImpactEffect(x, y) {
+        this.impactEffects.push({
+            x: x,
+            y: y,
+            time: 0,
+            type: 'hit'
+        });
+    }
+    
+    /**
      * Draw damage numbers
      */
     drawDamageNumbers(delta) {
@@ -1065,12 +1242,23 @@ export class MeditationTowers {
      * Add tower attack visual
      */
     addTowerAttack(fromX, fromY, toX, toY) {
+        // Calculate projectile travel time (projectile speed is delta * 3, so it takes 1/3 seconds)
+        const projectileSpeed = 3.0; // matches delta * 3 in drawTowerAttacks
+        const travelTime = 1.0 / projectileSpeed; // Time in seconds for projectile to reach target
+        
         this.towerAttacks.push({
             fromX: fromX * this.cellSize,
             fromY: fromY * this.cellSize,
             toX: toX * this.cellSize,
             toY: toY * this.cellSize,
-            progress: 0
+            progress: 0,
+            // Store target position for impact effect
+            targetX: toX * this.cellSize,
+            targetY: toY * this.cellSize,
+            // Store timing info for sound sync
+            startTime: Date.now(),
+            travelTime: travelTime,
+            soundPlayed: false // Track if sound has been played for this projectile
         });
     }
     

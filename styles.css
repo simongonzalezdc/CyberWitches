@@ -2240,8 +2240,8 @@ button::before {
 /* Inventory list - compact layout for better density */
 #inventory-list {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
-    gap: 4px !important;
-    padding: 12px !important;
+    gap: 3px !important;
+    padding: 8px !important;
 }
 
 /* Responsive grid adjustments */
@@ -3842,29 +3842,38 @@ button::before {
 .meditation-grid-container {
     position: relative;
     background: rgba(0, 0, 0, 0.7);
-    background-image: url('images/meditation/meditation-canvas-bg.png'); /* Fallback */
-    background-image: url('images/meditation/meditation-canvas-bg.webp'); /* WebP */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
     border-radius: 12px;
     border: 2px solid var(--primary);
     overflow: hidden;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: stretch;
+    /* Make container square and fill available space */
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    /* Ensure container fills parent */
+    flex: 1;
+    min-height: 0;
+    /* Ensure container has explicit dimensions for canvas sizing */
+    box-sizing: border-box;
+    /* Remove padding to maximize space for canvas */
+    padding: 0;
 }
 
 #meditation-canvas {
+    /* Size is controlled by JavaScript to match container exactly */
+    display: block;
+    /* Canvas will fill the container completely */
     width: 100%;
     height: 100%;
-    min-height: 600px;
-    display: block;
-    background-image: url('images/meditation/meditation-canvas-bg.png'); /* Fallback */
-    background-image: url('images/meditation/meditation-canvas-bg.webp'); /* WebP */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    /* Ensure canvas doesn't stretch */
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    /* Remove any margins that might create space */
+    margin: 0;
 }
 
 
@@ -3873,7 +3882,10 @@ button::before {
     flex-direction: column;
     gap: 20px;
     overflow-y: auto;
-    max-height: 600px;
+    /* Fill available vertical space, accounting for footer */
+    height: calc(100vh - 250px); /* Adjust based on header and footer height */
+    min-height: 600px;
+    max-height: none; /* Remove max-height restriction */
 }
 
 .tower-selection,
@@ -3901,7 +3913,7 @@ button::before {
 .meditation-upgrade-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
 }
 
 .tower-card,
@@ -3909,7 +3921,7 @@ button::before {
 .upgrade-card {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
-    padding: 12px;
+    padding: 8px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
 }
@@ -3927,6 +3939,11 @@ button::before {
 .tower-place-button {
     width: 100%;
     margin-top: 10px;
+}
+
+.placed-towers-header:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
 .tower-place-button.selected {
@@ -3951,7 +3968,8 @@ button::before {
     }
     
     .meditation-sidebar {
-        max-height: 400px;
+        height: calc(100vh - 200px); /* Adjust for smaller screens */
+        min-height: 400px;
     }
 }
 
@@ -4992,13 +5010,10 @@ body.tier-4 #boons-tab.active {
 }
 
 /* Meditation Canvas Background - Only on Tier 3+ */
+/* Background image removed - using solid background only */
 body.tier-3 #meditation-canvas,
 body.tier-4 #meditation-canvas {
-    background-image: url('images/meditation/meditation-canvas-bg.png'); /* Fallback */
-    background-image: url('images/meditation/meditation-canvas-bg.webp'); /* WebP */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    /* Background image removed - using solid background from parent container */
 }
 
 /* Ensure tab panels maintain their glass effect on top of backgrounds */
@@ -5746,9 +5761,9 @@ body.tier-2 #meditation-canvas {
     background: rgba(10, 15, 30, 0.95);
     border-top: 1px solid rgba(255, 45, 170, 0.3);
     backdrop-filter: blur(10px);
-    padding: 12px 20px;
+    padding: 8px 20px; /* Reduced padding to make it less intrusive */
     z-index: 100;
-    font-size: 12px;
+    font-size: 11px; /* Slightly smaller font */
 }
 
 .footer-content {
@@ -5793,7 +5808,7 @@ body.tier-2 #meditation-canvas {
 .footer-text {
     margin: 0;
     color: rgba(255, 255, 255, 0.5);
-    font-size: 11px;
+    font-size: 10px; /* Slightly smaller to reduce footer height */
 }
 
 /* Responsive footer */
@@ -5820,9 +5835,22 @@ body.tier-2 #meditation-canvas {
     }
 }
 
-/* Make space for footer in main game area */
+/* Make space for footer in main game area and all tabs */
 .main-game {
-    padding-bottom: 80px !important;
+    padding-bottom: 100px !important;
+}
+
+/* Make space for footer in all tab content areas */
+.tabs-content,
+.tab-panel,
+.tab-panel.active {
+    padding-bottom: 100px !important;
+}
+
+/* Make space for footer in meditation tab */
+.meditation-main,
+.meditation-container {
+    padding-bottom: 100px !important;
 }
 
 /* ================================================
