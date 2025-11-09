@@ -1,71 +1,44 @@
 // Service Worker for Cyber Witches Game
 
-const CACHE_NAME = 'cyber-witches-cache-v2';
+const CACHE_NAME = 'spellwright-cache-v3';
 const CACHE_URLS = [
     '/',
     '/index.html',
     '/styles.css',
     '/manifest.json',
     '/sw.js',
-    // Core utilities
-    '/js/data.js',
-    '/js/utils.js',
+    // Bundled JavaScript (production) or individual files (development)
+    '/js/game.bundle.js',
+    // Fallback for development - individual files
+    '/js/loadingState.js',
     '/js/errorHandler.js',
     '/js/commonUtils.js',
-    '/js/animations.js',
-    // Game systems
+    '/js/utils.js',
+    '/js/data.js',
     '/js/gameState.js',
     '/js/game.js',
-    '/js/designTierSystem.js',
-    // UI and rendering
-    '/js/virtualScroll.js',
-    '/js/particleEffects.js',
-    '/js/celebrationAnimations.js',
-    // Game features
-    '/js/achievements.js',
-    '/js/comboSystem.js',
-    '/js/dailyRituals.js',
-    '/js/eventSystem.js',
-    // Coven system
-    '/js/covenSystem.js',
-    '/js/covenChat.js',
-    '/js/covenEvents.js',
-    '/js/covenAchievements.js',
-    '/js/socialLeaderboards.js',
-    // Meditation system
-    '/js/meditationState.js',
-    '/js/meditationUI.js',
-    '/js/meditationTowers.js',
-    // Audio and accessibility
-    '/js/audioSystem.js',
-    '/js/accessibility.js',
-    // Additional features
-    '/js/mobile.js',
-    '/js/cloudSave.js',
-    '/js/analytics.js',
-    '/js/performanceMonitor.js',
-    '/js/debug.js',
-    '/js/easterEggs.js',
     // External dependencies (CDN)
-    'https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js'
+    'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
 ];
 
 // Install event
 self.addEventListener('install', (event) => {
     console.log('Service Worker installing...');
     self.skipWaiting();
-    event.waitUntil(caches.open(CACHE_NAME))
-        .then((cache) => {
-            console.log('Service Worker installed, cache opened');
-            return cache.addAll(CACHE_URLS.map(url => new Request(url)));
-        })
-        .then(() => {
-            console.log('Service Worker installed, files cached');
-            self.skipWaiting();
-        })
-        .catch((error) => {
-            console.error('Service Worker installation failed:', error);
-        });
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                console.log('Service Worker installed, cache opened');
+                return cache.addAll(CACHE_URLS.map(url => new Request(url)));
+            })
+            .then(() => {
+                console.log('Service Worker installed, files cached');
+                self.skipWaiting();
+            })
+            .catch((error) => {
+                console.error('Service Worker installation failed:', error);
+            })
+    );
 });
 
 // Activate event - Clean up old caches

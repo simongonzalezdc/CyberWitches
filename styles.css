@@ -1,6 +1,6 @@
 /* Cyber Witches - Modern Styling */
 
-/* Import Google Fonts for better typography */
+/* Import Google Fonts for better typography - using display=swap for better performance */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
 
 /* CSS Variables - Enhanced Color Palette */
