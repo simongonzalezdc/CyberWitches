@@ -1500,57 +1500,6 @@ export const MEDITATION_UPGRADES = [
         value: 1.5,
         recipe: { serenity_essence: 10 },
         unlockAtFocus: 0.0
-    },
-    {
-        id: "med_tower_1",
-        displayName: "Tower Mastery",
-        description: "Increases all tower damage by 25%",
-        affects: "meditation",
-        type: "tower_damage",
-        value: 1.25,
-        recipe: { focus_crystal: 5, serenity_essence: 10 },
-        unlockAtFocus: 50.0
-    },
-    {
-        id: "med_tranquility_1",
-        displayName: "Inner Peace",
-        description: "Increases maximum Tranquility by 50",
-        affects: "meditation",
-        type: "tranquility_max",
-        value: 50,
-        recipe: { tranquil_aether: 3, focus_crystal: 5 },
-        unlockAtFocus: 200.0
-    },
-    {
-        id: "med_rhythm_1",
-        displayName: "Rhythm Mastery",
-        description: "Increases rhythm bonus multiplier by 25%",
-        affects: "meditation",
-        type: "rhythm_bonus",
-        value: 1.25,
-        recipe: { zen_orb: 2, tranquil_aether: 5 },
-        unlockAtFocus: 500.0
-    },
-    // Main game integration upgrades
-    {
-        id: "med_production_boost",
-        displayName: "Meditative Production",
-        description: "Meditation bonuses increase main game production by 10%",
-        affects: "global",
-        type: "production_multiplier",
-        value: 1.1,
-        recipe: { nirvana_essence: 1, zen_orb: 5 },
-        unlockAtFocus: 1000.0
-    },
-    {
-        id: "med_ek_conversion",
-        displayName: "Enlightened Ascension",
-        description: "Convert Focus to Eldritch Keys (1 EK per 1000 Focus)",
-        affects: "prestige",
-        type: "ek_conversion",
-        value: 0.001, // 1000 Focus = 1 EK
-        recipe: { nirvana_essence: 5, zen_orb: 10 },
-        unlockAtFocus: 2000.0
     }
 ];
 

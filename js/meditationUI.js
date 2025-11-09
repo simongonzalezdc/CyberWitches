@@ -180,25 +180,26 @@ export class MeditationUI {
             const towerCard = document.createElement('div');
             towerCard.className = `card tower-card ${canAfford ? 'can-afford' : 'cannot-afford'}`;
             
-            // Show base stats
+            // Show base stats - compact format
+            const recipeItems = Object.entries(towerData.recipe).map(([ingId, amount]) => {
+                const have = this.gameState.inventory[ingId] || 0;
+                const canAffordIng = have >= amount;
+                const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+                const displayName = ingredient ? ingredient.displayName : ingId;
+                return `<span class="recipe-item-inline ${canAffordIng ? 'can-afford' : 'cannot-afford'}" style="display: inline-block; margin: 2px 4px 2px 0; padding: 2px 6px; font-size: 10px; border-radius: 4px; background: ${canAffordIng ? 'rgba(60, 227, 197, 0.1)' : 'rgba(0, 0, 0, 0.3)'}; border-left: 2px solid ${canAffordIng ? 'var(--success)' : 'var(--primary)'};">
+                    ${displayName}: ${formatShort(have)}/${formatShort(amount)}
+                </span>`;
+            }).join('');
+            
             towerCard.innerHTML = `
-                <div class="card-title">${towerData.displayName}</div>
-                <div class="card-description">
-                    Base: ${towerData.baseDamage} dmg | ${towerData.baseRange} range | ${towerData.baseAttackSpeed.toFixed(2)}/s
+                <div class="card-title" style="font-size: 13px; margin-bottom: 4px;">${towerData.displayName}</div>
+                <div class="card-description" style="font-size: 10px; margin-bottom: 6px; opacity: 0.8;">
+                    ${towerData.baseDamage} dmg | ${towerData.baseRange} range | ${towerData.baseAttackSpeed.toFixed(2)}/s
                 </div>
-                <div class="card-section">
-                    <div class="card-label">Recipe:</div>
-                    ${Object.entries(towerData.recipe).map(([ingId, amount]) => {
-                        const have = this.gameState.inventory[ingId] || 0;
-                        const canAffordIng = have >= amount;
-                        const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
-                        const displayName = ingredient ? ingredient.displayName : ingId;
-                        return `<div class="recipe-item ${canAffordIng ? 'can-afford' : 'cannot-afford'}">
-                            ${displayName}: ${formatShort(have)} / ${formatShort(amount)}
-                        </div>`;
-                    }).join('')}
+                <div class="card-section" style="margin-bottom: 6px; line-height: 1.4;">
+                    ${recipeItems}
                 </div>
-                <button class="btn-primary tower-place-button" data-tower-id="${towerData.id}" ${canAfford ? '' : 'disabled'}>
+                <button class="btn-primary tower-place-button" data-tower-id="${towerData.id}" ${canAfford ? '' : 'disabled'} style="width: 100%; padding: 6px; font-size: 11px; margin-top: 4px;">
                     Place Tower
                 </button>
             `;
@@ -214,15 +215,79 @@ export class MeditationUI {
             this.towerList.appendChild(towerCard);
         }
         
-        // Show placed towers with upgrade buttons
+        // Show placed towers with upgrade buttons (collapsible)
         const placedTowers = this.meditationState.towers || [];
         if (placedTowers.length > 0) {
-            const placedHeader = document.createElement('div');
-            placedHeader.className = 'tier-header';
-            placedHeader.textContent = 'Placed Towers';
-            placedHeader.style.marginTop = '20px';
-            this.towerList.appendChild(placedHeader);
+            // Check if any tower can be upgraded
+            let hasUpgradeAvailable = false;
+            for (const tower of placedTowers) {
+                const level = tower.upgradeLevel || 0;
+                if (this.meditationState.canAffordTowerUpgrade(tower.data, level)) {
+                    hasUpgradeAvailable = true;
+                    break;
+                }
+            }
             
+            // Create collapsible container
+            const placedContainer = document.createElement('div');
+            placedContainer.className = 'placed-towers-container';
+            placedContainer.style.cssText = 'margin-top: 20px;';
+            
+            // Create collapsible header
+            const placedHeader = document.createElement('div');
+            placedHeader.className = 'tier-header placed-towers-header';
+            placedHeader.style.cssText = `
+                cursor: pointer;
+                user-select: none;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 8px 12px;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+                ${hasUpgradeAvailable ? 'background: rgba(60, 227, 197, 0.15); border: 1px solid var(--success); box-shadow: 0 0 10px rgba(60, 227, 197, 0.3);' : 'background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);'}
+            `;
+            
+            const headerText = document.createElement('span');
+            headerText.textContent = 'Placed Towers';
+            headerText.style.cssText = `font-weight: 600; ${hasUpgradeAvailable ? 'color: var(--success);' : 'color: var(--text-dim);'}`;
+            
+            const expandIcon = document.createElement('span');
+            expandIcon.className = 'placed-towers-expand-icon';
+            expandIcon.textContent = '▼';
+            expandIcon.style.cssText = 'font-size: 10px; transition: transform 0.2s ease;';
+            
+            placedHeader.appendChild(headerText);
+            placedHeader.appendChild(expandIcon);
+            
+            // Create collapsible content container
+            const placedContent = document.createElement('div');
+            placedContent.className = 'placed-towers-content';
+            placedContent.style.cssText = `
+                display: none;
+                margin-top: 8px;
+            `;
+            
+            // Store collapsed state (default to collapsed, expand if upgrade available)
+            let isCollapsed = !hasUpgradeAvailable;
+            if (!isCollapsed) {
+                placedContent.style.display = 'block';
+                expandIcon.style.transform = 'rotate(180deg)';
+            }
+            
+            // Toggle collapse on header click
+            placedHeader.addEventListener('click', () => {
+                isCollapsed = !isCollapsed;
+                if (isCollapsed) {
+                    placedContent.style.display = 'none';
+                    expandIcon.style.transform = 'rotate(0deg)';
+                } else {
+                    placedContent.style.display = 'block';
+                    expandIcon.style.transform = 'rotate(180deg)';
+                }
+            });
+            
+            // Add towers to content container
             for (const tower of placedTowers) {
                 const stats = this.meditationState.getTowerStats(tower);
                 const level = tower.upgradeLevel || 0;
@@ -241,20 +306,22 @@ export class MeditationUI {
                 const towerCard = document.createElement('div');
                 towerCard.className = `card tower-card placed-tower`;
                 
+                const upgradeCostItems = upgradeCosts.map(({ displayName, required, have, canAfford }) => {
+                    return `<span class="recipe-item-inline ${canAfford ? 'can-afford' : 'cannot-afford'}" style="display: inline-block; margin: 2px 4px 2px 0; padding: 2px 6px; font-size: 10px; border-radius: 4px; background: ${canAfford ? 'rgba(60, 227, 197, 0.1)' : 'rgba(0, 0, 0, 0.3)'}; border-left: 2px solid ${canAfford ? 'var(--success)' : 'var(--primary)'};">
+                        ${displayName}: ${formatShort(have)}/${formatShort(required)}
+                    </span>`;
+                }).join('');
+                
                 towerCard.innerHTML = `
-                    <div class="card-title">${tower.data.displayName} (Level ${level})</div>
-                    <div class="card-description">
+                    <div class="card-title" style="font-size: 13px; margin-bottom: 4px;">${tower.data.displayName} (Lv${level})</div>
+                    <div class="card-description" style="font-size: 10px; margin-bottom: 6px; opacity: 0.8;">
                         ${stats.damage.toFixed(1)} dmg | ${stats.range.toFixed(1)} range | ${stats.attackSpeed.toFixed(2)}/s
                     </div>
-                    <div class="card-section">
-                        <div class="card-label">Upgrade Cost (Level ${level + 1}):</div>
-                        ${upgradeCosts.map(({ displayName, required, have, canAfford }) => {
-                            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                                ${displayName}: ${formatShort(have)} / ${formatShort(required)}
-                            </div>`;
-                        }).join('')}
+                    <div class="card-section" style="margin-bottom: 6px; line-height: 1.4;">
+                        <div style="font-size: 9px; color: var(--text-dim); margin-bottom: 4px;">Upgrade to Lv${level + 1}:</div>
+                        ${upgradeCostItems}
                     </div>
-                    <button class="btn-primary tower-upgrade-button" data-tower-gridx="${tower.gridX}" data-tower-gridy="${tower.gridY}" ${canUpgrade ? '' : 'disabled'}>
+                    <button class="btn-primary tower-upgrade-button" data-tower-gridx="${tower.gridX}" data-tower-gridy="${tower.gridY}" ${canUpgrade ? '' : 'disabled'} style="width: 100%; padding: 6px; font-size: 11px; margin-top: 4px;">
                         Upgrade to Level ${level + 1}
                     </button>
                 `;
@@ -273,8 +340,12 @@ export class MeditationUI {
                     });
                 }
                 
-                this.towerList.appendChild(towerCard);
+                placedContent.appendChild(towerCard);
             }
+            
+            placedContainer.appendChild(placedHeader);
+            placedContainer.appendChild(placedContent);
+            this.towerList.appendChild(placedContainer);
         }
     }
     
@@ -329,8 +400,8 @@ export class MeditationUI {
             itemCard.className = 'card inventory-item-card';
             
             itemCard.innerHTML = `
-                <div class="card-title">${displayName}</div>
-                <div class="card-value">${formatShort(amount)}</div>
+                <div class="card-title" style="font-size: 12px; margin-bottom: 2px;">${displayName}</div>
+                <div class="card-value" style="font-size: 11px; opacity: 0.9;">${formatShort(amount)}</div>
             `;
             
             this.meditationInventoryList.appendChild(itemCard);
@@ -360,20 +431,21 @@ export class MeditationUI {
             const upgCard = document.createElement('div');
             upgCard.className = `card upgrade-card ${canAfford && !owned ? 'can-afford' : 'cannot-afford'}`;
             
+            const upgradeRecipeItems = Object.entries(upgData.recipe).map(([ingId, amount]) => {
+                const have = this.meditationState.meditationInventory[ingId] || 0;
+                const canAffordIng = have >= amount;
+                return `<span class="recipe-item-inline ${canAffordIng ? 'can-afford' : 'cannot-afford'}" style="display: inline-block; margin: 2px 4px 2px 0; padding: 2px 6px; font-size: 10px; border-radius: 4px; background: ${canAffordIng ? 'rgba(60, 227, 197, 0.1)' : 'rgba(0, 0, 0, 0.3)'}; border-left: 2px solid ${canAffordIng ? 'var(--success)' : 'var(--primary)'};">
+                    ${ingId}: ${formatShort(have)}/${formatShort(amount)}
+                </span>`;
+            }).join('');
+            
             upgCard.innerHTML = `
-                <div class="card-title">${upgData.displayName} ${owned ? '✓' : ''}</div>
-                <div class="card-description">${upgData.description}</div>
-                <div class="card-section">
-                    <div class="card-label">Recipe:</div>
-                    ${Object.entries(upgData.recipe).map(([ingId, amount]) => {
-                        const have = this.meditationState.meditationInventory[ingId] || 0;
-                        const canAffordIng = have >= amount;
-                        return `<div class="recipe-item ${canAffordIng ? 'can-afford' : 'cannot-afford'}">
-                            ${ingId}: ${formatShort(have)} / ${formatShort(amount)}
-                        </div>`;
-                    }).join('')}
+                <div class="card-title" style="font-size: 13px; margin-bottom: 4px;">${upgData.displayName} ${owned ? '✓' : ''}</div>
+                <div class="card-description" style="font-size: 10px; margin-bottom: 6px; opacity: 0.8;">${upgData.description}</div>
+                <div class="card-section" style="margin-bottom: 6px; line-height: 1.4;">
+                    ${upgradeRecipeItems}
                 </div>
-                <button class="btn-primary upgrade-purchase-button" data-upgrade-id="${upgData.id}" ${owned || !canAfford ? 'disabled' : ''}>
+                <button class="btn-primary upgrade-purchase-button" data-upgrade-id="${upgData.id}" ${owned || !canAfford ? 'disabled' : ''} style="width: 100%; padding: 6px; font-size: 11px; margin-top: 4px;">
                     ${owned ? 'Owned' : 'Purchase'}
                 </button>
             `;
@@ -416,19 +488,19 @@ export class MeditationUI {
     updateProductionBonus() {
         if (!this.meditationState) return;
         
-        // Find or create production bonus display element
+        // Find or create production bonus display element in meditation header
         let bonusDisplay = document.getElementById('meditation-production-bonus');
         if (!bonusDisplay) {
-            // Create bonus display in meditation sidebar
-            const sidebar = document.querySelector('.meditation-sidebar');
-            if (sidebar) {
+            // Create bonus display in meditation header
+            const header = document.querySelector('.meditation-header');
+            if (header) {
                 bonusDisplay = document.createElement('div');
                 bonusDisplay.id = 'meditation-production-bonus';
-                bonusDisplay.className = 'meditation-stats-card card';
-                bonusDisplay.style.cssText = 'margin-top: 20px; padding: 15px;';
-                sidebar.insertBefore(bonusDisplay, sidebar.firstChild);
+                bonusDisplay.className = 'meditation-bonus-display';
+                bonusDisplay.style.cssText = 'display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; background: rgba(60, 227, 197, 0.1); border-radius: 8px; border: 1px solid var(--success);';
+                header.appendChild(bonusDisplay);
             } else {
-                return; // Sidebar not found
+                return; // Header not found
             }
         }
         
@@ -436,26 +508,10 @@ export class MeditationUI {
         const bonus = this.meditationState.getMeditationProductionBonus();
         const bonusPercent = ((bonus - 1.0) * 100).toFixed(1);
         
-        // Get contributions
-        const focusContribution = Math.min(this.meditationState.focusTotalEarned / 10000, 0.5);
-        const wavesContribution = Math.min(this.meditationState.totalWavesCompleted / 500, 0.25);
-        const distractionsContribution = Math.min(this.meditationState.totalDistractionsKilled / 10000, 0.1);
-        const sessionsContribution = Math.min(this.meditationState.totalSessionsCompleted / 1000, 0.05);
-        
-        // Update display
+        // Update display - compact format
         bonusDisplay.innerHTML = `
-            <div class="card-title" style="color: var(--success);">🧘 Meditation Production Bonus</div>
-            <div class="card-section" style="margin-top: 10px;">
-                <div class="card-label" style="font-size: 18px; font-weight: bold; color: var(--secondary);">
-                    +${bonusPercent}% Production
-                </div>
-                <div class="card-description" style="margin-top: 8px; font-size: 12px; opacity: 0.8;">
-                    <div>Focus: +${(focusContribution * 100).toFixed(1)}%</div>
-                    <div>Waves: +${(wavesContribution * 100).toFixed(1)}%</div>
-                    <div>Distractions: +${(distractionsContribution * 100).toFixed(1)}%</div>
-                    <div>Sessions: +${(sessionsContribution * 100).toFixed(1)}%</div>
-                </div>
-            </div>
+            <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;">🧘 Bonus</div>
+            <div style="font-size: 16px; font-weight: bold; color: var(--success);">+${bonusPercent}%</div>
         `;
     }
 }
