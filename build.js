@@ -79,7 +79,7 @@ async function copyStaticFiles() {
 }
 
 async function buildJavaScript() {
-  console.log('🔨 Building JavaScript...');
+  console.log('🔨 Building JavaScript bundles...');
   
   const jsDir = join(__dirname, 'js');
   const distJsDir = join(distDir, 'js');
@@ -88,64 +88,90 @@ async function buildJavaScript() {
     await mkdir(distJsDir, { recursive: true });
   }
   
-  // Get all JS files
-  const files = await readdir(jsDir);
-  const jsFiles = files.filter(f => f.endsWith('.js') && !f.endsWith('.backup'));
-  
-  // Build options - Updated for esbuild 0.25 and ES2023 (latest stable as of Nov 2025)
+  // Common build options
   const buildOptions = {
-    bundle: false, // Don't bundle - keep as ES modules
     minify: isProduction,
     format: 'esm',
-    target: 'es2023', // Latest stable ECMAScript standard
+    target: 'es2022', // Slightly older for better browser support
     sourcemap: !isProduction ? 'inline' : false,
     logLevel: 'info',
     treeShaking: true,
     platform: 'browser',
     charset: 'utf8',
-    // Remove console.log in production but keep console.error and console.warn for debugging
-    // Note: esbuild drop: ['console'] removes all console methods, so we'll use a different approach
-    // We'll keep console.error and console.warn, but remove console.log via minification
-    drop: isProduction ? [] : [], // Don't drop console - we need error/warn for production
-    // Replace DEBUG constant in debug.js (will replace const DEBUG = ... with const DEBUG = false)
-    // Note: This uses string replacement, so we need to handle it in the build process
-    // For now, we'll use drop: ['console'] to remove console logs in production
+    drop: isProduction ? ['console'] : [], // Remove console.log in production
+    legalComments: 'none', // Remove comments in production
+    external: ['https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'], // Keep Tone.js external
   };
   
-  // Build each JS file
-  for (const file of jsFiles) {
-    const entryPoint = join(jsDir, file);
-    const outfile = join(distJsDir, file);
+  try {
+    // Build main game bundle - bundles everything into one file
+    console.log('  📦 Building main game bundle...');
+    const result = await esbuild.build({
+      ...buildOptions,
+      bundle: true,
+      entryPoints: ['js/game.js'],
+      outfile: join(distJsDir, 'game.bundle.js'),
+      splitting: false,
+    });
     
-    try {
-      await esbuild.build({
-        ...buildOptions,
-        entryPoints: [entryPoint],
-        outfile: outfile,
-      });
-      
-      // Special handling for debug.js in production
-      if (file === 'debug.js' && isProduction) {
-        let content = readFileSync(outfile, 'utf8');
-        // Replace DEBUG = true with DEBUG = false
-        content = content.replace(/const DEBUG = true;/g, 'const DEBUG = false;');
-        writeFileSync(outfile, content, 'utf8');
-        console.log(`  ✓ Built and optimized ${file} (DEBUG disabled)`);
-      } else {
-        console.log(`  ✓ Built ${file}`);
-      }
-    } catch (error) {
-      console.error(`  ✗ Error building ${file}:`, error.message);
+    console.log('    ✓ Main game bundle built');
+    
+    // Get bundle size
+    const bundlePath = join(distJsDir, 'game.bundle.js');
+    if (existsSync(bundlePath)) {
+      const stats = await stat(bundlePath);
+      const sizeKB = (stats.size / 1024).toFixed(2);
+      const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+      console.log(`    📊 Bundle size: ${sizeKB} KB (${sizeMB} MB)`);
     }
+    
+    // Special handling for debug.js in production
+    if (isProduction) {
+      let content = readFileSync(bundlePath, 'utf8');
+      content = content.replace(/const DEBUG = true;/g, 'const DEBUG = false;');
+      writeFileSync(bundlePath, content, 'utf8');
+      console.log('    ✓ DEBUG disabled in production');
+    }
+    
+    // Update index.html to use bundled file
+    if (isProduction) {
+      await updateIndexHtml();
+    }
+    
+  } catch (error) {
+    console.error('  ✗ Error building bundle:', error.message);
+    console.error('  Stack:', error.stack);
+    throw error;
+  }
+}
+
+async function updateIndexHtml() {
+  console.log('📝 Updating index.html for production bundles...');
+  const indexPath = join(distDir, 'index.html');
+  
+  if (!existsSync(indexPath)) {
+    console.log('  ⚠ index.html not found in dist, skipping update');
+    return;
   }
   
-  // Update index.html to use minified files if in production
-  if (isProduction) {
-    console.log('📝 Updating index.html for production...');
-    const indexPath = join(distDir, 'index.html');
-    // Note: In a real scenario, you might want to bundle everything
-    // For now, we'll keep the module structure but minified
-  }
+  let html = readFileSync(indexPath, 'utf8');
+  
+  // Remove all individual script tags (keep Tone.js CDN and any other external scripts)
+  // Match script tags with type="module" and src starting with "js/"
+  const scriptTagPattern = /<script\s+type="module"\s+src="js\/[^"]+\.js"><\/script>\s*/gi;
+  html = html.replace(scriptTagPattern, '');
+  
+  // Add bundled script
+  const bundledScript = `
+    <!-- Bundled JavaScript - All modules combined for better performance -->
+    <script type="module" src="js/game.bundle.js"></script>
+`;
+  
+  // Insert before closing body tag
+  html = html.replace('</body>', bundledScript + '\n</body>');
+  
+  writeFileSync(indexPath, html, 'utf8');
+  console.log('  ✓ Updated index.html with bundled script');
 }
 
 async function build() {

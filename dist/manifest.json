@@ -1,15 +1,18 @@
 {
-  "name": "Cyber Witches: Idle Coven",
-  "short_name": "Cyber Witches",
-  "description": "A magical idle game about casting spells and building workstations",
+  "name": "Spellwright",
+  "short_name": "Spellwright",
+  "description": "Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. Play offline, save progress automatically, and enjoy a full desktop app experience!",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0E0E12",
   "theme_color": "#FF2DAA",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "scope": "/",
   "lang": "en",
   "categories": ["games", "entertainment"],
+  "dir": "ltr",
+  "iarc_rating_id": "",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icons/icon-72x72.png",
