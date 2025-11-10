@@ -12,8 +12,8 @@ import { analytics } from './analytics.js';
 const TUTORIAL_STEPS = [
     {
         id: 'welcome',
-        title: 'Welcome, Spellwright',
-        message: 'Magic is fading from the world. You are one of the last Spellwrights who can preserve it. Let me show you how.',
+        title: 'Welcome, Hex Compiler',
+        message: 'Magic is fading from the world. You are one of the last Hex Compilers who can preserve it. Let me show you how.',
         target: null, // Modal, no specific target
         position: 'center',
         action: null,
@@ -103,7 +103,7 @@ const TUTORIAL_STEPS = [
     {
         id: 'tutorial_complete',
         title: 'You\'re Ready!',
-        message: 'You now know the basics! Keep casting, building chambers, and upgrading. Discover experiments, complete daily rituals, and eventually Ascend for powerful bonuses. Good luck, Spellwright!',
+        message: 'You now know the basics! Keep casting, building chambers, and upgrading. Discover experiments, complete daily rituals, and eventually Ascend for powerful bonuses. Good luck, Hex Compiler!',
         target: null,
         position: 'center',
         action: null,
@@ -475,7 +475,7 @@ class OnboardingSystem {
                         ✨ Tutorial Complete!
                     </h3>
                     <p style="color: var(--text); margin: 0 0 16px 0; line-height: 1.6;">
-                        You're now a certified Spellwright! Keep exploring, and may your magic never fade.
+                        You're now a certified Hex Compiler! Keep exploring, and may your magic never fade.
                     </p>
                     <div class="tutorial-tooltip-actions" style="display: flex; gap: 8px; justify-content: flex-end;">
                         <button class="btn-primary tutorial-finish">Let's Go!</button>

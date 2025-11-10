@@ -1,6 +1,6 @@
 # Launch Readiness Checklist
 
-**Game**: Spellwright
+**Game**: Hex Compiler
 **Version**: 1.0.0
 **Target Launch Date**: TBD
 **Last Updated**: 2025-11-08
@@ -230,7 +230,7 @@
 **Timeline**: 1-2 weeks before public launch
 
 **Tasks**:
-- [ ] Deploy to test URL (e.g., test.spellwright.com)
+- [ ] Deploy to test URL (e.g., test.hex-compiler.com)
 - [ ] Share with 10-20 beta testers
 - [ ] Collect feedback on gameplay balance
 - [ ] Monitor for bugs and crashes

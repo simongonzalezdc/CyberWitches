@@ -1,9 +1,9 @@
-# Changelog - Spellwright
+# Changelog - Hex Compiler
 
 ## Recent Changes
 
 ### Game Title & Story Integration (Phase 1-3)
-- ✅ Game title changed to **"Spellwright"**
+- ✅ Game title changed to **"Hex Compiler"**
 - ✅ Currency renamed to **"Arcane Bits (AB)"** (replacing "Spell Energy (SE)")
 - ✅ Complete story integration: "The Fading" narrative framework
 - ✅ Story introduction modal on first launch

@@ -1,11 +1,11 @@
 # Product Strategy & Go-to-Market Plan
-## Spellwright - Product Management Roadmap
+## Hex Compiler - Product Management Roadmap
 
 **Last Updated**: 2025-11-08
 **Document Owner**: Product Team
 **Status**: Draft for Team Review
 
-This document outlines the complete product strategy, market positioning, user acquisition plan, and business model for Spellwright. This is designed for team collaboration and strategic planning.
+This document outlines the complete product strategy, market positioning, user acquisition plan, and business model for Hex Compiler. This is designed for team collaboration and strategic planning.
 
 ---
 
@@ -35,7 +35,7 @@ This document outlines the complete product strategy, market positioning, user a
 
 **Market**: The idle/incremental game market generates $3B+ annually and is growing 15% YoY. Web-based games have low friction for user acquisition and can scale to millions of players with proper execution.
 
-**Our Advantage**: Spellwright combines proven incremental game mechanics with innovative narrative design (the "Fading" theme) and unique progressive UI system (Design Tier glitch effects). We have a technically excellent foundation ready for market.
+**Our Advantage**: Hex Compiler combines proven incremental game mechanics with innovative narrative design (the "Fading" theme) and unique progressive UI system (Design Tier glitch effects). We have a technically excellent foundation ready for market.
 
 ### Current Status
 - **Development Stage**: Production-ready MVP (v1.0)
@@ -88,7 +88,7 @@ This document outlines the complete product strategy, market positioning, user a
 2. ❌ **Aggressive monetization** - Players avoid exploitative games
 3. ❌ **Mobile-only** - Missing web/PC audience
 
-**Our Alignment**: Spellwright aligns with 5/5 growing trends and avoids declining trends.
+**Our Alignment**: Hex Compiler aligns with 5/5 growing trends and avoids declining trends.
 
 ---
 
@@ -96,7 +96,7 @@ This document outlines the complete product strategy, market positioning, user a
 
 ### Positioning Statement
 
-**For** hardcore incremental game fans **who** want deep, replayable progression systems with narrative depth, **Spellwright** is a **web-based idle game** that **combines innovative thematic design with sophisticated mechanics**. Unlike **Cookie Clicker or Idle Champions**, our product **offers a unique "fading magic" narrative that evolves the UI as you progress, creating an immersive journey of restoration**.
+**For** hardcore incremental game fans **who** want deep, replayable progression systems with narrative depth, **Hex Compiler** is a **web-based idle game** that **combines innovative thematic design with sophisticated mechanics**. Unlike **Cookie Clicker or Idle Champions**, our product **offers a unique "fading magic" narrative that evolves the UI as you progress, creating an immersive journey of restoration**.
 
 ### Unique Selling Propositions (USPs)
 
@@ -138,7 +138,7 @@ This document outlines the complete product strategy, market positioning, user a
                     High Complexity
                           ↑
                           |
-           NGU Idle       |    Spellwright ⭐
+           NGU Idle       |    Hex Compiler ⭐
                           |    Realm Grinder
                           |
 Casual ←------------------|------------------→ Hardcore
@@ -188,7 +188,7 @@ Casual ←------------------|------------------→ Hardcore
 - Desires cross-device play
 - Craves fresh mechanics in stale genre
 
-**How Spellwright Solves**:
+**How Hex Compiler Solves**:
 - ✅ Deep progression without pay-to-win
 - ✅ Unique mechanics (design tier, element specialization)
 - ✅ Ethical monetization
@@ -217,7 +217,7 @@ Casual ←------------------|------------------→ Hardcore
 - Unlikely to share or contribute
 - Values simplicity
 
-**How Spellwright Serves**:
+**How Hex Compiler Serves**:
 - ⚠️ May find too complex initially
 - ✅ Tutorial and onboarding will help
 - ✅ Offline progress respects casual play
@@ -350,7 +350,7 @@ Casual ←------------------|------------------→ Hardcore
 
 **Content Ideas**:
 - "I built an idle game where the UI breaks as magic fades"
-- Weekly: "Spellwright Dev Log #X - [Feature]"
+- Weekly: "Hex Compiler Dev Log #X - [Feature]"
 - "We just hit 10K players! Here's what we learned"
 
 #### 2. YouTube Influencers (Months 2-4)
@@ -376,11 +376,11 @@ Casual ←------------------|------------------→ Hardcore
 
 **Email Template**:
 ```
-Subject: Spellwright - Idle game with progressive UI corruption
+Subject: Hex Compiler - Idle game with progressive UI corruption
 
 Hi [Name],
 
-I'm [Your Name], developer of Spellwright, a new idle/incremental game
+I'm [Your Name], developer of Hex Compiler, a new idle/incremental game
 with a unique twist: as you preserve fading magic, the glitchy UI
 gradually stabilizes. It's Cookie Clicker meets cyberpunk aesthetics.
 
@@ -984,7 +984,7 @@ Day 7: Prestige boost + 2,000 AB
 | NGU Idle | Very High | Minimal | Ethical | Good | UX, accessibility |
 | Realm Grinder | High | Weak | Ethical | Good | Theme, modern tech |
 | Melvor Idle | High | Generic | Ethical | Excellent | Theme, pacing |
-| **Spellwright** | **Medium-High** | **Strong** | **Ethical** | **Good** | **Unique mechanics** |
+| **Hex Compiler** | **Medium-High** | **Strong** | **Ethical** | **Good** | **Unique mechanics** |
 
 ### Market Gap We Fill
 
@@ -996,7 +996,7 @@ Incremental game players want:
 4. Modern UX (most games have dated UI)
 5. Ethical monetization
 
-**Spellwright delivers all 5**.
+**Hex Compiler delivers all 5**.
 
 ---
 
@@ -1108,10 +1108,10 @@ Incremental game players want:
 **Hosting**:
 - Primary: Vercel/Netlify (free tier → paid as needed)
 - CDN: Cloudflare (free)
-- Domain: spellwright.game ($12/year)
+- Domain: hex-compiler.game ($12/year)
 
 **SEO Strategy**:
-- Title: "Spellwright - Free Idle/Incremental Game"
+- Title: "Hex Compiler - Free Idle/Incremental Game"
 - Meta description: "Preserve fading magic in this unique idle game. Deep progression, ethical design, play in browser."
 - Keywords: incremental game, idle game, browser game, free game
 
@@ -1165,7 +1165,7 @@ Incremental game players want:
 - Google Play Points integration
 
 **ASO Strategy**:
-- App Title: "Spellwright - Idle Magic Game"
+- App Title: "Hex Compiler - Idle Magic Game"
 - Keywords: idle game, incremental, magic, witch, clicker
 - Screenshots: Show progression, UI evolution, features
 - Video: 30-second hook → core loop → unique features
@@ -1262,7 +1262,7 @@ Incremental game players want:
 
 ### Brand Identity
 
-**Name**: Spellwright
+**Name**: Hex Compiler
 **Tagline**: "Preserve the fading magic"
 **Genre**: Idle/Incremental RPG
 
@@ -1493,4 +1493,4 @@ Incremental game players want:
 
 **END OF DOCUMENT**
 
-This strategy document is a living document. Update it regularly based on learnings, data, and market changes. Good luck with Spellwright! 🚀
+This strategy document is a living document. Update it regularly based on learnings, data, and market changes. Good luck with Hex Compiler! 🚀

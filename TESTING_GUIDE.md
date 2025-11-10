@@ -1,4 +1,4 @@
-# Testing Guide - Spellwright
+# Testing Guide - Hex Compiler
 
 **Purpose**: Complete manual and automated testing procedures for launch readiness
 **Version**: 1.0

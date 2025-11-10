@@ -1,7 +1,7 @@
 # Pre-Launch Implementation Status
 
 **Last Updated**: 2025-11-08
-**Project**: Spellwright Game Pre-Launch Preparation
+**Project**: Hex Compiler Game Pre-Launch Preparation
 **Timeline**: 4 weeks (currently in Week 2)
 
 ---

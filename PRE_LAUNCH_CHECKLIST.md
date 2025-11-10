@@ -1,11 +1,11 @@
 # Pre-Launch Checklist
-## Spellwright - What Still Needs to Be Done
+## Hex Compiler - What Still Needs to Be Done
 
 **Last Updated**: 2025-11-08
 **Current Version**: 1.0.0
 **Launch Target**: TBD
 
-This document outlines all remaining tasks before Spellwright can launch publicly. Items are categorized by priority and estimated effort.
+This document outlines all remaining tasks before Hex Compiler can launch publicly. Items are categorized by priority and estimated effort.
 
 ---
 
@@ -510,9 +510,9 @@ find images/ -type f -exec ls -lh {} \; | awk '{print $5, $9}'
 
 **Example**:
 ```html
-<title>Spellwright - Idle Magic Crafting Game</title>
-<meta name="description" content="Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build workstations, and master the elements in this idle game.">
-<meta property="og:title" content="Spellwright">
+<title>Hex Compiler - Idle Magic Crafting Game</title>
+<meta name="description" content="Magic is fading. You are a Hex Compiler—one of the last who can preserve it. Cast spells, build workstations, and master the elements in this idle game.">
+<meta property="og:title" content="Hex Compiler">
 <meta property="og:description" content="Idle magic crafting game">
 <meta property="og:image" content="https://yoursite.com/og-image.jpg">
 ```

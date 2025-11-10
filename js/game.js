@@ -5756,12 +5756,12 @@ function showStoryIntroduction() {
     `;
     
     content.innerHTML = `
-        <h1 style="color: var(--accent, #6c5ce7); font-size: 36px; margin-bottom: 20px;">Spellwright</h1>
+        <h1 style="color: var(--accent, #6c5ce7); font-size: 36px; margin-bottom: 20px;">Hex Compiler</h1>
         <p style="color: var(--text-primary, #fff); font-size: 18px; line-height: 1.6; margin-bottom: 15px;">
             Magic is dying. The world's spell energy is fading, and once it's gone, it won't return.
         </p>
         <p style="color: var(--text-primary, #fff); font-size: 18px; line-height: 1.6; margin-bottom: 15px;">
-            You are a <strong style="color: var(--success, #00d4aa);">Spellwright</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
+            You are a <strong style="color: var(--success, #00d4aa);">Hex Compiler</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
         </p>
         <p style="color: var(--text-secondary, #aaa); font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
             Every spell you cast pulls energy from a dwindling pool. If you don't act, magic will be gone forever.
@@ -5905,14 +5905,14 @@ function showFullStoryModal() {
     
     content.innerHTML = `
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: var(--accent, #6c5ce7); font-size: 36px; margin-bottom: 10px;">Spellwright</h1>
+            <h1 style="color: var(--accent, #6c5ce7); font-size: 36px; margin-bottom: 10px;">Hex Compiler</h1>
             <p style="color: var(--text-secondary, #aaa); font-size: 18px;">The Story of The Fading</p>
         </div>
         
         <div style="color: var(--text-primary, #fff); font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
             <h2 style="color: var(--accent, #6c5ce7); font-size: 24px; margin-top: 30px; margin-bottom: 15px;">The Premise</h2>
             <p style="margin-bottom: 15px;">
-                Magic is dying. The world's spell energy is fading, and once it's gone, it won't return. You are a <strong style="color: var(--success, #00d4aa);">Spellwright</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
+                Magic is dying. The world's spell energy is fading, and once it's gone, it won't return. You are a <strong style="color: var(--success, #00d4aa);">Hex Compiler</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
             </p>
             
             <h2 style="color: var(--accent, #6c5ce7); font-size: 24px; margin-top: 30px; margin-bottom: 15px;">The Urgency</h2>

@@ -1,7 +1,7 @@
 {
-  "name": "spellwright",
+  "name": "hex-compiler",
   "version": "1.0.0",
-  "description": "Magic is fading. You are a Spellwright—one of the last who can preserve it. An idle game about casting spells and building preservation chambers.",
+  "description": "Magic is fading. You're a Hex Compiler—translating magical hexes into hexadecimal code. An idle game about compiling spells into data and building digital preservation chambers.",
   "main": "index.html",
   "type": "module",
   "scripts": {

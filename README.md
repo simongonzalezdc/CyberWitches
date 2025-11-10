@@ -1,6 +1,6 @@
-# Spellwright
+# Hex Compiler
 
-Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. An idle game about preserving magic before it disappears forever.
+Magic is fading. You're a Hex Compiler—one of the last who can translate magical hexes into hexadecimal code. Compile spells into data, build digital preservation chambers, and fight the fading. An idle game about programming magic before it disappears forever.
 
 ## Quick Start
 
