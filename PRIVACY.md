@@ -6,9 +6,9 @@
 
 ## Introduction
 
-Welcome to Spellwright ("we," "our," or "the game"). We are committed to protecting your privacy and being transparent about what data we collect and how we use it.
+Welcome to Hex Compiler ("we," "our," or "the game"). We are committed to protecting your privacy and being transparent about what data we collect and how we use it.
 
-This Privacy Policy explains how Spellwright handles your information when you play our game.
+This Privacy Policy explains how Hex Compiler handles your information when you play our game.
 
 ## Data Controller
 
@@ -18,7 +18,7 @@ This game is operated as an open-source project. For privacy inquiries, please r
 
 ### 1. Local Storage Data (Required for Game Function)
 
-Spellwright stores game data **locally on your device** using your browser's LocalStorage. This data never leaves your device unless you explicitly use cloud save features (if implemented).
+Hex Compiler stores game data **locally on your device** using your browser's LocalStorage. This data never leaves your device unless you explicitly use cloud save features (if implemented).
 
 **What we store locally**:
 - Game progress (resources, workstations, upgrades)
@@ -124,7 +124,7 @@ We do not have access to or use this server log data for tracking purposes.
 
 ## Cookies
 
-**Current Status**: Spellwright does NOT use cookies.
+**Current Status**: Hex Compiler does NOT use cookies.
 
 We use LocalStorage instead of cookies for game save data. LocalStorage:
 - Is stored only on your device
@@ -134,7 +134,7 @@ We use LocalStorage instead of cookies for game save data. LocalStorage:
 
 ## Children's Privacy (COPPA Compliance)
 
-Spellwright does not knowingly collect personal information from children under 13.
+Hex Compiler does not knowingly collect personal information from children under 13.
 
 - No personal information is required to play
 - No account creation is needed
@@ -219,7 +219,7 @@ We respect Do Not Track browser settings. Since we don't track users by default,
 
 ## Your Consent
 
-By playing Spellwright, you consent to this Privacy Policy.
+By playing Hex Compiler, you consent to this Privacy Policy.
 
 If we add features that collect additional data (like analytics), we will:
 1. Ask for your explicit consent

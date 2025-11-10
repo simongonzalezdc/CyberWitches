@@ -1,4 +1,4 @@
-# Testing Strategy - CyberWitches/Spellwright
+# Testing Strategy - CyberWitches/Hex Compiler
 
 ## Executive Summary
 

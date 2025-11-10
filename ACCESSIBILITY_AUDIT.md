@@ -1,4 +1,4 @@
-# Accessibility Audit - Spellwright Game
+# Accessibility Audit - Hex Compiler Game
 
 **Date**: 2025-11-08
 **Version**: 1.0
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document provides an accessibility audit of the Spellwright idle game against WCAG 2.1 Level AA standards. The goal is to ensure the game is playable and enjoyable for users with disabilities.
+This document provides an accessibility audit of the Hex Compiler idle game against WCAG 2.1 Level AA standards. The goal is to ensure the game is playable and enjoyable for users with disabilities.
 
 **Overall Status**: 🟡 Partial Compliance (Improvements Needed)
 

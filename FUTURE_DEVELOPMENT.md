@@ -1,5 +1,5 @@
 # Future Development Roadmap
-## Spellwright - Technical & Design Improvements
+## Hex Compiler - Technical & Design Improvements
 
 **Last Updated**: 2025-11-08
 **Version**: 1.0
@@ -220,7 +220,7 @@ This document outlines technical, design, and UX improvements for future develop
 2. Set up moderation team
 3. Create community guidelines
 4. Add Discord link to game
-5. Create r/Spellwright subreddit
+5. Create r/Hex Compiler subreddit
 6. Set up wiki platform
 7. Seed initial wiki content
 
@@ -422,7 +422,7 @@ This document outlines technical, design, and UX improvements for future develop
 ### 10. Brand & IP Development
 **Effort**: High (Ongoing) | **Impact**: Medium | **Timeline**: Continuous
 
-**Description**: Develop Spellwright IP beyond the game.
+**Description**: Develop Hex Compiler IP beyond the game.
 
 **Lore Development**:
 - Expand world-building

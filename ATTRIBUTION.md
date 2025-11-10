@@ -1,6 +1,6 @@
 # Attribution & Third-Party Licenses
 
-This file lists all third-party code, libraries, assets, and resources used in Spellwright.
+This file lists all third-party code, libraries, assets, and resources used in Hex Compiler.
 
 ## Third-Party Libraries
 

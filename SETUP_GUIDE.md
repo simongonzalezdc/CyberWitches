@@ -1,4 +1,4 @@
-# 🛠️ Setup Guide for Spellwright
+# 🛠️ Setup Guide for Hex Compiler
 
 ## ✅ What's Been Implemented
 
@@ -53,7 +53,7 @@ Simply open `index.html` in your browser (some features may be limited due to CO
 ## 📁 Project Structure
 
 ```
-Spellwright/
+Hex Compiler/
 ├── index.html          # Main HTML structure
 ├── styles.css          # All styling (neon theme + glitch effects)
 ├── js/
@@ -138,13 +138,13 @@ The game is designed to work on:
 
 ## 💾 Save System
 
-Saves are stored in browser localStorage under the key `spellwrightSave`. The game auto-saves every 30 seconds and on window close.
+Saves are stored in browser localStorage under the key `hex-compilerSave`. The game auto-saves every 30 seconds and on window close.
 
 ### Manual Save/Load
 
 Saves happen automatically. To manually export/import saves:
-- Export: Copy the value from `localStorage.getItem('spellwrightSave')`
-- Import: Use `localStorage.setItem('spellwrightSave', yourSaveData)`
+- Export: Copy the value from `localStorage.getItem('hex-compilerSave')`
+- Import: Use `localStorage.setItem('hex-compilerSave', yourSaveData)`
 
 ## 🐛 Troubleshooting
 

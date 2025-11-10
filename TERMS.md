@@ -6,11 +6,11 @@
 
 ## Agreement to Terms
 
-By accessing and playing Spellwright ("the Game"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not play the Game.
+By accessing and playing Hex Compiler ("the Game"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not play the Game.
 
 ## Description of Service
 
-Spellwright is a free, browser-based idle/incremental game where players:
+Hex Compiler is a free, browser-based idle/incremental game where players:
 - Cast spells to gather magical resources
 - Build workstations to automate production
 - Unlock upgrades and achievements
@@ -66,7 +66,7 @@ You agree NOT to:
 
 ### Game Ownership
 
-Spellwright is released under the **MIT License** (see LICENSE file).
+Hex Compiler is released under the **MIT License** (see LICENSE file).
 
 **This means**:
 - ✅ You can use the code freely
@@ -81,7 +81,7 @@ Any content you create related to the game (fan art, guides, mods, videos) remai
 
 ### Trademarks
 
-"Spellwright" and related names/logos (if any) are the property of the project maintainers. You may use them to refer to the game but not to imply official endorsement of your modifications.
+"Hex Compiler" and related names/logos (if any) are the property of the project maintainers. You may use them to refer to the game but not to imply official endorsement of your modifications.
 
 ## Game Modifications & Mods
 
@@ -273,7 +273,7 @@ This game is released under the MIT License. See the LICENSE file for full terms
 
 ## Acknowledgments
 
-By playing Spellwright, you acknowledge that:
+By playing Hex Compiler, you acknowledge that:
 
 1. You have read and understood these Terms
 2. You agree to comply with these Terms
@@ -307,7 +307,7 @@ If you contribute code to the game:
 
 ---
 
-**By playing Spellwright, you agree to these Terms of Service.**
+**By playing Hex Compiler, you agree to these Terms of Service.**
 
 **If you do not agree, please do not play the game.**
 
