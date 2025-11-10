@@ -90,8 +90,8 @@ class TutorialSystem {
         this.tutorialSteps = [
             {
                 id: 'welcome',
-                title: 'Welcome, Code Witch',
-                message: 'In a distant future where magic and technology converged, something went wrong. Magic is fading—and once it\'s gone, it won\'t return.\n\nYou are a Code Witch—one of the last who can digitize magic. You write code that crystallizes spells into data, program algorithms that resist entropy, and build digital preservation chambers.\n\nYour mission: Compile magic into code before it fades. Every spell you digitize, every chamber you program, every algorithm you optimize—it all pushes back against the inevitable.\n\nLet\'s begin.',
+                title: 'Welcome, Hex Compiler',
+                message: 'In a distant future where magic and technology converged, something went wrong. Magic is fading—and once it\'s gone, it won\'t return.\n\nYou are a Hex Compiler—one of the last who can translate magical hexes into executable hexadecimal code. You compile spells into stable data structures, program algorithms that resist entropy, and build digital preservation chambers.\n\nYour mission: Compile hexes into code before magic fades. Every hex you translate, every chamber you program, every algorithm you optimize—it all pushes back against the inevitable.\n\nLet\'s begin.',
                 target: null,
                 position: 'center',
                 action: null
