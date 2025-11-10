@@ -90,16 +90,16 @@ class TutorialSystem {
         this.tutorialSteps = [
             {
                 id: 'welcome',
-                title: 'Spellwright',
-                message: 'Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells to gather magic before it fades, then build preservation chambers to stabilize it.',
+                title: 'Spellwright // System Online',
+                message: 'Date: June 15, 2077. Location: The Sprawl, Sector 7.\n\nMagic is dying. 94% of Earth\'s magical field has dissipated. Projection: total collapse by 2084.\n\nYou are a Spellwright—a code-mystic who can digitize and preserve magic. While megacorps extracted until collapse, you learned preservation.\n\nYour mission: Build preservation chambers. Generate Spell Energy. Delay entropy. Transcend timelines.',
                 target: null,
                 position: 'center',
                 action: null
             },
             {
                 id: 'cast_button',
-                title: 'Cast Your First Spell',
-                message: 'Click Cast to gather magic before it fades. Each spell pulls energy from a dwindling pool.',
+                title: 'Protocol: Manual Extraction',
+                message: 'Click Cast to pull elemental essences from the air before they decay. Fire. Water. Air. Crystal. Aether. Raw magic, crystallizing in your neural buffer.\n\nEach cast gathers what the megacorps couldn\'t: patterns that preservation stabilizes. Extraction destroyed. Preservation survives.',
                 target: '#cast-button',
                 position: 'bottom',
                 action: () => {
