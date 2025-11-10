@@ -90,8 +90,8 @@ class TutorialSystem {
         this.tutorialSteps = [
             {
                 id: 'welcome',
-                title: 'Welcome, Spellwright',
-                message: 'Magic is fading from the world, and once it\'s gone, it won\'t return.\n\nYou are a Spellwright—one of the last who knows how to preserve magic by crystallizing it into permanent structures.\n\nYour mission: Cast spells to gather elemental essences. Build preservation chambers to stabilize magic. Discover new techniques. Fight the fading.\n\nEvery spell cast, every chamber built, every technique discovered—it all slows the inevitable. Let\'s begin.',
+                title: 'Welcome, Code Witch',
+                message: 'In a distant future where magic and technology converged, something went wrong. Magic is fading—and once it\'s gone, it won\'t return.\n\nYou are a Code Witch—one of the last who can digitize magic. You write code that crystallizes spells into data, program algorithms that resist entropy, and build digital preservation chambers.\n\nYour mission: Compile magic into code before it fades. Every spell you digitize, every chamber you program, every algorithm you optimize—it all pushes back against the inevitable.\n\nLet\'s begin.',
                 target: null,
                 position: 'center',
                 action: null

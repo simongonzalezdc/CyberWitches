@@ -59,7 +59,7 @@ export const PRODUCERS = [
     {
         id: "ws_fire_forge",
         displayName: "Fire Forge",
-        description: "A preservation chamber that stabilizes Fire essence before it fades. The intense heat creates a crystalline matrix that slows entropy. Fire fades faster than other elements—every forge you build is a small victory against the inevitable.",
+        description: "A digital preservation chamber that compiles Fire essence into stable data structures. Your code creates crystalline matrices that capture heat as information before it dissipates. Fire fades faster than other elements—every forge you program is a small victory against entropy.",
         unlockAtAb: 25.0,
         recipe: { fire_essence: 10 },
         growth: 1.12,
@@ -69,7 +69,7 @@ export const PRODUCERS = [
     {
         id: "ws_aqua_well",
         displayName: "Aqua Well",
-        description: "A preservation chamber that stabilizes Water essence before it fades. The flowing water creates a stable environment that resists the fading—constant motion preserves what stillness would lose.",
+        description: "A digital preservation chamber that encodes Water essence into flowing data streams. Your algorithms create perpetual loops—constant data circulation preserves what static storage would lose. Motion coded into logic.",
         unlockAtAb: 30.0,
         recipe: { water_essence: 10 },
         growth: 1.12,
@@ -99,7 +99,7 @@ export const PRODUCERS = [
     {
         id: "ws_aether_synthesizer",
         displayName: "Aether Synthesizer",
-        description: "A preservation chamber that synthesizes Aether from all four base elements. Aether—the binding force—fades faster than anything else. By combining elements, you create something more stable than its parts. A reminder that unity resists the fading better than isolation.",
+        description: "A digital chamber that runs synthesis algorithms to merge all four elemental data streams into Aether. Your code combines Fire, Water, Air, and Crystal into something greater than their sum. Aether—the binding force—fades fastest, but compiled together, the elements resist entropy better than apart.",
         unlockAtAb: 50.0,
         recipe: {
             fire_essence: 2,
@@ -250,7 +250,7 @@ export const PRODUCERS = [
     {
         id: "ws_arcane_bit_reactor",
         displayName: "Arcane Bit Reactor",
-        description: "A preservation chamber that doesn't just stabilize magic—it generates Spell Energy automatically. By combining all five elements in precise harmony, you've created a self-sustaining loop. Proof that preservation can be generative, not just conservative. The fading hasn't stopped, but you're pushing back.",
+        description: "A self-executing algorithm that doesn't just preserve magic—it generates Spell Energy autonomously. Your code orchestrates all five elements in perfect harmony, creating a generative loop. The program runs itself, proving that digital preservation can create, not just conserve. The fading continues, but your code pushes back.",
         unlockAtAb: 10000.0,
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
@@ -345,7 +345,7 @@ export const PRODUCERS = [
     {
         id: "ws_infinity_bit_reactor",
         displayName: "Infinity Energy Reactor",
-        description: "The apex of preservation technology. By stabilizing void-level materials—structures that exist at the boundary of reality—you've created something that might outlast the fading itself. This chamber generates massive Spell Energy because it taps into the deepest layers of existence, where magic originates. Not just preservation. Transcendence.",
+        description: "The apex of arcane programming. Your code operates at reality's edge, compiling void-level data structures that exist beyond normal spacetime. The algorithm taps into the deep layers of existence where magic originates, generating massive Spell Energy from the source itself. Not just preservation. Not just generation. Transcendence through code.",
         unlockAtAb: 20000000.0,
         recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,
