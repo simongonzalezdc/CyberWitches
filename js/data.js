@@ -250,7 +250,7 @@ export const PRODUCERS = [
     {
         id: "ws_arcane_bit_reactor",
         displayName: "Arcane Bit Reactor",
-        description: "A self-executing algorithm that doesn't just preserve magic—it generates Spell Energy autonomously. Your code orchestrates all five elements in perfect harmony, creating a generative loop. The program runs itself, proving that digital preservation can create, not just conserve. The fading continues, but your code pushes back.",
+        description: "A self-executing algorithm that doesn't just preserve magic—it generates Arcane Bits autonomously. Your code orchestrates all five elements in perfect harmony, creating a generative loop. The program runs itself, proving that digital preservation can create, not just conserve. The fading continues, but your code pushes back.",
         unlockAtAb: 10000.0,
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
@@ -345,7 +345,7 @@ export const PRODUCERS = [
     {
         id: "ws_infinity_bit_reactor",
         displayName: "Infinity Energy Reactor",
-        description: "The apex of arcane programming. Your code operates at reality's edge, compiling void-level data structures that exist beyond normal spacetime. The algorithm taps into the deep layers of existence where magic originates, generating massive Spell Energy from the source itself. Not just preservation. Not just generation. Transcendence through code.",
+        description: "The apex of arcane programming. Your code operates at reality's edge, compiling void-level data structures that exist beyond normal spacetime. The algorithm taps into the deep layers of existence where magic originates, generating massive Arcane Bits from the source itself. Not just preservation. Not just generation. Transcendence through code.",
         unlockAtAb: 20000000.0,
         recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,

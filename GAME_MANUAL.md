@@ -120,7 +120,7 @@ Workstations are automated producers that generate ingredients and AB over time.
 - **Produces**: 0.20 Shaped Crystal/s
 - **Strategy**: Produces Shaped Crystals for advanced crafting
 
-#### 4. **Aether Synthesizer** (Unlocks at 50 SE)
+#### 4. **Aether Synthesizer** (Unlocks at 50 AB)
 - **Recipe**: 2 Fire Essence + 2 Water Essence + 2 Air Essence + 2 Crystal Dust
 - **Growth**: 1.12x
 - **Produces**: 0.20 Distilled Aether/s

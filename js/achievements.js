@@ -20,8 +20,8 @@ export class AchievementSystem {
             },
             {
                 id: 'first_ab',
-                name: 'First Spell Energy',
-                description: 'You\'ve preserved your first Spell Energy—magic captured and crystallized before it could fade. Unstable, fragile, but real. This proves preservation is possible. Keep going.',
+                name: 'First Arcane Bits',
+                description: 'You\'ve preserved your first Arcane Bits—magic captured and crystallized before it could fade. Unstable, fragile, but real. This proves preservation is possible. Keep going.',
                 condition: () => this.gameState.ab >= 1,
                 reward: { type: 'ab', amount: 5 }
             },
