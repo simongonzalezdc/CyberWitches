@@ -90,16 +90,16 @@ class TutorialSystem {
         this.tutorialSteps = [
             {
                 id: 'welcome',
-                title: 'Spellwright // System Online',
-                message: 'Date: June 15, 2077. Location: The Sprawl, Sector 7.\n\nMagic is dying. 94% of Earth\'s magical field has dissipated. Projection: total collapse by 2084.\n\nYou are a Spellwright—a code-mystic who can digitize and preserve magic. While megacorps extracted until collapse, you learned preservation.\n\nYour mission: Build preservation chambers. Generate Spell Energy. Delay entropy. Transcend timelines.',
+                title: 'Welcome, Spellwright',
+                message: 'Magic is fading from the world, and once it\'s gone, it won\'t return.\n\nYou are a Spellwright—one of the last who knows how to preserve magic by crystallizing it into permanent structures.\n\nYour mission: Cast spells to gather elemental essences. Build preservation chambers to stabilize magic. Discover new techniques. Fight the fading.\n\nEvery spell cast, every chamber built, every technique discovered—it all slows the inevitable. Let\'s begin.',
                 target: null,
                 position: 'center',
                 action: null
             },
             {
                 id: 'cast_button',
-                title: 'Protocol: Manual Extraction',
-                message: 'Click Cast to pull elemental essences from the air before they decay. Fire. Water. Air. Crystal. Aether. Raw magic, crystallizing in your neural buffer.\n\nEach cast gathers what the megacorps couldn\'t: patterns that preservation stabilizes. Extraction destroyed. Preservation survives.',
+                title: 'Cast Your First Spell',
+                message: 'Click Cast to gather elemental essences before they fade: Fire, Water, Air, Crystal, and Aether.\n\nEach spell pulls magic from a dwindling pool. The elements respond to your call—but not for much longer. Gather them while you still can.',
                 target: '#cast-button',
                 position: 'bottom',
                 action: () => {

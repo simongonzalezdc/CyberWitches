@@ -13,22 +13,22 @@ export class AchievementSystem {
             // Early game achievements - adjusted to prevent too-quick unlocks
             {
                 id: 'first_cast',
-                name: 'First Contact // 2077.06.15',
-                description: 'You cast your first preservation spell. The patterns responded—barely, flickering, dying—but they responded. Fire from the air, Water from humidity, Crystal from dust. Raw magic, crystallizing before it could dissolve. Proof: preservation is possible.',
+                name: 'First Spell Cast',
+                description: 'You\'ve cast your first spell, gathering magic before it fades completely. Fire from the air. Water from moisture. Crystal from dust. The elements respond to your call—for now. This is your first step in preserving what remains.',
                 condition: () => this.gameState.totalTaps >= 1,
                 reward: { type: 'ab', amount: 10 }
             },
             {
                 id: 'first_ab',
-                name: 'Energy Secured',
-                description: 'First Spell Energy preserved. Unstable, fragile, but real. The megacorps extracted. You preserved. Small difference. Massive implications. SE reading: 1.0. Coherence: holding.',
+                name: 'First Spell Energy',
+                description: 'You\'ve preserved your first Spell Energy—magic captured and crystallized before it could fade. Unstable, fragile, but real. This proves preservation is possible. Keep going.',
                 condition: () => this.gameState.ab >= 1,
                 reward: { type: 'ab', amount: 5 }
             },
             {
                 id: 'first_workstation',
-                name: 'Chamber Online // Model 1',
-                description: 'First preservation chamber operational. Thermal locks: stable. Resonance: 432Hz. Magic decay rate: reduced by 0.000023%. It\'s not much. But it\'s not zero. And not-zero is how you fight entropy—one chamber at a time.',
+                name: 'First Preservation Chamber',
+                description: 'You\'ve built your first preservation chamber. The fading slows, if only slightly. One chamber won\'t save the world—but it\'s a start. Every small victory against entropy matters.',
                 condition: () => this.gameState.totalWorkstationsCrafted >= 1,
                 reward: { type: 'ab', amount: 50 }
             },
@@ -62,8 +62,8 @@ export class AchievementSystem {
             },
             {
                 id: 'first_discovery',
-                name: 'Breakthrough Logged',
-                description: 'First experimental recipe discovered. The megacorps had researchers. You have curiosity and desperation. Turns out that\'s enough. New preservation technique archived. Reproducible. Scalable. Proof that innovation isn\'t dead. Just... fading slower now.',
+                name: 'Experimenter',
+                description: 'You\'ve discovered a new preservation technique through experimentation. Each discovery helps you fight the fading more effectively. Innovation isn\'t lost—you\'re proof of that.',
                 condition: () => this.gameState.discoveredRecipes.length >= 1,
                 reward: { type: 'ab', amount: 100 }
             },

@@ -59,7 +59,7 @@ export const PRODUCERS = [
     {
         id: "ws_fire_forge",
         displayName: "Fire Forge",
-        description: "Fire Forge // Model FF-2077 — A thermal-locking preservation chamber that captures Fire essence in crystalline matrices before it decays. The heat doesn't burn—it stabilizes, converting volatile magic into structured data. Each forge delays the fading by microseconds. Multiply that across the Sprawl, and you buy yourself hours.",
+        description: "A preservation chamber that stabilizes Fire essence before it fades. The intense heat creates a crystalline matrix that slows entropy. Fire fades faster than other elements—every forge you build is a small victory against the inevitable.",
         unlockAtAb: 25.0,
         recipe: { fire_essence: 10 },
         growth: 1.12,
@@ -69,7 +69,7 @@ export const PRODUCERS = [
     {
         id: "ws_aqua_well",
         displayName: "Aqua Well",
-        description: "Aqua Well // Model AW-2077 — A flow-state preservation chamber that stabilizes Water essence in perpetual motion. The liquid magic circulates through quantum resonators, never allowed to stagnate or decay. Like keeping data alive by constantly refreshing RAM. Entropy hates motion.",
+        description: "A preservation chamber that stabilizes Water essence before it fades. The flowing water creates a stable environment that resists the fading—constant motion preserves what stillness would lose.",
         unlockAtAb: 30.0,
         recipe: { water_essence: 10 },
         growth: 1.12,
@@ -79,7 +79,7 @@ export const PRODUCERS = [
     {
         id: "ws_zephyr_generator",
         displayName: "Zephyr Generator",
-        description: "Zephyr Generator // Model ZG-2077 — An electromagnetic resonance chamber that traps Air essence in standing wave patterns. The magic doesn't flow—it oscillates at 432Hz, the frequency that resists decay. Like encoding wind into solid sound. It shouldn't work. It does.",
+        description: "A preservation chamber that stabilizes Air essence before it fades. The constant circulation creates a barrier against entropy. Air is the most elusive element—capturing wind is like holding onto a memory.",
         unlockAtAb: 35.0,
         recipe: { air_essence: 10 },
         growth: 1.12,
@@ -89,7 +89,7 @@ export const PRODUCERS = [
     {
         id: "ws_crystal_chamber",
         displayName: "Crystal Chamber",
-        description: "Crystal Chamber // Model CC-2077 — A lattice-growth chamber that accelerates crystal formation. Crystal naturally resists entropy—it's the most stable element you have. The chamber just guides the growth, like training a vine to climb a trellis. Except the vine is magic and the trellis is math. And both are dying, but slower.",
+        description: "A preservation chamber that stabilizes Crystal essence before it fades. Crystal structures resist entropy better than other elements—they're the foundation of all your preservation work. When everything else fades, crystal endures.",
         unlockAtAb: 40.0,
         recipe: { crystal_dust: 10 },
         growth: 1.12,
@@ -99,7 +99,7 @@ export const PRODUCERS = [
     {
         id: "ws_aether_synthesizer",
         displayName: "Aether Synthesizer",
-        description: "Aether Synthesizer // Model AS-2077 — The desperate one. Aether—the fifth element, the binding force—is almost gone. This chamber attempts to reverse-engineer it from the other four, like reconstructing a deleted file from disk fragments. Success rate: 23%. But 23% is better than zero. And zero is what you'll have by 2084.",
+        description: "A preservation chamber that synthesizes Aether from all four base elements. Aether—the binding force—fades faster than anything else. By combining elements, you create something more stable than its parts. A reminder that unity resists the fading better than isolation.",
         unlockAtAb: 50.0,
         recipe: {
             fire_essence: 2,
@@ -163,7 +163,7 @@ export const PRODUCERS = [
     {
         id: "ws_aether_fusion_chamber",
         displayName: "Aether Fusion Chamber",
-        description: "Aether Fusion Chamber // Model AFC-2077 — Breakthrough. You've learned to fuse multiple aether sources into a more stable composite. Like RAID arrays for magic—redundancy breeds resilience. The megacorps never figured this out because they were too busy extracting. You're the first to preserve at this scale. Patent it. If patents still mattered.",
+        description: "A complex preservation chamber that fuses multiple aether sources into a more stable form. You've discovered that layering preservation techniques creates compound stability—each layer reinforces the others. This is a breakthrough in fighting the fading.",
         unlockAtAb: 500.0,
         recipe: {
             aether_well: 3,
@@ -250,7 +250,7 @@ export const PRODUCERS = [
     {
         id: "ws_arcane_bit_reactor",
         displayName: "Arcane Bit Reactor",
-        description: "Arcane Bit Reactor // Model ABR-2077 — The breakthrough. This doesn't just preserve magic—it generates Spell Energy automatically. A self-sustaining arcane loop. Proof that preservation can be generative. The corps thought magic was a resource to extract. You've shown it's a pattern to cultivate. They're bankrupt. You're still here.",
+        description: "A preservation chamber that doesn't just stabilize magic—it generates Spell Energy automatically. By combining all five elements in precise harmony, you've created a self-sustaining loop. Proof that preservation can be generative, not just conservative. The fading hasn't stopped, but you're pushing back.",
         unlockAtAb: 10000.0,
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
@@ -345,7 +345,7 @@ export const PRODUCERS = [
     {
         id: "ws_infinity_bit_reactor",
         displayName: "Infinity Energy Reactor",
-        description: "Infinity Energy Reactor // Model IER-2084 — You've breached into sub-reality—the spaces between dimensions where magic originates. This reactor taps void constructs from beyond the fading. It generates massive Spell Energy because it's pulling from timelines where magic never died. You're not preserving anymore. You're transcending. The fading can't reach here.",
+        description: "The apex of preservation technology. By stabilizing void-level materials—structures that exist at the boundary of reality—you've created something that might outlast the fading itself. This chamber generates massive Spell Energy because it taps into the deepest layers of existence, where magic originates. Not just preservation. Transcendence.",
         unlockAtAb: 20000000.0,
         recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,
