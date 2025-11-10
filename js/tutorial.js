@@ -90,8 +90,8 @@ class TutorialSystem {
         this.tutorialSteps = [
             {
                 id: 'welcome',
-                title: 'Spellwright',
-                message: 'Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells to gather magic before it fades, then build preservation chambers to stabilize it.',
+                title: 'Welcome, Hex Compiler',
+                message: 'In a distant future where magic and technology converged, something went wrong. Magic is fading—and once it\'s gone, it won\'t return.\n\nYou are a Hex Compiler—one of the last who can translate magical hexes into executable hexadecimal code. You compile spells into stable data structures, program algorithms that resist entropy, and build digital preservation chambers.\n\nYour mission: Compile hexes into code before magic fades. Every hex you translate, every chamber you program, every algorithm you optimize—it all pushes back against the inevitable.\n\nLet\'s begin.',
                 target: null,
                 position: 'center',
                 action: null
@@ -99,7 +99,7 @@ class TutorialSystem {
             {
                 id: 'cast_button',
                 title: 'Cast Your First Spell',
-                message: 'Click Cast to gather magic before it fades. Each spell pulls energy from a dwindling pool.',
+                message: 'Click Cast to gather elemental essences before they fade: Fire, Water, Air, Crystal, and Aether.\n\nEach spell pulls magic from a dwindling pool. The elements respond to your call—but not for much longer. Gather them while you still can.',
                 target: '#cast-button',
                 position: 'bottom',
                 action: () => {

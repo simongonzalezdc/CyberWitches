@@ -59,7 +59,7 @@ export const PRODUCERS = [
     {
         id: "ws_fire_forge",
         displayName: "Fire Forge",
-        description: "A preservation chamber that stabilizes Fire essence before it fades. The intense heat slows the fading, allowing you to preserve more magic.",
+        description: "A digital preservation chamber that compiles Fire essence into stable data structures. Your code creates crystalline matrices that capture heat as information before it dissipates. Fire fades faster than other elements—every forge you program is a small victory against entropy.",
         unlockAtAb: 25.0,
         recipe: { fire_essence: 10 },
         growth: 1.12,
@@ -69,7 +69,7 @@ export const PRODUCERS = [
     {
         id: "ws_aqua_well",
         displayName: "Aqua Well",
-        description: "A preservation chamber that stabilizes Water essence before it fades. The flowing water creates a stable environment that resists the fading.",
+        description: "A digital preservation chamber that encodes Water essence into flowing data streams. Your algorithms create perpetual loops—constant data circulation preserves what static storage would lose. Motion coded into logic.",
         unlockAtAb: 30.0,
         recipe: { water_essence: 10 },
         growth: 1.12,
@@ -79,7 +79,7 @@ export const PRODUCERS = [
     {
         id: "ws_zephyr_generator",
         displayName: "Zephyr Generator",
-        description: "A preservation chamber that stabilizes Air essence before it fades. The constant motion creates a barrier against the fading.",
+        description: "A preservation chamber that stabilizes Air essence before it fades. The constant circulation creates a barrier against entropy. Air is the most elusive element—capturing wind is like holding onto a memory.",
         unlockAtAb: 35.0,
         recipe: { air_essence: 10 },
         growth: 1.12,
@@ -89,7 +89,7 @@ export const PRODUCERS = [
     {
         id: "ws_crystal_chamber",
         displayName: "Crystal Chamber",
-        description: "A preservation chamber that stabilizes Crystal essence before it fades. Crystal structures are the most stable—they resist the fading better than others.",
+        description: "A preservation chamber that stabilizes Crystal essence before it fades. Crystal structures resist entropy better than other elements—they're the foundation of all your preservation work. When everything else fades, crystal endures.",
         unlockAtAb: 40.0,
         recipe: { crystal_dust: 10 },
         growth: 1.12,
@@ -99,9 +99,9 @@ export const PRODUCERS = [
     {
         id: "ws_aether_synthesizer",
         displayName: "Aether Synthesizer",
-        description: "A preservation chamber that synthesizes Aether from all four elements. By combining the elements, you create a more stable form that resists the fading.",
+        description: "A digital chamber that runs synthesis algorithms to merge all four elemental data streams into Aether. Your code combines Fire, Water, Air, and Crystal into something greater than their sum. Aether—the binding force—fades fastest, but compiled together, the elements resist entropy better than apart.",
         unlockAtAb: 50.0,
-        recipe: { 
+        recipe: {
             fire_essence: 2,
             water_essence: 2,
             air_essence: 2,
@@ -163,7 +163,7 @@ export const PRODUCERS = [
     {
         id: "ws_aether_fusion_chamber",
         displayName: "Aether Fusion Chamber",
-        description: "A complex preservation chamber that fuses multiple aether sources into a more stable form. This represents a breakthrough in preservation technology.",
+        description: "A complex preservation chamber that fuses multiple aether sources into a more stable form. You've discovered that layering preservation techniques creates compound stability—each layer reinforces the others. This is a breakthrough in fighting the fading.",
         unlockAtAb: 500.0,
         recipe: {
             aether_well: 3,
@@ -250,6 +250,7 @@ export const PRODUCERS = [
     {
         id: "ws_arcane_bit_reactor",
         displayName: "Arcane Bit Reactor",
+        description: "A self-executing algorithm that doesn't just preserve magic—it generates Arcane Bits autonomously. Your code orchestrates all five elements in perfect harmony, creating a generative loop. The program runs itself, proving that digital preservation can create, not just conserve. The fading continues, but your code pushes back.",
         unlockAtAb: 10000.0,
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
@@ -344,6 +345,7 @@ export const PRODUCERS = [
     {
         id: "ws_infinity_bit_reactor",
         displayName: "Infinity Energy Reactor",
+        description: "The apex of arcane programming. Your code operates at reality's edge, compiling void-level data structures that exist beyond normal spacetime. The algorithm taps into the deep layers of existence where magic originates, generating massive Arcane Bits from the source itself. Not just preservation. Not just generation. Transcendence through code.",
         unlockAtAb: 20000000.0,
         recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,

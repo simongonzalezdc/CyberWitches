@@ -1737,7 +1737,7 @@ function initUI() {
             const prestigeGain = gameState.calculatePrestigeGain();
             const confirmed = await showDestructiveConfirmation(
                 stripEmojisIfLowTier('⚡ Ascend'),
-                `Are you sure you want to ascend?\n\nYou will gain ${prestigeGain.toFixed(2)} Eldritch Keys (EK).\n\nYou will lose:\n• All Spell Energy and ingredients\n• All workstations\n• All upgrades (except prestige bonuses)\n\nYou will keep:\n• Prestige points (Eldritch Keys)\n• Prestige bonuses (Boons)\n• Discovered recipes\n• Achievements\n• Design tier unlocks`,
+                `Are you sure you want to ascend?\n\nYou will gain ${prestigeGain.toFixed(2)} Eldritch Keys (EK).\n\nYou will lose:\n• All Arcane Bits and ingredients\n• All workstations\n• All upgrades (except prestige bonuses)\n\nYou will keep:\n• Prestige points (Eldritch Keys)\n• Prestige bonuses (Boons)\n• Discovered recipes\n• Achievements\n• Design tier unlocks`,
                 'ASCEND'
             );
             
@@ -4440,8 +4440,8 @@ function updateStatsTab() {
     // Split stats into two columns
     const leftColumnStats = [
         { label: 'Total Casts', value: gameState.totalTaps },
-        { label: 'Total Spell Energy Earned', value: formatShort(gameState.abTotalEarned) },
-        { label: 'Spell Energy Per Second', value: formatShort(gameState.getAbPerSecond()) },
+        { label: 'Total Arcane Bits Earned', value: formatShort(gameState.abTotalEarned) },
+        { label: 'Arcane Bits Per Second', value: formatShort(gameState.getAbPerSecond()) },
         { label: 'Recipes Discovered', value: gameState.discoveredRecipes.length },
         { label: 'Achievements', value: `${achievements.getUnlockedCount()}/${achievements.getTotalCount()}` }
     ];
