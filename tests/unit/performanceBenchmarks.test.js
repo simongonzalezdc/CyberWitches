@@ -2,6 +2,7 @@
  * Tests for Performance Benchmarks
  */
 
+import { jest, describe, test, expect, beforeEach } from '@jest/globals';
 import { PerformanceBenchmarks } from '../../js/performanceBenchmarks.js';
 
 describe('PerformanceBenchmarks', () => {

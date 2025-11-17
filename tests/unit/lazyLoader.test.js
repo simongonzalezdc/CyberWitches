@@ -2,6 +2,7 @@
  * Tests for Lazy Loader
  */
 
+import { jest, describe, test, expect, beforeEach } from '@jest/globals';
 import { LazyLoader } from '../../js/lazyLoader.js';
 
 // Mock dynamic imports

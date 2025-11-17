@@ -2,6 +2,7 @@
  * Tests for Lifecycle Manager
  */
 
+import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { LifecycleManager } from '../../js/lifecycleManager.js';
 
 describe('LifecycleManager', () => {
@@ -76,7 +77,13 @@ describe('LifecycleManager', () => {
     });
 
     describe('Timers', () => {
-        jest.useFakeTimers();
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
 
         test('should track setInterval', () => {
             const callback = jest.fn();

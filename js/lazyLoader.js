@@ -3,7 +3,7 @@
  * Dynamically loads non-critical modules only when needed
  */
 
-class LazyLoader {
+export class LazyLoader {
     constructor() {
         this.loadedModules = new Map();
         this.loadingPromises = new Map();

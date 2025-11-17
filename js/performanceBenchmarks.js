@@ -3,7 +3,7 @@
  * Tracks key metrics and reports degradation
  */
 
-class PerformanceBenchmarks {
+export class PerformanceBenchmarks {
     constructor() {
         this.metrics = {
             fps: [],
