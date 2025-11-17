@@ -703,7 +703,7 @@ describe('GameState - Core Functionality', () => {
       gameState.inventory['fire'] = 100;
       gameState.workstations['ws_fire_forge'] = 5;
 
-      gameState.saveGameState();
+      gameState.saveGameStateImmediate();
 
       const saved = localStorage.getItem('cyberWitchesSave');
       expect(saved).not.toBeNull();
@@ -713,7 +713,7 @@ describe('GameState - Core Functionality', () => {
       // Save a state
       gameState.ab = 1000;
       gameState.inventory = { fire: 200, water: 150 };
-      gameState.saveGameState();
+      gameState.saveGameStateImmediate();
 
       // Create new gameState and load
       const newState = new GameState();
@@ -744,7 +744,7 @@ describe('GameState - Core Functionality', () => {
       gameState.upgradesOwned = { upgrade1: true, upgrade2: true };
       gameState.prestigePoints = 25;
 
-      gameState.saveGameState();
+      gameState.saveGameStateImmediate();
 
       const newState = new GameState();
       newState.milestones = [];
@@ -1139,7 +1139,7 @@ describe('GameState - Core Functionality', () => {
   describe('Save State Structure', () => {
     test('should save and load discovered recipes', () => {
       gameState.discoveredRecipes = ['recipe1', 'recipe2'];
-      gameState.saveGameState();
+      gameState.saveGameStateImmediate();
 
       const newState = new GameState();
       newState.loadGameState();
@@ -1152,14 +1152,14 @@ describe('GameState - Core Functionality', () => {
       gameState.addBuff('production', 0.5, 1800);
 
       expect(() => {
-        gameState.saveGameState();
+        gameState.saveGameStateImmediate();
       }).not.toThrow();
     });
 
     test('should save and load prestige data', () => {
       gameState.prestigePoints = 10;
       gameState.prestigeCount = 5;
-      gameState.saveGameState();
+      gameState.saveGameStateImmediate();
 
       const newState = new GameState();
       newState.loadGameState();
@@ -1171,7 +1171,7 @@ describe('GameState - Core Functionality', () => {
     test('should save and load element specialization', () => {
       gameState.elementSpecialization = 'fire';
       gameState.specializationBonuses = { test: 1.5 };
-      gameState.saveGameState();
+      gameState.saveGameStateImmediate();
 
       const newState = new GameState();
       newState.loadGameState();
