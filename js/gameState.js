@@ -94,6 +94,10 @@ export class GameState {
 
         // Pending save flag
         this.hasPendingSave = false;
+
+        // Memoization cache for production multipliers
+        this.multiplierCache = new Map();
+        this.multiplierCacheDirty = true;
     }
     
     /**
@@ -306,11 +310,17 @@ export class GameState {
     }
     
     /**
-     * Get production multiplier for a specific workstation
+     * Get production multiplier for a specific workstation (memoized)
      * @param {string} workstationId - ID of the workstation
      * @returns {number} Total production multiplier
      */
     getProductionMultiplier(workstationId) {
+        // Check cache if not dirty
+        if (!this.multiplierCacheDirty && this.multiplierCache.has(workstationId)) {
+            return this.multiplierCache.get(workstationId);
+        }
+
+        // Recalculate if cache is dirty or missing
         let mult = 1.0;
         
         // Global upgrades
@@ -359,8 +369,33 @@ export class GameState {
             const meditationBonus = window.meditationState.getMeditationProductionBonus();
             mult *= meditationBonus;
         }
-        
+
+        // Cache the result
+        this.multiplierCache.set(workstationId, mult);
+
         return mult;
+    }
+
+    /**
+     * Invalidate multiplier cache (call when upgrades/bonuses change)
+     */
+    invalidateMultiplierCache() {
+        this.multiplierCacheDirty = true;
+    }
+
+    /**
+     * Rebuild multiplier cache for all workstations
+     */
+    rebuildMultiplierCache() {
+        this.multiplierCache.clear();
+        this.multiplierCacheDirty = false;
+
+        // Pre-calculate for all owned workstations
+        for (const wsId in this.workstations) {
+            if (this.workstations[wsId] > 0) {
+                this.getProductionMultiplier(wsId);
+            }
+        }
     }
     
     /**
@@ -392,6 +427,11 @@ export class GameState {
             value: value, // Multiplier value (e.g., 0.5 for +50%)
             remaining: duration // Duration in seconds
         });
+
+        // Invalidate multiplier cache if production-related buff
+        if (type === 'production' || type === 'ab_production' || type === 'ingredient_production') {
+            this.invalidateMultiplierCache();
+        }
     }
     
     getBuff(type) {
@@ -704,6 +744,10 @@ export class GameState {
         
         this.consumeRecipe(upgData.recipe);
         this.upgradesOwned[upgId] = true;
+
+        // Invalidate multiplier cache since upgrades affect production
+        this.invalidateMultiplierCache();
+
         if (this.onUpgradePurchased) this.onUpgradePurchased(upgId);
         return true;
     }
@@ -818,7 +862,10 @@ export class GameState {
         
         this.prestigePoints -= Math.floor(cost);
         this.prestigeBonuses[bonusId] = (this.prestigeBonuses[bonusId] || 0) + 1;
-        
+
+        // Invalidate multiplier cache since bonuses affect production
+        this.invalidateMultiplierCache();
+
         return true;
     }
     
