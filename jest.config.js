@@ -7,6 +7,9 @@ export default {
   // Use jsdom for DOM testing
   testEnvironment: 'jsdom',
 
+  // Inject Jest globals
+  injectGlobals: true,
+
   // Don't transform anything (use native ES modules)
   transform: {},
 

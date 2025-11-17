@@ -1,31 +1,33 @@
 /**
  * Unit tests for CovenSystem class
  * Tests coven creation, joining, rituals, and bonuses
- * 
+ *
  * NOTE: Coven system is archived. This test file references archived code.
  * To run these tests, restore coven system files from archive/code/ first.
  */
 
+import { jest, describe, test, expect, beforeEach } from '@jest/globals';
+
 // import { CovenSystem } from '../js/covenSystem.js'; // Archived - see archive/code/covenSystem.js
 
 // Mock the error handler
-jest.mock('../js/errorHandler.js', () => ({
-    handleError: jest.fn()
-}));
+// jest.mock('../js/errorHandler.js', () => ({
+//     handleError: jest.fn()
+// }));
 
-describe('CovenSystem', () => {
+describe.skip('CovenSystem - ARCHIVED (tests disabled)', () => {
     let covenSystem;
     let mockGameState;
-    
+
     beforeEach(() => {
         // Create a mock game state
         mockGameState = {
             ab: 100,
             inventory: { test_ingredient: 50 }
         };
-        
+
         // Create a new CovenSystem instance
-        covenSystem = new CovenSystem(mockGameState);
+        // covenSystem = new CovenSystem(mockGameState);
         
         // Clear all mocks
         jest.clearAllMocks();

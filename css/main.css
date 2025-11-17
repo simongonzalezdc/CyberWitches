@@ -1,0 +1,239 @@
+/* Main CSS - Imports all modules */
+
+/* Import Google Fonts - using display=swap for better performance */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+/* Core modules - loaded in order of importance */
+@import 'base.css';
+@import 'layout.css';
+@import 'components.css';
+@import 'animations.css';
+@import 'responsive.css';
+
+/* Glitch effects - lazy loaded via JavaScript when design tier > 0 */
+/* @import 'glitch-effects.css'; */
+
+/* ===========================================
+   Additional styles that couldn't be modularized
+   (Specific to game features)
+   =========================================== */
+
+/* Night sky background */
+.night-sky-stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(2px 2px at 20% 30%, white, transparent),
+                radial-gradient(2px 2px at 60% 70%, white, transparent),
+                radial-gradient(1px 1px at 50% 50%, white, transparent),
+                radial-gradient(1px 1px at 80% 10%, white, transparent),
+                radial-gradient(2px 2px at 90% 60%, white, transparent),
+                radial-gradient(1px 1px at 33% 80%, white, transparent),
+                radial-gradient(1px 1px at 10% 90%, white, transparent);
+    background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%;
+    background-position: 0 0, 40% 40%, 20% 20%, 80% 80%, 10% 10%, 70% 70%, 30% 30%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+/* Sparkle canvas */
+.sparkle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.6;
+}
+
+/* Particle canvas (for celebration effects) */
+#particle-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Virtual scroll viewport */
+.virtual-scroll-inner {
+    position: relative;
+}
+
+.virtual-scroll-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+}
+
+/* Meditation grid */
+.meditation-grid-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 1;
+}
+
+#meditation-canvas {
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-dark);
+}
+
+.meditation-main {
+    display: flex;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.meditation-sidebar {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* Experiment result box */
+.result-box {
+    padding: var(--spacing-lg);
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    margin: var(--spacing-md) 0;
+}
+
+.result-box.success {
+    border-color: var(--success);
+}
+
+.result-box.error {
+    border-color: var(--error);
+}
+
+/* Recipe list */
+#recipe-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+/* Achievement popup */
+.achievement-popup {
+    position: fixed;
+    top: 100px;
+    right: var(--spacing-lg);
+    background: var(--bg-card);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 10px 40px rgba(255, 219, 110, 0.3);
+    z-index: 2000;
+    animation: slideInRight 0.5s ease-out;
+    max-width: 350px;
+}
+
+.achievement-popup-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    color: var(--accent);
+    margin-bottom: var(--spacing-sm);
+}
+
+.achievement-popup-description {
+    font-size: 14px;
+    color: var(--text-dim);
+}
+
+/* Stats grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    text-align: center;
+}
+
+.stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary);
+    display: block;
+    margin-bottom: var(--spacing-sm);
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--text-dim);
+}
+
+/* Performance optimization classes */
+.contain-layout {
+    contain: layout;
+}
+
+.contain-paint {
+    contain: paint;
+}
+
+.contain-strict {
+    contain: strict;
+}
+
+/* Visibility utilities */
+.hidden {
+    display: none;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.visible {
+    visibility: visible;
+}
+
+/* Text utilities */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-success {
+    color: var(--success);
+}
+
+.text-error {
+    color: var(--error);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}

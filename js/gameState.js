@@ -3,6 +3,7 @@ import { Balance } from './utils.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { GAME_CONSTANTS } from './codeOrganization.js';
 import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
+import { debounce } from './commonUtils.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
 
@@ -74,6 +75,29 @@ export class GameState {
         this.pendingUpdates = new Set();
         this.batchTimeout = null;
         this.batchDelay = GAME_CONSTANTS.UI_UPDATE_DELAY; // ~60fps
+
+        // Debounced save - wait 3 seconds after last change before saving
+        // This prevents blocking the main thread during rapid game state changes
+        this.debouncedSave = debounce(() => {
+            // Use requestIdleCallback for non-blocking save
+            if (typeof requestIdleCallback !== 'undefined') {
+                requestIdleCallback(() => {
+                    this.saveGameStateImmediate();
+                }, { timeout: 2000 }); // Fallback to timeout after 2s
+            } else {
+                // Fallback for browsers without requestIdleCallback
+                setTimeout(() => {
+                    this.saveGameStateImmediate();
+                }, 0);
+            }
+        }, 3000); // Wait 3 seconds of inactivity
+
+        // Pending save flag
+        this.hasPendingSave = false;
+
+        // Memoization cache for production multipliers
+        this.multiplierCache = new Map();
+        this.multiplierCacheDirty = true;
     }
     
     /**
@@ -122,11 +146,17 @@ export class GameState {
      * Stop the game tick loop
      */
     stopTickLoop() {
+        // Flush any pending saves before stopping
+        if (this.hasPendingSave) {
+            this.saveGameStateImmediate();
+            this.hasPendingSave = false;
+        }
+
         if (this.tickInterval) {
             clearInterval(this.tickInterval);
             this.tickInterval = null;
         }
-        
+
         // Remove visibility handler
         if (this.visibilityHandler) {
             document.removeEventListener('visibilitychange', this.visibilityHandler);
@@ -158,10 +188,11 @@ export class GameState {
             }
         }
         
-        // Auto-save every 30 seconds
+        // Auto-save every 30 seconds using debounced version
         const nowSeconds = Date.now() / 1000;
         if (nowSeconds - this.lastSaveTime > GAME_CONSTANTS.AUTO_SAVE_INTERVAL / 1000) {
-            this.saveGameState();
+            this.saveGameState(); // Uses debounced version
+            this.hasPendingSave = true;
         }
     }
     
@@ -279,11 +310,17 @@ export class GameState {
     }
     
     /**
-     * Get production multiplier for a specific workstation
+     * Get production multiplier for a specific workstation (memoized)
      * @param {string} workstationId - ID of the workstation
      * @returns {number} Total production multiplier
      */
     getProductionMultiplier(workstationId) {
+        // Check cache if not dirty
+        if (!this.multiplierCacheDirty && this.multiplierCache.has(workstationId)) {
+            return this.multiplierCache.get(workstationId);
+        }
+
+        // Recalculate if cache is dirty or missing
         let mult = 1.0;
         
         // Global upgrades
@@ -332,8 +369,33 @@ export class GameState {
             const meditationBonus = window.meditationState.getMeditationProductionBonus();
             mult *= meditationBonus;
         }
-        
+
+        // Cache the result
+        this.multiplierCache.set(workstationId, mult);
+
         return mult;
+    }
+
+    /**
+     * Invalidate multiplier cache (call when upgrades/bonuses change)
+     */
+    invalidateMultiplierCache() {
+        this.multiplierCacheDirty = true;
+    }
+
+    /**
+     * Rebuild multiplier cache for all workstations
+     */
+    rebuildMultiplierCache() {
+        this.multiplierCache.clear();
+        this.multiplierCacheDirty = false;
+
+        // Pre-calculate for all owned workstations
+        for (const wsId in this.workstations) {
+            if (this.workstations[wsId] > 0) {
+                this.getProductionMultiplier(wsId);
+            }
+        }
     }
     
     /**
@@ -365,6 +427,11 @@ export class GameState {
             value: value, // Multiplier value (e.g., 0.5 for +50%)
             remaining: duration // Duration in seconds
         });
+
+        // Invalidate multiplier cache if production-related buff
+        if (type === 'production' || type === 'ab_production' || type === 'ingredient_production') {
+            this.invalidateMultiplierCache();
+        }
     }
     
     getBuff(type) {
@@ -677,6 +744,10 @@ export class GameState {
         
         this.consumeRecipe(upgData.recipe);
         this.upgradesOwned[upgId] = true;
+
+        // Invalidate multiplier cache since upgrades affect production
+        this.invalidateMultiplierCache();
+
         if (this.onUpgradePurchased) this.onUpgradePurchased(upgId);
         return true;
     }
@@ -733,7 +804,7 @@ export class GameState {
         
         // Trigger specialization choice UI (will be handled in game.js)
         if (this.onPrestigeCompleted) this.onPrestigeCompleted(ekGain);
-        this.saveGameState();
+        this.saveGameStateImmediate(); // Critical save - use immediate
     }
     
     /**
@@ -755,8 +826,8 @@ export class GameState {
             console.error('Element specialization not found:', element);
             return false;
         }
-        
-        this.saveGameState();
+
+        this.saveGameStateImmediate(); // Critical save - use immediate
         return true;
     }
     
@@ -791,7 +862,10 @@ export class GameState {
         
         this.prestigePoints -= Math.floor(cost);
         this.prestigeBonuses[bonusId] = (this.prestigeBonuses[bonusId] || 0) + 1;
-        
+
+        // Invalidate multiplier cache since bonuses affect production
+        this.invalidateMultiplierCache();
+
         return true;
     }
     
@@ -872,9 +946,17 @@ export class GameState {
     }
     
     /**
-     * Save game state to localStorage with error handling
+     * Save game state (debounced) - Use this for auto-saves
      */
     saveGameState() {
+        this.debouncedSave();
+    }
+
+    /**
+     * Save game state immediately to localStorage with error handling
+     * Use this for critical saves (before prestige, manual save, etc.)
+     */
+    saveGameStateImmediate() {
         // Include element specialization in save
         try {
             // Show loading state if available
@@ -1592,7 +1674,7 @@ export class GameState {
         
         if (removedCount > 0) {
             console.log(`Cleaned up ${removedCount} deprecated/invalid ingredients from inventory`);
-            // Save after cleanup
+            // Save after cleanup - debounced is fine for cleanup
             this.saveGameState();
         }
     }

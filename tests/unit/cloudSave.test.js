@@ -93,7 +93,7 @@ describe('Cloud Save System', () => {
       const saveData = cloudSave.collectSaveData();
 
       expect(saveData).toBeDefined();
-      expect(saveData.version).toBe('1.0');
+      expect(saveData.version).toBe('2.0');
       expect(saveData.timestamp).toBeGreaterThan(0);
       expect(saveData.deviceId).toBe(cloudSave.deviceId);
     });
@@ -112,7 +112,7 @@ describe('Cloud Save System', () => {
       const extracted = cloudSave.extractGameState();
 
       expect(extracted.ab).toBe(1000);
-      expect(extracted.prestigePoints).toBe(5);
+      expect(extracted.prestige.points).toBe(5);
     });
 
     test('should handle missing optional data', () => {
