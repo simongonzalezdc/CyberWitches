@@ -244,6 +244,7 @@
         transform: translateX(400px);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -312,7 +313,9 @@
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Empty states */
@@ -345,4 +348,17 @@
 .seps-display {
     color: var(--text-dim);
     font-size: 14px;
+}
+
+/* Inscription Bonuses */
+.inscription-bonus-container {
+    border-left: 3px solid var(--success);
+    background: rgba(60, 227, 197, 0.1);
+    width: 100%;
+}
+
+.inscription-bonus-label {
+    color: var(--success);
+    font-size: 12px;
+    margin-bottom: 6px;
 }

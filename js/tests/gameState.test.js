@@ -15,19 +15,19 @@ describe('GameState', () => {
     test('should initialize with default values', () => {
         // Test implementation
     });
-    
+
     test('should save and load game state', () => {
         // Test implementation
     });
-    
+
     test('should calculate production correctly', () => {
         // Test implementation
     });
-    
+
     test('should handle crafting workstations', () => {
         // Test implementation
     });
-    
+
     test('should handle purchasing upgrades', () => {
         // Test implementation
     });

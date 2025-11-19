@@ -9,6 +9,7 @@
 @import 'components.css';
 @import 'animations.css';
 @import 'responsive.css';
+@import 'meditation.css';
 
 /* Glitch effects - lazy loaded via JavaScript when design tier > 0 */
 /* @import 'glitch-effects.css'; */
@@ -26,12 +27,12 @@
     width: 100%;
     height: 100%;
     background: radial-gradient(2px 2px at 20% 30%, white, transparent),
-                radial-gradient(2px 2px at 60% 70%, white, transparent),
-                radial-gradient(1px 1px at 50% 50%, white, transparent),
-                radial-gradient(1px 1px at 80% 10%, white, transparent),
-                radial-gradient(2px 2px at 90% 60%, white, transparent),
-                radial-gradient(1px 1px at 33% 80%, white, transparent),
-                radial-gradient(1px 1px at 10% 90%, white, transparent);
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent),
+        radial-gradient(1px 1px at 33% 80%, white, transparent),
+        radial-gradient(1px 1px at 10% 90%, white, transparent);
     background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%;
     background-position: 0 0, 40% 40%, 20% 20%, 80% 80%, 10% 10%, 70% 70%, 30% 30%;
     z-index: 0;
@@ -236,4 +237,83 @@
 
 .text-muted {
     color: var(--text-muted);
+}
+
+/* Critical CSS - Essential styles for above-the-fold content (Moved from index.html) */
+:root {
+    --primary: #FF2DAA;
+    --bg-dark: #0A0A0F;
+    --bg-card: #1F1F3A;
+    --text: #FFFFFF;
+    --border: #333366
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--bg-dark);
+    min-height: 100vh
+}
+
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+.hud {
+    position: sticky;
+    top: 0;
+    background: rgba(31, 31, 58, 0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px;
+    z-index: 50
+}
+
+.main-game {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0
 }

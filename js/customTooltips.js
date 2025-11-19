@@ -9,7 +9,7 @@ class CustomTooltipManager {
         this.tooltipElement = null;
         this.init();
     }
-    
+
     init() {
         // Create tooltip element
         this.tooltipElement = document.createElement('div');
@@ -32,7 +32,7 @@ class CustomTooltipManager {
         `;
         document.body.appendChild(this.tooltipElement);
     }
-    
+
     /**
      * Show tooltip
      * @param {HTMLElement} element - Element to show tooltip for
@@ -41,23 +41,23 @@ class CustomTooltipManager {
      */
     show(element, text, position = 'top') {
         if (!element || !text) return;
-        
+
         // Hide existing tooltip
         this.hide();
-        
+
         this.activeTooltip = { element, text, position };
         this.tooltipElement.textContent = text;
         this.tooltipElement.style.display = 'block';
-        
+
         // Position tooltip
         this.positionTooltip(element, position);
-        
+
         // Show with fade in
         setTimeout(() => {
             this.tooltipElement.style.opacity = '1';
         }, 10);
     }
-    
+
     /**
      * Position tooltip relative to element
      * @param {HTMLElement} element - Target element
@@ -68,10 +68,10 @@ class CustomTooltipManager {
         const tooltipRect = this.tooltipElement.getBoundingClientRect();
         const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
         const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-        
+
         let top = 0;
         let left = 0;
-        
+
         switch (position) {
             case 'top':
                 top = rect.top + scrollY - tooltipRect.height - 8;
@@ -90,7 +90,7 @@ class CustomTooltipManager {
                 left = rect.right + scrollX + 8;
                 break;
         }
-        
+
         // Keep tooltip within viewport
         const padding = 8;
         if (left < padding) left = padding;
@@ -101,11 +101,11 @@ class CustomTooltipManager {
         if (top + tooltipRect.height > window.innerHeight - padding) {
             top = window.innerHeight - tooltipRect.height - padding;
         }
-        
+
         this.tooltipElement.style.top = `${top}px`;
         this.tooltipElement.style.left = `${left}px`;
     }
-    
+
     /**
      * Hide tooltip
      */
@@ -118,7 +118,7 @@ class CustomTooltipManager {
             }, 200);
         }
     }
-    
+
     /**
      * Add tooltip to element
      * @param {HTMLElement} element - Element to add tooltip to
@@ -128,22 +128,22 @@ class CustomTooltipManager {
      */
     addTooltip(element, text, position = 'top', mobileFriendly = true) {
         if (!element || !text) return;
-        
+
         // Store tooltip data
         element.setAttribute('data-tooltip', text);
         element.setAttribute('data-tooltip-position', position);
-        
+
         // Desktop: show on hover
         element.addEventListener('mouseenter', () => {
             if (!isMobile && !isTouchDevice) {
                 this.show(element, text, position);
             }
         });
-        
+
         element.addEventListener('mouseleave', () => {
             this.hide();
         });
-        
+
         // Mobile: show on tap
         if (mobileFriendly && (isMobile || isTouchDevice)) {
             let tapTimeout;
@@ -153,16 +153,16 @@ class CustomTooltipManager {
                     this.show(element, text, position);
                 }, 300);
             });
-            
+
             element.addEventListener('touchend', () => {
                 clearTimeout(tapTimeout);
             });
-            
+
             element.addEventListener('touchmove', () => {
                 clearTimeout(tapTimeout);
                 this.hide();
             });
-            
+
             // Hide on tap outside
             document.addEventListener('touchstart', (e) => {
                 if (!element.contains(e.target)) {
@@ -171,7 +171,7 @@ class CustomTooltipManager {
             });
         }
     }
-    
+
     /**
      * Update tooltip text
      * @param {HTMLElement} element - Element
@@ -185,7 +185,7 @@ class CustomTooltipManager {
             }
         }
     }
-    
+
     /**
      * Remove tooltip from element
      * @param {HTMLElement} element - Element
@@ -204,18 +204,10 @@ class CustomTooltipManager {
 // Create global instance
 const customTooltipManager = new CustomTooltipManager();
 
-// Global functions
-window.addTooltip = (element, text, position, mobileFriendly) => {
-    customTooltipManager.addTooltip(element, text, position, mobileFriendly);
-};
-
-window.showTooltip = (element, text, position) => {
-    customTooltipManager.show(element, text, position);
-};
-
-window.hideTooltip = () => {
-    customTooltipManager.hide();
-};
+// Global functions removed - use customTooltipManager directly
+// window.addTooltip = ...
+// window.showTooltip = ...
+// window.hideTooltip = ...
 
 export default customTooltipManager;
 

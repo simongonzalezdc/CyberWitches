@@ -2,7 +2,9 @@
  * Virtual Scrolling Utility for Performance Optimization
  * Implements virtual scrolling concept for large lists to reduce DOM nodes
  */
-import { formatShort } from './utils.js';
+import { formatShort, formatPrecise } from './utils.js';
+import { UPGRADES, INGREDIENTS } from './modules/data/index.js';
+import customTooltipManager from './customTooltips.js';
 
 /**
  * Virtual Scroll Manager
@@ -21,17 +23,17 @@ export class VirtualScrollManager {
             getItemCount: options.getItemCount || (() => 0),
             ...options
         };
-        
+
         this.visibleStart = 0;
         this.visibleEnd = 0;
         this.scrollTop = 0;
         this.containerHeight = 0;
-        
+
         // Defer init to allow derived classes to set renderItem first
         this._initialized = false;
         this.init();
     }
-    
+
     /**
      * Initialize virtual scrolling
      */
@@ -44,7 +46,7 @@ export class VirtualScrollManager {
         this.innerContainer.style.display = 'block';
         this.innerContainer.style.opacity = '1';
         this.innerContainer.style.position = 'relative';
-        
+
         // Create viewport for visible items
         this.viewport = document.createElement('div');
         this.viewport.className = 'virtual-scroll-viewport';
@@ -57,30 +59,30 @@ export class VirtualScrollManager {
         this.viewport.style.left = '0';
         this.viewport.style.right = '0';
         this.viewport.style.width = '100%';
-        
+
         // Set up structure
         this.innerContainer.appendChild(this.viewport);
         this.container.appendChild(this.innerContainer);
-        
+
         // Ensure container has proper overflow
         if (this.container.style.overflowY !== 'auto' && this.container.style.overflowY !== 'scroll') {
             this.container.style.overflowY = 'auto';
         }
-        
+
         // Set up scroll event listener with throttling
         // Note: handleScroll will check _constructorComplete before rendering
         // We'll set up the listener after construction completes
         this._scrollHandler = null;
-        
+
         // Mark as initialized
         this._initialized = true;
-        
+
         // Don't render immediately - let derived classes set renderItem first
         // We'll use requestAnimationFrame to defer any initial render
         this._deferredRenderScheduled = false;
         this._constructorComplete = false;
     }
-    
+
     /**
      * Handle scroll events
      */
@@ -93,7 +95,7 @@ export class VirtualScrollManager {
         this.scrollTop = this.container.scrollTop || 0;
         this.renderVisibleItems();
     }
-    
+
     /**
      * Update container height based on total items
      */
@@ -105,10 +107,10 @@ export class VirtualScrollManager {
         const totalItems = this.options.getItemCount();
         const totalHeight = totalItems * this.options.itemHeight;
         this.innerContainer.style.height = `${totalHeight}px`;
-        
+
         // Get container height - try multiple methods
         this.containerHeight = this.container.clientHeight || this.container.offsetHeight || window.innerHeight * 0.7 || 500;
-        
+
         // If container height is still 0, force it to be visible and measure again
         if (this.containerHeight === 0 || this.containerHeight < 100) {
             console.warn('Container height is 0 or very small, forcing visibility and remeasuring...');
@@ -118,35 +120,35 @@ export class VirtualScrollManager {
             this.container.style.opacity = '1';
             this.container.style.minHeight = '400px';
             this.container.style.height = 'auto';
-            
+
             // Force a reflow
             void this.container.offsetHeight;
-            
+
             // Remeasure
             this.containerHeight = this.container.clientHeight || this.container.offsetHeight || window.innerHeight * 0.7 || 500;
             console.log('Container height after forcing visibility:', this.containerHeight);
         }
-        
+
         // Ensure container has proper overflow
         if (this.container.style.overflowY !== 'auto' && this.container.style.overflowY !== 'scroll') {
             this.container.style.overflowY = 'auto';
         }
-        
+
         // Ensure inner container is visible
         this.innerContainer.style.visibility = 'visible';
         this.innerContainer.style.display = 'block';
         this.innerContainer.style.opacity = '1';
-        
+
         // Ensure viewport is visible
         if (this.viewport) {
             this.viewport.style.visibility = 'visible';
             this.viewport.style.display = 'block';
             this.viewport.style.opacity = '1';
         }
-        
+
         console.log('updateContainerHeight: totalItems:', totalItems, 'totalHeight:', totalHeight, 'containerHeight:', this.containerHeight);
     }
-    
+
     /**
      * Calculate visible range and render items
      */
@@ -156,32 +158,32 @@ export class VirtualScrollManager {
             console.log('renderVisibleItems: Skipping - constructor not complete or renderItem not ready');
             return;
         }
-        
+
         // Additional safety check - ensure viewport exists
         if (!this.viewport || !this.innerContainer) {
             console.error('renderVisibleItems: viewport or innerContainer missing');
             return;
         }
-        
+
         try {
             // Get actual scroll position from container
             this.scrollTop = this.container.scrollTop || 0;
-            
+
             // Ensure container height is up to date
             if (this.containerHeight === 0 || this.containerHeight < 100) {
                 this.updateContainerHeight();
             }
-            
+
             const totalItems = this.options.getItemCount();
-            
+
             if (totalItems === 0) {
                 console.warn('renderVisibleItems: No items to render');
                 this.viewport.innerHTML = '';
                 return;
             }
-            
+
             console.log('renderVisibleItems: totalItems:', totalItems, 'containerHeight:', this.containerHeight, 'scrollTop:', this.scrollTop);
-            
+
             // Calculate visible range - ensure we always render at least the first few items
             const firstVisibleIndex = Math.floor(this.scrollTop / this.options.itemHeight);
             this.visibleStart = Math.max(0, firstVisibleIndex - this.options.bufferSize);
@@ -189,25 +191,25 @@ export class VirtualScrollManager {
                 totalItems - 1,
                 Math.ceil((this.scrollTop + this.containerHeight) / this.options.itemHeight) + this.options.bufferSize
             );
-            
+
             // Ensure we always render at least the first item if scrollTop is 0
             if (this.scrollTop === 0 && this.visibleStart > 0) {
                 this.visibleStart = 0;
             }
-            
+
             // Ensure visibleEnd is at least visibleStart
             if (this.visibleEnd < this.visibleStart) {
                 // Calculate how many items should be visible based on container height
                 const itemsThatFit = Math.ceil(this.containerHeight / this.options.itemHeight);
                 this.visibleEnd = Math.min(totalItems - 1, this.visibleStart + itemsThatFit + this.options.bufferSize);
             }
-            
+
             // Ensure we always render at least a minimum number of items
             const minItemsToRender = Math.max(3, Math.ceil(this.containerHeight / this.options.itemHeight));
             if ((this.visibleEnd - this.visibleStart + 1) < minItemsToRender) {
                 this.visibleEnd = Math.min(totalItems - 1, this.visibleStart + minItemsToRender - 1);
             }
-            
+
             console.log('renderVisibleItems: visible range:', this.visibleStart, 'to', this.visibleEnd, '(total:', totalItems, ')');
 
             // Use DocumentFragment for batch DOM insertion (50% performance improvement)
@@ -253,7 +255,7 @@ export class VirtualScrollManager {
             // Don't throw - just log and return
         }
     }
-    
+
     /**
      * Default render item function
      * @param {number} index - Item index
@@ -265,7 +267,7 @@ export class VirtualScrollManager {
         item.textContent = `Item ${index}`;
         return item;
     }
-    
+
     /**
      * Refresh the virtual scroll
      */
@@ -277,7 +279,7 @@ export class VirtualScrollManager {
         this.updateContainerHeight();
         this.renderVisibleItems();
     }
-    
+
     /**
      * Scroll to a specific item
      * @param {number} index - Item index to scroll to
@@ -286,7 +288,7 @@ export class VirtualScrollManager {
         const targetScrollTop = index * this.options.itemHeight;
         this.container.scrollTop = targetScrollTop;
     }
-    
+
     /**
      * Destroy the virtual scroll manager
      */
@@ -323,19 +325,19 @@ export class VirtualWorkstationList extends VirtualScrollManager {
         // Store data in closure variables to avoid accessing 'this' before super()
         const workstationsData = workstations;
         const gameStateData = gameState;
-        
+
         // Call super first - cannot access 'this' before super()
         super(container, {
             itemHeight: 200,
             bufferSize: 3,
             getItemCount: () => workstationsData.length
         });
-        
+
         // Now we can safely set properties and methods
         // Store references to data - these will be updated when game state changes
         this.workstations = workstationsData;
         this.gameState = gameStateData;
-        
+
         // Override refresh to update data references
         const originalRefresh = this.refresh.bind(this);
         this.refresh = () => {
@@ -345,15 +347,15 @@ export class VirtualWorkstationList extends VirtualScrollManager {
             // But we need to ensure we're using the latest gameState
             originalRefresh();
         };
-        
+
         // Set renderItem after super() is called - use standalone function to avoid 'this' issues
         // Create a standalone render function that doesn't need instance methods
         // Use a flag to prevent execution during construction
         let renderItemReady = false;
         // Import formatShort at module level to avoid any 'this' issues
         const formatShortFn = formatShort;
-        
-        this.options.renderItem = function(index) {
+
+        this.options.renderItem = function (index) {
             // Safety check - don't render if constructor isn't complete
             if (!renderItemReady) {
                 const placeholder = document.createElement('div');
@@ -361,7 +363,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 placeholder.textContent = 'Loading...';
                 return placeholder;
             }
-            
+
             try {
                 const workstation = workstationsData[index];
                 if (!workstation) {
@@ -370,15 +372,15 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                     placeholder.textContent = 'Invalid item';
                     return placeholder;
                 }
-                
+
                 const card = document.createElement('div');
                 card.className = 'card virtual-scroll-item';
-                
+
                 // Get current owned count from gameState - use the actual gameState reference
                 const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
                 const owned = (currentGameState.workstations && currentGameState.workstations[workstation.id]) || 0;
                 const recipe = VirtualWorkstationList.getScaledRecipeStatic(workstation.recipe, owned, workstation.growth);
-                
+
                 // Check affordability
                 let canAfford1 = true;
                 if (currentGameState && currentGameState.canAfford && typeof currentGameState.canAfford === 'function') {
@@ -396,30 +398,30 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 }
                 const canAfford10 = canAfford1; // Simplified
                 const canAffordMax = canAfford1;
-            
-            card.innerHTML = `
+
+                card.innerHTML = `
                 <div class="card-title">${workstation.displayName}</div>
                 <div class="card-description">⚙️ Owned: ${owned}</div>
                 <div class="card-content-left">
                     <div class="card-section">
                         <div class="card-label">Produces:</div>
-                        ${Object.entries(workstation.outputs).map(([id, rate]) => 
-                            `<div class="card-value">${rate.toFixed(2)}/s ${id}</div>`
-                        ).join('')}
+                        ${Object.entries(workstation.outputs).map(([id, rate]) =>
+                    `<div class="card-value">${rate.toFixed(2)}/s ${id}</div>`
+                ).join('')}
                     </div>
                 </div>
                 <div class="card-content-right">
                     <div class="card-section">
                         <div class="card-label">Recipe for next:</div>
                         ${Object.entries(recipe).map(([ingId, amount]) => {
-                            const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
-                            const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
-                            const canAfford = have >= amount;
-                            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+                    const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
+                    const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
+                    const canAfford = have >= amount;
+                    return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                                 <span class="recipe-label">${ingId}:</span>
                                 <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                             </div>`;
-                        }).join('')}
+                }).join('')}
                     </div>
                 </div>
                 <div class="button-row">
@@ -428,7 +430,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                     <button class="btn-primary ${canAffordMax ? '' : 'btn-disabled'}" data-action="craft-max" data-ws-id="${workstation.id}" ${canAffordMax ? '' : 'disabled'}>Max</button>
                 </div>
             `;
-            
+
                 // Ensure buttons are clickable - unified handler will handle clicks
                 const buttons = card.querySelectorAll('button[data-action]');
                 buttons.forEach(btn => {
@@ -439,7 +441,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                     btn.style.cursor = 'pointer';
                     // Unified handler in initUI() will handle all clicks
                 });
-                
+
                 return card;
             } catch (error) {
                 console.error('Error rendering workstation item:', error);
@@ -449,15 +451,15 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 return placeholder;
             }
         };
-        
+
         // Mark constructor as complete and enable renderItem
         this._constructorComplete = true;
         renderItemReady = true;
-        
+
         // Update container height and render initial items
         this.updateContainerHeight();
         this.renderVisibleItems();
-        
+
         // Now set up scroll event listener after constructor completes
         if (!this._scrollHandler) {
             let scrollTimeout = null;
@@ -474,7 +476,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
             };
             this.container.addEventListener('scroll', this._scrollHandler);
         }
-        
+
         // Defer initial render until after constructor completes
         if (this._initialized && this.viewport && !this._deferredRenderScheduled) {
             this._deferredRenderScheduled = true;
@@ -486,7 +488,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
             });
         }
     }
-    
+
     /**
      * Render a workstation item
      * @param {Object} workstation - Workstation data
@@ -496,18 +498,18 @@ export class VirtualWorkstationList extends VirtualScrollManager {
     renderWorkstation(workstation, gameState) {
         const card = document.createElement('div');
         card.className = 'card virtual-scroll-item';
-        
+
         const owned = gameState.workstations[workstation.id] || 0;
         // Use static method instead of instance method to avoid 'this' issues
         const recipe = VirtualWorkstationList.getScaledRecipeStatic(workstation.recipe, owned, workstation.growth);
-        
+
         // Get inscription bonuses (only inscriptions, not buffs/prestige)
         let inscriptionMult = 1.0;
         const inscriptions = [];
-        
+
         // Global upgrades
         for (const upgId in gameState.upgradesOwned) {
-            const upgData = window.UPGRADES?.find(u => u.id === upgId);
+            const upgData = UPGRADES?.find(u => u.id === upgId);
             if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
                 inscriptionMult *= upgData.value;
                 inscriptions.push({
@@ -517,11 +519,11 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 });
             }
         }
-        
+
         // Producer-specific upgrades
         const targetAffects = "producer:" + workstation.id;
         for (const upgId in gameState.upgradesOwned) {
-            const upgData = window.UPGRADES?.find(u => u.id === upgId);
+            const upgData = UPGRADES?.find(u => u.id === upgId);
             if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
                 inscriptionMult *= upgData.value;
                 inscriptions.push({
@@ -531,7 +533,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 });
             }
         }
-        
+
         // Calculate inscription bonus rates
         const inscriptionBonusRates = {};
         if (owned > 0 && inscriptionMult > 1.0) {
@@ -544,23 +546,23 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 }
             }
         }
-        
+
         // Build inscription bonus display (compact 2-column layout)
         let inscriptionBonusHTML = '';
         if (Object.keys(inscriptionBonusRates).length > 0) {
-            const formatShortFn = window.formatShort || ((n) => n.toFixed(2));
-            const INGREDIENTS = window.INGREDIENTS || [];
+            const formatShortFn = formatShort || ((n) => n.toFixed(2));
+            const INGREDIENTS_LIST = INGREDIENTS || [];
             const bonusEntries = Object.entries(inscriptionBonusRates);
             inscriptionBonusHTML = `
-                <div class="card-label" style="color: var(--success); font-size: 12px; margin-bottom: 6px;"><span class="css-icon-scroll"></span> Inscription Bonuses:</div>
+                <div class="card-label inscription-bonus-label"><span class="css-icon-scroll"></span> Inscription Bonuses:</div>
                 <div class="inscription-bonuses">
                     ${bonusEntries.map(([outputId, bonusRate]) => {
-                        const ingredient = INGREDIENTS.find(ing => ing.id === outputId);
-                        const displayName = ingredient?.displayName || outputId;
-                        return `<div class="inscription-bonus-item">
+                const ingredient = INGREDIENTS_LIST.find(ing => ing.id === outputId);
+                const displayName = ingredient?.displayName || outputId;
+                return `<div class="inscription-bonus-item">
                             +${formatShortFn(bonusRate)}/s ${displayName}
                         </div>`;
-                    }).join('')}
+            }).join('')}
                 </div>
                 ${inscriptions.length > 0 ? `
                     <div class="inscription-list">
@@ -569,23 +571,23 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 ` : ''}
             `;
         }
-        
-        const formatPreciseFn = window.formatPrecise || ((n, p) => n.toFixed(p));
-        const formatShortFn = window.formatShort || ((n) => n.toFixed(2));
-        const INGREDIENTS_REF = window.INGREDIENTS || [];
-        
+
+        const formatPreciseFn = formatPrecise || ((n, p) => n.toFixed(p));
+        const formatShortFn = formatShort || ((n) => n.toFixed(2));
+        const INGREDIENTS_REF = INGREDIENTS || [];
+
         // Add tooltip to workstation card
         const tooltipText = `${workstation.displayName}\n\nProduces:\n${Object.entries(workstation.outputs).map(([id, rate]) => {
             const ingredient = INGREDIENTS_REF.find(ing => ing.id === id);
             const displayName = ingredient?.displayName || id;
             return `• ${formatPreciseFn(rate, 2)}/s ${displayName}`;
         }).join('\n')}\n\n${workstation.description || 'A workstation that produces resources.'}`;
-        
-        if (window.addTooltip && customTooltipManager) {
+
+        if (customTooltipManager) {
             // Tooltip will be added after card is appended to DOM
             card.setAttribute('data-tooltip-text', tooltipText);
         }
-        
+
         card.innerHTML = `
             <div class="card-title">${workstation.displayName}</div>
             <div class="card-description">⚙️ Owned: ${owned}</div>
@@ -593,57 +595,57 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 <div class="card-section">
                     <div class="card-label">Produces:</div>
                     ${Object.entries(workstation.outputs).map(([id, rate]) => {
-                        const baseTotal = rate * owned;
-                        const actualRate = owned > 0 ? baseTotal : rate;
-                        const ingredient = INGREDIENTS_REF.find(ing => ing.id === id);
-                        const displayName = ingredient?.displayName || id;
-                        return `<div class="card-value">${formatPreciseFn(actualRate, 2)}/s ${displayName}</div>`;
-                    }).join('')}
+            const baseTotal = rate * owned;
+            const actualRate = owned > 0 ? baseTotal : rate;
+            const ingredient = INGREDIENTS_REF.find(ing => ing.id === id);
+            const displayName = ingredient?.displayName || id;
+            return `<div class="card-value">${formatPreciseFn(actualRate, 2)}/s ${displayName}</div>`;
+        }).join('')}
                 </div>
             </div>
             <div class="card-content-right">
                 <div class="card-section">
                     <div class="card-label">Recipe for next:</div>
                     ${Object.entries(recipe).map(([ingId, amount]) => {
-                        const have = gameState.inventory[ingId] || 0;
-                        const canAfford = have >= amount;
-                        const ingredient = INGREDIENTS_REF.find(ing => ing.id === ingId);
-                        const displayName = ingredient?.displayName || ingId;
-                        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+            const have = gameState.inventory[ingId] || 0;
+            const canAfford = have >= amount;
+            const ingredient = INGREDIENTS_REF.find(ing => ing.id === ingId);
+            const displayName = ingredient?.displayName || ingId;
+            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                             <span class="recipe-label">${displayName}:</span>
                             <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                         </div>`;
-                    }).join('')}
+        }).join('')}
                 </div>
             </div>
-            ${inscriptionBonusHTML ? `<div class="card-section full-width" style="border-left: 3px solid var(--success); background: rgba(60, 227, 197, 0.1);">${inscriptionBonusHTML}</div>` : ''}
+            ${inscriptionBonusHTML ? `<div class="card-section full-width inscription-bonus-container">${inscriptionBonusHTML}</div>` : ''}
             <div class="button-row">
                 <button class="btn-primary" data-action="craft" data-ws-id="${workstation.id}" data-amount="1">Craft x1</button>
                 <button class="btn-primary" data-action="craft" data-ws-id="${workstation.id}" data-amount="10">Craft x10</button>
                 <button class="btn-primary" data-action="craft-max" data-ws-id="${workstation.id}">Max</button>
             </div>
         `;
-        
+
         // Attach event listeners directly instead of using onclick
         const buttons = card.querySelectorAll('button[data-action]');
         buttons.forEach(btn => {
             // Unified handler in initUI() will handle all clicks
         });
-        
+
         // Add tooltip after card is created
         if (window.addTooltip && card.getAttribute('data-tooltip-text')) {
             const tooltipText = card.getAttribute('data-tooltip-text');
             // Use setTimeout to ensure card is in DOM before adding tooltip
             setTimeout(() => {
-                if (window.addTooltip) {
-                    window.addTooltip(card, tooltipText, 'top', true);
+                if (customTooltipManager) {
+                    customTooltipManager.addTooltip(card, tooltipText, 'top', true);
                 }
             }, 100);
         }
-        
+
         return card;
     }
-    
+
     /**
      * Get scaled recipe (static method to avoid 'this' issues)
      * @param {Object} baseRecipe - Base recipe
@@ -659,7 +661,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
         }
         return scaled;
     }
-    
+
     /**
      * Get scaled recipe (instance method for backward compatibility)
      * @param {Object} baseRecipe - Base recipe
@@ -685,23 +687,23 @@ export class VirtualUpgradeList extends VirtualScrollManager {
         // Store data in closure variables to avoid accessing 'this' before super()
         const upgradesData = upgrades;
         const gameStateData = gameState;
-        
+
         // Call super first - cannot access 'this' before super()
         super(container, {
             itemHeight: 180,
             bufferSize: 3,
             getItemCount: () => upgradesData.length
         });
-        
+
         // Now we can safely set properties and methods
         this.upgrades = upgradesData;
         this.gameState = gameStateData;
-        
+
         // Set renderItem after super() is called - use standalone function to avoid 'this' issues
         let renderItemReady = false;
         const formatShortFn = formatShort;
-        
-        this.options.renderItem = function(index) {
+
+        this.options.renderItem = function (index) {
             // Safety check - don't render if constructor isn't complete
             if (!renderItemReady) {
                 const placeholder = document.createElement('div');
@@ -709,7 +711,7 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                 placeholder.textContent = 'Loading...';
                 return placeholder;
             }
-            
+
             try {
                 const upgrade = upgradesData[index];
                 if (!upgrade) {
@@ -718,35 +720,35 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                     placeholder.textContent = 'Invalid item';
                     return placeholder;
                 }
-                
+
                 const card = document.createElement('div');
                 card.className = 'card virtual-scroll-item';
-            
-            const owned = gameStateData.upgradesOwned[upgrade.id] || false;
-            
-            let effectText = '';
-            if (upgrade.affects === 'global') {
-                effectText = `Global ${upgrade.type} ×${upgrade.value}`;
-            } else if (upgrade.affects.startsWith('producer:')) {
-                const wsId = upgrade.affects.split(':')[1];
-                effectText = `${wsId} ${upgrade.type} ×${upgrade.value}`;
-            } else if (upgrade.affects === 'click') {
-                effectText = `Click ${upgrade.type} +${upgrade.value}`;
-            }
-            
-            // Check if can afford all materials
-            let canAffordAll = true;
-            if (!owned && upgrade.recipe) {
-                for (const [ingId, amount] of Object.entries(upgrade.recipe)) {
-                    const have = gameStateData.inventory[ingId] || 0;
-                    if (have < amount) {
-                        canAffordAll = false;
-                        break;
+
+                const owned = gameStateData.upgradesOwned[upgrade.id] || false;
+
+                let effectText = '';
+                if (upgrade.affects === 'global') {
+                    effectText = `Global ${upgrade.type} ×${upgrade.value}`;
+                } else if (upgrade.affects.startsWith('producer:')) {
+                    const wsId = upgrade.affects.split(':')[1];
+                    effectText = `${wsId} ${upgrade.type} ×${upgrade.value}`;
+                } else if (upgrade.affects === 'click') {
+                    effectText = `Click ${upgrade.type} +${upgrade.value}`;
+                }
+
+                // Check if can afford all materials
+                let canAffordAll = true;
+                if (!owned && upgrade.recipe) {
+                    for (const [ingId, amount] of Object.entries(upgrade.recipe)) {
+                        const have = gameStateData.inventory[ingId] || 0;
+                        if (have < amount) {
+                            canAffordAll = false;
+                            break;
+                        }
                     }
                 }
-            }
-            
-            card.innerHTML = `
+
+                card.innerHTML = `
                 <div class="card-title">${upgrade.displayName} ${owned ? '✓' : ''}</div>
                 <div class="card-description">${upgrade.description}</div>
                 <div class="card-section">
@@ -755,25 +757,25 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                 <div class="card-section">
                     <div class="card-label">Recipe:</div>
                     ${Object.entries(upgrade.recipe).map(([ingId, amount]) => {
-                        const have = gameStateData.inventory[ingId] || 0;
-                        const canAfford = have >= amount;
-                        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+                    const have = gameStateData.inventory[ingId] || 0;
+                    const canAfford = have >= amount;
+                    return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                             <span class="recipe-label">${ingId}:</span>
                             <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                         </div>`;
-                    }).join('')}
+                }).join('')}
                 </div>
                 <button class="btn-primary" data-action="inscribe" data-upgrade-id="${upgrade.id}" ${owned || !canAffordAll ? 'disabled' : ''}>
                     ${owned ? 'Owned' : 'Inscribe'}
                 </button>
             `;
-            
+
                 // Attach event listener directly instead of using onclick
                 const button = card.querySelector('button[data-action="inscribe"]');
-                if (button && !owned && canAffordAll && typeof window.inscribeUpgrade === 'function') {
+                if (button && !owned && canAffordAll) {
                     // Unified handler in initUI() will handle all clicks
                 }
-                
+
                 return card;
             } catch (error) {
                 console.error('Error rendering upgrade item:', error);
@@ -783,15 +785,15 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                 return placeholder;
             }
         };
-        
+
         // Mark constructor as complete and enable renderItem
         this._constructorComplete = true;
         renderItemReady = true;
-        
+
         // Update container height and render initial items
         this.updateContainerHeight();
         this.renderVisibleItems();
-        
+
         // Now set up scroll event listener after constructor completes
         if (!this._scrollHandler) {
             let scrollTimeout = null;
@@ -808,7 +810,7 @@ export class VirtualUpgradeList extends VirtualScrollManager {
             };
             this.container.addEventListener('scroll', this._scrollHandler);
         }
-        
+
         // Defer initial render until after constructor completes
         if (this._initialized && this.viewport && !this._deferredRenderScheduled) {
             this._deferredRenderScheduled = true;
@@ -820,7 +822,7 @@ export class VirtualUpgradeList extends VirtualScrollManager {
             });
         }
     }
-    
+
     /**
      * Render an upgrade item
      * @param {Object} upgrade - Upgrade data
@@ -830,9 +832,9 @@ export class VirtualUpgradeList extends VirtualScrollManager {
     renderUpgrade(upgrade, gameState) {
         const card = document.createElement('div');
         card.className = 'card virtual-scroll-item';
-        
+
         const owned = gameState.upgradesOwned[upgrade.id] || false;
-        
+
         let effectText = '';
         if (upgrade.affects === 'global') {
             effectText = `Global ${upgrade.type} ×${upgrade.value}`;
@@ -842,7 +844,7 @@ export class VirtualUpgradeList extends VirtualScrollManager {
         } else if (upgrade.affects === 'click') {
             effectText = `Click ${upgrade.type} +${upgrade.value}`;
         }
-        
+
         card.innerHTML = `
             <div class="card-title">${upgrade.displayName} ${owned ? '✓' : ''}</div>
             <div class="card-description">${upgrade.description}</div>
@@ -852,19 +854,19 @@ export class VirtualUpgradeList extends VirtualScrollManager {
             <div class="card-section">
                 <div class="card-label">Recipe:</div>
                 ${Object.entries(upgrade.recipe).map(([ingId, amount]) => {
-                    const have = gameState.inventory[ingId] || 0;
-                    const canAfford = have >= amount;
-                    return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+            const have = gameState.inventory[ingId] || 0;
+            const canAfford = have >= amount;
+            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                         <span class="recipe-label">${ingId}:</span>
                         <span class="recipe-numbers">${formatShort(have)} / ${formatShort(amount)}</span>
                     </div>`;
-                }).join('')}
+        }).join('')}
             </div>
             <button class="primary-button" data-action="inscribe" data-upgrade-id="${upgrade.id}" ${owned ? 'disabled' : ''}>
                 ${owned ? 'Owned' : 'Inscribe'}
             </button>
         `;
-        
+
         // Attach event listener directly instead of using onclick
         const button = card.querySelector('button[data-action="inscribe"]');
         if (button && !owned && typeof window.inscribeUpgrade === 'function') {
@@ -874,7 +876,7 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                 window.inscribeUpgrade(upgrade.id, button);
             });
         }
-        
+
         return card;
     }
 }
@@ -892,22 +894,22 @@ export class VirtualAchievementList extends VirtualScrollManager {
         // Store data in closure variables to avoid accessing 'this' before super()
         const achievementsData = achievements;
         const achievementSystemData = achievementSystem;
-        
+
         // Call super first - cannot access 'this' before super()
         super(container, {
             itemHeight: 100,
             bufferSize: 5,
             getItemCount: () => achievementsData.length
         });
-        
+
         // Now we can safely set properties and methods
         this.achievements = achievementsData;
         this.achievementSystem = achievementSystemData;
-        
+
         // Set renderItem after super() is called - use standalone function to avoid 'this' issues
         let renderItemReady = false;
-        
-        this.options.renderItem = function(index) {
+
+        this.options.renderItem = function (index) {
             // Safety check - don't render if constructor isn't complete
             if (!renderItemReady) {
                 const placeholder = document.createElement('div');
@@ -915,7 +917,7 @@ export class VirtualAchievementList extends VirtualScrollManager {
                 placeholder.textContent = 'Loading...';
                 return placeholder;
             }
-            
+
             try {
                 const achievement = achievementsData[index];
                 if (!achievement) {
@@ -924,12 +926,12 @@ export class VirtualAchievementList extends VirtualScrollManager {
                     placeholder.textContent = 'Invalid item';
                     return placeholder;
                 }
-                
+
                 const card = document.createElement('div');
                 const unlocked = achievementSystemData.unlockedAchievements.has(achievement.id);
                 card.className = `achievement-card virtual-scroll-item ${unlocked ? 'unlocked' : 'locked'}`;
-            
-            card.innerHTML = `
+
+                card.innerHTML = `
                 <div style="font-weight: bold; color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'};">
                     ${unlocked ? '✓' : '○'} ${achievement.name}
                 </div>
@@ -937,7 +939,7 @@ export class VirtualAchievementList extends VirtualScrollManager {
                     ${achievement.description}
                 </div>
             `;
-            
+
                 return card;
             } catch (error) {
                 console.error('Error rendering achievement item:', error);
@@ -947,15 +949,15 @@ export class VirtualAchievementList extends VirtualScrollManager {
                 return placeholder;
             }
         };
-        
+
         // Mark constructor as complete and enable renderItem
         this._constructorComplete = true;
         renderItemReady = true;
-        
+
         // Update container height and render initial items
         this.updateContainerHeight();
         this.renderVisibleItems();
-        
+
         // Now set up scroll event listener after constructor completes
         if (!this._scrollHandler) {
             let scrollTimeout = null;
@@ -972,7 +974,7 @@ export class VirtualAchievementList extends VirtualScrollManager {
             };
             this.container.addEventListener('scroll', this._scrollHandler);
         }
-        
+
         // Defer initial render until after constructor completes
         if (this._initialized && this.viewport && !this._deferredRenderScheduled) {
             this._deferredRenderScheduled = true;
@@ -984,7 +986,7 @@ export class VirtualAchievementList extends VirtualScrollManager {
             });
         }
     }
-    
+
     /**
      * Render an achievement item
      * @param {Object} achievement - Achievement data
@@ -995,7 +997,7 @@ export class VirtualAchievementList extends VirtualScrollManager {
         const card = document.createElement('div');
         const unlocked = achievementSystem.unlockedAchievements.has(achievement.id);
         card.className = `achievement-card virtual-scroll-item ${unlocked ? 'unlocked' : 'locked'}`;
-        
+
         card.innerHTML = `
             <div style="font-weight: bold; color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'};">
                 ${unlocked ? '✓' : '○'} ${achievement.name}
@@ -1004,7 +1006,7 @@ export class VirtualAchievementList extends VirtualScrollManager {
                 ${achievement.description}
             </div>
         `;
-        
+
         return card;
     }
 }

@@ -16,52 +16,52 @@ export class GameState {
         // Currency
         this.ab = 0.0;
         this.abTotalEarned = 0.0;
-        
+
         // Inventory
         this.inventory = {};
-        
+
         // Workstations
         this.workstations = {};
-        
+
         // Upgrades
         this.upgradesOwned = {};
-        
+
         // Prestige
         this.prestigePoints = 0;
         this.prestigeLifetimeEarned = 0.0;
         this.prestigeBonuses = {};
-        
+
         // Element Specialization
         this.elementSpecialization = null; // 'fire', 'water', 'air', 'crystal', or null
         this.specializationBonuses = {};
         this.prestigeCount = 0; // Track number of ascensions (prestige completions)
-        
+
         // Buffs
         this.activeBuffs = [];
-        
+
         // Experiments
         this.discoveredRecipes = [];
-        
+
         // Stats
         this.totalTaps = 0;
         this.totalWorkstationsCrafted = 0;
         this.totalPotionsCrafted = 0;
-        
+
         // Milestone rewards (Feature 3: Dopamine Maximization)
         this.unlockedMilestones = new Set();
         this.milestones = GAME_CONSTANTS.MILESTONE_THRESHOLDS;
-        
+
         // Timestamps
         this.lastSaveTime = Date.now() / 1000;
-        
+
         // Tick timer
         this.tickInterval = null;
         this.lastTickTime = Date.now();
-        
+
         // Coven System - Archived for future development - see ARCHIVED_COVEN_FEATURES.md
         // this.covenSystem = new CovenSystem(this);
         this.covenSystem = null; // Placeholder to prevent errors
-        
+
         // Callbacks
         this.onAbChanged = null;
         this.onIngredientChanged = null;
@@ -70,7 +70,7 @@ export class GameState {
         this.onPrestigeCompleted = null;
         this.onRecipeDiscovered = null;
         this.onWelcomeBack = null;
-        
+
         // DOM update batching
         this.pendingUpdates = new Set();
         this.batchTimeout = null;
@@ -99,7 +99,7 @@ export class GameState {
         this.multiplierCache = new Map();
         this.multiplierCacheDirty = true;
     }
-    
+
     /**
      * Initialize the game state
      */
@@ -107,7 +107,7 @@ export class GameState {
         this.loadGameState();
         this.startTickLoop();
     }
-    
+
     /**
      * Start the game tick loop with optimized timing
      * Pauses when tab is hidden to save CPU (similar to audio loops stopping)
@@ -117,7 +117,7 @@ export class GameState {
         if (this.tickInterval) {
             clearInterval(this.tickInterval);
         }
-        
+
         const tick = () => {
             // Skip tick if tab is hidden (save CPU)
             if (document.hidden) {
@@ -125,9 +125,9 @@ export class GameState {
             }
             this.tick();
         };
-        
+
         this.tickInterval = setInterval(tick, GAME_CONSTANTS.TICK_RATE);
-        
+
         // Listen for visibility changes to pause/resume
         if (!this.visibilityHandler) {
             this.visibilityHandler = () => {
@@ -141,7 +141,7 @@ export class GameState {
             document.addEventListener('visibilitychange', this.visibilityHandler);
         }
     }
-    
+
     /**
      * Stop the game tick loop
      */
@@ -163,7 +163,7 @@ export class GameState {
             this.visibilityHandler = null;
         }
     }
-    
+
     /**
      * Main game tick with optimized timing and batching
      * @param {number} eventMultiplier - Event multiplier for production
@@ -172,13 +172,13 @@ export class GameState {
         const now = Date.now();
         const delta = (now - this.lastTickTime) / 1000;
         this.lastTickTime = now;
-        
+
         // Update buffs
         this.updateBuffs(delta);
-        
+
         // Calculate production (with event multiplier)
         const production = this.calculateTotalProduction(delta, eventMultiplier);
-        
+
         // Apply production
         for (const outputId in production) {
             if (outputId === "ab") {
@@ -187,7 +187,7 @@ export class GameState {
                 this.addIngredient(outputId, production[outputId]);
             }
         }
-        
+
         // Auto-save every 30 seconds using debounced version
         const nowSeconds = Date.now() / 1000;
         if (nowSeconds - this.lastSaveTime > GAME_CONSTANTS.AUTO_SAVE_INTERVAL / 1000) {
@@ -195,7 +195,7 @@ export class GameState {
             this.hasPendingSave = true;
         }
     }
-    
+
     /**
      * Calculate total production from all workstations
      * @param {number} delta - Time delta in seconds
@@ -204,77 +204,77 @@ export class GameState {
      */
     calculateTotalProduction(delta, eventMultiplier = 1.0) {
         const totalOutput = {};
-        
+
         // Apply Air specialization speed bonus to delta
         let effectiveDelta = delta;
         if (this.elementSpecialization === 'air' && this.specializationBonuses.productionSpeedMult) {
             effectiveDelta *= this.specializationBonuses.productionSpeedMult;
         }
-        
+
         for (const wsId in this.workstations) {
             const owned = this.workstations[wsId];
             if (!owned || owned <= 0) continue;
-            
+
             const prodData = PRODUCERS.find(p => p.id === wsId);
             if (!prodData) continue;
-            
+
             // Get base outputs
             for (const outputId in prodData.outputs) {
                 const baseRate = prodData.outputs[outputId];
-                
+
                 // Apply multipliers
                 const mult = this.getProductionMultiplier(wsId);
-                
+
                 // Apply element specialization bonuses
                 let specializationMult = 1.0;
                 if (this.elementSpecialization) {
                     const spec = this.specializationBonuses;
                     const element = getWorkstationElement(wsId);
                     const ingredientElement = getIngredientElement(outputId);
-                    
+
                     // Element-specific production multiplier
                     if (element === this.elementSpecialization || ingredientElement === this.elementSpecialization) {
                         specializationMult *= spec.baseProductionMult;
                     }
-                    
+
                     // Water: Global production multiplier
                     if (this.elementSpecialization === 'water' && spec.globalProductionMult) {
                         specializationMult *= spec.globalProductionMult;
                     }
-                    
+
                     // Crystal: Universal ingredient multiplier
                     if (this.elementSpecialization === 'crystal' && isUniversalIngredient(outputId)) {
                         specializationMult *= spec.universalIngredientMult;
                     }
-                    
+
                     // Crystal: Crystal building multiplier
                     if (this.elementSpecialization === 'crystal' && element === 'crystal' && spec.crystalBuildingMult) {
                         specializationMult *= spec.crystalBuildingMult;
                     }
-                    
+
                     // Fire: AB production multiplier for Fire-based reactors
                     if (this.elementSpecialization === 'fire' && isABProducer(wsId) && element === 'fire' && spec.abProductionMult) {
                         specializationMult *= spec.abProductionMult;
                     }
-                    
+
                     // Water: Ingredient production multiplier
                     if (this.elementSpecialization === 'water' && spec.ingredientProductionMult && outputId !== 'ab') {
                         specializationMult *= spec.ingredientProductionMult;
                     }
                 }
-                
+
                 // Apply event multiplier
                 const finalMult = mult * specializationMult * eventMultiplier;
-                
+
                 const finalRate = baseRate * finalMult * owned;
-                
+
                 if (!totalOutput[outputId]) {
                     totalOutput[outputId] = 0.0;
                 }
                 totalOutput[outputId] += finalRate * effectiveDelta;
             }
         }
-        
+
         // Apply AB production multipliers to AB output
         if (totalOutput.ab) {
             for (const upgId in this.upgradesOwned) {
@@ -285,7 +285,7 @@ export class GameState {
                     }
                 }
             }
-            
+
             // Apply prestige AB production multiplier
             for (const bonusId in this.prestigeBonuses) {
                 const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
@@ -294,21 +294,21 @@ export class GameState {
                     totalOutput.ab *= (1.0 + bonusData.value * levels);
                 }
             }
-            
+
             // Apply AB production buffs
             totalOutput.ab *= this.getBuff('ab_production');
         }
-        
+
         // Apply coven production bonus if in a coven
         // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
         // if (totalOutput.ab && this.covenSystem && this.covenSystem.isInCoven()) {
         //     const covenBonus = this.covenSystem.getCovenProductionBonus();
         //     totalOutput.ab *= covenBonus;
         // }
-        
+
         return totalOutput;
     }
-    
+
     /**
      * Get production multiplier for a specific workstation (memoized)
      * @param {string} workstationId - ID of the workstation
@@ -322,7 +322,7 @@ export class GameState {
 
         // Recalculate if cache is dirty or missing
         let mult = 1.0;
-        
+
         // Global upgrades
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
@@ -330,7 +330,7 @@ export class GameState {
                 mult *= upgData.value;
             }
         }
-        
+
         // Producer-specific upgrades
         const targetAffects = "producer:" + workstationId;
         for (const upgId in this.upgradesOwned) {
@@ -339,7 +339,7 @@ export class GameState {
                 mult *= upgData.value;
             }
         }
-        
+
         // Prestige bonuses (global)
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
@@ -348,7 +348,7 @@ export class GameState {
                 mult *= (1.0 + bonusData.value * levels);
             }
         }
-        
+
         // Prestige bonuses (producer-specific)
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
@@ -357,13 +357,13 @@ export class GameState {
                 mult *= (1.0 + bonusData.value * levels);
             }
         }
-        
+
         // Active production buffs
         mult *= this.getBuff('production');
-        
+
         // Active ingredient production buffs
         mult *= this.getBuff('ingredient_production');
-        
+
         // Meditation production bonus (only available through meditation)
         if (window.meditationState && typeof window.meditationState.getMeditationProductionBonus === 'function') {
             const meditationBonus = window.meditationState.getMeditationProductionBonus();
@@ -397,7 +397,7 @@ export class GameState {
             }
         }
     }
-    
+
     /**
      * Get AB production per second
      * @param {number} eventMultiplier - Event multiplier for production (default: 1.0)
@@ -407,7 +407,7 @@ export class GameState {
         const production = this.calculateTotalProduction(1.0, eventMultiplier);
         return production.ab || 0.0;
     }
-    
+
     /**
      * Update active buffs and remove expired ones
      * @param {number} delta - Time delta in seconds
@@ -420,7 +420,7 @@ export class GameState {
             }
         }
     }
-    
+
     addBuff(type, value, duration) {
         this.activeBuffs.push({
             type: type, // 'production', 'ab_production', 'cast_speed', 'ingredient_production', 'prestige_gain'
@@ -433,7 +433,7 @@ export class GameState {
             this.invalidateMultiplierCache();
         }
     }
-    
+
     getBuff(type) {
         let totalValue = 0;
         for (const buff of this.activeBuffs) {
@@ -443,7 +443,7 @@ export class GameState {
         }
         return 1.0 + totalValue; // Return as multiplier (1.0 + 0.5 = 1.5x)
     }
-    
+
     getPotionEffect(potionId) {
         // Activate potion based on ID
         const potionEffects = {
@@ -451,20 +451,20 @@ export class GameState {
             'production_elixir': { type: 'production', value: 0.5, duration: 30 * 60 },
             'haste_potion': { type: 'cast_speed', value: 1.0, duration: 15 * 60 },
             'ab_amplifier': { type: 'ab_production', value: 2.0, duration: 20 * 60 },
-            
+
             // Tier 2
             'mega_production_elixir': { type: 'production', value: 1.0, duration: 60 * 60 },
             'speed_essence': { type: 'cast_speed', value: 2.0, duration: 30 * 60 },
             'ab_turbo_charge': { type: 'ab_production', value: 5.0, duration: 45 * 60 },
             'rare_catalyst': { type: 'ingredient_production', value: 1.0, duration: 60 * 60 },
-            
+
             // Tier 3
             'ultimate_production_elixir': { type: 'production', value: 2.0, duration: 2 * 60 * 60 },
             'quantum_speed_boost': { type: 'cast_speed', value: 3.0, duration: 60 * 60 },
             'ab_overdrive': { type: 'ab_production', value: 10.0, duration: 1.5 * 60 * 60 },
             'master_catalyst': { type: 'ingredient_production', value: 2.0, duration: 2 * 60 * 60 },
             'prestige_boost': { type: 'prestige_gain', value: 0.5, duration: 3 * 60 * 60 },
-            
+
             // Tier 4
             'infinity_production_elixir': { type: 'production', value: 5.0, duration: 4 * 60 * 60 },
             'void_speed_surge': { type: 'cast_speed', value: 5.0, duration: 2 * 60 * 60 },
@@ -473,25 +473,25 @@ export class GameState {
             'infinity_catalyst': { type: 'ingredient_production', value: 4.0, duration: 4 * 60 * 60 },
             'prestige_mastery': { type: 'prestige_gain', value: 1.0, duration: 6 * 60 * 60 }
         };
-        
+
         return potionEffects[potionId] || null;
     }
-    
+
     consumePotion(potionId) {
         const have = this.inventory[potionId] || 0;
         if (have < 1) return false;
-        
+
         this.spendIngredient(potionId, 1);
-        
+
         const effect = this.getPotionEffect(potionId);
         if (effect) {
             this.addBuff(effect.type, effect.value, effect.duration);
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Add AB to the player's balance with DOM update batching
      * @param {number} amount - Amount of AB to add
@@ -501,39 +501,39 @@ export class GameState {
         this.abTotalEarned += amount;
         this.prestigeLifetimeEarned += amount;
         this.batchUpdate('abChanged', this.ab);
-        
+
         // Check for milestone rewards (Feature 3: Dopamine Maximization)
         this.checkMilestones();
     }
-    
+
     /**
      * Check and unlock milestone rewards
      */
     checkMilestones() {
         const currentAB = this.ab;
-        
+
         this.milestones.forEach(milestone => {
             if (currentAB >= milestone && !this.unlockedMilestones.has(milestone)) {
                 this.unlockMilestone(milestone);
             }
         });
     }
-    
+
     /**
      * Unlock a milestone and give reward
      */
     unlockMilestone(ab) {
         this.unlockedMilestones.add(ab);
-        
+
         // Give milestone reward (10% of milestone as bonus)
         const reward = ab * 0.1;
         this.ab += reward;
-        
+
         // Visual feedback
         if (window.showNotification) {
             window.showNotification(`Milestone: ${this.formatShort(ab)} AB! +${this.formatShort(reward)} bonus`, 'success');
         }
-        
+
         // Particle effects removed for memory optimization
         // Visual feedback now uses CSS animations
         const abDisplay = document.getElementById('ab-display');
@@ -543,13 +543,13 @@ export class GameState {
                 pulseElement(abDisplay, 1.1, 200);
             }
         }
-        
+
         // Audio feedback
         if (window.audioSystem && window.audioSystem.playSound) {
             window.audioSystem.playSound('achievement');
         }
     }
-    
+
     /**
      * Format short number for display
      */
@@ -558,7 +558,7 @@ export class GameState {
         if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
         return num.toFixed(1);
     }
-    
+
     /**
      * Spend AB if the player has enough
      * @param {number} amount - Amount of AB to spend
@@ -570,7 +570,7 @@ export class GameState {
         this.batchUpdate('abChanged', this.ab);
         return true;
     }
-    
+
     /**
      * Add ingredient to inventory with DOM update batching
      * @param {string} ingId - Ingredient ID
@@ -589,7 +589,7 @@ export class GameState {
             this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
         }
     }
-    
+
     /**
      * Spend ingredient if the player has enough
      * @param {string} ingId - Ingredient ID
@@ -608,10 +608,10 @@ export class GameState {
         }
         return true;
     }
-    
+
     cast(comboMultiplier = 1.0, eventMultiplier = 1.0) {
         this.totalTaps++;
-        
+
         // Base tier-0 ingredients (4 alchemical elements - Aether is synthesized from these)
         let baseAmounts = {
             crystal_dust: 0.5,
@@ -619,19 +619,19 @@ export class GameState {
             water_essence: 0.5,
             air_essence: 0.5
         };
-        
+
         // Apply Fire specialization cast reward multiplier
         if (this.elementSpecialization === 'fire' && this.specializationBonuses.castRewardMult) {
             for (const ingId in baseAmounts) {
                 baseAmounts[ingId] *= this.specializationBonuses.castRewardMult;
             }
         }
-        
+
         // Variable reward system (dopamine maximization)
         const bonusRoll = Math.random();
         let bonusMultiplier = 1.0;
         let bonusType = null;
-        
+
         if (bonusRoll < 0.05) {
             // 5% chance for 2x-5x bonus (jackpot)
             bonusMultiplier = 2.0 + Math.random() * 3.0; // 2.0 to 5.0
@@ -641,11 +641,11 @@ export class GameState {
             bonusMultiplier = 1.5;
             bonusType = 'bonus';
         }
-        
+
         // Apply click upgrades
         let clickAdditive = 0.0;
         let clickMult = 1.0;
-        
+
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
             if (upgData && upgData.affects === "click") {
@@ -656,7 +656,7 @@ export class GameState {
                 }
             }
         }
-        
+
         // Apply prestige click multiplier
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
@@ -665,93 +665,38 @@ export class GameState {
                 clickMult *= (1.0 + bonusData.value * levels);
             }
         }
-        
+
         // Apply cast speed buffs
         const castSpeedMult = this.getBuff('cast_speed');
-        
+
         // Apply combo, event, and bonus multipliers
         const totalMult = clickMult * comboMultiplier * eventMultiplier * castSpeedMult * bonusMultiplier;
-        
+
         // Grant ingredients (with additive bonus)
         for (const ingId in baseAmounts) {
             this.addIngredient(ingId, (baseAmounts[ingId] + clickAdditive) * totalMult);
         }
-        
+
         // Also grant a small amount of AB per cast (for progression)
         // This allows players to eventually unlock AB-producing workstations
         const abPerCast = 0.15 * totalMult;
         this.addAb(abPerCast);
-        
+
         // Trigger bonus feedback if applicable
         if (bonusType && window.triggerBonusFeedback) {
             window.triggerBonusFeedback(bonusType, bonusMultiplier);
         }
-        
+
         // Track bonus casts for achievements
         if (bonusMultiplier >= 5.0) {
             this.lastCastBonus = 5.0;
         }
-        
+
         // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
         // Update coven progress for casting
         // if (this.covenSystem) this.covenSystem.updateCovenProgress('casting', 1);
     }
-    
-    craftWorkstation(wsId, amount = 1) {
-        const prodData = PRODUCERS.find(p => p.id === wsId);
-        if (!prodData) return false;
-        
-        // Check unlock
-        if (this.ab < prodData.unlockAtAb) return false;
-        
-        let successCount = 0;
-        for (let i = 0; i < amount; i++) {
-            const currentOwned = this.workstations[wsId] || 0;
-            const recipe = Balance.scaledRecipe(prodData.recipe, currentOwned, prodData.growth);
-            
-            if (!this.canAfford(recipe)) break;
-            
-            this.consumeRecipe(recipe);
-            this.workstations[wsId] = (this.workstations[wsId] || 0) + 1;
-            successCount++;
-            this.totalWorkstationsCrafted++;
-        }
-        
-        if (successCount > 0) {
-            if (this.onWorkstationCrafted) this.onWorkstationCrafted(wsId, this.workstations[wsId]);
-            
-            // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
-            // Update coven progress for crafting
-            // if (this.covenSystem) this.covenSystem.updateCovenProgress('crafting', successCount);
-            
-            return true;
-        }
-        
-        return false;
-    }
-    
-    inscribeUpgrade(upgId) {
-        if (this.upgradesOwned[upgId]) return false;
-        
-        const upgData = UPGRADES.find(u => u.id === upgId);
-        if (!upgData) return false;
-        
-        // Check unlock
-        if (this.ab < upgData.unlockAtAb) return false;
-        
-        // Check recipe
-        if (!this.canAfford(upgData.recipe)) return false;
-        
-        this.consumeRecipe(upgData.recipe);
-        this.upgradesOwned[upgId] = true;
 
-        // Invalidate multiplier cache since upgrades affect production
-        this.invalidateMultiplierCache();
-
-        if (this.onUpgradePurchased) this.onUpgradePurchased(upgId);
-        return true;
-    }
-    
     canAfford(recipe) {
         for (const ingId in recipe) {
             const needed = recipe[ingId];
@@ -760,34 +705,34 @@ export class GameState {
         }
         return true;
     }
-    
+
     consumeRecipe(recipe) {
         for (const ingId in recipe) {
             this.spendIngredient(ingId, recipe[ingId]);
         }
     }
-    
+
     calculatePrestigeGain() {
         const currentEk = Balance.prestigePointsFor(this.prestigeLifetimeEarned);
         const baseGain = Math.max(0, currentEk - this.prestigePoints);
-        
+
         // Apply prestige gain buffs
         const prestigeBuffMult = this.getBuff('prestige_gain');
-        
+
         return baseGain * prestigeBuffMult;
     }
-    
+
     ascend() {
         const ekGain = this.calculatePrestigeGain();
         if (ekGain <= 0) return;
-        
+
         this.prestigePoints += ekGain;
         this.prestigeCount++; // Increment prestige count (number of ascensions)
-        
+
         // Reset element specialization (player will choose new one)
         this.elementSpecialization = null;
         this.specializationBonuses = {};
-        
+
         // Reset run
         this.ab = 0.0;
         this.abTotalEarned = 0.0;
@@ -798,15 +743,15 @@ export class GameState {
         this.totalTaps = 0;
         this.totalWorkstationsCrafted = 0;
         this.totalPotionsCrafted = 0;
-        
+
         // Apply prestige start bonuses
         this.applyPrestigeStartBonuses();
-        
+
         // Trigger specialization choice UI (will be handled in game.js)
         if (this.onPrestigeCompleted) this.onPrestigeCompleted(ekGain);
         this.saveGameStateImmediate(); // Critical save - use immediate
     }
-    
+
     /**
      * Choose element specialization (called from UI after ascension)
      * @param {string} element - 'fire', 'water', 'air', or 'crystal'
@@ -817,7 +762,7 @@ export class GameState {
             console.error('Invalid element specialization:', element);
             return false;
         }
-        
+
         this.elementSpecialization = element;
         const spec = ELEMENT_SPECIALIZATIONS[element];
         if (spec) {
@@ -830,7 +775,7 @@ export class GameState {
         this.saveGameStateImmediate(); // Critical save - use immediate
         return true;
     }
-    
+
     applyPrestigeStartBonuses() {
         // Starting AB
         for (const bonusId in this.prestigeBonuses) {
@@ -840,7 +785,7 @@ export class GameState {
                 this.addAb(bonusData.value * levels);
             }
         }
-        
+
         // Starting ingredients
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
@@ -850,16 +795,16 @@ export class GameState {
             }
         }
     }
-    
+
     purchasePrestigeBonus(bonusId) {
         const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
         if (!bonusData) return false;
-        
+
         const currentLevel = this.prestigeBonuses[bonusId] || 0;
         const cost = bonusData.baseCostPp * Math.pow(bonusData.costGrowth, currentLevel);
-        
+
         if (this.prestigePoints < cost) return false;
-        
+
         this.prestigePoints -= Math.floor(cost);
         this.prestigeBonuses[bonusId] = (this.prestigeBonuses[bonusId] || 0) + 1;
 
@@ -868,83 +813,11 @@ export class GameState {
 
         return true;
     }
-    
-    tryExperiment() {
-        for (const recipe of HIDDEN_RECIPES) {
-            if (this.discoveredRecipes.includes(recipe.id)) continue;
-            
-            // Check if player has ingredients
-            let hasAll = true;
-            for (const ingId in recipe.inputs) {
-                if ((this.inventory[ingId] || 0) < recipe.inputs[ingId]) {
-                    hasAll = false;
-                    break;
-                }
-            }
-            
-            if (hasAll) {
-                // Cap discovered recipes array to prevent unbounded memory growth
-                const MAX_DISCOVERED_RECIPES = 100;
-                if (this.discoveredRecipes.length >= MAX_DISCOVERED_RECIPES) {
-                    // Remove oldest recipe (FIFO)
-                    this.discoveredRecipes.shift();
-                }
-                this.discoveredRecipes.push(recipe.id);
-                if (this.onRecipeDiscovered) this.onRecipeDiscovered(recipe.id);
-                return {
-                    success: true,
-                    recipe: recipe
-                };
-            }
-        }
-        
-        return {
-            success: false,
-            message: "No new recipes discovered. Try gathering more materials!"
-        };
-    }
-    
-    craftDiscoveredRecipe(recipeId) {
-        if (!this.discoveredRecipes.includes(recipeId)) return false;
-        
-        const recipe = HIDDEN_RECIPES.find(r => r.id === recipeId);
-        if (!recipe) return false;
-        
-        if (!this.canAfford(recipe.inputs)) return false;
-        
-        this.consumeRecipe(recipe.inputs);
-        
-        for (const outputId in recipe.outputs) {
-            if (outputId === "ab") {
-                this.addAb(recipe.outputs[outputId]);
-            } else {
-                // Check if this is a potion that should be consumed immediately
-                const potionIds = ['production_elixir', 'haste_potion', 'ab_amplifier', 
-                                   'mega_production_elixir', 'speed_essence', 'ab_turbo_charge', 'rare_catalyst',
-                                   'ultimate_production_elixir', 'quantum_speed_boost', 'ab_overdrive', 
-                                   'master_catalyst', 'prestige_boost',
-                                   'infinity_production_elixir', 'void_speed_surge', 'ab_infinity_boost', 
-                                   'infinity_catalyst', 'prestige_mastery'];
-                
-                if (potionIds.includes(outputId)) {
-                    // Potions activate immediately on craft (don't add to inventory)
-                    const effect = this.getPotionEffect(outputId);
-                    if (effect) {
-                        for (let i = 0; i < recipe.outputs[outputId]; i++) {
-                            this.addBuff(effect.type, effect.value, effect.duration);
-                            this.totalPotionsCrafted++; // Track potion crafting
-                        }
-                    }
-                } else {
-                    // Regular ingredients go to inventory
-                    this.addIngredient(outputId, recipe.outputs[outputId]);
-                }
-            }
-        }
-        
-        return true;
-    }
-    
+
+    // tryExperiment moved to CraftingManager
+
+    // craftDiscoveredRecipe moved to CraftingManager
+
     /**
      * Save game state (debounced) - Use this for auto-saves
      */
@@ -964,7 +837,7 @@ export class GameState {
             if (window.showLoadingState) {
                 loadingId = window.showLoadingState('Saving game...');
             }
-            
+
             const saveData = {
                 ab: this.ab,
                 abTotal: this.abTotalEarned,
@@ -1006,15 +879,15 @@ export class GameState {
 
             // Compress save data before storing
             const compressedDataObj = this.compressSaveDataObject(saveData);
-            
+
             // Add checksum for integrity verification (calculate on compressed data)
             compressedDataObj.checksum = this.calculateChecksum(compressedDataObj);
-            
+
             // Stringify and save
             const compressedData = JSON.stringify(compressedDataObj);
             localStorage.setItem('cyberWitchesSave', compressedData);
             this.lastSaveTime = Date.now() / 1000;
-            
+
             // Hide loading state
             if (loadingId && window.hideLoadingState) {
                 window.hideLoadingState(loadingId);
@@ -1027,7 +900,7 @@ export class GameState {
             handleError(error, 'save', true);
         }
     }
-    
+
     /**
      * Load game state from localStorage with validation and error handling
      */
@@ -1038,7 +911,7 @@ export class GameState {
             if (window.showLoadingState) {
                 loadingId = window.showLoadingState('Loading game...');
             }
-            
+
             const saveDataStr = localStorage.getItem('cyberWitchesSave');
             if (!saveDataStr) {
                 // Hide loading state if no save data
@@ -1047,7 +920,7 @@ export class GameState {
                 }
                 return;
             }
-            
+
             let data;
             try {
                 data = JSON.parse(saveDataStr);
@@ -1072,14 +945,14 @@ export class GameState {
                 // Recalculate checksum and update it (may have been saved with different property order or structure)
                 const newChecksum = this.calculateChecksum(data);
                 data.checksum = newChecksum;
-                
+
                 // Create backup of the original save
                 try {
                     localStorage.setItem('cyberWitchesSave_checksum_fix_' + Date.now(), saveDataStr);
                 } catch (e) {
                     console.error('Failed to create checksum fix backup:', e);
                 }
-                
+
                 // Continue loading with recalculated checksum
                 // The checksum will be updated on next save
             }
@@ -1103,25 +976,25 @@ export class GameState {
                 }
                 return;
             }
-            
+
             // Calculate offline progress BEFORE loading state
             const elapsed = (Date.now() / 1000) - (data.timestamp || Date.now() / 1000);
-            
+
             // Load state
             this.ab = data.ab || 0.0;
             this.abTotalEarned = data.abTotal || 0.0;
             this.inventory = data.inventory || {};
             this.workstations = data.workstations || {};
             this.upgradesOwned = data.upgrades || {};
-            
+
             // Clean up deprecated ingredients from inventory
             this.cleanupInventory();
-            
+
             const prestigeData = data.prestige || {};
             this.prestigePoints = prestigeData.points || 0;
             this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
             this.prestigeBonuses = prestigeData.bonuses || {};
-            
+
             // Load element specialization
             this.elementSpecialization = data.elementSpecialization || null;
             if (this.elementSpecialization) {
@@ -1136,7 +1009,7 @@ export class GameState {
             } else {
                 this.specializationBonuses = {};
             }
-            
+
             // Load prestige count, with fallback: if missing but has prestige points, assume at least 1 ascension
             let prestigeCountInferred = false;
             if (prestigeData.count !== undefined && prestigeData.count !== null) {
@@ -1149,7 +1022,7 @@ export class GameState {
             } else {
                 this.prestigeCount = 0;
             }
-            
+
             // If we inferred the count, save it back to ensure it's persisted
             if (prestigeCountInferred) {
                 // Save after a short delay to ensure all loading is complete
@@ -1157,15 +1030,15 @@ export class GameState {
                     this.saveGameState();
                 }, 1000);
             }
-            
+
             const experimentsData = data.experiments || {};
             this.discoveredRecipes = experimentsData.discovered || [];
-            
+
             const stats = data.stats || {};
             this.totalTaps = stats.totalTaps || 0;
             this.totalWorkstationsCrafted = stats.totalWorkstationsCrafted || 0;
             this.totalPotionsCrafted = stats.totalPotionsCrafted || 0;
-            
+
             // Load unlocked milestones
             const milestonesData = data.milestones || {};
             if (milestonesData.unlocked && Array.isArray(milestonesData.unlocked)) {
@@ -1173,18 +1046,18 @@ export class GameState {
             } else {
                 this.unlockedMilestones = new Set();
             }
-            
+
             // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
             // Load coven data
             // if (this.covenSystem && data.coven) this.covenSystem.loadCovenData(data.coven);
-            
+
             // Apply offline progress
             if (elapsed > 0) {
                 this.applyOfflineProgress(elapsed);
             }
-            
+
             this.lastSaveTime = Date.now() / 1000;
-            
+
             // Hide loading state
             if (loadingId && window.hideLoadingState) {
                 window.hideLoadingState(loadingId);
@@ -1197,7 +1070,7 @@ export class GameState {
             handleError(error, 'load', true);
         }
     }
-    
+
     /**
      * Apply offline progress with validation
      * @param {number} elapsedSeconds - Time elapsed in seconds
@@ -1205,17 +1078,17 @@ export class GameState {
     applyOfflineProgress(elapsedSeconds) {
         const abps = this.getAbPerSecond();
         const offlineAb = Balance.calculateOfflineProduction(elapsedSeconds, abps);
-        
+
         if (offlineAb > 0) {
             this.addAb(offlineAb);
             this.batchUpdate('welcomeBack', elapsedSeconds, offlineAb);
-            
+
             // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
             // Update coven progress for offline production
             // if (this.covenSystem) this.covenSystem.updateCovenProgress('production', offlineAb, 'ab');
         }
     }
-    
+
     /**
      * Batch DOM updates to reduce frequent manipulations
      * @param {string} updateType - Type of update
@@ -1224,37 +1097,37 @@ export class GameState {
     batchUpdate(updateType, ...args) {
         // Add to pending updates
         this.pendingUpdates.add({ type: updateType, args });
-        
+
         // Clear existing timeout
         if (this.batchTimeout) {
             clearTimeout(this.batchTimeout);
         }
-        
+
         // Set new timeout to process batch
         this.batchTimeout = setTimeout(() => {
             this.processBatchedUpdates();
         }, this.batchDelay);
     }
-    
+
     /**
      * Process all batched DOM updates
      */
     processBatchedUpdates() {
         // Group updates by type to avoid redundant calls
         const updateGroups = new Map();
-        
+
         for (const update of this.pendingUpdates) {
             if (!updateGroups.has(update.type)) {
                 updateGroups.set(update.type, []);
             }
             updateGroups.get(update.type).push(update.args);
         }
-        
+
         // Process each group
         for (const [type, argsList] of updateGroups) {
             // Use only the latest args for each type to avoid redundant updates
             const latestArgs = argsList[argsList.length - 1];
-            
+
             switch (type) {
                 case 'abChanged':
                     if (this.onAbChanged) {
@@ -1273,12 +1146,12 @@ export class GameState {
                     break;
             }
         }
-        
+
         // Clear pending updates
         this.pendingUpdates.clear();
         this.batchTimeout = null;
     }
-    
+
     /**
      * Validate save data structure and values
      * @param {Object} data - Save data to validate
@@ -1437,11 +1310,11 @@ export class GameState {
         if (obj === null || typeof obj !== 'object') {
             return obj;
         }
-        
+
         if (Array.isArray(obj)) {
             return obj.map(item => this.sortObjectKeys(item));
         }
-        
+
         const sorted = {};
         const keys = Object.keys(obj).sort();
         for (const key of keys) {
@@ -1508,7 +1381,7 @@ export class GameState {
             if (!data.version) {
                 data.version = "2.0";
             }
-            
+
             // Migrate from version 1.0 to 2.0
             if (data.version === "1.0" || parseFloat(data.version) < 2.0) {
                 // Ensure all required fields exist
@@ -1519,10 +1392,10 @@ export class GameState {
                 if (!data.experiments) data.experiments = { discovered: [] };
                 if (!data.stats) data.stats = { totalTaps: 0, totalWorkstationsCrafted: 0, totalPotionsCrafted: 0 };
                 if (!data.milestones) data.milestones = { unlocked: [] };
-                
+
                 data.version = "2.0";
             }
-            
+
             // Migrate to version 2.1 (add validation and ensure prestige.count exists)
             if (data.version === "2.0" || parseFloat(data.version) < 2.1) {
                 // Ensure prestige.count exists - if missing but has prestige points/bonuses, infer it
@@ -1537,17 +1410,17 @@ export class GameState {
                         }
                     }
                 }
-                
+
                 data.version = "2.1";
             }
-            
+
             return true;
         } catch (error) {
             console.error('Save data migration failed:', error);
             return false;
         }
     }
-    
+
     /**
      * Compress save data to reduce size (returns object)
      * @param {Object} data - Save data to compress
@@ -1570,20 +1443,20 @@ export class GameState {
             timestamp: data.timestamp,
             version: data.version
         };
-        
+
         // Remove zero values to save space
         Object.keys(compressed.inventory).forEach(key => {
             if (compressed.inventory[key] === 0) {
                 delete compressed.inventory[key];
             }
         });
-        
+
         Object.keys(compressed.workstations).forEach(key => {
             if (compressed.workstations[key] === 0) {
                 delete compressed.workstations[key];
             }
         });
-        
+
         return compressed;
     }
 
@@ -1600,14 +1473,14 @@ export class GameState {
         }
         return JSON.stringify(compressed);
     }
-    
+
     /**
      * Clean up deprecated ingredients from inventory
      * Removes ingredients that no longer exist in the game
      */
     cleanupInventory() {
         if (!this.inventory) return;
-        
+
         // List of deprecated ingredients that should be removed
         const deprecatedIngredients = [
             'quantum_essence',
@@ -1619,13 +1492,13 @@ export class GameState {
             'sigil_charge',
             'coven_blessing'
         ];
-        
+
         // Get list of valid ingredient IDs from INGREDIENTS array
         const validIngredients = new Set();
         if (typeof INGREDIENTS !== 'undefined') {
             INGREDIENTS.forEach(ing => validIngredients.add(ing.id));
         }
-        
+
         // Also allow base essences and AB
         validIngredients.add('fire_essence');
         validIngredients.add('water_essence');
@@ -1633,7 +1506,7 @@ export class GameState {
         validIngredients.add('crystal_dust');
         validIngredients.add('aether_ess');
         validIngredients.add('ab');
-        
+
         // Remove deprecated ingredients
         let removedCount = 0;
         for (const depIng of deprecatedIngredients) {
@@ -1644,7 +1517,7 @@ export class GameState {
                 console.log(`Removed deprecated ingredient: ${depIng} (had ${amount})`);
             }
         }
-        
+
         // Remove any ingredients not in the valid list (check against INGREDIENTS array)
         // Also remove items with zero or negative amounts (clean up empty slots)
         const itemsToRemove = [];
@@ -1654,7 +1527,7 @@ export class GameState {
                 itemsToRemove.push(ingId);
                 continue;
             }
-            
+
             if (!validIngredients.has(ingId)) {
                 // Check if it's a meditation-only ingredient (keep those)
                 const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
@@ -1665,43 +1538,43 @@ export class GameState {
                 }
             }
         }
-        
+
         // Remove all items in one pass
         for (const ingId of itemsToRemove) {
             delete this.inventory[ingId];
             removedCount++;
         }
-        
+
         if (removedCount > 0) {
             console.log(`Cleaned up ${removedCount} deprecated/invalid ingredients from inventory`);
             // Save after cleanup - debounced is fine for cleanup
             this.saveGameState();
         }
     }
-    
+
     /**
      * Check for save conflicts and resolve them
      * @returns {boolean} True if conflicts were resolved, false otherwise
      */
     checkSaveConflicts() {
         // Check for multiple save files (exclude all backup/checkpoint files)
-        const allSaveKeys = Object.keys(localStorage).filter(key => 
-            key.startsWith('cyberWitchesSave') && 
-            !key.includes('_backup_') && 
+        const allSaveKeys = Object.keys(localStorage).filter(key =>
+            key.startsWith('cyberWitchesSave') &&
+            !key.includes('_backup_') &&
             !key.includes('_corrupted_') &&
             !key.includes('_checksum_fix_')
         );
-        
+
         if (allSaveKeys.length <= 1) {
             return false; // No conflicts (only main save exists)
         }
-        
+
         // If we have multiple save files (not backups), log once
         if (!this._saveConflictLogged) {
             console.warn('Multiple save files detected. Attempting to resolve conflicts.');
             this._saveConflictLogged = true;
         }
-        
+
         // Parse all saves
         const saves = [];
         allSaveKeys.forEach(key => {
@@ -1718,21 +1591,21 @@ export class GameState {
                 console.error('Failed to parse save:', key, e);
             }
         });
-        
+
         if (saves.length <= 1) {
             return false; // No valid saves
         }
-        
+
         // Sort by timestamp (most recent first)
         saves.sort((a, b) => b.timestamp - a.timestamp);
-        
+
         // Get primary save (most recent)
         const primarySave = saves[0];
-        
+
         // Try to merge saves if they're close in time (within 5 minutes)
         const timeDiff = primarySave.timestamp - saves[1].timestamp;
         const fiveMinutes = 5 * 60; // 5 minutes in seconds
-        
+
         if (timeDiff < fiveMinutes && saves.length === 2) {
             // Attempt to merge saves
             const merged = this.mergeSaveData(primarySave.data, saves[1].data);
@@ -1745,7 +1618,7 @@ export class GameState {
                     version: primarySave.version
                 };
                 localStorage.setItem('cyberWitchesSave', JSON.stringify(mergedData));
-                
+
                 // Clean up old saves
                 saves.forEach(save => {
                     if (save.key !== 'cyberWitchesSave') {
@@ -1755,13 +1628,13 @@ export class GameState {
                 return true;
             }
         }
-        
+
         // Use most recent save if merge failed or saves are too far apart
         if (primarySave.key !== 'cyberWitchesSave') {
             const saveData = localStorage.getItem(primarySave.key);
             localStorage.setItem('cyberWitchesSave', saveData);
         }
-        
+
         // Clean up old saves (keep backups)
         saves.forEach(save => {
             if (save.key !== 'cyberWitchesSave' && !save.key.includes('_backup_')) {
@@ -1775,10 +1648,10 @@ export class GameState {
                 localStorage.removeItem(save.key);
             }
         });
-        
+
         return true;
     }
-    
+
     /**
      * Merge two save data objects
      * @param {Object} save1 - First save data
@@ -1791,12 +1664,12 @@ export class GameState {
                 // Use higher values for currency and stats
                 ab: Math.max(save1.ab || 0, save2.ab || 0),
                 abTotal: Math.max(save1.abTotal || 0, save2.abTotal || 0),
-                
+
                 // Merge inventories (take maximum)
                 inventory: {},
                 workstations: {},
                 upgrades: {},
-                
+
                 // Merge prestige data
                 prestige: {
                     points: Math.max(
@@ -1813,7 +1686,7 @@ export class GameState {
                         (save2.prestige?.count || 0)
                     )
                 },
-                
+
                 // Merge experiments (union of discovered recipes)
                 experiments: {
                     discovered: [...new Set([
@@ -1821,7 +1694,7 @@ export class GameState {
                         ...(save2.experiments?.discovered || [])
                     ])]
                 },
-                
+
                 // Merge stats (take maximum)
                 stats: {
                     totalTaps: Math.max(
@@ -1837,7 +1710,7 @@ export class GameState {
                         (save2.stats?.totalPotionsCrafted || 0)
                     )
                 },
-                
+
                 // Merge milestones (union)
                 milestones: {
                     unlocked: [...new Set([
@@ -1846,7 +1719,7 @@ export class GameState {
                     ])]
                 }
             };
-            
+
             // Merge inventories (take maximum)
             const allIngredients = new Set([
                 ...Object.keys(save1.inventory || {}),
@@ -1858,7 +1731,7 @@ export class GameState {
                     save2.inventory?.[ingId] || 0
                 );
             });
-            
+
             // Merge workstations (take maximum)
             const allWorkstations = new Set([
                 ...Object.keys(save1.workstations || {}),
@@ -1870,10 +1743,10 @@ export class GameState {
                     save2.workstations?.[wsId] || 0
                 );
             });
-            
+
             // Merge upgrades (union)
             merged.upgrades = { ...save1.upgrades, ...save2.upgrades };
-            
+
             return merged;
         } catch (error) {
             console.error('Failed to merge save data:', error);
