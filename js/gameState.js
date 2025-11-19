@@ -1,3 +1,4 @@
+import { showLoadingState, hideLoadingState } from './loadingState.js';
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { Balance } from './utils.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
@@ -834,8 +835,8 @@ export class GameState {
         try {
             // Show loading state if available
             let loadingId = null;
-            if (window.showLoadingState) {
-                loadingId = window.showLoadingState('Saving game...');
+            if (showLoadingState) {
+                loadingId = showLoadingState('Saving game...');
             }
 
             const saveData = {
@@ -889,13 +890,13 @@ export class GameState {
             this.lastSaveTime = Date.now() / 1000;
 
             // Hide loading state
-            if (loadingId && window.hideLoadingState) {
-                window.hideLoadingState(loadingId);
+            if (loadingId && hideLoadingState) {
+                hideLoadingState(loadingId);
             }
         } catch (error) {
             // Hide loading state on error
-            if (window.hideLoadingState) {
-                window.hideLoadingState();
+            if (hideLoadingState) {
+                hideLoadingState();
             }
             handleError(error, 'save', true);
         }
@@ -908,8 +909,8 @@ export class GameState {
         try {
             // Show loading state if available
             let loadingId = null;
-            if (window.showLoadingState) {
-                loadingId = window.showLoadingState('Loading game...');
+            if (showLoadingState) {
+                loadingId = showLoadingState('Loading game...');
             }
 
             const saveDataStr = localStorage.getItem('cyberWitchesSave');
@@ -1059,13 +1060,13 @@ export class GameState {
             this.lastSaveTime = Date.now() / 1000;
 
             // Hide loading state
-            if (loadingId && window.hideLoadingState) {
-                window.hideLoadingState(loadingId);
+            if (loadingId && hideLoadingState) {
+                hideLoadingState(loadingId);
             }
         } catch (error) {
             // Hide loading state on error
-            if (window.hideLoadingState) {
-                window.hideLoadingState();
+            if (hideLoadingState) {
+                hideLoadingState();
             }
             handleError(error, 'load', true);
         }

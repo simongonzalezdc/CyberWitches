@@ -3,7 +3,8 @@
  * Manages the rendering and updates of the Workstations tab.
  */
 
-import { getTierSymbol, getTierAppropriateStyle } from './uiHelpers.js';
+import { formatTimeDuration, formatShort } from '../../utils.js';
+import { getTierSymbol, getTierAppropriateStyle, getWorkstationTier } from './uiHelpers.js';
 
 export class WorkstationUI {
     constructor(gameState, uiManager) {
@@ -133,7 +134,7 @@ export class WorkstationUI {
         // Group workstations by tier
         const workstationsByTier = {};
         for (const prodData of unlockedWorkstations) {
-            const tier = this.getWorkstationTier(prodData);
+            const tier = getWorkstationTier(prodData);
             if (!workstationsByTier[tier]) {
                 workstationsByTier[tier] = [];
             }
@@ -313,20 +314,5 @@ export class WorkstationUI {
         }
 
         return { multiplier: mult, inscriptions };
-    }
-
-
-    /**
-     * Get tier for a workstation based on its position in PRODUCERS array
-     */
-    getWorkstationTier(prodData) {
-        const index = window.PRODUCERS.findIndex(p => p.id === prodData.id);
-        if (index === -1) return -1; // Not found
-        if (index <= 4) return 0;   // Tier 0: 5 workstations (indices 0-4)
-        if (index <= 9) return 1;    // Tier 1: 5 workstations (indices 5-9)
-        if (index <= 14) return 2;   // Tier 2: 5 workstations (indices 10-14)
-        if (index <= 19) return 3;  // Tier 3: 5 workstations (indices 15-19)
-        if (index <= 24) return 4;  // Tier 4: 5 workstations (indices 20-24)
-        return -1; // Invalid tier
     }
 }

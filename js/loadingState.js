@@ -9,7 +9,7 @@ class LoadingStateManager {
         this.loaderElement = null;
         this.init();
     }
-    
+
     init() {
         // Create loading overlay element
         this.loaderElement = document.createElement('div');
@@ -29,7 +29,7 @@ class LoadingStateManager {
             flex-direction: column;
             gap: 20px;
         `;
-        
+
         this.loaderElement.innerHTML = `
             <div class="loading-spinner" style="
                 width: 50px;
@@ -45,7 +45,7 @@ class LoadingStateManager {
                 font-weight: 600;
             ">Loading...</div>
         `;
-        
+
         // Add spinner animation
         const style = document.createElement('style');
         style.textContent = `
@@ -54,10 +54,10 @@ class LoadingStateManager {
             }
         `;
         document.head.appendChild(style);
-        
+
         document.body.appendChild(this.loaderElement);
     }
-    
+
     /**
      * Show loading state
      * @param {string} message - Loading message
@@ -67,19 +67,19 @@ class LoadingStateManager {
     show(message = 'Loading...', id = null) {
         const loaderId = id || `loader_${Date.now()}_${Math.random()}`;
         this.activeLoaders.add(loaderId);
-        
+
         const messageEl = this.loaderElement.querySelector('.loading-message');
         if (messageEl) {
             messageEl.textContent = message;
         }
-        
+
         this.loaderElement.style.display = 'flex';
         this.loaderElement.setAttribute('aria-busy', 'true');
         this.loaderElement.setAttribute('aria-live', 'polite');
-        
+
         return loaderId;
     }
-    
+
     /**
      * Hide loading state
      * @param {string} id - Loader ID to hide
@@ -90,13 +90,13 @@ class LoadingStateManager {
         } else {
             this.activeLoaders.clear();
         }
-        
+
         if (this.activeLoaders.size === 0) {
             this.loaderElement.style.display = 'none';
             this.loaderElement.setAttribute('aria-busy', 'false');
         }
     }
-    
+
     /**
      * Show loading state for async operation
      * @param {Promise} promise - Promise to wait for
@@ -117,14 +117,14 @@ class LoadingStateManager {
 }
 
 // Create global instance
-const loadingStateManager = new LoadingStateManager();
+export const loadingStateManager = new LoadingStateManager();
 
-// Global function for compatibility
-window.showLoadingState = (message) => {
+// Export functions for modules
+export const showLoadingState = (message) => {
     return loadingStateManager.show(message);
 };
 
-window.hideLoadingState = (id) => {
+export const hideLoadingState = (id) => {
     loadingStateManager.hide(id);
 };
 

@@ -218,4 +218,29 @@ export class CastManager {
             }
         }
     }
+
+    /**
+     * Update auto button visibility based on first ascension
+     */
+    updateAutoButtonVisibility() {
+        const autoCastToggle = document.getElementById('auto-cast-toggle');
+        if (autoCastToggle && this.gameState) {
+            const hasAscended = this.gameState.prestigeCount >= 1;
+            if (hasAscended) {
+                // Show auto button after first ascension
+                autoCastToggle.style.display = 'flex';
+                autoCastToggle.style.visibility = 'visible';
+                autoCastToggle.style.opacity = '1';
+            } else {
+                // Hide auto button until first ascension
+                autoCastToggle.style.display = 'none';
+                autoCastToggle.style.visibility = 'hidden';
+                autoCastToggle.style.opacity = '0';
+                // Also disable auto-cast if it was enabled
+                if (this.autoCastEnabled) {
+                    this.setAutoCast(false);
+                }
+            }
+        }
+    }
 }

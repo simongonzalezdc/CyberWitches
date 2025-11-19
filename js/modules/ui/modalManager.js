@@ -3,7 +3,7 @@
  * Manages all modal dialogs and overlays in the game.
  */
 
-import { stripEmojisIfLowTier } from './notifications.js';
+import { stripEmojisIfLowTier } from './uiHelpers.js';
 
 export class ModalManager {
     constructor(gameState, designTierSystem) {

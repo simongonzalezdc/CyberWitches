@@ -3,7 +3,7 @@
  * Manages the rendering and updates of the Inscriptions (Upgrades) tab.
  */
 
-import { getTierSymbol, getTierAppropriateStyle, stripEmojisIfLowTier } from './uiHelpers.js';
+import { getTierSymbol, getTierAppropriateStyle, stripEmojisIfLowTier, getUpgradeTier } from './uiHelpers.js';
 
 export class InscriptionsUI {
     constructor(gameState, uiManager) {
@@ -127,7 +127,7 @@ export class InscriptionsUI {
         // Group upgrades by tier
         const upgradesByTier = {};
         for (const upgData of unlockedUpgrades) {
-            const tier = this.getUpgradeTier(upgData);
+            const tier = getUpgradeTier(upgData);
             if (!upgradesByTier[tier]) {
                 upgradesByTier[tier] = [];
             }
@@ -274,28 +274,5 @@ export class InscriptionsUI {
         // console.log('Finished rendering upgrades, container now has', container.children.length, 'children');
     }
 
-    /**
-     * Get tier for an upgrade based on its position in UPGRADES array
-     * Uses fixed index ranges based on data/upgrades.js structure
-     */
-    getUpgradeTier(upgData) {
-        const index = window.UPGRADES.findIndex(u => u.id === upgData.id);
-        if (index === -1) return -1; // Not found
-
-        // Tier 0: indices 0-2
-        if (index <= 2) return 0;
-        // Tier 1: indices 3-5
-        if (index <= 5) return 1;
-        // Tier 2: indices 6-14 (Workstation + Global Tier 2)
-        if (index <= 14) return 2;
-        // Tier 3: indices 15-19
-        if (index <= 19) return 3;
-        // Tier 4: indices 20-21
-        if (index <= 21) return 4;
-        // Tier 5: indices 22-24
-        if (index <= 24) return 5;
-
-        // Special/Focus upgrades (treat as Tier 0 or specific tier if needed)
-        return 0;
-    }
 }
+

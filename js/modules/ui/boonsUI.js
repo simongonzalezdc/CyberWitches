@@ -5,7 +5,7 @@
 
 import { showNotification } from './notifications.js';
 import { PRESTIGE_BONUSES } from '../data/index.js';
-import { formatShort } from '../utils.js';
+import { formatTimeDuration, formatShort } from '../../utils.js';
 
 export class BoonsUI {
     constructor(gameState, uiManager) {

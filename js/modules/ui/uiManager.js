@@ -15,6 +15,8 @@ import { MeditationUI } from './meditationUI.js';
 import { FloatingTextUI } from './floatingTextUI.js';
 import { HUDUI } from './hudUI.js';
 import { showNotification } from './notifications.js';
+import { accessibilityManager, announceToScreenReader } from '../../accessibility.js';
+import { showLoadingState, hideLoadingState } from '../../loadingState.js';
 
 export class UIManager {
     constructor(gameState, gameSystems = {}) {
@@ -52,6 +54,13 @@ export class UIManager {
 
         // Initialize UI elements
         this.init();
+
+        // Inject dependencies into notification manager
+        if (this.systems.audioSystem) {
+            import('./notifications.js').then(({ notificationManager }) => {
+                notificationManager.setAudioSystem(this.systems.audioSystem);
+            });
+        }
     }
 
     init() {
@@ -238,5 +247,17 @@ export class UIManager {
 
     showNotification(message, type = 'info', duration = 3000) {
         showNotification(message, type, duration);
+    }
+
+    announceToScreenReader(message, politeness) {
+        announceToScreenReader(message, politeness);
+    }
+
+    showLoadingState(message) {
+        return showLoadingState(message);
+    }
+
+    hideLoadingState(id) {
+        hideLoadingState(id);
     }
 }

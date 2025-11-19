@@ -1,4 +1,4 @@
-import { ELEMENT_SPECIALIZATIONS } from '../data/index.js';
+import { ELEMENT_SPECIALIZATIONS } from '../../elementSpecialization.js';
 import { formatOneDecimal } from '../../utils.js';
 import { animateNumberWithFormatter } from './uiHelpers.js';
 import { calculateElementTotals } from '../utils/resourceUtils.js';

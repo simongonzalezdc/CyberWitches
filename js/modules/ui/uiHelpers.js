@@ -3,6 +3,10 @@
  * Shared utility functions for UI rendering.
  */
 
+import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
+
+
+
 /**
  * Get tier symbol and styles
  * @param {number} tier - Tier number (0-5)
@@ -170,4 +174,61 @@ export function animateNumberWithFormatter(element, startValue, endValue, durati
     }
 
     requestAnimationFrame(update);
+}
+
+/**
+ * Get tier for a workstation based on its position in PRODUCERS array
+ * @param {Object} prodData - Producer data object
+ * @returns {number} Tier number (0-4) or -1 if not found
+ */
+export function getWorkstationTier(prodData) {
+    const index = PRODUCERS.findIndex(p => p.id === prodData.id);
+    if (index === -1) return -1; // Not found
+    if (index <= 4) return 0;   // Tier 0: 5 workstations (indices 0-4)
+    if (index <= 9) return 1;   // Tier 1: 5 workstations (indices 5-9)
+    if (index <= 14) return 2;   // Tier 2: 5 workstations (indices 10-14)
+    if (index <= 19) return 3;  // Tier 3: 5 workstations (indices 15-19)
+    if (index <= 24) return 4;  // Tier 4: 5 workstations (indices 20-24)
+    return -1; // Invalid tier
+}
+
+/**
+ * Get tier for an upgrade based on its position in UPGRADES array
+ * Uses fixed index ranges based on data/upgrades.js structure
+ * @param {Object} upgData - Upgrade data object
+ * @returns {number} Tier number (0-5) or -1 if not found
+ */
+export function getUpgradeTier(upgData) {
+    // Try to find by ID first (fastest)
+    const index = UPGRADES.findIndex(u => u.id === upgData.id);
+
+    if (index !== -1) {
+        // Tier 0: indices 0-2
+        if (index <= 2) return 0;
+        // Tier 1: indices 3-5
+        if (index <= 5) return 1;
+        // Tier 2: indices 6-14 (Workstation + Global Tier 2)
+        if (index <= 14) return 2;
+        // Tier 3: indices 15-19
+        if (index <= 19) return 3;
+        // Tier 4: indices 20-21
+        if (index <= 21) return 4;
+        // Tier 5: indices 22-24
+        if (index <= 24) return 5;
+    }
+
+    // Fallback: Calculate from recipe ingredients (for tests or dynamic upgrades)
+    if (upgData.recipe) {
+        let maxTier = 0;
+        for (const ingId of Object.keys(upgData.recipe)) {
+            const ingredient = INGREDIENTS.find(i => i.id === ingId);
+            if (ingredient && typeof ingredient.tier === 'number') {
+                maxTier = Math.max(maxTier, ingredient.tier);
+            }
+        }
+        return maxTier;
+    }
+
+    // Special/Focus upgrades (treat as Tier 0 or specific tier if needed)
+    return 0;
 }

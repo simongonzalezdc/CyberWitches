@@ -11,28 +11,28 @@ class AccessibilityManager {
         this.reducedMotion = false;
         this.init();
     }
-    
+
     init() {
         // Check for reduced motion preference
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         this.reducedMotion = prefersReducedMotion.matches;
-        
+
         // Listen for changes
         prefersReducedMotion.addEventListener('change', (e) => {
             this.reducedMotion = e.matches;
             this.applyReducedMotion();
         });
-        
+
         // Create live regions
         this.createLiveRegions();
-        
+
         // Set up focus management
         this.setupFocusManagement();
-        
+
         // Apply initial reduced motion
         this.applyReducedMotion();
     }
-    
+
     /**
      * Create ARIA live regions for announcements
      */
@@ -42,7 +42,7 @@ class AccessibilityManager {
             { id: 'aria-live-assertive', politeness: 'assertive' },
             { id: 'aria-live-off', politeness: 'off' }
         ];
-        
+
         regions.forEach(region => {
             const element = document.createElement('div');
             element.id = region.id;
@@ -60,7 +60,7 @@ class AccessibilityManager {
             this.liveRegions.set(region.politeness, element);
         });
     }
-    
+
     /**
      * Announce message to screen readers
      * @param {string} message - Message to announce
@@ -77,7 +77,7 @@ class AccessibilityManager {
             }, 100);
         }
     }
-    
+
     /**
      * Set up focus management
      */
@@ -90,7 +90,7 @@ class AccessibilityManager {
                 this.focusHistory.shift();
             }
         });
-        
+
         // Restore focus after dynamic updates
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -106,13 +106,13 @@ class AccessibilityManager {
                 }
             });
         });
-        
+
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
     }
-    
+
     /**
      * Trap focus within a container (for modals)
      * @param {HTMLElement} container - Container to trap focus in
@@ -122,10 +122,10 @@ class AccessibilityManager {
             'a[href], button:not([disabled]), textarea:not([disabled]), ' +
             'input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
-        
+
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
-        
+
         container.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') {
                 if (e.shiftKey) {
@@ -142,7 +142,7 @@ class AccessibilityManager {
                     }
                 }
             }
-            
+
             // Close on Escape
             if (e.key === 'Escape') {
                 const closeButton = container.querySelector('[data-close-modal]');
@@ -151,13 +151,13 @@ class AccessibilityManager {
                 }
             }
         });
-        
+
         // Focus first element
         if (firstElement) {
             firstElement.focus();
         }
     }
-    
+
     /**
      * Apply reduced motion settings
      */
@@ -172,7 +172,7 @@ class AccessibilityManager {
             document.documentElement.classList.remove('reduced-motion');
         }
     }
-    
+
     /**
      * Toggle reduced motion
      */
@@ -181,7 +181,7 @@ class AccessibilityManager {
         localStorage.setItem('reducedMotion', this.reducedMotion.toString());
         this.applyReducedMotion();
     }
-    
+
     /**
      * Check if reduced motion is enabled
      * @returns {boolean}
@@ -192,14 +192,14 @@ class AccessibilityManager {
 }
 
 // Create global instance
-const accessibilityManager = new AccessibilityManager();
+export const accessibilityManager = new AccessibilityManager();
 
-// Global functions for compatibility
-window.announceToScreenReader = (message, politeness) => {
+// Export functions for modules
+export const announceToScreenReader = (message, politeness) => {
     accessibilityManager.announce(message, politeness);
 };
 
-window.trapFocus = (container) => {
+export const trapFocus = (container) => {
     accessibilityManager.trapFocus(container);
 };
 

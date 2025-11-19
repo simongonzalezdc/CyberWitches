@@ -4,7 +4,7 @@
  */
 
 import { showNotification } from './notifications.js';
-import { formatTimeDuration, formatShort } from '../utils.js';
+import { formatTimeDuration, formatShort } from '../../utils.js';
 
 export class DailiesUI {
     constructor(gameState, uiManager) {

@@ -4,6 +4,7 @@
  */
 
 import { GameState } from '../../js/gameState.js';
+import { CraftingManager } from '../../js/modules/game/craftingManager.js';
 import { Balance } from '../../js/utils.js';
 
 describe('GameState - Core Functionality', () => {
@@ -458,15 +459,15 @@ describe('GameState - Core Functionality', () => {
     });
 
     test('should allow setting callbacks', () => {
-      const callback = () => {};
+      const callback = () => { };
       gameState.onAbChanged = callback;
       expect(gameState.onAbChanged).toBe(callback);
     });
 
     test('should allow setting multiple callbacks', () => {
-      const cb1 = () => {};
-      const cb2 = () => {};
-      const cb3 = () => {};
+      const cb1 = () => { };
+      const cb2 = () => { };
+      const cb3 = () => { };
 
       gameState.onAbChanged = cb1;
       gameState.onIngredientChanged = cb2;
@@ -658,7 +659,8 @@ describe('GameState - Core Functionality', () => {
       gameState.inventory['fire_essence'] = 10;
       gameState.ab = 100;
 
-      const success = gameState.craftWorkstation('ws_fire_forge');
+      const craftingManager = new CraftingManager(gameState);
+      const success = craftingManager.craftWorkstation('ws_fire_forge');
       // May or may not succeed depending on exact requirements
       expect(typeof success).toBe('boolean');
     });

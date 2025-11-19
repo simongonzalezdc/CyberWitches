@@ -14,7 +14,7 @@ import { ELEMENT_SPECIALIZATIONS } from './elementSpecialization.js';
 import { formatShort, formatPrecise, formatTimeDuration, formatOneDecimal } from './utils.js';
 import { pulseElement, highlightElement, slideIn, animateNumber, shakeElement } from './animations.js';
 // Particle effects removed for memory optimization - see VISUAL_ALTERNATIVES.md
-import { audioSystem } from './audioSystem.js';
+
 import { VirtualWorkstationList, VirtualUpgradeList, VirtualAchievementList } from './virtualScroll.js';
 import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
 import { debounce, throttle, deepClone, formatWithCommas, clamp, lerp, inRange, randomInt, randomFloat, randomChoice, shuffle, isEmpty, capitalize, secondsToTime, calculatePercentage, isMobile, isTouchDevice, getPixelRatio, createElement, batchDOMUpdate, setLocalStorage, getLocalStorage, removeLocalStorage, clearLocalStorage, isInViewport, scrollIntoView, addEventListener, PerformanceMonitor } from './commonUtils.js';
@@ -39,7 +39,7 @@ import questSystem from './questSystem.js';
 import playerAnalyticsManager from './playerAnalytics.js';
 import balanceAnalyticsManager from './balanceAnalytics.js';
 import pwaFeaturesManager from './pwaFeatures.js';
-import pwaFeaturesManager from './pwaFeatures.js';
+
 import BalanceTestingFramework from './balanceTesting.js';
 import { CodeOrganization, GAME_CONSTANTS, MAGIC_NUMBERS } from './codeOrganization.js';
 import coreWebVitalsOptimizer from './coreWebVitals.js';
@@ -55,7 +55,7 @@ import { AudioSystem } from './audioSystem.js';
 import { DesignTierSystem } from './modules/game/designTierSystem.js';
 import { FadingThemeSystem } from './modules/game/fadingThemeSystem.js';
 import { TutorialSystem } from './modules/game/tutorialSystem.js';
-import { ParticleSystem } from './modules/game/particleSystem.js';
+import { stripEmojisIfLowTier } from './modules/ui/uiHelpers.js';
 
 
 /**
@@ -169,79 +169,7 @@ function initUI() {
     // Auto-cast state (needs to be in function scope for closure)
 
 
-    // Function to get current auto-cast interval based on events
-    const getAutoCastInterval = () => {
-        // Check if Inspiration event is active (double cast rewards)
-        if (eventSystem && eventSystem.hasEventEffect('double_casts')) {
-            // Faster casting during Inspiration events (250ms instead of 500ms)
-            return 250;
-        }
-        // Default interval
-        return 500;
-    };
 
-    // Function to update auto-cast interval based on events
-    const updateAutoCastInterval = () => {
-        if (autoCastEnabled && autoCastInterval) {
-            // Clear existing interval
-            clearInterval(autoCastInterval);
-            if (memoryLeakPreventionManager) {
-                memoryLeakPreventionManager.clearTrackedInterval(autoCastInterval);
-            }
-
-            // Create new interval with updated speed
-            const interval = getAutoCastInterval();
-            autoCastInterval = setInterval(() => {
-                if (gameState && castManager) {
-                    castManager.handleCast();
-                }
-            }, interval);
-
-            // Track new interval
-            if (memoryLeakPreventionManager) {
-                memoryLeakPreventionManager.trackInterval(autoCastInterval);
-            }
-
-            // Show notification if speed changed due to event
-            if (eventSystem && eventSystem.hasEventEffect('double_casts')) {
-                if (window.showNotification) {
-                    uiManager.showNotification('⚡ Auto-cast speed boosted by Inspiration event!', 'info');
-                }
-            }
-        }
-    };
-
-    // Make updateAutoCastInterval accessible globally for event system
-    window.updateAutoCastInterval = updateAutoCastInterval;
-
-    // Function to update visual feedback for auto-cast
-    const updateAutoCastVisualFeedback = () => {
-        if (autoCastEnabled) {
-            // Add visual feedback to cast button
-            if (castButton) {
-                castButton.classList.add('auto-cast-active');
-            }
-
-            // Highlight combo display when auto-cast is maintaining combo
-            const comboDisplay = document.getElementById('combo-display');
-            if (comboDisplay && comboSystem && comboSystem.getComboCount() > 0) {
-                comboDisplay.classList.add('auto-combo-active');
-            }
-        } else {
-            // Remove visual feedback
-            if (castButton) {
-                castButton.classList.remove('auto-cast-active');
-            }
-
-            const comboDisplay = document.getElementById('combo-display');
-            if (comboDisplay) {
-                comboDisplay.classList.remove('auto-combo-active');
-            }
-        }
-    };
-
-    // Make updateAutoCastVisualFeedback accessible globally
-    window.updateAutoCastVisualFeedback = updateAutoCastVisualFeedback;
 
     // Query for tab buttons - try both class names for compatibility
     tabButtons = document.querySelectorAll('.tab-btn');
@@ -289,8 +217,8 @@ function initUI() {
         helpButton.addEventListener('click', () => {
             helpModal.style.display = 'flex';
             helpModal.classList.add('active');
-            if (window.announceToScreenReader) {
-                window.announceToScreenReader('Help menu opened', 'polite');
+            if (uiManager && uiManager.announceToScreenReader) {
+                uiManager.announceToScreenReader('Help menu opened', 'polite');
             }
         });
     }
@@ -299,8 +227,8 @@ function initUI() {
         closeHelpButton.addEventListener('click', () => {
             helpModal.style.display = 'none';
             helpModal.classList.remove('active');
-            if (window.announceToScreenReader) {
-                window.announceToScreenReader('Help menu closed', 'polite');
+            if (uiManager && uiManager.announceToScreenReader) {
+                uiManager.announceToScreenReader('Help menu closed', 'polite');
             }
         });
     }
@@ -309,8 +237,8 @@ function initUI() {
         helpModalClose.addEventListener('click', () => {
             helpModal.style.display = 'none';
             helpModal.classList.remove('active');
-            if (window.announceToScreenReader) {
-                window.announceToScreenReader('Help menu closed', 'polite');
+            if (uiManager && uiManager.announceToScreenReader) {
+                uiManager.announceToScreenReader('Help menu closed', 'polite');
             }
         });
     }
@@ -349,7 +277,7 @@ function initUI() {
         eventSystem,
         craftingManager
     });
-    window.uiManager = uiManager; // Keep for debug/legacy
+
 
     // Initialize InputManager
     // inputManager is declared at module level
@@ -369,26 +297,27 @@ function initUI() {
     tutorialSystem = new TutorialSystem(gameState);
     uiManager.systems.tutorialSystem = tutorialSystem; // Add to UI manager
 
-    // Initialize quest system (already initialized as singleton, but ensure it's accessible)
+    // Initialize quest system (already initialized as singleton)
     if (questSystem) {
-        window.questSystem = questSystem;
+        // questSystem is already available in scope
     }
+
 
     // Initialize balance testing framework
     balanceTestingFramework = new BalanceTestingFramework(gameState);
-    window.balanceTestingFramework = balanceTestingFramework;
+
 
     // Initialize progression analysis
     progressionAnalysis = new ProgressionAnalysis(gameState);
-    window.progressionAnalysis = progressionAnalysis;
+
 
     // Initialize economy balancing
     economyBalancing = new EconomyBalancing(gameState);
-    window.economyBalancing = economyBalancing;
+
 
     // Initialize feedback loop manager
     feedbackLoopManager = new FeedbackLoopManager(gameState);
-    window.feedbackLoopManager = feedbackLoopManager;
+
 
     // Initialize Meditation Manager
     meditationManager = new MeditationManager(gameState, uiManager);
@@ -419,11 +348,11 @@ function initUI() {
     // Initialize design tier system (Feature 2: Progressive Design Revelation)
     designTierSystem = new DesignTierSystem(gameState);
     designTierSystem.applyTier(designTierSystem.getCurrentTier()).catch(err => console.error('Error applying initial tier:', err));
-    window.designTierSystem = designTierSystem; // Make globally accessible
+
 
     // Initialize fading theme system
     fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
-    window.fadingThemeSystem = fadingThemeSystem; // Make globally accessible
+
 
     // Update fading theme when tier changes
     const originalApplyTier = designTierSystem.applyTier.bind(designTierSystem);
@@ -624,7 +553,7 @@ function initUI() {
                 resetAllProgress();
             }
         }, true); // Use capture phase for better reliability
-        window.resetButtonListenerAttached = true;
+        // window.resetButtonListenerAttached = true; // Removed global
         console.log('Reset button event delegation attached');
     }
 
@@ -648,7 +577,7 @@ function initUI() {
     }
 
     // Make resetAllProgress globally accessible for debugging
-    window.resetAllProgress = resetAllProgress;
+
 
     // Settings counter in sidebar (replaces old settings button)
     const settingsCounter = document.getElementById('settings-counter');
@@ -836,15 +765,15 @@ function initUI() {
             );
 
             if (!confirmed) {
-                if (window.showNotification) {
-                    window.showNotification('Ascension cancelled.', 'info');
+                if (uiManager && uiManager.showNotification) {
+                    uiManager.showNotification('Ascension cancelled.', 'info');
                 }
                 return;
             }
 
             // Show loading state
-            if (window.showLoadingState) {
-                window.showLoadingState('Ascending...');
+            if (uiManager && uiManager.showLoadingState) {
+                uiManager.showLoadingState('Ascending...');
             }
 
             try {
@@ -853,13 +782,13 @@ function initUI() {
                 if (prestigeModal) prestigeModal.classList.remove('active');
 
                 // Hide loading state
-                if (window.hideLoadingState) {
-                    window.hideLoadingState();
+                if (uiManager && uiManager.hideLoadingState) {
+                    uiManager.hideLoadingState();
                 }
 
                 // Play level up sound for prestige/ascension
-                if (window.audioSystem && window.audioSystem.playSound) {
-                    window.audioSystem.playSound('level_up');
+                if (uiManager && uiManager.systems.audioSystem && uiManager.systems.audioSystem.playSound) {
+                    uiManager.systems.audioSystem.playSound('level_up');
                 }
 
                 // Reset design tiers to tier 0 when ascending
@@ -897,14 +826,14 @@ function initUI() {
                         window.meditationUI = meditationUI;
                     }
                     updateMeditationVisibility();
-                    if (window.showNotification) {
-                        window.showNotification('Meditation unlocked!', 'success');
+                    if (uiManager && uiManager.showNotification) {
+                        uiManager.showNotification('Meditation unlocked!', 'success');
                     }
                 }
 
                 // Update auto button visibility after ascension
-                if (window.updateAutoButtonVisibility) {
-                    window.updateAutoButtonVisibility();
+                if (castManager && castManager.updateAutoButtonVisibility) {
+                    castManager.updateAutoButtonVisibility();
                 }
 
                 // Update settings tab to show tier selector after first ascension
@@ -914,13 +843,13 @@ function initUI() {
                 uiManager.updateAllUI();
             } catch (error) {
                 // Hide loading state on error
-                if (window.hideLoadingState) {
-                    window.hideLoadingState();
+                if (uiManager && uiManager.hideLoadingState) {
+                    uiManager.hideLoadingState();
                 }
                 console.error('Error during ascension:', error);
                 handleError(error, 'ascension', true);
-                if (window.showNotification) {
-                    window.showNotification('An error occurred during ascension. Please try again.', 'error');
+                if (uiManager && uiManager.showNotification) {
+                    uiManager.showNotification('An error occurred during ascension. Please try again.', 'error');
                 }
             }
         });
@@ -1074,8 +1003,8 @@ function initUI() {
         meditationManager.checkUnlock();
 
         // Update auto button visibility after prestige
-        if (window.updateAutoButtonVisibility) {
-            window.updateAutoButtonVisibility();
+        if (castManager && castManager.updateAutoButtonVisibility) {
+            castManager.updateAutoButtonVisibility();
         }
         debouncedUIUpdate('allUI', updateAllUI);
     };
@@ -1293,10 +1222,8 @@ function initUI() {
                 }
 
                 // Announce to screen reader
-                if (window.Accessibility) {
-                    window.Accessibility.announceGameEvent('achievement_unlocked', {
-                        name: achievement.name
-                    });
+                if (uiManager && uiManager.accessibilityManager) {
+                    uiManager.accessibilityManager.announce(`Achievement unlocked: ${achievement.name}`, 'polite');
                 }
             }
         }
@@ -1332,8 +1259,8 @@ function initUI() {
     const comboInterval = setInterval(() => {
         updateComboDisplay();
         // Update auto-cast visual feedback to keep combo highlighting in sync
-        if (window.updateAutoCastVisualFeedback) {
-            window.updateAutoCastVisualFeedback();
+        if (castManager && castManager.updateAutoCastVisuals) {
+            castManager.updateAutoCastVisuals();
         }
     }, 500);
 
@@ -1381,9 +1308,6 @@ function initUI() {
             sidebar.classList.add('collapsed');
         }
     }
-
-    // Make showNotification globally available for event system
-    window.showNotification = showNotification;
 
     // Make game state available for mobile and accessibility features
     window.gameState = gameState;
@@ -1474,7 +1398,7 @@ function updateComboDisplay() {
     if (comboCount > 0 && comboDisplay) {
         const mult = comboSystem.getComboMultiplier();
         // Check if auto-cast is maintaining this combo
-        const autoMaintaining = window.getAutoCastEnabled && window.getAutoCastEnabled();
+        const autoMaintaining = castManager && castManager.getAutoCastEnabled && castManager.getAutoCastEnabled();
         comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)${autoMaintaining ? ' <span class="auto-indicator">⚡</span>' : ''}`;
         comboDisplay.style.display = 'block';
 
@@ -1810,8 +1734,8 @@ function resetAllProgress() {
         console.log('Reset confirmed, proceeding with reset...');
 
         // Show loading state
-        if (window.showLoadingState) {
-            window.showLoadingState('Resetting game...');
+        if (uiManager && uiManager.showLoadingState) {
+            uiManager.showLoadingState('Resetting game...');
         }
 
         // Clear all localStorage FIRST
@@ -2064,229 +1988,10 @@ function setAutoSaveInterval(interval) {
     initAutoSave();
 }
 
-// Notification system with queue management
-let notificationQueue = [];
-let isShowingNotification = false;
-let maxNotificationsPerSecond = 3;
 
-/**
- * Remove emojis from text if tier < 3
- * @param {string} text - Text that may contain emojis
- * @returns {string} - Text without emojis if tier < 3, otherwise original text
- */
-function stripEmojisIfLowTier(text) {
-    if (!text || typeof text !== 'string') return text;
-
-    // Check current tier
-    const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-
-    // If tier < 3, remove emojis
-    if (currentTier < 3) {
-        // Remove common emoji characters (Unicode ranges for emojis)
-        // This regex removes emojis while preserving HTML tags
-        // Includes: symbols (✓, ○, ⚡, ⚙, etc.), emojis, and other Unicode emoji ranges
-        return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2190}-\u{21FF}]|[\u{2713}-\u{2714}]|[\u{25CB}-\u{25CF}]|[\u{26A1}]|[\u{2699}]|[\u{2728}]|[\u{1F4F1}]|[\u{1F4BE}]|[\u{1F680}]|[\u{1F3AE}]|[\u{1F9D8}]|[\u{1F319}]|[\u{23F0}]/gu, '')
-            .replace(/\s+/g, ' ') // Clean up extra spaces
-            .trim();
-    }
-
-    return text;
-}
-
-// Make function globally available
-window.stripEmojisIfLowTier = stripEmojisIfLowTier;
-let notificationCount = 0;
-let lastNotificationReset = Date.now();
-
-// Sound throttling for notifications
-let lastNotificationSoundTime = 0;
-let notificationSoundThrottle = 500; // Only play notification sound every 500ms
-
-/**
- * Show notification with rate limiting
- * @param {string} message - Notification message
- * @param {string} type - Notification type
- */
-function showNotification(message, type = 'info') {
-    // Remove emojis if tier < 3
-    message = stripEmojisIfLowTier(message);
-
-    // Track analytics if enabled
-    if (playerAnalyticsManager && playerAnalyticsManager.enabled) {
-        playerAnalyticsManager.track('notification_shown', {
-            type,
-            message: message.substring(0, 50) // Truncate for privacy
-        });
-    }
-
-    // Rate limiting
-    const now = Date.now();
-    if (now - lastNotificationReset > 1000) {
-        notificationCount = 0;
-        lastNotificationReset = now;
-    }
-
-    if (notificationCount >= maxNotificationsPerSecond) {
-        // Queue notification if rate limited
-        notificationQueue.push({ message, type });
-        return;
-    }
-
-    notificationCount++;
-
-    // Play appropriate sound based on notification type (throttled to prevent spam)
-    if (window.audioSystem && window.audioSystem.playSound) {
-        const now = Date.now();
-        if (now - lastNotificationSoundTime >= notificationSoundThrottle) {
-            if (type === 'error') {
-                window.audioSystem.playSound('error', { volume: 0.3 });
-            } else if (type === 'success') {
-                // Don't play success sound here - achievement/level_up sounds are played separately
-                // Only play if it's not an achievement notification (those have their own sound)
-                if (!message.includes('Achievement')) {
-                    window.audioSystem.playSound('success', { volume: 0.3 });
-                }
-            } else {
-                // Info type - play notification sound
-                window.audioSystem.playSound('notification', { volume: 0.3 });
-            }
-            lastNotificationSoundTime = now;
-        }
-    }
-
-    // Create and show notification immediately
-    createNotificationElement(message, type);
-}
-
-/**
- * Show craft notification in sidebar
- * @param {string} message - Notification message
- * @param {number} amount - Amount crafted
- */
-function showCraftNotification(message, amount) {
-    const container = document.getElementById('craft-notifications');
-    if (!container) return;
-
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = 'craft-notification';
-    notification.innerHTML = `
-        <span class="craft-icon">${stripEmojisIfLowTier('✨')}</span>
-        <span class="craft-message">${message}</span>
-    `;
-
-    // Add to container
-    container.appendChild(notification);
-
-    // Animate in
-    requestAnimationFrame(() => {
-        notification.classList.add('craft-notification-visible');
-    });
-
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-        notification.classList.remove('craft-notification-visible');
-        notification.classList.add('craft-notification-fade-out');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
-
-    // Limit to 5 notifications max
-    const notifications = container.querySelectorAll('.craft-notification');
-    if (notifications.length > 5) {
-        const oldest = notifications[0];
-        oldest.classList.remove('craft-notification-visible');
-        oldest.classList.add('craft-notification-fade-out');
-        setTimeout(() => {
-            if (oldest.parentNode) {
-                oldest.parentNode.removeChild(oldest);
-            }
-        }, 300);
-    }
-}
 
 // Track shown achievement notifications to prevent duplicates
-const shownAchievementNotifications = new Set();
 
-/**
- * Create notification element
- * @param {string} message - Notification message
- * @param {string} type - Notification type
- */
-function createNotificationElement(message, type) {
-    // Prevent duplicate achievement notifications
-    if (type === 'success' && message.includes('Achievement')) {
-        // Extract achievement name from message
-        const achievementMatch = message.match(/Achievement: (.+)!/);
-        if (achievementMatch) {
-            const achievementName = achievementMatch[1];
-            if (shownAchievementNotifications.has(achievementName)) {
-                // Already shown this achievement, skip
-                return;
-            }
-            shownAchievementNotifications.add(achievementName);
-        }
-    }
-
-    // Get or create notifications container
-    let container = document.getElementById('notifications-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'notifications-container';
-        document.body.appendChild(container);
-    }
-
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-
-    // Add achievement unlock scene for achievement notifications
-    if (type === 'success' && message.includes('Achievement')) {
-        notification.classList.add('achievement-notification');
-        notification.innerHTML = `
-            <picture>
-                <source srcset="images/achievements/achievement-unlock-scene.webp" type="image/webp">
-                <img src="images/achievements/achievement-unlock-scene.png" alt="Achievement Unlocked" class="achievement-scene">
-            </picture>
-            <span>${message}</span>
-        `;
-    } else {
-        notification.innerHTML = message; // Use innerHTML to support CSS icons
-    }
-
-    container.appendChild(notification);
-
-    slideIn(notification, 'top', 300);
-
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(-20px)';
-        setTimeout(() => {
-            notification.remove();
-            // Process queue after current notification is done
-            processNotificationQueue();
-        }, 300);
-    }, 3000);
-}
-
-/**
- * Process notification queue
- */
-function processNotificationQueue() {
-    if (isShowingNotification || notificationQueue.length === 0) return;
-
-    isShowingNotification = true;
-    const { message, type } = notificationQueue.shift();
-
-    createNotificationElement(message, type);
-
-    setTimeout(() => {
-        isShowingNotification = false;
-        processNotificationQueue();
-    }, 3000);
-}
 
 // showWelcomeBack is now handled by ModalManager
 
@@ -2322,8 +2027,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                             // Show update notification
-                            if (window.showNotification) {
-                                window.showNotification('App update available! Refresh to update.', 'info');
+                            if (uiManager && uiManager.showNotification) {
+                                uiManager.showNotification('App update available! Refresh to update.', 'info');
                             }
                         }
                     });
@@ -2372,8 +2077,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showInstallWelcomeModal();
             installPromptShown = true;
             localStorage.setItem('installPromptShown', 'true');
-        } else if (window.showNotification) {
-            window.showNotification('📱 Install Cyber Witches for offline play!', 'info', 5000);
+        } else if (uiManager && uiManager.showNotification) {
+            uiManager.showNotification('📱 Install Cyber Witches for offline play!', 'info', 5000);
         }
     });
 
@@ -2391,8 +2096,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (outcome === 'accepted') {
                         console.log('User accepted install prompt');
-                        if (window.showNotification) {
-                            window.showNotification('<span class="css-icon-celebration"></span> Installing Cyber Witches...', 'success');
+                        if (uiManager && uiManager.showNotification) {
+                            uiManager.showNotification('<span class="css-icon-celebration"></span> Installing Cyber Witches...', 'success');
                         }
                         // Hide install button
                         if (installButton) {
@@ -2423,8 +2128,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         deferredPrompt = null;
 
-        if (window.showNotification) {
-            window.showNotification('<span class="css-icon-celebration"></span> Cyber Witches is now installed! Play offline anytime!', 'success', 5000);
+        if (uiManager && uiManager.showNotification) {
+            uiManager.showNotification('<span class="css-icon-celebration"></span> Cyber Witches is now installed! Play offline anytime!', 'success', 5000);
         }
 
         // Close any install modals
@@ -2773,11 +2478,7 @@ function cleanup() {
         autoSaveTimer = null;
     }
 
-    // Cleanup background sparkles
-    if (typeof window._backgroundSparklesCleanup === 'function') {
-        window._backgroundSparklesCleanup();
-        delete window._backgroundSparklesCleanup;
-    }
+
 
     // Cleanup meditation state tick loop
     if (meditationState && typeof meditationState.stopTickLoop === 'function') {
@@ -2836,7 +2537,5 @@ if (typeof window !== 'undefined') {
 
 // Export utility functions for testing
 export {
-    getIngredientElement,
-    calculateElementTotals,
     getScaledRecipe
 };

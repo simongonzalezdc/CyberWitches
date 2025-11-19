@@ -101,7 +101,7 @@ export function getIngredientElement(ingredientId) {
     if (ingredientId.includes('crystal') || ingredientId.includes('orb') || ingredientId.includes('core') || ingredientId.includes('shaped_crys')) {
         return 'crystal';
     }
-    if (ingredientId.includes('aether') || ingredientId.includes('dist_aether') || ingredientId.includes('aether_well')) {
+    if (ingredientId.includes('aether') || ingredientId.includes('dist_aether') || ingredientId.includes('aether_well') || ingredientId === 'focus' || ingredientId === 'ab') {
         return 'aether';
     }
     return null;

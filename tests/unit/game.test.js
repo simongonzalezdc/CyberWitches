@@ -3,14 +3,14 @@
  * Tests non-DOM logic: tier calculations, element mapping, recipe scaling
  */
 
+import { getScaledRecipe } from '../../js/game.js';
 import {
   getTierSymbol,
   getTierAppropriateStyle,
   getWorkstationTier,
-  getUpgradeTier,
-  getIngredientElement,
-  getScaledRecipe
-} from '../../js/game.js';
+  getUpgradeTier
+} from '../../js/modules/ui/uiHelpers.js';
+import { getIngredientElement } from '../../js/elementSpecialization.js';
 import { PRODUCERS, INGREDIENTS } from '../../js/data.js';
 
 describe('Game Utility Functions', () => {
