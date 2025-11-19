@@ -1,9 +1,7 @@
-/**
- * InscriptionsUI.js
- * Manages the rendering and updates of the Inscriptions (Upgrades) tab.
- */
-
 import { getTierSymbol, getTierAppropriateStyle, stripEmojisIfLowTier, getUpgradeTier } from './uiHelpers.js';
+import { UPGRADES } from '../data/upgrades.js';
+import { INGREDIENTS } from '../data/ingredients.js';
+import { formatShort } from '../../utils.js';
 
 export class InscriptionsUI {
     constructor(gameState, uiManager) {
@@ -16,7 +14,6 @@ export class InscriptionsUI {
      * Update inscriptions tab with optimized rendering
      */
     update() {
-        // console.log('updateInscriptionsTab called, gameState exists:', !!this.gameState);
         if (!this.gameState) {
             console.error('gameState not initialized in InscriptionsUI');
             return;
@@ -24,12 +21,11 @@ export class InscriptionsUI {
 
         const container = document.getElementById('upgrade-list');
         if (!container) {
-            // console.error('upgrade-list container not found!');
             return;
         }
-        // console.log('upgrade-list container found, updating content...');
 
         // Ensure container is visible
+        container.classList.remove('hidden');
         container.style.display = 'flex';
         container.style.visibility = 'visible';
         container.style.opacity = '1';
@@ -37,7 +33,7 @@ export class InscriptionsUI {
         container.style.gap = '15px';
 
         // Filter unlocked upgrades
-        let unlockedUpgrades = window.UPGRADES.filter(upg => {
+        let unlockedUpgrades = UPGRADES.filter(upg => {
             let unlockRequirement = upg.unlockAtAb;
             if (this.gameState.elementSpecialization === 'air' && this.gameState.specializationBonuses.unlockSpeedMult) {
                 unlockRequirement *= this.gameState.specializationBonuses.unlockSpeedMult;
@@ -63,64 +59,11 @@ export class InscriptionsUI {
             this.virtualUpgradeList = null;
         }
 
-        // Create virtual list if there are many upgrades
-        // DISABLED: Virtual scroll causes items to disappear - using traditional rendering instead
-        if (false && unlockedUpgrades.length > 10 && window.VirtualUpgradeList) {
-            console.log('Using virtual scrolling for', unlockedUpgrades.length, 'upgrades');
-            try {
-                this.virtualUpgradeList = new window.VirtualUpgradeList(container, unlockedUpgrades, this.gameState);
-                // Force initial render after a short delay to ensure DOM is ready
-                setTimeout(() => {
-                    if (this.virtualUpgradeList && this.virtualUpgradeList._constructorComplete) {
-                        console.log('Forcing virtual scroll initial render for upgrades...');
-                        // Force container to be visible first
-                        container.style.display = 'flex';
-                        container.style.flexDirection = 'column';
-                        container.style.visibility = 'visible';
-                        container.style.opacity = '1';
-                        container.style.minHeight = '400px';
-                        // Force a reflow
-                        void container.offsetHeight;
-                        this.virtualUpgradeList.updateContainerHeight();
-                        this.virtualUpgradeList.renderVisibleItems();
-
-                        // Verify items were rendered - if not, fall back to traditional
-                        setTimeout(() => {
-                            const viewport = container.querySelector('.virtual-scroll-viewport');
-                            const renderedItems = viewport ? viewport.children.length : 0;
-                            // console.log('Virtual scroll rendered items check:', renderedItems, 'expected at least:', Math.ceil(400 / 200));
-
-                            if (renderedItems === 0) {
-                                console.warn('Virtual scroll rendered 0 items, falling back to traditional rendering');
-                                if (this.virtualUpgradeList) {
-                                    try {
-                                        this.virtualUpgradeList.destroy();
-                                    } catch (e) {
-                                        console.error('Error destroying virtual scroll:', e);
-                                    }
-                                    this.virtualUpgradeList = null;
-                                }
-                                // Fall back to traditional rendering
-                                container.innerHTML = '';
-                                this.updateTraditional(container, unlockedUpgrades);
-                            }
-                        }, 200);
-                    }
-                }, 100);
-            } catch (e) {
-                console.error('Error creating virtual upgrade list:', e);
-                // Fall back to traditional rendering
-                container.innerHTML = '';
-                console.log('Falling back to traditional rendering due to error');
-                this.updateTraditional(container, unlockedUpgrades);
-            }
-        } else {
-            // Use traditional rendering for small lists
-            this.updateTraditional(container, unlockedUpgrades);
-        }
+        // Use traditional rendering
+        this.updateTraditional(container, unlockedUpgrades);
     }
 
-    // Traditional rendering function for inscriptions (used for small lists or as fallback)
+    // Traditional rendering function for inscriptions
     updateTraditional(container, unlockedUpgrades) {
         container.innerHTML = '';
 
@@ -143,9 +86,21 @@ export class InscriptionsUI {
             // Add tier header with tier symbol
             const tierSymbol = getTierSymbol(tier);
             const tierStyle = getTierAppropriateStyle(tier);
+
             const tierHeader = document.createElement('div');
             tierHeader.className = 'tier-header';
-            tierHeader.innerHTML = `<span class="tier-symbol tier-icon-${tier}" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}; margin-right: 8px; font-size: 20px;">${tierSymbol.symbol}</span> Tier ${tier}`;
+
+            const symbolSpan = document.createElement('span');
+            symbolSpan.className = `tier-symbol tier-icon-${tier}`;
+            symbolSpan.style.color = tierStyle.color;
+            symbolSpan.style.textShadow = tierStyle.textShadow;
+            symbolSpan.style.marginRight = '8px';
+            symbolSpan.style.fontSize = '20px';
+            symbolSpan.textContent = tierSymbol.symbol;
+
+            tierHeader.appendChild(symbolSpan);
+            tierHeader.appendChild(document.createTextNode(` Tier ${tier}`));
+
             container.appendChild(tierHeader);
 
             // Render upgrades for this tier
@@ -153,8 +108,7 @@ export class InscriptionsUI {
                 const owned = this.gameState.upgradesOwned[upgData.id] || false;
 
                 const card = document.createElement('div');
-                card.className = 'card';
-                card.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
+                card.className = 'card force-visible';
 
                 let effectText = '';
                 if (upgData.affects === 'global') {
@@ -178,101 +132,96 @@ export class InscriptionsUI {
                     }
                 }
 
-                card.innerHTML = `
-                    <div class="card-title">${upgData.displayName} ${owned ? stripEmojisIfLowTier('✓') : ''}</div>
-                    <div class="card-description">${upgData.description}</div>
-                    <div class="card-section">
-                        <div class="card-label">${effectText}</div>
-                    </div>
-                    <div class="card-section">
-                        <div class="card-label">Cost:</div>
-                        ${Object.entries(upgData.recipe).map(([ingId, amount]) => {
-                    const have = this.gameState.inventory[ingId] || 0;
-                    const canAfford = have >= amount;
-                    const ingredient = window.INGREDIENTS.find(ing => ing.id === ingId);
-                    const displayName = ingredient?.displayName || ingId;
-                    return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                                <span class="recipe-label">${displayName}:</span>
-                                <span class="recipe-numbers">${window.formatShort(have)} / ${window.formatShort(amount)}</span>
-                            </div>`;
-                }).join('')}
-                    </div>
-                    <button class="btn-primary" data-action="inscribe" data-upgrade-id="${upgData.id}" ${owned || !canAffordAll ? 'disabled' : ''}>
-                        ${owned ? 'Owned' : 'Inscribe'}
-                    </button>
-                `;
+                // Build card content using DOM methods to avoid inline styles in innerHTML
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'card-title';
+                titleDiv.textContent = `${upgData.displayName} ${owned ? stripEmojisIfLowTier('✓') : ''}`;
+                card.appendChild(titleDiv);
 
-                // Attach event listener directly - always attach handler, check conditions inside
-                const button = card.querySelector('button[data-action="inscribe"]');
-                if (button) {
-                    // Ensure button is visible and clickable
-                    button.style.position = 'relative';
-                    button.style.zIndex = '100';
+                const descDiv = document.createElement('div');
+                descDiv.className = 'card-description';
+                descDiv.textContent = upgData.description;
+                card.appendChild(descDiv);
 
-                    // Properly manage disabled state - remove disabled attribute if we can afford it
-                    if (owned || !canAffordAll) {
-                        button.disabled = true;
-                        button.style.pointerEvents = 'none';
-                        button.style.cursor = 'not-allowed';
-                        button.style.opacity = '0.6';
-                    } else {
-                        button.disabled = false;
-                        button.style.pointerEvents = 'auto';
-                        button.style.cursor = 'pointer';
-                        button.style.opacity = '1';
-                    }
+                const effectSection = document.createElement('div');
+                effectSection.className = 'card-section';
+                const effectLabel = document.createElement('div');
+                effectLabel.className = 'card-label';
+                effectLabel.textContent = effectText;
+                effectSection.appendChild(effectLabel);
+                card.appendChild(effectSection);
 
-                    button.style.visibility = 'visible';
-                    button.style.display = 'inline-block';
+                const costSection = document.createElement('div');
+                costSection.className = 'card-section';
+                const costLabel = document.createElement('div');
+                costLabel.className = 'card-label';
+                costLabel.textContent = 'Cost:';
+                costSection.appendChild(costLabel);
 
-                    // Always attach handler - it will check if it can execute
-                    if (typeof window.inscribeUpgrade === 'function') {
-                        button.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                if (upgData.recipe) {
+                    Object.entries(upgData.recipe).forEach(([ingId, amount]) => {
+                        const have = this.gameState.inventory[ingId] || 0;
+                        const canAfford = have >= amount;
+                        const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
+                        const displayName = ingredient?.displayName || ingId;
 
-                            // Re-check conditions dynamically at click time (don't rely on closure variables)
-                            if (!this.gameState) {
-                                console.error('gameState not available');
-                                return;
-                            }
+                        const recipeItem = document.createElement('div');
+                        recipeItem.className = `recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}`;
 
-                            const currentOwned = this.gameState.upgradesOwned[upgData.id] || false;
-                            if (currentOwned) {
-                                console.log('Inscribe button: Already owned:', { upgId: upgData.id });
-                                return;
-                            }
+                        const labelSpan = document.createElement('span');
+                        labelSpan.className = 'recipe-label';
+                        labelSpan.textContent = `${displayName}:`;
 
-                            // Re-check if we can afford all materials
-                            let currentCanAffordAll = true;
-                            if (upgData.recipe) {
-                                for (const [ingId, amount] of Object.entries(upgData.recipe)) {
-                                    const have = this.gameState.inventory[ingId] || 0;
-                                    if (have < amount) {
-                                        currentCanAffordAll = false;
-                                        console.log('Inscribe button: Cannot afford:', { ingId, have, needed: amount });
-                                        break;
-                                    }
-                                }
-                            }
+                        const numberSpan = document.createElement('span');
+                        numberSpan.className = 'recipe-numbers';
+                        numberSpan.textContent = `${formatShort(have)} / ${formatShort(amount)}`;
 
-                            if (!currentCanAffordAll || button.disabled) {
-                                console.log('Inscribe button disabled:', { currentCanAffordAll, disabled: button.disabled, upgId: upgData.id });
-                                return;
-                            }
+                        recipeItem.appendChild(labelSpan);
+                        recipeItem.appendChild(numberSpan);
+                        costSection.appendChild(recipeItem);
+                    });
+                }
+                card.appendChild(costSection);
 
-                            console.log('Inscribe button clicked:', { upgId: upgData.id, button });
-                            window.inscribeUpgrade(upgData.id, button);
-                        });
-                    }
+                const button = document.createElement('button');
+                button.className = 'btn-primary';
+                button.dataset.action = 'inscribe';
+                button.dataset.upgradeId = upgData.id;
+                button.textContent = owned ? 'Owned' : 'Inscribe';
+
+                if (owned || !canAffordAll) {
+                    button.disabled = true;
+                    // Use classes for disabled state if possible, but these styles were inline before
+                    button.style.pointerEvents = 'none';
+                    button.style.cursor = 'not-allowed';
+                    button.style.opacity = '0.6';
+                } else {
+                    button.disabled = false;
+                    button.style.pointerEvents = 'auto';
+                    button.style.cursor = 'pointer';
+                    button.style.opacity = '1';
                 }
 
+                button.style.position = 'relative';
+                button.style.zIndex = '100';
+                button.style.visibility = 'visible';
+                button.style.display = 'inline-block';
+
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (this.uiManager && this.uiManager.systems && this.uiManager.systems.inscriptionsManager) {
+                        this.uiManager.systems.inscriptionsManager.inscribeUpgrade(upgData.id, button);
+                    } else {
+                        console.error('InscriptionsManager not found in uiManager.systems');
+                    }
+                });
+
+                card.appendChild(button);
                 container.appendChild(card);
-                // console.log('Added upgrade card to container, total children:', container.children.length);
             }
         }
-        // console.log('Finished rendering upgrades, container now has', container.children.length, 'children');
     }
-
 }
 

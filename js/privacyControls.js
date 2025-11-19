@@ -12,20 +12,20 @@ class PrivacyManager {
         };
         this.init();
     }
-    
+
     init() {
         // Load saved consent preferences
         this.loadConsent();
-        
+
         // Show consent banner if needed
         if (!this.hasConsent()) {
             this.showConsentBanner();
         }
-        
+
         // Set up privacy settings in settings tab
         this.setupPrivacySettings();
     }
-    
+
     /**
      * Load consent preferences from localStorage
      */
@@ -39,7 +39,7 @@ class PrivacyManager {
             console.error('Failed to load consent preferences:', error);
         }
     }
-    
+
     /**
      * Save consent preferences to localStorage
      */
@@ -50,7 +50,7 @@ class PrivacyManager {
             console.error('Failed to save consent preferences:', error);
         }
     }
-    
+
     /**
      * Check if user has given any consent
      * @returns {boolean}
@@ -58,7 +58,7 @@ class PrivacyManager {
     hasConsent() {
         return Object.values(this.consent).some(v => v === true);
     }
-    
+
     /**
      * Show consent banner
      */
@@ -67,68 +67,56 @@ class PrivacyManager {
         if (document.getElementById('privacy-consent-banner')) {
             return;
         }
-        
+
         const banner = document.createElement('div');
         banner.id = 'privacy-consent-banner';
         banner.className = 'privacy-consent-banner';
-        banner.style.cssText = `
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-card, #1a1a2e);
-            border-top: 2px solid var(--border, #FF2DAA);
-            padding: 20px;
-            z-index: 10000;
-            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
-        `;
-        
+
         banner.innerHTML = `
-            <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 250px;">
-                    <h3 style="margin: 0 0 8px 0; color: var(--text, #FFFFFF); font-size: 18px;">Privacy & Cookies</h3>
-                    <p style="margin: 0; color: var(--text-secondary, #CCCCCC); font-size: 14px; line-height: 1.5;">
+            <div class="privacy-content">
+                <div class="privacy-text-container">
+                    <h3 class="privacy-title">Privacy & Cookies</h3>
+                    <p class="privacy-description">
                         We use cookies and analytics to improve your experience. Your data is stored locally and never shared with third parties.
                     </p>
                 </div>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button id="privacy-accept-all" class="btn-primary" style="padding: 12px 24px;">Accept All</button>
-                    <button id="privacy-reject-all" class="btn-secondary" style="padding: 12px 24px;">Reject All</button>
-                    <button id="privacy-customize" class="btn-secondary" style="padding: 12px 24px;">Customize</button>
+                <div class="privacy-buttons">
+                    <button id="privacy-accept-all" class="btn-primary privacy-btn">Accept All</button>
+                    <button id="privacy-reject-all" class="btn-secondary privacy-btn">Reject All</button>
+                    <button id="privacy-customize" class="btn-secondary privacy-btn">Customize</button>
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(banner);
-        
+
         // Event listeners
         document.getElementById('privacy-accept-all').addEventListener('click', () => {
             this.setConsent({ analytics: true, errorReporting: true, personalization: true });
             this.hideBanner();
         });
-        
+
         document.getElementById('privacy-reject-all').addEventListener('click', () => {
             this.setConsent({ analytics: false, errorReporting: false, personalization: false });
             this.hideBanner();
         });
-        
+
         document.getElementById('privacy-customize').addEventListener('click', () => {
             this.showPrivacySettings();
             this.hideBanner();
         });
     }
-    
+
     /**
      * Hide consent banner
      */
     hideBanner() {
         const banner = document.getElementById('privacy-consent-banner');
         if (banner) {
-            banner.style.display = 'none';
             banner.remove();
         }
     }
-    
+
     /**
      * Set consent preferences
      * @param {Object} preferences - Consent preferences
@@ -136,11 +124,11 @@ class PrivacyManager {
     setConsent(preferences) {
         this.consent = { ...this.consent, ...preferences };
         this.saveConsent();
-        
+
         // Apply consent changes
         this.applyConsent();
     }
-    
+
     /**
      * Apply consent preferences
      */
@@ -150,14 +138,14 @@ class PrivacyManager {
             // Disable analytics tracking
             console.log('Analytics disabled per user consent');
         }
-        
+
         // Disable error reporting if not consented
         if (!this.consent.errorReporting) {
             // Disable error reporting
             console.log('Error reporting disabled per user consent');
         }
     }
-    
+
     /**
      * Check if analytics is allowed
      * @returns {boolean}
@@ -165,7 +153,7 @@ class PrivacyManager {
     canUseAnalytics() {
         return this.consent.analytics === true;
     }
-    
+
     /**
      * Check if error reporting is allowed
      * @returns {boolean}
@@ -173,7 +161,7 @@ class PrivacyManager {
     canReportErrors() {
         return this.consent.errorReporting === true;
     }
-    
+
     /**
      * Setup privacy settings in settings tab
      */
@@ -181,7 +169,7 @@ class PrivacyManager {
         // This will be called when settings tab is opened
         // Implementation will be in game.js
     }
-    
+
     /**
      * Show privacy settings modal
      */
@@ -190,7 +178,7 @@ class PrivacyManager {
         if (window.switchTab) {
             window.switchTab('settings');
         }
-        
+
         // Scroll to privacy section
         setTimeout(() => {
             const privacySection = document.getElementById('privacy-settings-section');
@@ -199,7 +187,7 @@ class PrivacyManager {
             }
         }, 100);
     }
-    
+
     /**
      * Get privacy policy URL
      * @returns {string}
@@ -207,7 +195,7 @@ class PrivacyManager {
     getPrivacyPolicyURL() {
         return '/privacy-policy.html'; // Update with actual URL
     }
-    
+
     /**
      * Export user data (GDPR right to data portability)
      * @returns {Object} - User data
@@ -221,7 +209,7 @@ class PrivacyManager {
             },
             timestamp: Date.now()
         };
-        
+
         // Export game state if available
         if (window.gameState) {
             try {
@@ -233,10 +221,10 @@ class PrivacyManager {
                 console.error('Failed to export game state:', error);
             }
         }
-        
+
         return data;
     }
-    
+
     /**
      * Delete user data (GDPR right to be forgotten)
      */
@@ -244,14 +232,14 @@ class PrivacyManager {
         // Clear all game data
         localStorage.clear();
         sessionStorage.clear();
-        
+
         // Reset consent
         this.consent = {
             analytics: false,
             errorReporting: false,
             personalization: false
         };
-        
+
         // Show consent banner again
         this.showConsentBanner();
     }

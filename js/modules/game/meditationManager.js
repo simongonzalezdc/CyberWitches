@@ -47,6 +47,9 @@ export class MeditationManager {
 
         // Create state
         this.state = new MeditationState(this.gameState);
+        if (this.uiManager && this.uiManager.systems.dailyRituals) {
+            this.state.setDailyRituals(this.uiManager.systems.dailyRituals);
+        }
         this.state.loadState();
         this.state.startTickLoop();
 

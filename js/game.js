@@ -6,9 +6,7 @@ import { DailyRituals } from './dailyRituals.js';
 import { AchievementSystem } from './achievements.js';
 import { ComboSystem } from './comboSystem.js';
 import { EventSystem } from './eventSystem.js';
-import { MeditationState } from './meditationState.js';
-import { MeditationUI } from './modules/ui/meditationUI.js';
-import { MeditationTowers } from './meditationTowers.js';
+
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
 import { ELEMENT_SPECIALIZATIONS } from './elementSpecialization.js';
 import { formatShort, formatPrecise, formatTimeDuration, formatOneDecimal } from './utils.js';
@@ -38,7 +36,7 @@ import animationOptimizationManager from './animationOptimization.js';
 import questSystem from './questSystem.js';
 import playerAnalyticsManager from './playerAnalytics.js';
 import balanceAnalyticsManager from './balanceAnalytics.js';
-import pwaFeaturesManager from './pwaFeatures.js';
+import { PWAFeaturesManager } from './modules/pwa/pwaFeaturesManager.js';
 
 import BalanceTestingFramework from './balanceTesting.js';
 import { CodeOrganization, GAME_CONSTANTS, MAGIC_NUMBERS } from './codeOrganization.js';
@@ -55,7 +53,7 @@ import { AudioSystem } from './audioSystem.js';
 import { DesignTierSystem } from './modules/game/designTierSystem.js';
 import { FadingThemeSystem } from './modules/game/fadingThemeSystem.js';
 import { TutorialSystem } from './modules/game/tutorialSystem.js';
-import { stripEmojisIfLowTier } from './modules/ui/uiHelpers.js';
+import { stripEmojisIfLowTier, initUIHelpers } from './modules/ui/uiHelpers.js';
 
 
 /**
@@ -83,6 +81,7 @@ let economyBalancing;
 let feedbackLoopManager;
 let craftingManager;
 let inputManager;
+let pwaManager;
 
 // UI Elements (will be set after DOM loads)
 let abDisplay;
@@ -99,6 +98,7 @@ let frameCount = 0;
 let fps = 60;
 let fpsUpdateInterval = 1000; // Update FPS counter every second
 let lastFpsUpdate = 0;
+let lastMemoryCleanup = 0;
 
 // Debounced UI updates
 let uiUpdateTimeouts = new Map();
@@ -249,8 +249,8 @@ function initUI() {
             if (e.target === helpModal) {
                 helpModal.style.display = 'none';
                 helpModal.classList.remove('active');
-                if (window.announceToScreenReader) {
-                    window.announceToScreenReader('Help menu closed', 'polite');
+                if (uiManager && uiManager.announceToScreenReader) {
+                    uiManager.announceToScreenReader('Help menu closed', 'polite');
                 }
             }
         });
@@ -260,7 +260,10 @@ function initUI() {
     // Initialize game state
     gameState = new GameState();
     gameState.start(); // Start the game tick loop
-    dailyRituals = new DailyRituals(gameState);
+    // Initialize Daily Rituals
+    dailyRituals = new DailyRituals(gameState, uiManager);
+    dailyRituals.init();
+    uiManager.systems.dailyRituals = dailyRituals;
     achievements = new AchievementSystem(gameState);
     comboSystem = new ComboSystem(gameState);
     eventSystem = new EventSystem(gameState);
@@ -288,6 +291,14 @@ function initUI() {
     // However, game.js doesn't have a top-level inputManager variable declared in the snippet I saw (only imported class).
     // Wait, I should declare 'let inputManager' at the top if I want to use it, or just 'new InputManager(...)' is enough if it works by side effects (listeners).
     // InputManager attaches listeners in constructor.
+
+    // Initialize PWA Manager
+    pwaManager = new PWAFeaturesManager(gameState, uiManager);
+    uiManager.systems.pwaManager = pwaManager;
+    pwaManager.init();
+
+    // Initialize Input Manager
+    inputManager = new InputManager(gameState, uiManager, craftingManager);
 
     // Initialize CastManager
     castManager = new CastManager(gameState, uiManager, comboSystem, eventSystem);
@@ -423,6 +434,7 @@ function initUI() {
 
     // Initialize systems
     designTierSystem = new DesignTierSystem(gameState, uiManager, audioSystem);
+    initUIHelpers(designTierSystem);
     particleSystem = new ParticleSystem(gameState);
 
     // Initialize UIManager with systems
@@ -542,7 +554,8 @@ function initUI() {
 
     // Reset all progress button - use event delegation for reliability
     // Attach to document to ensure it works even if button is added later
-    if (!window.resetButtonListenerAttached) {
+    // We use a local flag to prevent multiple attachments if initUI is called multiple times
+    if (!uiManager._resetButtonListenerAttached) {
         document.addEventListener('click', (e) => {
             // Check if click is on the button or any child element inside it
             const button = e.target.closest('#reset-all-progress-button');
@@ -553,7 +566,7 @@ function initUI() {
                 resetAllProgress();
             }
         }, true); // Use capture phase for better reliability
-        // window.resetButtonListenerAttached = true; // Removed global
+        uiManager._resetButtonListenerAttached = true;
         console.log('Reset button event delegation attached');
     }
 
@@ -704,33 +717,10 @@ function initUI() {
     const autoCastToggle = document.getElementById('auto-cast-toggle');
 
 
-    // Function to update auto button visibility based on first ascension
-    const updateAutoButtonVisibility = () => {
-        if (autoCastToggle && gameState) {
-            const hasAscended = gameState.prestigeCount >= 1;
-            if (hasAscended) {
-                // Show auto button after first ascension
-                autoCastToggle.style.display = 'flex';
-                autoCastToggle.style.visibility = 'visible';
-                autoCastToggle.style.opacity = '1';
-            } else {
-                // Hide auto button until first ascension
-                autoCastToggle.style.display = 'none';
-                autoCastToggle.style.visibility = 'hidden';
-                autoCastToggle.style.opacity = '0';
-                // Also disable auto-cast if it was enabled
-                if (castManager && castManager.getAutoCastEnabled()) {
-                    castManager.setAutoCast(false);
-                }
-            }
-        }
-    };
-
-    // Make updateAutoButtonVisibility globally accessible
-    window.updateAutoButtonVisibility = updateAutoButtonVisibility;
-
     // Initialize visibility based on current tier
-    updateAutoButtonVisibility();
+    if (castManager) {
+        castManager.updateAutoButtonVisibility();
+    }
 
     // Auto-cast toggle
     if (autoCastToggle) {
@@ -746,7 +736,9 @@ function initUI() {
     if (gameState) {
         // Also check periodically in case prestige count changes externally
         setInterval(() => {
-            updateAutoButtonVisibility();
+            if (castManager) {
+                castManager.updateAutoButtonVisibility();
+            }
         }, 2000); // Check every 2 seconds
     }
 
@@ -813,21 +805,9 @@ function initUI() {
 
                 // If this is the first ascension, initialize meditation
                 if (oldPrestigeCount === 0 && gameState.prestigeCount >= 1) {
-                    if (!meditationState) {
-                        meditationState = new MeditationState(gameState);
-                        meditationState.loadState();
-                        meditationState.startTickLoop();
-                        meditationUI = new MeditationUI(meditationState, gameState);
-                        uiManager.meditationUI = meditationUI; // Link to UIManager
-                        meditationTowers = new MeditationTowers(meditationState, gameState);
-                        meditationUI.init();
-                        meditationTowers.init();
-                        window.meditationTowers = meditationTowers;
-                        window.meditationUI = meditationUI;
-                    }
-                    updateMeditationVisibility();
-                    if (uiManager && uiManager.showNotification) {
-                        uiManager.showNotification('Meditation unlocked!', 'success');
+                    // Initialize meditation if unlocked
+                    if (meditationManager) {
+                        meditationManager.checkUnlock();
                     }
                 }
 
@@ -966,8 +946,8 @@ function initUI() {
         if (!abDisplay) return;
 
         // Track Spell Energy earning for daily tasks (use total earned, not current balance)
-        if (typeof updateDailyProgress === 'function' && gameState) {
-            updateDailyProgress('earn_ab', '', gameState.abTotalEarned);
+        if (dailyRituals && gameState) {
+            dailyRituals.updateTaskProgress('earn_ab', '', gameState.abTotalEarned);
         }
 
         // Use debounced update for better performance
@@ -986,8 +966,10 @@ function initUI() {
     };
 
     gameState.onWorkstationCrafted = (wsId, count) => {
-        updateDailyProgress('craft', wsId, gameState.totalWorkstationsCrafted);
-        updateDailyProgress('own', wsId, count);
+        if (dailyRituals) {
+            dailyRituals.updateTaskProgress('craft', wsId, gameState.totalWorkstationsCrafted);
+            dailyRituals.updateTaskProgress('own', wsId, count);
+        }
         debouncedUIUpdate('workstationsTab', updateWorkstationsTab);
     };
 
@@ -1011,8 +993,8 @@ function initUI() {
 
     gameState.onRecipeDiscovered = (recipeId) => {
         // Track recipe discovery for daily tasks
-        if (typeof updateDailyProgress === 'function') {
-            updateDailyProgress('discover_recipe', '', gameState.discoveredRecipes.length);
+        if (dailyRituals) {
+            dailyRituals.updateTaskProgress('discover_recipe', '', gameState.discoveredRecipes.length);
         }
         debouncedUIUpdate('experimentTab', updateExperimentTab);
     };
@@ -1310,12 +1292,7 @@ function initUI() {
     }
 
     // Make game state available for mobile and accessibility features
-    window.gameState = gameState;
-    window.castButton = castButton;
 
-    // Make data available globally for virtual scroll
-    window.UPGRADES = UPGRADES;
-    window.INGREDIENTS = INGREDIENTS;
 
     // Initial Arcane Bits display
     if (abDisplay && gameState) {
@@ -1423,10 +1400,12 @@ function updateComboDisplay() {
  * Initialize volume sliders
  */
 function initializeVolumeSliders() {
-    if (!window.audioSystem) {
+    if (!uiManager || !uiManager.systems.audioSystem) {
         console.warn('audioSystem not available for volume sliders');
         return;
     }
+
+    const audioSystem = uiManager.systems.audioSystem;
 
     // Sound Effects Volume Slider (Tier 2+)
     const sfxVolumeSlider = document.getElementById('sfx-volume-slider');
@@ -1434,14 +1413,14 @@ function initializeVolumeSliders() {
 
     if (sfxVolumeSlider && sfxVolumeValue) {
         // Set initial value from audioSystem
-        const currentSfxVolume = window.audioSystem.sfxVolume || 1;
+        const currentSfxVolume = audioSystem.sfxVolume || 1;
         sfxVolumeSlider.value = currentSfxVolume;
         sfxVolumeValue.textContent = Math.round(currentSfxVolume * 100) + '%';
 
         // Add event listener
         sfxVolumeSlider.addEventListener('input', (e) => {
             const volume = parseFloat(e.target.value);
-            window.audioSystem.setSfxVolume(volume);
+            audioSystem.setSfxVolume(volume);
             sfxVolumeValue.textContent = Math.round(volume * 100) + '%';
         });
     }
@@ -1452,19 +1431,18 @@ function initializeVolumeSliders() {
 
     if (musicVolumeSlider && musicVolumeValue) {
         // Set initial value from audioSystem
-        const currentMusicVolume = window.audioSystem.musicVolume || 1;
+        const currentMusicVolume = audioSystem.musicVolume || 1;
         musicVolumeSlider.value = currentMusicVolume;
         musicVolumeValue.textContent = Math.round(currentMusicVolume * 100) + '%';
 
         // Add event listener
         musicVolumeSlider.addEventListener('input', (e) => {
             const volume = parseFloat(e.target.value);
-            if (window.audioSystem.setMusicVolume) {
-                window.audioSystem.setMusicVolume(volume);
+            if (audioSystem.setMusicVolume) {
+                audioSystem.setMusicVolume(volume);
             } else {
                 // Fallback if setMusicVolume doesn't exist
-                window.audioSystem.musicVolume = volume;
-                window.audioSystem.saveMusicVolume();
+
             }
             musicVolumeValue.textContent = Math.round(volume * 100) + '%';
         });
@@ -1598,8 +1576,6 @@ function updateSettingsTab() {
         startTutorialButton.addEventListener('click', () => {
             if (tutorialSystem) {
                 tutorialSystem.startTutorial();
-            } else if (window.startTutorial) {
-                window.startTutorial();
             }
         });
     }
@@ -1609,11 +1585,9 @@ function updateSettingsTab() {
         resetTutorialButton.addEventListener('click', () => {
             if (tutorialSystem) {
                 tutorialSystem.reset();
-                if (window.showNotification) {
-                    window.showNotification('Tutorial reset. It will start automatically on next game load.', 'info');
+                if (uiManager && uiManager.showNotification) {
+                    uiManager.showNotification('Tutorial reset. It will start automatically on next game load.', 'info');
                 }
-            } else if (window.resetTutorial) {
-                window.resetTutorial();
             }
         });
     }
@@ -1725,8 +1699,8 @@ function resetAllProgress() {
     ).then((confirmed) => {
         if (!confirmed) {
             console.log('Reset cancelled by user');
-            if (window.showNotification) {
-                window.showNotification('Reset cancelled. Your progress is safe.', 'info');
+            if (uiManager && uiManager.showNotification) {
+                uiManager.showNotification('Reset cancelled. Your progress is safe.', 'info');
             }
             return;
         }
@@ -1837,8 +1811,8 @@ function resetAllProgress() {
         }
 
         // Show notification
-        if (window.showNotification) {
-            window.showNotification('<span class="css-icon-reset"></span> All progress has been reset!', 'info');
+        if (uiManager && uiManager.showNotification) {
+            uiManager.showNotification('<span class="css-icon-reset"></span> All progress has been reset!', 'info');
         }
 
         // Reload the page to ensure clean state
@@ -1873,8 +1847,7 @@ function updateDailyProgress(conditionType, param, value) {
 }
 
 // Make globally accessible for meditation system
-window.updateDailyProgress = updateDailyProgress;
-window.updateSettingsTab = updateSettingsTab;
+
 
 /**
  * Debounced UI update function to prevent excessive DOM manipulations
@@ -1931,9 +1904,9 @@ function initAutoSave() {
         }
 
         // Periodic memory cleanup (every 5 minutes)
-        if (typeof window._lastMemoryCleanup === 'undefined' || Date.now() - window._lastMemoryCleanup > 300000) {
+        if (Date.now() - lastMemoryCleanup > 300000) {
             performMemoryCleanup();
-            window._lastMemoryCleanup = Date.now();
+            lastMemoryCleanup = Date.now();
         }
     }, autoSaveInterval);
 
@@ -2039,9 +2012,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // PWA Installation Prompt - Enhanced experience
-    let deferredPrompt = null;
-    let installPromptShown = false;
+    // PWA install prompt handling is now managed by PWAFeaturesManager
+    // The following code related to deferredPrompt, installButton, and PWA modals is now handled by PWAFeaturesManager.
+    // let deferredPrompt = null;
+    // let installPromptShown = false;
     const installButton = document.getElementById('install-app-button');
 
     // Check if already installed
@@ -2061,235 +2035,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Listen for beforeinstallprompt event (Chrome, Edge, etc.)
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-
-        // Show install button in HUD
-        if (installButton) {
-            installButton.style.display = 'inline-flex';
-            installButton.style.visibility = 'visible';
-        }
-
-        // Show welcome/install modal for first-time users
-        if (!installPromptShown && !localStorage.getItem('installPromptShown')) {
-            showInstallWelcomeModal();
-            installPromptShown = true;
-            localStorage.setItem('installPromptShown', 'true');
-        } else if (uiManager && uiManager.showNotification) {
-            uiManager.showNotification('📱 Install Cyber Witches for offline play!', 'info', 5000);
-        }
-    });
+    // PWA install prompt handling is now managed by PWAFeaturesManager
 
     // Make deferredPrompt accessible to modal functions
-    window.getDeferredPrompt = () => deferredPrompt;
+
 
     // Install button click handler
     if (installButton) {
         installButton.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                try {
-                    // Show install prompt
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-
-                    if (outcome === 'accepted') {
-                        console.log('User accepted install prompt');
-                        if (uiManager && uiManager.showNotification) {
-                            uiManager.showNotification('<span class="css-icon-celebration"></span> Installing Cyber Witches...', 'success');
-                        }
-                        // Hide install button
-                        if (installButton) {
-                            installButton.style.display = 'none';
-                        }
-                    } else {
-                        console.log('User dismissed install prompt');
-                    }
-
-                    deferredPrompt = null;
-                } catch (error) {
-                    console.error('Error showing install prompt:', error);
-                    // Fallback: show manual installation instructions
-                    showInstallInstructions();
-                }
-            } else {
-                // No prompt available, show manual instructions
-                showInstallInstructions();
+            if (pwaManager) {
+                pwaManager.handleInstallButtonClick();
             }
         });
     }
 
     // Listen for app installed event
-    window.addEventListener('appinstalled', () => {
-        console.log('App installed successfully');
-        if (installButton) {
-            installButton.style.display = 'none';
-        }
-        deferredPrompt = null;
+    // Managed by PWAFeaturesManager
 
-        if (uiManager && uiManager.showNotification) {
-            uiManager.showNotification('<span class="css-icon-celebration"></span> Cyber Witches is now installed! Play offline anytime!', 'success', 5000);
-        }
 
-        // Close any install modals
-        const installModal = document.getElementById('install-welcome-modal');
-        if (installModal) {
-            installModal.remove();
-        }
-    });
-
-    /**
-     * Show welcome/install modal for first-time users
-     */
-    function showInstallWelcomeModal() {
-        const modal = document.createElement('div');
-        modal.id = 'install-welcome-modal';
-        modal.className = 'install-modal';
-        modal.innerHTML = `
-            <div class="install-modal-content">
-                <div class="install-modal-header">
-                    <h2>${stripEmojisIfLowTier('✨ Welcome to Cyber Witches!')}</h2>
-                    <button class="install-modal-close" aria-label="Close">&times;</button>
-                </div>
-                <div class="install-modal-body">
-                    <p><strong>Install the app for the best experience:</strong></p>
-                    <ul class="install-benefits">
-                        <li>${stripEmojisIfLowTier('📱 Play offline - No internet required')}</li>
-                        <li>${stripEmojisIfLowTier('💾 Auto-save - Your progress is always safe')}</li>
-                        <li>${stripEmojisIfLowTier('🚀 Faster startup - Launch like a desktop app')}</li>
-                        <li>${stripEmojisIfLowTier('🎮 Full screen - Immersive gameplay')}</li>
-                    </ul>
-                    <div class="install-modal-actions">
-                        <button id="install-welcome-button" class="btn-primary btn-install-large">
-                            <span class="install-icon">${stripEmojisIfLowTier('📱')}</span> Install Now
-                        </button>
-                        <button class="btn-secondary install-modal-skip">Maybe Later</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Close button
-        const closeBtn = modal.querySelector('.install-modal-close');
-        const skipBtn = modal.querySelector('.install-modal-skip');
-        const installBtn = modal.querySelector('#install-welcome-button');
-
-        closeBtn.addEventListener('click', () => modal.remove());
-        skipBtn.addEventListener('click', () => modal.remove());
-
-        // Install button
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                const prompt = window.getDeferredPrompt ? window.getDeferredPrompt() : deferredPrompt;
-                if (prompt) {
-                    try {
-                        prompt.prompt();
-                        const { outcome } = await prompt.userChoice;
-                        if (outcome === 'accepted') {
-                            modal.remove();
-                        }
-                    } catch (error) {
-                        console.error('Error showing install prompt:', error);
-                        showInstallInstructions();
-                        modal.remove();
-                    }
-                } else {
-                    // No prompt available, show instructions
-                    showInstallInstructions();
-                    modal.remove();
-                }
-            });
-        }
-
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-    }
-
-    /**
-     * Show manual installation instructions based on platform
-     */
-    function showInstallInstructions() {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isAndroid = /Android/.test(navigator.userAgent);
-        const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-        const isEdge = /Edge/.test(navigator.userAgent);
-        const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-
-        let instructions = '';
-
-        if (isIOS) {
-            instructions = `
-                <h3>${stripEmojisIfLowTier('📱 Install on iOS (Safari)')}</h3>
-                <ol>
-                    <li>Tap the <strong>Share</strong> button ${stripEmojisIfLowTier('<span style="font-size: 20px;">📤</span>')} at the bottom</li>
-                    <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                    <li>Tap <strong>"Add"</strong> to confirm</li>
-                    <li>Launch from your home screen!</li>
-                </ol>
-            `;
-        } else if (isAndroid) {
-            instructions = `
-                <h3>${stripEmojisIfLowTier('📱 Install on Android')}</h3>
-                <ol>
-                    <li>Tap the <strong>Menu</strong> button ${stripEmojisIfLowTier('<span style="font-size: 20px;">⋮</span>')} (three dots)</li>
-                    <li>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></li>
-                    <li>Tap <strong>"Install"</strong> to confirm</li>
-                    <li>Launch from your home screen!</li>
-                </ol>
-            `;
-        } else if (isChrome || isEdge) {
-            instructions = `
-                <h3>${stripEmojisIfLowTier('💻 Install on Desktop (Chrome/Edge)')}</h3>
-                <ol>
-                    <li>Look for the <strong>Install</strong> icon ${stripEmojisIfLowTier('<span style="font-size: 20px;">➕</span>')} in the address bar</li>
-                    <li>Click it and select <strong>"Install"</strong></li>
-                    <li>Or use the <strong>"Install"</strong> button in the top bar</li>
-                    <li>Launch from your desktop or app menu!</li>
-                </ol>
-            `;
-        } else {
-            instructions = `
-                <h3>${stripEmojisIfLowTier('📱 Install Instructions')}</h3>
-                <p>Look for an <strong>"Install"</strong> or <strong>"Add to Home Screen"</strong> option in your browser menu.</p>
-                <p>On desktop: Check the address bar for an install icon.</p>
-                <p>On mobile: Use the browser's share menu to add to home screen.</p>
-            `;
-        }
-
-        const modal = document.createElement('div');
-        modal.className = 'install-modal';
-        modal.innerHTML = `
-            <div class="install-modal-content">
-                <div class="install-modal-header">
-                    <h2>${stripEmojisIfLowTier('📱 How to Install')}</h2>
-                    <button class="install-modal-close" aria-label="Close">&times;</button>
-                </div>
-                <div class="install-modal-body">
-                    ${instructions}
-                    <div class="install-modal-actions">
-                        <button class="btn-primary install-modal-close">Got it!</button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        const closeBtn = modal.querySelector('.install-modal-close');
-        closeBtn.addEventListener('click', () => modal.remove());
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-    }
 
     // Add prestige button to top bar
     const hudControls = document.querySelector('.hud-controls');
@@ -2481,8 +2244,13 @@ function cleanup() {
 
 
     // Cleanup meditation state tick loop
-    if (meditationState && typeof meditationState.stopTickLoop === 'function') {
-        meditationState.stopTickLoop();
+    if (meditationManager && typeof meditationManager.reset === 'function') {
+        // We don't want to reset, just stop loops if any. 
+        // MeditationManager doesn't have a stop method exposed, but save() is called below.
+        // The tick loop is inside MeditationState.
+        if (meditationManager.state && typeof meditationManager.state.stopTickLoop === 'function') {
+            meditationManager.state.stopTickLoop();
+        }
     }
 
     // Cleanup memory leak prevention manager
@@ -2500,9 +2268,9 @@ function cleanup() {
     }
 
     // Save meditation state before cleanup
-    if (meditationState && typeof meditationState.saveState === 'function') {
+    if (meditationManager && typeof meditationManager.save === 'function') {
         try {
-            meditationState.saveState();
+            meditationManager.save();
         } catch (error) {
             console.error('Error saving meditation state during cleanup:', error);
         }

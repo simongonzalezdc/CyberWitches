@@ -44,15 +44,42 @@ export class InventoryUI {
         }
 
         if (!this.gameState.inventory || Object.keys(this.gameState.inventory).length === 0) {
-            container.innerHTML = `
-                <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; grid-column: 1 / -1;">
-                    <picture>
-                        <source srcset="images/ui/empty-state.webp" type="image/webp">
-                        <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
-                    </picture>
-                    <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">Inventory empty. Craft workstations to get ingredients!</p>
-                </div>
-            `;
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.style.display = 'flex';
+            emptyState.style.flexDirection = 'column';
+            emptyState.style.alignItems = 'center';
+            emptyState.style.justifyContent = 'center';
+            emptyState.style.padding = '40px';
+            emptyState.style.textAlign = 'center';
+            emptyState.style.gridColumn = '1 / -1';
+
+            const picture = document.createElement('picture');
+            const source = document.createElement('source');
+            source.srcset = 'images/ui/empty-state.webp';
+            source.type = 'image/webp';
+            picture.appendChild(source);
+
+            const img = document.createElement('img');
+            img.src = 'images/ui/empty-state.png';
+            img.alt = 'Empty State';
+            img.className = 'empty-state-illustration';
+            img.style.maxWidth = '400px';
+            img.style.width = '100%';
+            img.style.height = 'auto';
+            img.style.marginBottom = '20px';
+            img.style.opacity = '0.8';
+            picture.appendChild(img);
+            emptyState.appendChild(picture);
+
+            const msg = document.createElement('p');
+            msg.className = 'empty-state-message';
+            msg.style.color = 'var(--text-dim)';
+            msg.style.fontSize = '18px';
+            msg.textContent = 'Inventory empty. Craft workstations to get ingredients!';
+            emptyState.appendChild(msg);
+
+            container.appendChild(emptyState);
             return;
         }
 
@@ -110,43 +137,55 @@ export class InventoryUI {
         const isTier1Or2 = currentDesignTier <= 2;
 
         const headerCard = document.createElement('div');
-        headerCard.className = 'card inventory-header';
-        headerCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; grid-column: 1 / -1; padding: 8px 12px;';
+        headerCard.className = 'card inventory-header force-visible';
+        headerCard.style.gridColumn = '1 / -1';
+        headerCard.style.padding = '8px 12px';
+
+        const headerContent = document.createElement('div');
+        headerContent.style.display = 'flex';
+        headerContent.style.alignItems = 'center';
+        headerContent.style.justifyContent = 'space-between';
+        headerContent.style.gap = '12px';
+
+        const leftSide = document.createElement('div');
+        leftSide.style.display = 'flex';
+        leftSide.style.alignItems = 'center';
+        leftSide.style.gap = '6px';
+
+        const iconSpan = document.createElement('span');
+        iconSpan.style.fontSize = '16px';
+        iconSpan.textContent = '◈';
+
+        const titleSpan = document.createElement('span');
+        titleSpan.style.fontSize = '16px';
+        titleSpan.style.fontWeight = '600';
+        titleSpan.textContent = 'Inventory';
+
+        const rightSide = document.createElement('div');
+        rightSide.style.fontSize = '12px';
+        rightSide.textContent = `${items.length} items • ${window.formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total`;
 
         if (isTier0) {
-            // Tier 0: Monochrome, no gradients, no shadows - compact single line
-            headerCard.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 16px;">◈</span>
-                        <span style="font-size: 16px; font-weight: 600; color: #FFFFFF;">Inventory</span>
-                    </div>
-                    <div style="font-size: 12px; color: #FFFFFF; opacity: 0.8;">${items.length} items • ${window.formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
-                </div>
-            `;
+            // Tier 0: Monochrome
+            titleSpan.style.color = '#FFFFFF';
+            rightSide.style.color = '#FFFFFF';
+            rightSide.style.opacity = '0.8';
         } else if (isTier1Or2) {
-            // Tier 1-2: Colors but no gradients/shadows - compact single line
-            headerCard.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 16px;">◈</span>
-                        <span style="font-size: 16px; font-weight: 600; color: var(--primary);">Inventory</span>
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">${items.length} items • ${window.formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
-                </div>
-            `;
+            // Tier 1-2: Colors
+            titleSpan.style.color = 'var(--primary)';
+            rightSide.style.color = 'var(--text-secondary)';
         } else {
-            // Tier 3-4: Full effects - compact single line
-            headerCard.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 16px; color: var(--accent);">◈</span>
-                        <span style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Inventory</span>
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">${items.length} items • ${window.formatShort(items.reduce((sum, item) => sum + item.amount, 0))} total</div>
-                </div>
-            `;
+            // Tier 3-4: Full effects
+            iconSpan.style.color = 'var(--accent)';
+            titleSpan.style.color = 'var(--text-primary)';
+            rightSide.style.color = 'var(--text-secondary)';
         }
+
+        leftSide.appendChild(iconSpan);
+        leftSide.appendChild(titleSpan);
+        headerContent.appendChild(leftSide);
+        headerContent.appendChild(rightSide);
+        headerCard.appendChild(headerContent);
         fragment.appendChild(headerCard);
 
         // Render items by tier
@@ -161,19 +200,21 @@ export class InventoryUI {
             if (tiers.length > 1) {
                 const separator = document.createElement('div');
                 separator.className = 'tier-separator';
-                separator.style.cssText = `
-                    grid-column: 1 / -1;
-                    margin: 10px 0 5px 0;
-                    padding-bottom: 5px;
-                    border-bottom: 1px solid ${tierStyle.borderGlow};
-                    color: ${tierStyle.color};
-                    font-size: 14px;
-                    font-family: ${tierStyle.fontFamily};
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                `;
-                separator.innerHTML = `<span>Tier ${tierNum}</span>`;
+                separator.style.gridColumn = '1 / -1';
+                separator.style.margin = '10px 0 5px 0';
+                separator.style.paddingBottom = '5px';
+                separator.style.borderBottom = `1px solid ${tierStyle.borderGlow}`;
+                separator.style.color = tierStyle.color;
+                separator.style.fontSize = '14px';
+                separator.style.fontFamily = tierStyle.fontFamily;
+                separator.style.display = 'flex';
+                separator.style.alignItems = 'center';
+                separator.style.gap = '8px';
+
+                const sepText = document.createElement('span');
+                sepText.textContent = `Tier ${tierNum}`;
+                separator.appendChild(sepText);
+
                 fragment.appendChild(separator);
             }
 
@@ -183,30 +224,38 @@ export class InventoryUI {
                 itemCard.dataset.id = item.id;
 
                 // Compact card style
-                let cardStyle = `
-                    background: ${isTier0 ? '#000000' : 'rgba(20, 20, 30, 0.6)'};
-                    border: 1px solid ${tierStyle.borderGlow};
-                    border-radius: 4px;
-                    padding: 8px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 4px;
-                    transition: ${tierStyle.transition};
-                    position: relative;
-                    overflow: hidden;
-                `;
+                itemCard.style.background = isTier0 ? '#000000' : 'rgba(20, 20, 30, 0.6)';
+                itemCard.style.border = `1px solid ${tierStyle.borderGlow}`;
+                itemCard.style.borderRadius = '4px';
+                itemCard.style.padding = '8px';
+                itemCard.style.display = 'flex';
+                itemCard.style.flexDirection = 'column';
+                itemCard.style.gap = '4px';
+                itemCard.style.transition = tierStyle.transition;
+                itemCard.style.position = 'relative';
+                itemCard.style.overflow = 'hidden';
 
                 if (tierStyle.hasGlow) {
-                    cardStyle += `box-shadow: 0 0 5px ${tierStyle.borderGlow.replace('0.8', '0.1')};`;
+                    itemCard.style.boxShadow = `0 0 5px ${tierStyle.borderGlow.replace('0.8', '0.1')}`;
                 }
 
-                itemCard.style.cssText = cardStyle;
-
                 // Item content
-                itemCard.innerHTML = `
-                    <div style="font-size: 12px; color: ${tierStyle.color}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;">${item.displayName}</div>
-                    <div style="font-size: 16px; color: #FFFFFF; font-family: monospace;">${window.formatShort(item.amount)}</div>
-                `;
+                const nameDiv = document.createElement('div');
+                nameDiv.style.fontSize = '12px';
+                nameDiv.style.color = tierStyle.color;
+                nameDiv.style.whiteSpace = 'nowrap';
+                nameDiv.style.overflow = 'hidden';
+                nameDiv.style.textOverflow = 'ellipsis';
+                nameDiv.style.fontWeight = '600';
+                nameDiv.textContent = item.displayName;
+                itemCard.appendChild(nameDiv);
+
+                const amountDiv = document.createElement('div');
+                amountDiv.style.fontSize = '16px';
+                amountDiv.style.color = '#FFFFFF';
+                amountDiv.style.fontFamily = 'monospace';
+                amountDiv.textContent = window.formatShort(item.amount);
+                itemCard.appendChild(amountDiv);
 
                 fragment.appendChild(itemCard);
             }

@@ -76,7 +76,7 @@
     <!-- Critical CSS moved to main.css for CSP compliance -->
 
     <!-- Main CSS loaded asynchronously for better performance -->
-    <link rel="stylesheet" href="css/main.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="css/main.css">
     <noscript>
         <link rel="stylesheet" href="css/main.css">
     </noscript>
@@ -151,7 +151,7 @@
 
             <!-- Auto Mode Toggle -->
             <div class="sidebar-section">
-                <button id="auto-cast-toggle" class="sidebar-auto-toggle" style="display: none;">
+                <button id="auto-cast-toggle" class="sidebar-auto-toggle hidden">
                     <span class="auto-icon">⚡</span>
                     <span class="auto-label">Auto Mode</span>
                     <span class="auto-status" id="auto-status">OFF</span>
@@ -169,21 +169,20 @@
                     0</span>
                 <span id="abps-display" class="seps-display" aria-live="polite" aria-atomic="false"
                     title="Arcane Bits per second">0.0 AB/s</span>
-                <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;"
-                    aria-live="polite" title="Elemental Affinity"></span>
+                <span id="specialization-indicator" class="specialization-indicator hidden" aria-live="polite"
+                    title="Elemental Affinity"></span>
             </div>
             <div class="hud-controls">
                 <button id="help-button" class="btn-secondary" title="How to play" aria-label="Open help menu"
-                    style="margin-right: 8px;">
+                    class="btn-secondary mr-2">
                     ❓ Help
                 </button>
-                <button id="install-app-button" class="btn-install" style="display: none;"
-                    title="Install to play offline" aria-label="Install App">
+                <button id="install-app-button" class="btn-install hidden" title="Install to play offline"
+                    aria-label="Install App">
                     <span class="install-icon">📱</span> Install
                 </button>
                 <button id="cast-button" class="btn-cast" title="Gather magic before it fades">
-                    <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon"
-                        style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
+                    <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" class="cast-icon">
                     <span class="css-icon-sparkle"></span> Cast
                 </button>
             </div>
@@ -193,8 +192,7 @@
     <!-- Main Game Area -->
     <main id="main-game" class="main-game" role="main">
         <!-- Particle Effects Canvas -->
-        <canvas id="particle-canvas"
-            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none;"></canvas>
+        <canvas id="particle-canvas" class="particle-canvas hidden"></canvas>
 
         <!-- Tab Navigation -->
         <div class="tabs-nav" role="tablist" aria-label="Game sections">
@@ -252,10 +250,9 @@
 
             <!-- Experiment Tab -->
             <div id="experiment-tab" class="tab-panel">
-                <div class="experiment-intro"
-                    style="margin-bottom: 20px; padding: 15px; background: var(--bg-secondary, #16213e); border-radius: 8px; border: 1px solid var(--border, #333);">
-                    <p style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.5; margin: 0;">
-                        <strong style="color: var(--text-primary, #fff);">Discover new preservation techniques</strong>
+                <div class="experiment-intro">
+                    <p class="experiment-text">
+                        <strong class="text-primary">Discover new preservation techniques</strong>
                         by experimenting with different combinations of preserved materials. Each discovery helps you
                         fight the fading more effectively.
                     </p>
@@ -302,7 +299,7 @@
                 </div>
                 <div class="meditation-controls">
                     <button id="start-meditation-button" class="btn-primary">Start Meditation</button>
-                    <button id="end-meditation-button" class="btn-secondary" style="display: none;">End
+                    <button id="end-meditation-button" class="btn-secondary hidden">End
                         Meditation</button>
                 </div>
                 <div class="meditation-main">
@@ -406,26 +403,23 @@
                     <!-- Story Section -->
                     <div class="settings-section">
                         <h3><span class="settings-icon">📖</span> The Story: The Fading</h3>
-                        <p
-                            style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
-                            <strong style="color: var(--accent, #FF2DAA);">In a distant future where magic and
+                        <p class="story-text">
+                            <strong class="text-accent">In a distant future where magic and
                                 technology converged</strong>, something went wrong. Magic is dying—the world's arcane
                             energy is fading, and once it's gone, it won't return.
                         </p>
-                        <p
-                            style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
-                            You are a <strong style="color: var(--success, #00d4aa);">Hex Compiler</strong>—one of the
+                        <p class="story-text">
+                            You are a <strong class="text-success">Hex Compiler</strong>—one of the
                             last who can translate magical hexes into executable hexadecimal code. You compile spells
                             into stable data structures, program algorithms that resist entropy, and build digital
                             preservation chambers—hybrid tech that captures fading magic before it's lost forever.
                         </p>
-                        <p
-                            style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
+                        <p class="story-text">
                             Every spell you compile saves magic from the void. Every chamber you program slows the
                             inevitable. Every algorithm you optimize buys more time. The fading doesn't stop—but your
                             code pushes back.
                         </p>
-                        <button id="read-full-story-button" class="btn-secondary" style="margin-top: 10px;">
+                        <button id="read-full-story-button" class="btn-secondary mt-2">
                             <span class="settings-icon">📚</span> Read Full Story
                         </button>
                     </div>
@@ -451,7 +445,7 @@
                         <button id="start-tutorial-button" class="btn-primary">
                             <span class="settings-icon">▶</span> Start Tutorial
                         </button>
-                        <button id="reset-tutorial-button" class="btn-secondary" style="margin-top: 8px;">
+                        <button id="reset-tutorial-button" class="btn-secondary mt-2">
                             <span class="settings-icon">🔄</span> Reset Tutorial
                         </button>
                     </div>
@@ -497,7 +491,7 @@
 
         <!-- Help/Tutorial Modal -->
         <div id="help-modal" class="modal" role="dialog" aria-labelledby="help-modal-title" aria-modal="true">
-            <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-content help-modal-content">
                 <button class="modal-close" aria-label="Close help modal">&times;</button>
                 <h2 id="help-modal-title">How to Play Hex Compiler</h2>
 
@@ -641,7 +635,7 @@
         <script type="module" src="js/questSystem.js"></script>
         <script type="module" src="js/playerAnalytics.js"></script>
         <script type="module" src="js/balanceAnalytics.js"></script>
-        <script type="module" src="js/pwaFeatures.js"></script>
+
         <script type="module" src="js/tutorial.js"></script>
         <script type="module" src="js/balanceTesting.js"></script>
         <script type="module" src="js/codeOrganization.js"></script>

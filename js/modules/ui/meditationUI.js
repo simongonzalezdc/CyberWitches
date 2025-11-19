@@ -68,8 +68,6 @@ export class MeditationUI {
             // Track focus earning for daily tasks
             if (this.uiManager && this.uiManager.systems.dailyRituals) {
                 this.uiManager.systems.dailyRituals.updateTaskProgress('earn_focus', '', this.meditationState.focusTotalEarned);
-            } else if (typeof window.updateDailyProgress === 'function') {
-                window.updateDailyProgress('earn_focus', '', this.meditationState.focusTotalEarned);
             }
         };
 
@@ -82,8 +80,6 @@ export class MeditationUI {
             // Track meditation waves for daily tasks
             if (this.uiManager && this.uiManager.systems.dailyRituals) {
                 this.uiManager.systems.dailyRituals.updateTaskProgress('meditation_waves', '', wave);
-            } else if (typeof window.updateDailyProgress === 'function') {
-                window.updateDailyProgress('meditation_waves', '', wave);
             }
         };
 

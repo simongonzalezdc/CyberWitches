@@ -3,8 +3,10 @@
  * Manages the rendering and updates of the Workstations tab.
  */
 
-import { formatTimeDuration, formatShort } from '../../utils.js';
+import { formatTimeDuration, formatShort, formatNumber } from '../../utils.js';
 import { getTierSymbol, getTierAppropriateStyle, getWorkstationTier } from './uiHelpers.js';
+import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
+import { Balance } from '../../utils.js';
 
 export class WorkstationUI {
     constructor(gameState, uiManager) {
@@ -38,7 +40,7 @@ export class WorkstationUI {
         container.style.opacity = '1';
 
         // Filter unlocked workstations (with Air specialization unlock speed bonus)
-        let unlockedWorkstations = window.PRODUCERS.filter(prod => {
+        let unlockedWorkstations = PRODUCERS.filter(prod => {
             let unlockRequirement = prod.unlockAtAb;
             if (this.gameState.elementSpecialization === 'air' && this.gameState.specializationBonuses.unlockSpeedMult) {
                 unlockRequirement *= this.gameState.specializationBonuses.unlockSpeedMult;
@@ -56,60 +58,8 @@ export class WorkstationUI {
             this.virtualWorkstationList = null;
         }
 
-        // Create virtual list if there are many workstations
-        // DISABLED: Virtual scroll causes items to disappear - using traditional rendering instead
-        if (false && unlockedWorkstations.length > 10 && window.VirtualWorkstationList) {
-            console.log('Using virtual scrolling for', unlockedWorkstations.length, 'workstations');
-            try {
-                this.virtualWorkstationList = new window.VirtualWorkstationList(container, unlockedWorkstations, this.gameState);
-                // Force initial render after a short delay to ensure DOM is ready
-                setTimeout(() => {
-                    if (this.virtualWorkstationList && this.virtualWorkstationList._constructorComplete) {
-                        console.log('Forcing virtual scroll initial render...');
-                        // Force container to be visible first
-                        container.style.display = 'flex';
-                        container.style.flexDirection = 'column';
-                        container.style.visibility = 'visible';
-                        container.style.opacity = '1';
-                        container.style.minHeight = '400px';
-                        // Force a reflow
-                        void container.offsetHeight;
-                        this.virtualWorkstationList.updateContainerHeight();
-                        this.virtualWorkstationList.renderVisibleItems();
-
-                        // Verify items were rendered - if not, fall back to traditional
-                        setTimeout(() => {
-                            const viewport = container.querySelector('.virtual-scroll-viewport');
-                            const renderedItems = viewport ? viewport.children.length : 0;
-
-                            if (renderedItems === 0) {
-                                console.warn('Virtual scroll rendered 0 items, falling back to traditional rendering');
-                                if (this.virtualWorkstationList) {
-                                    try {
-                                        this.virtualWorkstationList.destroy();
-                                    } catch (e) {
-                                        console.error('Error destroying virtual scroll:', e);
-                                    }
-                                    this.virtualWorkstationList = null;
-                                }
-                                // Fall back to traditional rendering
-                                container.innerHTML = '';
-                                this.updateTraditional(container, unlockedWorkstations);
-                            }
-                        }, 200);
-                    }
-                }, 100);
-            } catch (e) {
-                console.error('Error creating virtual workstation list:', e);
-                // Fall back to traditional rendering
-                container.innerHTML = '';
-                console.log('Falling back to traditional rendering due to error');
-                this.updateTraditional(container, unlockedWorkstations);
-            }
-        } else {
-            // Use traditional rendering for small lists
-            this.updateTraditional(container, unlockedWorkstations);
-        }
+        // Use traditional rendering
+        this.updateTraditional(container, unlockedWorkstations);
     }
 
     // Traditional rendering function (used for small lists or as fallback)
@@ -184,7 +134,7 @@ export class WorkstationUI {
                 }
 
                 const owned = this.gameState.workstations[prodData.id] || 0;
-                const cost = window.Balance ? window.Balance.scaledRecipe(prodData.recipe, owned, prodData.growth) : {};
+                const cost = Balance ? Balance.scaledRecipe(prodData.recipe, owned, prodData.growth) : {};
                 const canAfford = this.gameState.canAfford(cost);
 
                 // Calculate production
@@ -209,12 +159,12 @@ export class WorkstationUI {
                 // Format cost string
                 let costHtml = '';
                 for (const [ingId, amount] of Object.entries(cost)) {
-                    const ing = window.INGREDIENTS.find(i => i.id === ingId);
+                    const ing = INGREDIENTS.find(i => i.id === ingId);
                     const userHas = this.gameState.inventory[ingId] || 0;
                     const canAffordIng = userHas >= amount;
                     costHtml += `
                         <div class="cost-item ${canAffordIng ? 'affordable' : 'unaffordable'}">
-                            <span class="cost-amount">${window.formatNumber(amount)}</span>
+                            <span class="cost-amount">${formatNumber(amount)}</span>
                             <span class="cost-name">${ing ? ing.displayName : ingId}</span>
                         </div>
                     `;
@@ -226,10 +176,10 @@ export class WorkstationUI {
                     productionHtml = '<div class="production-stats">';
                     for (const [outputId, amount] of Object.entries(production)) {
                         if (amount > 0) {
-                            const ing = window.INGREDIENTS.find(i => i.id === outputId);
+                            const ing = INGREDIENTS.find(i => i.id === outputId);
                             productionHtml += `
                                 <div class="production-item">
-                                    <span class="prod-amount">+${window.formatNumber(amount)}/s</span>
+                                    <span class="prod-amount">+${formatNumber(amount)}/s</span>
                                     <span class="prod-name">${ing ? ing.displayName : outputId}</span>
                                 </div>
                             `;
@@ -240,7 +190,7 @@ export class WorkstationUI {
                     if (inscriptionMult > 1.0) {
                         productionHtml += `
                             <div class="inscription-bonus" style="color: var(--accent); font-size: 0.8em; margin-top: 4px;">
-                                <i class="fas fa-bolt"></i> ${window.formatNumber((inscriptionMult - 1) * 100)}% Bonus
+                                <i class="fas fa-bolt"></i> ${formatNumber((inscriptionMult - 1) * 100)}% Bonus
                             </div>
                         `;
                     }
@@ -252,7 +202,7 @@ export class WorkstationUI {
                     <div class="card-header">
                         <div class="card-title-row">
                             <h3 class="card-title" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}">${prodData.displayName}</h3>
-                            <span class="card-owned">Lv. ${window.formatNumber(owned)}</span>
+                            <span class="card-owned">Lv. ${formatNumber(owned)}</span>
                         </div>
                         <p class="card-desc">${prodData.description}</p>
                     </div>
@@ -288,7 +238,7 @@ export class WorkstationUI {
 
         // Global upgrades
         for (const upgId in this.gameState.upgradesOwned) {
-            const upgData = window.UPGRADES.find(u => u.id === upgId);
+            const upgData = UPGRADES.find(u => u.id === upgId);
             if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
                 mult *= upgData.value;
                 inscriptions.push({
@@ -302,7 +252,7 @@ export class WorkstationUI {
         // Producer-specific upgrades
         const targetAffects = "producer:" + workstationId;
         for (const upgId in this.gameState.upgradesOwned) {
-            const upgData = window.UPGRADES.find(u => u.id === upgId);
+            const upgData = UPGRADES.find(u => u.id === upgId);
             if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
                 mult *= upgData.value;
                 inscriptions.push({

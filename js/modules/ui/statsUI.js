@@ -15,12 +15,39 @@ export class StatsUI {
     /**
      * Update stats tab with optimized rendering
      */
-    update() {
-        // console.log('updateStatsTab called, gameState exists:', !!this.gameState, 'achievements exists:', !!window.achievements);
+    // Helper to create a stat item safely
+    createStatItem(label, value, style = null) {
+        const item = document.createElement('div');
+        item.className = 'card-section';
+        item.style.marginBottom = '0';
+        if (style) {
+            // Parse simple style string or use object
+            // For now, assuming style is a string like "color: var(--success); font-weight: bold;"
+            // We'll just set specific properties if needed, or use cssText if strictly necessary but safer to avoid
+            // However, the input comes from code, so it's relatively safe, but CSP blocks cssText? No, CSP blocks inline style attribute.
+            // cssText in JS is allowed. The issue is innerHTML with style="..."
+            item.style.cssText += style;
+        }
 
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'card-label';
+        labelDiv.textContent = label;
+        item.appendChild(labelDiv);
+
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'card-value';
+        valueDiv.style.wordWrap = 'break-word';
+        valueDiv.style.overflowWrap = 'break-word';
+        valueDiv.style.whiteSpace = 'normal';
+        valueDiv.textContent = value;
+        item.appendChild(valueDiv);
+
+        return item;
+    }
+
+    update() {
         const container = document.getElementById('stats-tab');
         if (!container) {
-            // console.error('stats-tab container not found!');
             return;
         }
 
@@ -34,13 +61,19 @@ export class StatsUI {
 
         // Stats section with two-column layout
         const statsCard = document.createElement('div');
-        statsCard.className = 'card';
-        statsCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
-        statsCard.innerHTML = '<div class="card-title">Game Statistics</div>';
+        statsCard.className = 'card force-visible';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'card-title';
+        titleDiv.textContent = 'Game Statistics';
+        statsCard.appendChild(titleDiv);
 
         // Create stats container with grid layout
         const statsContainer = document.createElement('div');
-        statsContainer.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px;';
+        statsContainer.style.display = 'grid';
+        statsContainer.style.gridTemplateColumns = '1fr 1fr';
+        statsContainer.style.gap = '12px';
+        statsContainer.style.padding = '10px';
 
         // Split stats into two columns
         const leftColumnStats = [
@@ -71,36 +104,20 @@ export class StatsUI {
 
         // Create left column
         const leftColumn = document.createElement('div');
-        leftColumn.style.cssText = 'display: flex; flex-direction: column; gap: 10px;';
+        leftColumn.style.display = 'flex';
+        leftColumn.style.flexDirection = 'column';
+        leftColumn.style.gap = '10px';
         for (const stat of leftColumnStats) {
-            const item = document.createElement('div');
-            if (stat.style) {
-                item.style.cssText = stat.style;
-            }
-            item.className = 'card-section';
-            item.style.cssText += 'margin-bottom: 0;';
-            item.innerHTML = `
-                <div class="card-label">${stat.label}</div>
-                <div class="card-value" style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${stat.value}</div>
-            `;
-            leftColumn.appendChild(item);
+            leftColumn.appendChild(this.createStatItem(stat.label, stat.value, stat.style));
         }
 
         // Create right column
         const rightColumn = document.createElement('div');
-        rightColumn.style.cssText = 'display: flex; flex-direction: column; gap: 10px;';
+        rightColumn.style.display = 'flex';
+        rightColumn.style.flexDirection = 'column';
+        rightColumn.style.gap = '10px';
         for (const stat of rightColumnStats) {
-            const item = document.createElement('div');
-            if (stat.style) {
-                item.style.cssText = stat.style;
-            }
-            item.className = 'card-section';
-            item.style.cssText += 'margin-bottom: 0;';
-            item.innerHTML = `
-                <div class="card-label">${stat.label}</div>
-                <div class="card-value" style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">${stat.value}</div>
-            `;
-            rightColumn.appendChild(item);
+            rightColumn.appendChild(this.createStatItem(stat.label, stat.value, stat.style));
         }
 
         statsContainer.appendChild(leftColumn);
@@ -110,82 +127,54 @@ export class StatsUI {
 
         // Achievements section with two-column layout
         const achievementsCard = document.createElement('div');
-        achievementsCard.className = 'card';
-        achievementsCard.style.cssText = 'position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block;';
-        achievementsCard.innerHTML = '<div class="card-title">Achievements</div>';
+        achievementsCard.className = 'card force-visible';
+
+        const achTitleDiv = document.createElement('div');
+        achTitleDiv.className = 'card-title';
+        achTitleDiv.textContent = 'Achievements';
+        achievementsCard.appendChild(achTitleDiv);
 
         // Create achievements container with grid layout (two columns)
         const achievementsContainer = document.createElement('div');
-        achievementsContainer.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px; max-height: 50vh; overflow-y: auto;';
+        achievementsContainer.style.display = 'grid';
+        achievementsContainer.style.gridTemplateColumns = '1fr 1fr';
+        achievementsContainer.style.gap = '12px';
+        achievementsContainer.style.padding = '10px';
+        achievementsContainer.style.maxHeight = '50vh';
+        achievementsContainer.style.overflowY = 'auto';
 
         // Create left and right columns for achievements
         const achievementsLeftColumn = document.createElement('div');
-        achievementsLeftColumn.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+        achievementsLeftColumn.style.display = 'flex';
+        achievementsLeftColumn.style.flexDirection = 'column';
+        achievementsLeftColumn.style.gap = '8px';
 
         const achievementsRightColumn = document.createElement('div');
-        achievementsRightColumn.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+        achievementsRightColumn.style.display = 'flex';
+        achievementsRightColumn.style.flexDirection = 'column';
+        achievementsRightColumn.style.gap = '8px';
 
-        const achievementsList = document.createElement('div');
-        achievementsList.className = 'content-list';
-        achievementsList.style.cssText = 'display: none;'; // Hidden, we'll use the columns instead
-
-        // Destroy existing virtual list if it exists
-        if (this.virtualAchievementList) {
-            try {
-                this.virtualAchievementList.destroy();
-            } catch (e) {
-                console.error('Error destroying virtual achievement list:', e);
-            }
-            this.virtualAchievementList = null;
-        }
-
-        // Get achievements array - check multiple possible structures
+        // Get achievements array
         let achievementsArray = [];
         if (window.achievements) {
             achievementsArray = window.achievements.achievements ||
                 (typeof window.achievements.getAllAchievements === 'function' ? window.achievements.getAllAchievements() : []);
         }
-        // console.log('Achievements array length:', achievementsArray.length);
 
-        // Always use traditional rendering for achievements (simpler and more reliable)
-        // DISABLED: Virtual scroll causes items to disappear - using traditional rendering instead
-        if (false && achievementsArray && achievementsArray.length > 10 && window.VirtualAchievementList) {
-            console.log('Using virtual scrolling for', achievementsArray.length, 'achievements');
-            try {
-                this.virtualAchievementList = new window.VirtualAchievementList(achievementsList, achievementsArray, window.achievements);
-                // Force initial render after a short delay
-                setTimeout(() => {
-                    if (this.virtualAchievementList && this.virtualAchievementList._constructorComplete) {
-                        console.log('Forcing virtual scroll initial render for achievements...');
-                        this.virtualAchievementList.updateContainerHeight();
-                        this.virtualAchievementList.renderVisibleItems();
-                    }
-                }, 50);
-            } catch (e) {
-                console.error('Error creating virtual achievement list:', e);
-                // Fall back to traditional rendering
-                this.renderAchievementsTraditional(achievementsArray, achievementsContainer, achievementsLeftColumn, achievementsRightColumn);
-            }
-        } else {
-            // Traditional rendering for all lists
-            this.renderAchievementsTraditional(achievementsArray, achievementsContainer, achievementsLeftColumn, achievementsRightColumn);
-        }
+        this.renderAchievementsTraditional(achievementsArray, achievementsContainer, achievementsLeftColumn, achievementsRightColumn);
 
         achievementsCard.appendChild(achievementsContainer);
         container.appendChild(achievementsCard);
-
-        // console.log('Stats tab updated, container children:', container.children.length);
     }
 
     // Helper function for traditional rendering with two-column layout
     renderAchievementsTraditional(achievementsArray, container, leftColumn, rightColumn) {
-        // console.log('Using traditional rendering for', achievementsArray.length, 'achievements');
-
         if (!achievementsArray || achievementsArray.length === 0) {
-            console.warn('No achievements to render');
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'card-section';
-            emptyMsg.style.cssText = 'padding: 10px; color: var(--text-dim); grid-column: 1 / -1;';
+            emptyMsg.style.padding = '10px';
+            emptyMsg.style.color = 'var(--text-dim)';
+            emptyMsg.style.gridColumn = '1 / -1';
             emptyMsg.textContent = 'No achievements yet.';
             container.appendChild(emptyMsg);
             return;
@@ -197,39 +186,93 @@ export class StatsUI {
             const unlocked = window.achievements && window.achievements.unlockedAchievements ?
                 window.achievements.unlockedAchievements.has(achievement.id) : false;
 
+            const item = document.createElement('div');
+            item.className = 'card-section achievement-item';
+            item.style.padding = '10px';
+            item.style.borderRadius = '6px';
+            item.style.background = unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)';
+            item.style.marginBottom = '8px';
+            item.style.position = 'relative';
+            item.style.zIndex = '1';
+            item.style.pointerEvents = 'auto';
+            item.style.visibility = 'visible';
+            item.style.display = 'block';
+            item.style.wordWrap = 'break-word';
+            item.style.overflowWrap = 'break-word';
+            item.style.maxWidth = '100%';
+            item.style.boxSizing = 'border-box';
+            item.style.overflow = 'visible';
+            item.style.lineHeight = '1.5';
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'card-label';
+            labelDiv.style.color = unlocked ? 'var(--success)' : 'var(--text-dim)';
+            labelDiv.style.wordWrap = 'break-word';
+            labelDiv.style.overflowWrap = 'break-word';
+            labelDiv.style.marginBottom = '6px';
+            labelDiv.style.fontWeight = '600';
+            labelDiv.style.lineHeight = '1.5';
+            labelDiv.style.display = 'block';
+            labelDiv.style.whiteSpace = 'normal';
+            labelDiv.textContent = `${stripEmojisIfLowTier(unlocked ? '✓' : '○')} ${achievement.name || 'Unknown Achievement'}`;
+            item.appendChild(labelDiv);
+
+            const descDiv = document.createElement('div');
+            descDiv.className = 'card-description';
+            descDiv.style.fontSize = '11px';
+            descDiv.style.wordWrap = 'break-word';
+            descDiv.style.overflowWrap = 'break-word';
+            descDiv.style.maxWidth = '100%';
+            descDiv.style.lineHeight = '1.5';
+            descDiv.style.color = 'var(--text-dim)';
+            descDiv.style.display = 'block';
+            descDiv.style.whiteSpace = 'normal';
+            descDiv.style.marginBottom = '4px';
+            descDiv.textContent = achievement.description || 'No description';
+            item.appendChild(descDiv);
+
             // Calculate progress if achievement has progress tracking
-            let progressHTML = '';
             if (!unlocked && achievement.checkProgress && typeof achievement.checkProgress === 'function') {
                 try {
                     const progress = achievement.checkProgress(this.gameState);
                     if (progress && progress.current !== undefined && progress.target !== undefined) {
                         const percentage = Math.min(100, Math.round((progress.current / progress.target) * 100));
-                        progressHTML = `
-                            <div class="achievement-progress" style="margin-top: 8px;">
-                                <div class="progress-bar-container" style="width: 100%; height: 8px; background: rgba(0, 0, 0, 0.3); border-radius: 4px; overflow: hidden;">
-                                    <div class="progress-bar" style="width: ${percentage}%; height: 100%; background: var(--primary, #FF2DAA); transition: width 0.3s;"></div>
-                                </div>
-                                <div class="progress-text" style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">
-                                    ${progress.current} / ${progress.target} (${percentage}%)
-                                </div>
-                            </div>
-                        `;
+
+                        const progressContainer = document.createElement('div');
+                        progressContainer.className = 'achievement-progress';
+                        progressContainer.style.marginTop = '8px';
+
+                        const barContainer = document.createElement('div');
+                        barContainer.className = 'progress-bar-container';
+                        barContainer.style.width = '100%';
+                        barContainer.style.height = '8px';
+                        barContainer.style.background = 'rgba(0, 0, 0, 0.3)';
+                        barContainer.style.borderRadius = '4px';
+                        barContainer.style.overflow = 'hidden';
+
+                        const bar = document.createElement('div');
+                        bar.className = 'progress-bar';
+                        bar.style.width = `${percentage}%`;
+                        bar.style.height = '100%';
+                        bar.style.background = 'var(--primary, #FF2DAA)';
+                        bar.style.transition = 'width 0.3s';
+                        barContainer.appendChild(bar);
+                        progressContainer.appendChild(barContainer);
+
+                        const textDiv = document.createElement('div');
+                        textDiv.className = 'progress-text';
+                        textDiv.style.fontSize = '11px';
+                        textDiv.style.color = 'var(--text-dim)';
+                        textDiv.style.marginTop = '4px';
+                        textDiv.textContent = `${progress.current} / ${progress.target} (${percentage}%)`;
+                        progressContainer.appendChild(textDiv);
+
+                        item.appendChild(progressContainer);
                     }
                 } catch (e) {
                     console.warn('Error calculating achievement progress:', e);
                 }
             }
-
-            const item = document.createElement('div');
-            item.className = 'card-section achievement-item';
-            item.style.cssText = `padding: 10px; border-radius: 6px; background: ${unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)'}; margin-bottom: 8px; position: relative; z-index: 1; pointer-events: auto; visibility: visible; display: block; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; box-sizing: border-box; overflow: visible; line-height: 1.5;`;
-            item.innerHTML = `
-                <div class="card-label" style="color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'}; word-wrap: break-word; overflow-wrap: break-word; margin-bottom: 6px; font-weight: 600; line-height: 1.5; display: block; white-space: normal;">
-                    ${stripEmojisIfLowTier(unlocked ? '✓' : '○')} ${achievement.name || 'Unknown Achievement'}
-                </div>
-                <div class="card-description" style="font-size: 11px; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; line-height: 1.5; color: var(--text-dim); display: block; white-space: normal; margin-bottom: 4px;">${achievement.description || 'No description'}</div>
-                ${progressHTML}
-            `;
 
             // Alternate between left and right columns
             if (index % 2 === 0) {
@@ -242,7 +285,5 @@ export class StatsUI {
         // Append columns to container
         container.appendChild(leftColumn);
         container.appendChild(rightColumn);
-
-        // console.log('Rendered', achievementsArray.length, 'achievements using traditional rendering in two columns');
     }
 }

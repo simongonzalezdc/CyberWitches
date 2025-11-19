@@ -931,14 +931,18 @@ export class VirtualAchievementList extends VirtualScrollManager {
                 const unlocked = achievementSystemData.unlockedAchievements.has(achievement.id);
                 card.className = `achievement-card virtual-scroll-item ${unlocked ? 'unlocked' : 'locked'}`;
 
-                card.innerHTML = `
-                <div style="font-weight: bold; color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'};">
-                    ${unlocked ? '✓' : '○'} ${achievement.name}
-                </div>
-                <div style="font-size: 14px; margin-top: 5px; color: var(--text-dim);">
-                    ${achievement.description}
-                </div>
-            `;
+                const titleDiv = document.createElement('div');
+                titleDiv.style.fontWeight = 'bold';
+                titleDiv.style.color = unlocked ? 'var(--success)' : 'var(--text-dim)';
+                titleDiv.textContent = `${unlocked ? '✓' : '○'} ${achievement.name}`;
+                card.appendChild(titleDiv);
+
+                const descDiv = document.createElement('div');
+                descDiv.style.fontSize = '14px';
+                descDiv.style.marginTop = '5px';
+                descDiv.style.color = 'var(--text-dim)';
+                descDiv.textContent = achievement.description;
+                card.appendChild(descDiv);
 
                 return card;
             } catch (error) {
@@ -998,14 +1002,18 @@ export class VirtualAchievementList extends VirtualScrollManager {
         const unlocked = achievementSystem.unlockedAchievements.has(achievement.id);
         card.className = `achievement-card virtual-scroll-item ${unlocked ? 'unlocked' : 'locked'}`;
 
-        card.innerHTML = `
-            <div style="font-weight: bold; color: ${unlocked ? 'var(--success)' : 'var(--text-dim)'};">
-                ${unlocked ? '✓' : '○'} ${achievement.name}
-            </div>
-            <div style="font-size: 14px; margin-top: 5px; color: var(--text-dim);">
-                ${achievement.description}
-            </div>
-        `;
+        const titleDiv = document.createElement('div');
+        titleDiv.style.fontWeight = 'bold';
+        titleDiv.style.color = unlocked ? 'var(--success)' : 'var(--text-dim)';
+        titleDiv.textContent = `${unlocked ? '✓' : '○'} ${achievement.name}`;
+        card.appendChild(titleDiv);
+
+        const descDiv = document.createElement('div');
+        descDiv.style.fontSize = '14px';
+        descDiv.style.marginTop = '5px';
+        descDiv.style.color = 'var(--text-dim)';
+        descDiv.textContent = achievement.description;
+        card.appendChild(descDiv);
 
         return card;
     }

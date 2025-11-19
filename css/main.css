@@ -10,6 +10,7 @@
 @import 'animations.css';
 @import 'responsive.css';
 @import 'meditation.css';
+@import 'utilities.css';
 
 /* Glitch effects - lazy loaded via JavaScript when design tier > 0 */
 /* @import 'glitch-effects.css'; */

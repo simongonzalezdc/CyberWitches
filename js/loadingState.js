@@ -15,45 +15,11 @@ class LoadingStateManager {
         this.loaderElement = document.createElement('div');
         this.loaderElement.id = 'loading-overlay';
         this.loaderElement.className = 'loading-overlay';
-        this.loaderElement.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 10001;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 20px;
-        `;
 
         this.loaderElement.innerHTML = `
-            <div class="loading-spinner" style="
-                width: 50px;
-                height: 50px;
-                border: 4px solid rgba(255, 255, 255, 0.3);
-                border-top-color: var(--primary, #FF2DAA);
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-            "></div>
-            <div class="loading-message" style="
-                color: var(--text, #FFFFFF);
-                font-size: 18px;
-                font-weight: 600;
-            ">Loading...</div>
+            <div class="loading-spinner-large"></div>
+            <div class="loading-message loading-message-text">Loading...</div>
         `;
-
-        // Add spinner animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
 
         document.body.appendChild(this.loaderElement);
     }
@@ -73,7 +39,7 @@ class LoadingStateManager {
             messageEl.textContent = message;
         }
 
-        this.loaderElement.style.display = 'flex';
+        this.loaderElement.classList.add('active');
         this.loaderElement.setAttribute('aria-busy', 'true');
         this.loaderElement.setAttribute('aria-live', 'polite');
 
@@ -92,7 +58,7 @@ class LoadingStateManager {
         }
 
         if (this.activeLoaders.size === 0) {
-            this.loaderElement.style.display = 'none';
+            this.loaderElement.classList.remove('active');
             this.loaderElement.setAttribute('aria-busy', 'false');
         }
     }

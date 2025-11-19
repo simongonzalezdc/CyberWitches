@@ -7,6 +7,17 @@ import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
 
 
 
+
+let _designTierSystem = null;
+
+/**
+ * Initialize UI helpers with design tier system
+ * @param {Object} designTierSystem - The design tier system
+ */
+export function initUIHelpers(designTierSystem) {
+    _designTierSystem = designTierSystem;
+}
+
 /**
  * Get tier symbol and styles
  * @param {number} tier - Tier number (0-5)
@@ -66,7 +77,7 @@ export function getTierSymbol(tier) {
  * @returns {Object} Style configuration object
  */
 export function getTierAppropriateStyle(itemTier) {
-    const currentDesignTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+    const currentDesignTier = _designTierSystem ? _designTierSystem.getCurrentTier() : 0;
     const tierSymbol = getTierSymbol(itemTier);
 
     // Tier 0: Monochrome, no shadows, no transitions
@@ -125,7 +136,7 @@ export function stripEmojisIfLowTier(text) {
     if (!text || typeof text !== 'string') return text;
 
     // Check current tier
-    const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
+    const currentTier = _designTierSystem ? _designTierSystem.getCurrentTier() : 0;
 
     // If tier < 3, remove emojis
     if (currentTier < 3) {
