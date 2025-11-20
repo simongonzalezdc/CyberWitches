@@ -49,13 +49,7 @@ class AccessibilityManager {
             element.className = 'sr-only';
             element.setAttribute('aria-live', region.politeness);
             element.setAttribute('aria-atomic', 'true');
-            element.style.cssText = `
-                position: absolute;
-                left: -10000px;
-                width: 1px;
-                height: 1px;
-                overflow: hidden;
-            `;
+            // Styles moved to CSS
             document.body.appendChild(element);
             this.liveRegions.set(region.politeness, element);
         });

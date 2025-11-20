@@ -339,7 +339,7 @@ export class PWAFeaturesManager {
             instructions = `
                 <h3>${stripEmojisIfLowTier('📱 Install on iOS (Safari)')}</h3>
                 <ol>
-                    <li>Tap the <strong>Share</strong> button ${stripEmojisIfLowTier('<span style="font-size: 20px;">📤</span>')} at the bottom</li>
+                    <li>Tap the <strong>Share</strong> button ${stripEmojisIfLowTier('<span class="pwa-icon">📤</span>')} at the bottom</li>
                     <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
                     <li>Tap <strong>"Add"</strong> to confirm</li>
                     <li>Launch from your home screen!</li>
@@ -349,7 +349,7 @@ export class PWAFeaturesManager {
             instructions = `
                 <h3>${stripEmojisIfLowTier('📱 Install on Android')}</h3>
                 <ol>
-                    <li>Tap the <strong>Menu</strong> button ${stripEmojisIfLowTier('<span style="font-size: 20px;">⋮</span>')} (three dots)</li>
+                    <li>Tap the <strong>Menu</strong> button ${stripEmojisIfLowTier('<span class="pwa-icon">⋮</span>')} (three dots)</li>
                     <li>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></li>
                     <li>Tap <strong>"Install"</strong> to confirm</li>
                     <li>Launch from your home screen!</li>
@@ -359,7 +359,7 @@ export class PWAFeaturesManager {
             instructions = `
                 <h3>${stripEmojisIfLowTier('💻 Install on Desktop (Chrome/Edge)')}</h3>
                 <ol>
-                    <li>Look for the <strong>Install</strong> icon ${stripEmojisIfLowTier('<span style="font-size: 20px;">➕</span>')} in the address bar</li>
+                    <li>Look for the <strong>Install</strong> icon ${stripEmojisIfLowTier('<span class="pwa-icon">➕</span>')} in the address bar</li>
                     <li>Click it and select <strong>"Install"</strong></li>
                     <li>Or use the <strong>"Install"</strong> button in the top bar</li>
                     <li>Launch from your desktop or app menu!</li>

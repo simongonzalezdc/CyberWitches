@@ -15,36 +15,6 @@ export class StatsUI {
     /**
      * Update stats tab with optimized rendering
      */
-    // Helper to create a stat item safely
-    createStatItem(label, value, style = null) {
-        const item = document.createElement('div');
-        item.className = 'card-section';
-        item.style.marginBottom = '0';
-        if (style) {
-            // Parse simple style string or use object
-            // For now, assuming style is a string like "color: var(--success); font-weight: bold;"
-            // We'll just set specific properties if needed, or use cssText if strictly necessary but safer to avoid
-            // However, the input comes from code, so it's relatively safe, but CSP blocks cssText? No, CSP blocks inline style attribute.
-            // cssText in JS is allowed. The issue is innerHTML with style="..."
-            item.style.cssText += style;
-        }
-
-        const labelDiv = document.createElement('div');
-        labelDiv.className = 'card-label';
-        labelDiv.textContent = label;
-        item.appendChild(labelDiv);
-
-        const valueDiv = document.createElement('div');
-        valueDiv.className = 'card-value';
-        valueDiv.style.wordWrap = 'break-word';
-        valueDiv.style.overflowWrap = 'break-word';
-        valueDiv.style.whiteSpace = 'normal';
-        valueDiv.textContent = value;
-        item.appendChild(valueDiv);
-
-        return item;
-    }
-
     update() {
         const container = document.getElementById('stats-tab');
         if (!container) {
@@ -52,11 +22,7 @@ export class StatsUI {
         }
 
         // Ensure container is visible
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.gap = '15px';
-        container.style.visibility = 'visible';
-        container.style.opacity = '1';
+        container.className = 'stats-tab-container';
         container.innerHTML = '';
 
         // Stats section with two-column layout
@@ -70,10 +36,7 @@ export class StatsUI {
 
         // Create stats container with grid layout
         const statsContainer = document.createElement('div');
-        statsContainer.style.display = 'grid';
-        statsContainer.style.gridTemplateColumns = '1fr 1fr';
-        statsContainer.style.gap = '12px';
-        statsContainer.style.padding = '10px';
+        statsContainer.className = 'stats-grid';
 
         // Split stats into two columns
         const leftColumnStats = [
@@ -98,26 +61,22 @@ export class StatsUI {
             rightColumnStats.push({
                 label: stripEmojisIfLowTier('🧘 Meditation Production Bonus'),
                 value: `+${bonusPercent}%`,
-                style: 'color: var(--success); font-weight: bold;'
+                className: 'text-success font-bold'
             });
         }
 
         // Create left column
         const leftColumn = document.createElement('div');
-        leftColumn.style.display = 'flex';
-        leftColumn.style.flexDirection = 'column';
-        leftColumn.style.gap = '10px';
+        leftColumn.className = 'stats-column';
         for (const stat of leftColumnStats) {
-            leftColumn.appendChild(this.createStatItem(stat.label, stat.value, stat.style));
+            leftColumn.appendChild(this.createStatItem(stat.label, stat.value, stat.className));
         }
 
         // Create right column
         const rightColumn = document.createElement('div');
-        rightColumn.style.display = 'flex';
-        rightColumn.style.flexDirection = 'column';
-        rightColumn.style.gap = '10px';
+        rightColumn.className = 'stats-column';
         for (const stat of rightColumnStats) {
-            rightColumn.appendChild(this.createStatItem(stat.label, stat.value, stat.style));
+            rightColumn.appendChild(this.createStatItem(stat.label, stat.value, stat.className));
         }
 
         statsContainer.appendChild(leftColumn);
@@ -136,23 +95,14 @@ export class StatsUI {
 
         // Create achievements container with grid layout (two columns)
         const achievementsContainer = document.createElement('div');
-        achievementsContainer.style.display = 'grid';
-        achievementsContainer.style.gridTemplateColumns = '1fr 1fr';
-        achievementsContainer.style.gap = '12px';
-        achievementsContainer.style.padding = '10px';
-        achievementsContainer.style.maxHeight = '50vh';
-        achievementsContainer.style.overflowY = 'auto';
+        achievementsContainer.className = 'achievements-grid-container';
 
         // Create left and right columns for achievements
         const achievementsLeftColumn = document.createElement('div');
-        achievementsLeftColumn.style.display = 'flex';
-        achievementsLeftColumn.style.flexDirection = 'column';
-        achievementsLeftColumn.style.gap = '8px';
+        achievementsLeftColumn.className = 'achievements-column';
 
         const achievementsRightColumn = document.createElement('div');
-        achievementsRightColumn.style.display = 'flex';
-        achievementsRightColumn.style.flexDirection = 'column';
-        achievementsRightColumn.style.gap = '8px';
+        achievementsRightColumn.className = 'achievements-column';
 
         // Get achievements array
         let achievementsArray = [];
@@ -167,14 +117,38 @@ export class StatsUI {
         container.appendChild(achievementsCard);
     }
 
+    // Helper to create a stat item safely
+    createStatItem(label, value, className = null) {
+        const item = document.createElement('div');
+        item.className = 'card-section stat-item';
+        if (className) {
+            // If className is provided, apply it to the value div or item?
+            // Based on previous usage, it seemed to be for the value style.
+            // But here I'll apply it to the item or value?
+            // Let's apply to value for now as that's where the style was.
+        }
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'card-label';
+        labelDiv.textContent = label;
+        item.appendChild(labelDiv);
+
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'card-value stat-value';
+        if (className) {
+            valueDiv.className += ' ' + className;
+        }
+        valueDiv.textContent = value;
+        item.appendChild(valueDiv);
+
+        return item;
+    }
+
     // Helper function for traditional rendering with two-column layout
     renderAchievementsTraditional(achievementsArray, container, leftColumn, rightColumn) {
         if (!achievementsArray || achievementsArray.length === 0) {
             const emptyMsg = document.createElement('div');
-            emptyMsg.className = 'card-section';
-            emptyMsg.style.padding = '10px';
-            emptyMsg.style.color = 'var(--text-dim)';
-            emptyMsg.style.gridColumn = '1 / -1';
+            emptyMsg.className = 'card-section empty-achievements';
             emptyMsg.textContent = 'No achievements yet.';
             container.appendChild(emptyMsg);
             return;
@@ -187,47 +161,15 @@ export class StatsUI {
                 window.achievements.unlockedAchievements.has(achievement.id) : false;
 
             const item = document.createElement('div');
-            item.className = 'card-section achievement-item';
-            item.style.padding = '10px';
-            item.style.borderRadius = '6px';
-            item.style.background = unlocked ? 'rgba(60, 227, 197, 0.2)' : 'rgba(0, 0, 0, 0.3)';
-            item.style.marginBottom = '8px';
-            item.style.position = 'relative';
-            item.style.zIndex = '1';
-            item.style.pointerEvents = 'auto';
-            item.style.visibility = 'visible';
-            item.style.display = 'block';
-            item.style.wordWrap = 'break-word';
-            item.style.overflowWrap = 'break-word';
-            item.style.maxWidth = '100%';
-            item.style.boxSizing = 'border-box';
-            item.style.overflow = 'visible';
-            item.style.lineHeight = '1.5';
+            item.className = `card-section achievement-item ${unlocked ? 'unlocked' : 'locked'}`;
 
             const labelDiv = document.createElement('div');
-            labelDiv.className = 'card-label';
-            labelDiv.style.color = unlocked ? 'var(--success)' : 'var(--text-dim)';
-            labelDiv.style.wordWrap = 'break-word';
-            labelDiv.style.overflowWrap = 'break-word';
-            labelDiv.style.marginBottom = '6px';
-            labelDiv.style.fontWeight = '600';
-            labelDiv.style.lineHeight = '1.5';
-            labelDiv.style.display = 'block';
-            labelDiv.style.whiteSpace = 'normal';
+            labelDiv.className = `card-label achievement-label ${unlocked ? 'text-success' : 'text-dim'}`;
             labelDiv.textContent = `${stripEmojisIfLowTier(unlocked ? '✓' : '○')} ${achievement.name || 'Unknown Achievement'}`;
             item.appendChild(labelDiv);
 
             const descDiv = document.createElement('div');
-            descDiv.className = 'card-description';
-            descDiv.style.fontSize = '11px';
-            descDiv.style.wordWrap = 'break-word';
-            descDiv.style.overflowWrap = 'break-word';
-            descDiv.style.maxWidth = '100%';
-            descDiv.style.lineHeight = '1.5';
-            descDiv.style.color = 'var(--text-dim)';
-            descDiv.style.display = 'block';
-            descDiv.style.whiteSpace = 'normal';
-            descDiv.style.marginBottom = '4px';
+            descDiv.className = 'card-description achievement-desc';
             descDiv.textContent = achievement.description || 'No description';
             item.appendChild(descDiv);
 
@@ -240,30 +182,26 @@ export class StatsUI {
 
                         const progressContainer = document.createElement('div');
                         progressContainer.className = 'achievement-progress';
-                        progressContainer.style.marginTop = '8px';
 
                         const barContainer = document.createElement('div');
-                        barContainer.className = 'progress-bar-container';
-                        barContainer.style.width = '100%';
-                        barContainer.style.height = '8px';
-                        barContainer.style.background = 'rgba(0, 0, 0, 0.3)';
-                        barContainer.style.borderRadius = '4px';
-                        barContainer.style.overflow = 'hidden';
+                        barContainer.className = 'progress-bar-container achievement-bar-container';
 
                         const bar = document.createElement('div');
                         bar.className = 'progress-bar';
-                        bar.style.width = `${percentage}%`;
-                        bar.style.height = '100%';
-                        bar.style.background = 'var(--primary, #FF2DAA)';
-                        bar.style.transition = 'width 0.3s';
+                        bar.style.width = `${percentage}%`; // Width is dynamic, but allowed on element style usually if not CSP strict on style attr?
+                        // CSP style-src 'self' 'unsafe-inline' is usually needed for style="width: ...".
+                        // If we can't use unsafe-inline, we need to use variables or just accept it if we have unsafe-inline.
+                        // The user objective says "Eliminating Remaining Inline Styles".
+                        // So I should use a variable or programmatic style.
+                        // But wait, I can set style.width in JS. That is allowed.
+                        // The issue is `innerHTML = '<div style="...">`.
+                        // Here I am using `bar.style.width = ...` which IS allowed.
+
                         barContainer.appendChild(bar);
                         progressContainer.appendChild(barContainer);
 
                         const textDiv = document.createElement('div');
-                        textDiv.className = 'progress-text';
-                        textDiv.style.fontSize = '11px';
-                        textDiv.style.color = 'var(--text-dim)';
-                        textDiv.style.marginTop = '4px';
+                        textDiv.className = 'progress-text achievement-progress-text';
                         textDiv.textContent = `${progress.current} / ${progress.target} (${percentage}%)`;
                         progressContainer.appendChild(textDiv);
 

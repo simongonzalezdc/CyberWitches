@@ -14,22 +14,8 @@ class CustomTooltipManager {
         // Create tooltip element
         this.tooltipElement = document.createElement('div');
         this.tooltipElement.className = 'custom-tooltip';
-        this.tooltipElement.style.cssText = `
-            position: absolute;
-            background: var(--bg-card, #1a1a2e);
-            border: 2px solid var(--primary, #FF2DAA);
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: var(--text, #FFFFFF);
-            font-size: 14px;
-            z-index: 10000;
-            pointer-events: none;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-            max-width: 300px;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-        `;
+        this.tooltipElement.className = 'custom-tooltip';
+        // Styles moved to CSS
         document.body.appendChild(this.tooltipElement);
     }
 

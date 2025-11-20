@@ -314,7 +314,7 @@ export class MeditationUI {
                         ${stats.damage.toFixed(1)} dmg | ${stats.range.toFixed(1)} range | ${stats.attackSpeed.toFixed(2)}/s
                     </div>
                     <div class="card-section">
-                        <div style="font-size: 9px; color: var(--text-dim); margin-bottom: 4px;">Upgrade to Lv${level + 1}:</div>
+                        <div class="tower-upgrade-label">Upgrade to Lv${level + 1}:</div>
                         ${upgradeCostItems}
                     </div>
                     <button class="btn-primary tower-upgrade-button" data-tower-gridx="${tower.gridX}" data-tower-gridy="${tower.gridY}" ${canUpgrade ? '' : 'disabled'}>

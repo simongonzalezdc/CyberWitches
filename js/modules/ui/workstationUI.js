@@ -33,11 +33,8 @@ export class WorkstationUI {
         // console.log('workstation-list container found, updating content...');
 
         // Ensure container is visible
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.gap = '15px';
-        container.style.visibility = 'visible';
-        container.style.opacity = '1';
+        container.classList.add('workstation-list-container');
+        // Styles moved to CSS
 
         // Filter unlocked workstations (with Air specialization unlock speed bonus)
         let unlockedWorkstations = PRODUCERS.filter(prod => {
@@ -70,12 +67,12 @@ export class WorkstationUI {
 
         if (unlockedWorkstations.length === 0) {
             container.innerHTML = `
-                <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+                <div class="empty-state-container">
                     <picture>
                         <source srcset="images/ui/empty-state.webp" type="image/webp">
-                        <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration" style="max-width: 400px; width: 100%; height: auto; margin-bottom: 20px; opacity: 0.8;">
+                        <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration">
                     </picture>
-                    <p class="empty-state-message" style="color: var(--text-dim); font-size: 18px;">No workstations yet. Cast spells to unlock them!</p>
+                    <p class="empty-state-message">No workstations yet. Cast spells to unlock them!</p>
                 </div>
             `;
             return;
@@ -104,20 +101,20 @@ export class WorkstationUI {
             if (tiers.length > 1) {
                 const tierHeader = document.createElement('div');
                 tierHeader.className = 'tier-header';
-                tierHeader.style.cssText = `
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    margin: 20px 0 10px 0;
-                    padding-bottom: 5px;
-                    border-bottom: 1px solid ${tierStyle.borderGlow};
-                    color: ${tierStyle.color};
-                    text-shadow: ${tierStyle.textShadow};
-                `;
+                // Dynamic styles applied directly
+                tierHeader.style.borderBottomColor = tierStyle.borderGlow;
+                tierHeader.style.color = tierStyle.color;
+                tierHeader.style.textShadow = tierStyle.textShadow;
+
                 tierHeader.innerHTML = `
-                    <span style="font-size: 24px;">${tierSymbol.symbol}</span>
-                    <h3 style="margin: 0; font-family: ${tierStyle.fontFamily};">Tier ${tierNum}</h3>
+                    <span class="tier-symbol">${tierSymbol.symbol}</span>
+                    <h3 class="tier-title">${tierNum === 0 ? 'Basic' : 'Tier ' + tierNum}</h3>
                 `;
+
+                // Apply font family programmatically
+                const title = tierHeader.querySelector('.tier-title');
+                if (title) title.style.fontFamily = tierStyle.fontFamily;
+
                 container.appendChild(tierHeader);
             }
 
@@ -189,7 +186,7 @@ export class WorkstationUI {
                     // Show inscription bonus if active
                     if (inscriptionMult > 1.0) {
                         productionHtml += `
-                            <div class="inscription-bonus" style="color: var(--accent); font-size: 0.8em; margin-top: 4px;">
+                            <div class="inscription-bonus">
                                 <i class="fas fa-bolt"></i> ${formatNumber((inscriptionMult - 1) * 100)}% Bonus
                             </div>
                         `;
@@ -201,7 +198,7 @@ export class WorkstationUI {
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="card-title-row">
-                            <h3 class="card-title" style="color: ${tierStyle.color}; text-shadow: ${tierStyle.textShadow}">${prodData.displayName}</h3>
+                            <h3 class="card-title">${prodData.displayName}</h3>
                             <span class="card-owned">Lv. ${formatNumber(owned)}</span>
                         </div>
                         <p class="card-desc">${prodData.description}</p>
@@ -223,6 +220,13 @@ export class WorkstationUI {
                         </div>
                     </div>
                 `;
+
+                // Apply dynamic styles programmatically
+                const cardTitle = card.querySelector('.card-title');
+                if (cardTitle) {
+                    cardTitle.style.color = tierStyle.color;
+                    cardTitle.style.textShadow = tierStyle.textShadow;
+                }
 
                 container.appendChild(card);
             }

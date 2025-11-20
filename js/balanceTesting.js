@@ -9,12 +9,12 @@ class BalanceTestingFramework {
         this.testResults = [];
         this.init();
     }
-    
+
     init() {
         // Set up test environment
         this.setupTestEnvironment();
     }
-    
+
     /**
      * Set up test environment
      */
@@ -24,7 +24,7 @@ class BalanceTestingFramework {
             this.createTestUI();
         }
     }
-    
+
     /**
      * Create test UI
      */
@@ -39,22 +39,23 @@ class BalanceTestingFramework {
             <button id="test-scaling">Test Scaling</button>
             <div id="test-results"></div>
         `;
-        testPanel.style.cssText = 'position: fixed; top: 100px; right: 20px; background: var(--bg-card); padding: 20px; border: 2px solid var(--border); border-radius: 8px; z-index: 10000; display: none;';
+        testPanel.className = 'balance-test-panel';
+        // Styles moved to CSS
         document.body.appendChild(testPanel);
-        
+
         // Add event listeners
         document.getElementById('test-progression')?.addEventListener('click', () => {
             this.testProgression();
         });
-        
+
         document.getElementById('test-economy')?.addEventListener('click', () => {
             this.testEconomy();
         });
-        
+
         document.getElementById('test-scaling')?.addEventListener('click', () => {
             this.testScaling();
         });
-        
+
         // Toggle panel with Ctrl+B
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
@@ -66,7 +67,7 @@ class BalanceTestingFramework {
             }
         });
     }
-    
+
     /**
      * Test progression curves
      */
@@ -76,12 +77,12 @@ class BalanceTestingFramework {
             timestamp: Date.now(),
             data: {}
         };
-        
+
         // Test AB generation over time
         const abGeneration = [];
         const testDuration = 3600; // 1 hour in seconds
         const tickRate = 0.1; // 10 ticks per second
-        
+
         for (let t = 0; t < testDuration; t += tickRate) {
             const abps = this.gameState.getAbPerSecond();
             abGeneration.push({
@@ -90,9 +91,9 @@ class BalanceTestingFramework {
                 totalAB: this.gameState.abTotalEarned
             });
         }
-        
+
         results.data.abGeneration = abGeneration;
-        
+
         // Test workstation unlock progression
         const unlockProgression = [];
         window.PRODUCERS?.forEach(prod => {
@@ -103,13 +104,13 @@ class BalanceTestingFramework {
                 growth: prod.growth || 1.15
             });
         });
-        
+
         results.data.unlockProgression = unlockProgression;
-        
+
         this.testResults.push(results);
         this.displayResults(results);
     }
-    
+
     /**
      * Test resource economy
      */
@@ -119,7 +120,7 @@ class BalanceTestingFramework {
             timestamp: Date.now(),
             data: {}
         };
-        
+
         // Test ingredient production rates
         const productionRates = {};
         window.PRODUCERS?.forEach(prod => {
@@ -130,9 +131,9 @@ class BalanceTestingFramework {
                 };
             }
         });
-        
+
         results.data.productionRates = productionRates;
-        
+
         // Test cost scaling
         const costScaling = {};
         window.PRODUCERS?.forEach(prod => {
@@ -143,13 +144,13 @@ class BalanceTestingFramework {
             }
             costScaling[prod.id] = scaling;
         });
-        
+
         results.data.costScaling = costScaling;
-        
+
         this.testResults.push(results);
         this.displayResults(results);
     }
-    
+
     /**
      * Test scaling mechanics
      */
@@ -159,7 +160,7 @@ class BalanceTestingFramework {
             timestamp: Date.now(),
             data: {}
         };
-        
+
         // Test upgrade effectiveness
         const upgradeEffectiveness = {};
         window.UPGRADES?.forEach(upg => {
@@ -169,9 +170,9 @@ class BalanceTestingFramework {
                 effectiveness: this.calculateUpgradeEffectiveness(upg)
             };
         });
-        
+
         results.data.upgradeEffectiveness = upgradeEffectiveness;
-        
+
         // Test prestige bonus scaling
         const prestigeScaling = {};
         window.PRESTIGE_BONUSES?.forEach(bonus => {
@@ -185,13 +186,13 @@ class BalanceTestingFramework {
             }
             prestigeScaling[bonus.id] = scaling;
         });
-        
+
         results.data.prestigeScaling = prestigeScaling;
-        
+
         this.testResults.push(results);
         this.displayResults(results);
     }
-    
+
     /**
      * Calculate production with upgrades
      * @param {string} producerId - Producer ID
@@ -201,15 +202,15 @@ class BalanceTestingFramework {
         const mult = this.gameState.getProductionMultiplier(producerId);
         const prod = window.PRODUCERS.find(p => p.id === producerId);
         if (!prod || !prod.production) return {};
-        
+
         const production = {};
         Object.keys(prod.production).forEach(key => {
             production[key] = (prod.production[key] || 0) * mult;
         });
-        
+
         return production;
     }
-    
+
     /**
      * Calculate next cost
      * @param {Object} producer - Producer object
@@ -218,23 +219,23 @@ class BalanceTestingFramework {
      */
     calculateNextCost(producer, owned) {
         if (!producer.recipe || !producer.growth) return 0;
-        
+
         // Calculate scaled recipe using the same logic as gameState
         const scaledRecipe = {};
         for (const ingId in producer.recipe) {
             const baseCost = producer.recipe[ingId];
             scaledRecipe[ingId] = Math.ceil(baseCost * Math.pow(producer.growth, owned));
         }
-        
+
         // Sum all ingredient costs to get total recipe cost
         let totalCost = 0;
         for (const ingId in scaledRecipe) {
             totalCost += scaledRecipe[ingId];
         }
-        
+
         return totalCost;
     }
-    
+
     /**
      * Calculate upgrade effectiveness
      * @param {Object} upgrade - Upgrade object
@@ -245,7 +246,7 @@ class BalanceTestingFramework {
         if (cost === 0) return 0;
         return upgrade.value / cost;
     }
-    
+
     /**
      * Calculate prestige cost
      * @param {Object} bonus - Prestige bonus object
@@ -256,7 +257,7 @@ class BalanceTestingFramework {
         // Simple linear scaling for prestige bonuses
         return (bonus.cost || 1) * level;
     }
-    
+
     /**
      * Display test results
      * @param {Object} results - Test results
@@ -264,7 +265,7 @@ class BalanceTestingFramework {
     displayResults(results) {
         const resultsDiv = document.getElementById('test-results');
         if (!resultsDiv) return;
-        
+
         const resultElement = document.createElement('div');
         resultElement.className = 'test-result';
         resultElement.innerHTML = `
@@ -272,11 +273,11 @@ class BalanceTestingFramework {
             <pre>${JSON.stringify(results.data, null, 2)}</pre>
         `;
         resultsDiv.appendChild(resultElement);
-        
+
         // Log to console
         console.log('Balance Test Results:', results);
     }
-    
+
     /**
      * Export test results
      * @returns {string} JSON string of results

@@ -147,8 +147,8 @@ export class HUDUI {
             const badge = document.createElement('div');
             badge.className = 'event-badge';
             badge.innerHTML = `
-                <div style="font-weight: bold; margin-bottom: 5px;">${event.name}</div>
-                <div style="font-size: 12px; color: var(--text-dim);">${remaining}s remaining</div>
+                <div class="event-name">${event.name}</div>
+                <div class="event-timer">${remaining}s remaining</div>
             `;
             eventsContainer.appendChild(badge);
         }

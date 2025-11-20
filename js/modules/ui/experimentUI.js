@@ -49,9 +49,7 @@ export class ExperimentUI {
 
                     // Ensure result label is visible
                     if (resultLabel) {
-                        resultLabel.style.display = 'block';
-                        resultLabel.style.visibility = 'visible';
-                        resultLabel.style.opacity = '1';
+                        resultLabel.classList.add('experiment-result-visible');
                     }
 
                     if (result.success) {
@@ -59,11 +57,11 @@ export class ExperimentUI {
                         resultLabel.innerHTML = `
                             <picture>
                                 <source srcset="images/ui/experiment-result.webp" type="image/webp">
-                                <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration" style="width: 256px; height: 256px; object-fit: contain; margin: 0 auto 20px; display: block;">
+                                <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration">
                             </picture>
                             <span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}
                         `;
-                        resultLabel.className = 'result-label success';
+                        resultLabel.className = 'result-label success experiment-result-visible';
 
                         // Celebration!
                         if (typeof window.pulseElement === 'function') {
@@ -78,8 +76,8 @@ export class ExperimentUI {
                         }
                     } else {
                         console.log('Experiment failed:', result.message);
-                        resultLabel.innerHTML = `<div class="result-label error" style="color: var(--danger); padding: 15px; font-size: 16px; text-align: center;">${result.message}</div>`;
-                        resultLabel.className = 'result-box';
+                        resultLabel.innerHTML = `<div class="result-label error experiment-error-message">${result.message}</div>`;
+                        resultLabel.className = 'result-box experiment-result-visible';
 
                         // Shake on failure
                         if (typeof window.shakeElement === 'function') {
@@ -95,11 +93,8 @@ export class ExperimentUI {
                     console.error('Error in experiment:', error);
                     const resultLabel = document.getElementById('experiment-result');
                     if (resultLabel) {
-                        resultLabel.innerHTML = `<div class="result-label error" style="color: var(--danger); padding: 15px; font-size: 16px; text-align: center;">Experiment failed. Try again.</div>`;
-                        resultLabel.className = 'result-box';
-                        resultLabel.style.display = 'block';
-                        resultLabel.style.visibility = 'visible';
-                        resultLabel.style.opacity = '1';
+                        resultLabel.innerHTML = `<div class="result-label error experiment-error-message">Experiment failed. Try again.</div>`;
+                        resultLabel.className = 'result-box experiment-result-visible';
                     }
                     showNotification('Experiment failed. Try again.', 'error');
                 }
@@ -136,19 +131,13 @@ export class ExperimentUI {
                 `<div class="card-value">${outputId}: ${window.formatShort(amount)}</div>`
             ).join('')}
                 </div>
-                <button class="btn-primary" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
+                <button class="btn-primary craft-recipe-btn" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
             `;
 
             // Attach event listener directly - use event delegation for better reliability
             const button = card.querySelector('button[data-action="craft-recipe"]');
             if (button && typeof window.craftRecipe === 'function') {
-                // Ensure button is visible and clickable
-                button.style.position = 'relative';
-                button.style.zIndex = '100';
-                button.style.pointerEvents = 'auto';
-                button.style.cursor = 'pointer';
-                button.style.visibility = 'visible';
-                button.style.display = 'inline-block';
+                // Styles handled by CSS class .craft-recipe-btn
 
                 // Attach handler directly - use capture phase to fire before unified handler
                 button.addEventListener('click', (e) => {

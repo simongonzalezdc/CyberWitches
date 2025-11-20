@@ -11,14 +11,14 @@ class FeatureIndicatorManager {
         this.lockedFeatures = new Map();
         this.init();
     }
-    
+
     init() {
         // Set up indicators for locked features
         this.setupTabIndicators();
         this.setupWorkstationIndicators();
         this.setupUpgradeIndicators();
     }
-    
+
     /**
      * Mark feature as locked
      * @param {string} featureId - Feature ID
@@ -32,7 +32,7 @@ class FeatureIndicatorManager {
             isUnlocked: false
         });
     }
-    
+
     /**
      * Add lock indicator to element
      * @param {HTMLElement} element - Element to add indicator to
@@ -41,62 +41,49 @@ class FeatureIndicatorManager {
      */
     addLockIndicator(element, unlockCondition, isLocked = true) {
         if (!element) return;
-        
+
         // Remove existing indicator
         const existing = element.querySelector('.lock-indicator');
         if (existing) {
             existing.remove();
         }
-        
+
         if (!isLocked) {
             // Remove lock class if unlocked
             element.classList.remove('locked');
             return;
         }
-        
+
         // Add lock class
         element.classList.add('locked');
-        
+
         // Create lock indicator
         const indicator = document.createElement('div');
         indicator.className = 'lock-indicator';
-        indicator.style.cssText = `
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 24px;
-            height: 24px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text, #FFFFFF);
-            font-size: 16px;
-            z-index: 10;
-        `;
+        // Styles moved to CSS
+
         indicator.innerHTML = '🔒';
         indicator.setAttribute('aria-label', `Locked: ${unlockCondition}`);
         indicator.setAttribute('title', `Unlocks at: ${unlockCondition}`);
-        
+
         // Add tooltip
         indicator.addEventListener('mouseenter', () => {
             this.showTooltip(indicator, unlockCondition);
         });
-        
+
         indicator.addEventListener('mouseleave', () => {
             this.hideTooltip();
         });
-        
+
         // Make element position relative if not already
         const position = window.getComputedStyle(element).position;
         if (position === 'static') {
             element.style.position = 'relative';
         }
-        
+
         element.appendChild(indicator);
     }
-    
+
     /**
      * Show tooltip
      * @param {HTMLElement} element - Element to show tooltip for
@@ -108,32 +95,20 @@ class FeatureIndicatorManager {
         if (existing) {
             existing.remove();
         }
-        
+
         const tooltip = document.createElement('div');
         tooltip.className = 'feature-tooltip';
         tooltip.textContent = text;
-        tooltip.style.cssText = `
-            position: absolute;
-            background: var(--bg-card, #1a1a2e);
-            border: 2px solid var(--primary, #FF2DAA);
-            border-radius: 8px;
-            padding: 12px;
-            color: var(--text, #FFFFFF);
-            font-size: 14px;
-            z-index: 10000;
-            pointer-events: none;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-            max-width: 300px;
-        `;
-        
+        // Styles moved to CSS
+
         document.body.appendChild(tooltip);
-        
+
         // Position tooltip
         const rect = element.getBoundingClientRect();
         tooltip.style.left = `${rect.right + 10}px`;
         tooltip.style.top = `${rect.top}px`;
     }
-    
+
     /**
      * Hide tooltip
      */
@@ -143,7 +118,7 @@ class FeatureIndicatorManager {
             tooltip.remove();
         }
     }
-    
+
     /**
      * Setup tab indicators for locked tabs
      */
@@ -151,14 +126,14 @@ class FeatureIndicatorManager {
         // Check for locked tabs (Meditation, Boons unlock after prestige)
         if (window.gameState) {
             const prestigeCount = window.gameState.prestigeCount || 0;
-            
+
             // Meditation tab unlocks at prestige 1
             const meditationTab = document.querySelector('[data-tab="meditation"]');
             if (meditationTab) {
                 // Show tab instead of hiding it
                 meditationTab.style.display = '';
                 meditationTab.removeAttribute('style');
-                
+
                 if (prestigeCount < 1) {
                     meditationTab.classList.add('locked');
                     meditationTab.setAttribute('data-unlock-condition', 'Prestige 1');
@@ -174,14 +149,14 @@ class FeatureIndicatorManager {
                     this.addLockIndicator(meditationTab, '', false);
                 }
             }
-            
+
             // Boons tab unlocks at prestige 1
             const boonsTab = document.querySelector('[data-tab="boons"]');
             if (boonsTab) {
                 // Show tab instead of hiding it
                 boonsTab.style.display = '';
                 boonsTab.removeAttribute('style');
-                
+
                 if (prestigeCount < 1) {
                     boonsTab.classList.add('locked');
                     boonsTab.setAttribute('data-unlock-condition', 'Prestige 1');
@@ -199,7 +174,7 @@ class FeatureIndicatorManager {
             }
         }
     }
-    
+
     /**
      * Setup workstation indicators
      */
@@ -207,7 +182,7 @@ class FeatureIndicatorManager {
         // This will be called when workstations are displayed
         // Implementation in game.js
     }
-    
+
     /**
      * Setup upgrade indicators
      */
@@ -215,7 +190,7 @@ class FeatureIndicatorManager {
         // This will be called when upgrades are displayed
         // Implementation in game.js
     }
-    
+
     /**
      * Update all indicators
      */

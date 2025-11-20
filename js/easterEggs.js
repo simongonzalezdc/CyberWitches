@@ -36,25 +36,25 @@ export class EasterEggsSystem {
         this.lastClickTime = 0;
         this.comboCount = 0;
         this.lastComboTime = 0;
-        
+
         // Easter egg state
         this.konamiCode = [];
         this.textInputBuffer = '';
         this.specialDates = new Map();
-        
+
         // Initialize Easter eggs
         this.initializeEasterEggs();
-        
+
         // Load discovered eggs
         this.loadDiscoveredEggs();
-        
+
         // Set up event listeners
         this.setupEventListeners();
-        
+
         // Check for special dates
         this.checkSpecialDates();
     }
-    
+
     /**
      * Initialize all Easter eggs
      * @private
@@ -72,7 +72,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Rapid Click Easter Egg
         this.easterEggs.set('rapid_click', {
             id: 'rapid_click',
@@ -85,7 +85,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Midnight Magic Easter Egg
         this.easterEggs.set('midnight_magic', {
             id: 'midnight_magic',
@@ -98,7 +98,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Combo Master Easter Egg
         this.easterEggs.set('combo_master', {
             id: 'combo_master',
@@ -111,7 +111,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Secret Command Easter Egg
         this.easterEggs.set('secret_command', {
             id: 'secret_command',
@@ -124,7 +124,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Number of the Beast Easter Egg
         this.easterEggs.set('number_of_the_beast', {
             id: 'number_of_the_beast',
@@ -137,7 +137,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Perfect Balance Easter Egg
         this.easterEggs.set('perfect_balance', {
             id: 'perfect_balance',
@@ -150,7 +150,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Binary Day Easter Egg
         this.easterEggs.set('binary_day', {
             id: 'binary_day',
@@ -163,7 +163,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Pi Day Easter Egg
         this.easterEggs.set('pi_day', {
             id: 'pi_day',
@@ -176,7 +176,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Friday the 13th Easter Egg
         this.easterEggs.set('friday_13th', {
             id: 'friday_13th',
@@ -189,7 +189,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Developer Mode Easter Egg
         this.easterEggs.set('developer_mode', {
             id: 'developer_mode',
@@ -202,7 +202,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Quantum Entanglement Easter Egg
         this.easterEggs.set('quantum_entanglement', {
             id: 'quantum_entanglement',
@@ -215,7 +215,7 @@ export class EasterEggsSystem {
             discoveryCount: 0,
             lastDiscovery: 0
         });
-        
+
         // Hexadecimal Mastery Easter Egg
         this.easterEggs.set('hexadecimal_mastery', {
             id: 'hexadecimal_mastery',
@@ -229,7 +229,7 @@ export class EasterEggsSystem {
             lastDiscovery: 0
         });
     }
-    
+
     /**
      * Set up event listeners for Easter egg detection
      * @private
@@ -239,18 +239,18 @@ export class EasterEggsSystem {
         document.addEventListener('keydown', (event) => {
             this.handleKeyPress(event);
         });
-        
+
         // Click events for rapid clicking
         document.addEventListener('click', (event) => {
             this.handleClick(event);
         });
-        
+
         // Time-based checks
         setInterval(() => {
             this.checkTimeBasedEggs();
         }, 60000); // Check every minute
     }
-    
+
     /**
      * Handle key press events for sequence detection
      * @param {KeyboardEvent} event - Keyboard event
@@ -258,34 +258,34 @@ export class EasterEggsSystem {
      */
     handleKeyPress(event) {
         const key = event.key;
-        
+
         // Check Konami code
         const konamiEgg = this.easterEggs.get('konami_code');
         if (konamiEgg && !konamiEgg.discovered) {
             this.konamiCode.push(key);
-            
+
             // Keep only last 9 keys
             if (this.konamiCode.length > 9) {
                 this.konamiCode.shift();
             }
-            
+
             // Check if sequence matches
-            const sequenceMatches = konamiEgg.trigger.every((triggerKey, index) => 
+            const sequenceMatches = konamiEgg.trigger.every((triggerKey, index) =>
                 this.konamiCode[index] === triggerKey
             );
-            
+
             if (sequenceMatches) {
                 this.discoverEasterEgg('konami_code');
             }
         }
-        
+
         // Check text input for secret commands
         const secretCommandEgg = this.easterEggs.get('secret_command');
         const developerModeEgg = this.easterEggs.get('developer_mode');
-        
-        if ((secretCommandEgg && !secretCommandEgg.discovered) || 
+
+        if ((secretCommandEgg && !secretCommandEgg.discovered) ||
             (developerModeEgg && !developerModeEgg.discovered)) {
-            
+
             // Build text buffer
             if (key.length === 1) {
                 this.textInputBuffer += key.toLowerCase();
@@ -295,14 +295,14 @@ export class EasterEggsSystem {
                 this.checkTextInputPhrases();
                 this.textInputBuffer = '';
             }
-            
+
             // Keep buffer manageable
             if (this.textInputBuffer.length > 100) {
                 this.textInputBuffer = this.textInputBuffer.slice(-50);
             }
         }
     }
-    
+
     /**
      * Check text input for secret phrases
      * @private
@@ -310,7 +310,7 @@ export class EasterEggsSystem {
     checkTextInputPhrases() {
         const secretCommandEgg = this.easterEggs.get('secret_command');
         const developerModeEgg = this.easterEggs.get('developer_mode');
-        
+
         // Check secret command phrases
         if (secretCommandEgg && !secretCommandEgg.discovered) {
             for (const phrase of secretCommandEgg.trigger.phrases) {
@@ -320,7 +320,7 @@ export class EasterEggsSystem {
                 }
             }
         }
-        
+
         // Check developer mode phrases
         if (developerModeEgg && !developerModeEgg.discovered) {
             for (const phrase of developerModeEgg.trigger.phrases) {
@@ -331,7 +331,7 @@ export class EasterEggsSystem {
             }
         }
     }
-    
+
     /**
      * Handle click events for rapid clicking detection
      * @param {MouseEvent} event - Mouse event
@@ -339,33 +339,33 @@ export class EasterEggsSystem {
      */
     handleClick(event) {
         const now = Date.now();
-        
+
         // Add to click pattern
         this.clickPattern.push(now);
-        
+
         // Keep only clicks within last 5 seconds
         this.clickPattern = this.clickPattern.filter(time => now - time < 5000);
-        
+
         // Check rapid click Easter egg
         const rapidClickEgg = this.easterEggs.get('rapid_click');
         if (rapidClickEgg && !rapidClickEgg.discovered) {
             const recentClicks = this.clickPattern.filter(time => now - time < rapidClickEgg.trigger.timeframe);
-            
+
             if (recentClicks.length >= rapidClickEgg.trigger.count) {
                 this.discoverEasterEgg('rapid_click');
             }
         }
-        
+
         this.lastClickTime = now;
     }
-    
+
     /**
      * Check time-based Easter eggs
      * @private
      */
     checkTimeBasedEggs() {
         const now = new Date();
-        
+
         // Check midnight magic
         const midnightEgg = this.easterEggs.get('midnight_magic');
         if (midnightEgg && !midnightEgg.discovered) {
@@ -373,7 +373,7 @@ export class EasterEggsSystem {
                 this.discoverEasterEgg('midnight_magic');
             }
         }
-        
+
         // Check binary day
         const binaryDayEgg = this.easterEggs.get('binary_day');
         if (binaryDayEgg && !binaryDayEgg.discovered) {
@@ -381,16 +381,16 @@ export class EasterEggsSystem {
                 this.discoverEasterEgg('binary_day');
             }
         }
-        
+
         // Check Pi day
         const piDayEgg = this.easterEggs.get('pi_day');
         if (piDayEgg && !piDayEgg.discovered) {
-            if (now.getMonth() === 2 && now.getDate() === 14 && 
+            if (now.getMonth() === 2 && now.getDate() === 14 &&
                 now.getHours() === 13 && now.getMinutes() === 59) {
                 this.discoverEasterEgg('pi_day');
             }
         }
-        
+
         // Check Friday the 13th
         const friday13thEgg = this.easterEggs.get('friday_13th');
         if (friday13thEgg && !friday13thEgg.discovered) {
@@ -399,7 +399,7 @@ export class EasterEggsSystem {
             }
         }
     }
-    
+
     /**
      * Check for special dates
      * @private
@@ -407,13 +407,13 @@ export class EasterEggsSystem {
     checkSpecialDates() {
         const now = new Date();
         const dateString = `${now.getMonth() + 1}-${now.getDate()}`;
-        
+
         // Store special dates for reference
         this.specialDates.set('new_year', `${now.getFullYear()}-1-1`);
         this.specialDates.set('halloween', `${now.getFullYear()}-10-31`);
         this.specialDates.set('christmas', `${now.getFullYear()}-12-25`);
     }
-    
+
     /**
      * Discover an Easter egg
      * @param {string} eggId - Easter egg ID
@@ -425,44 +425,44 @@ export class EasterEggsSystem {
         if (!egg || egg.discovered) {
             return;
         }
-        
+
         // Mark as discovered
         egg.discovered = true;
         egg.discoveryCount++;
         egg.lastDiscovery = Date.now();
-        
+
         this.discoveredEggs.add(eggId);
-        
+
         // Save discovery
         this.saveDiscoveredEggs();
-        
+
         // Trigger Easter egg action
         try {
             egg.action(context);
         } catch (error) {
             handleError(error, 'easterEggAction');
         }
-        
+
         // Show discovery notification
         this.showDiscoveryNotification(egg);
     }
-    
+
     /**
      * Trigger Konami code Easter egg
      * @private
      */
     triggerKonamiCode() {
         // Add special visual effects
-        document.body.style.animation = 'konamiEffect 2s ease-in-out';
-        
+        document.body.classList.add('konami-effect');
+
         // Play special sound
         audioSystem.playSound('level_up');
-        
+
         // Create particle effect
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         // Particle effects removed for memory optimization
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Konami Code Master!',
@@ -470,13 +470,13 @@ export class EasterEggsSystem {
             'epic',
             'Extra Lives: +30'
         );
-        
+
         // Reset animation after completion
         setTimeout(() => {
-            document.body.style.animation = '';
+            document.body.classList.remove('konami-effect');
         }, 2000);
     }
-    
+
     /**
      * Trigger rapid click Easter egg
      * @private
@@ -485,13 +485,12 @@ export class EasterEggsSystem {
         // Enable hyper clicking mode
         const castButton = document.getElementById('cast-button');
         if (castButton) {
-            castButton.style.animation = 'hyperClickPulse 0.5s ease-in-out infinite';
-            castButton.style.boxShadow = '0 0 20px rgba(255, 0, 255, 0.8)';
+            castButton.classList.add('hyper-click-active');
         }
-        
+
         // Play hyper sound
         audioSystem.playSound('cast');
-        
+
         // Show notification
         celebrationAnimations.createAchievementCelebration(
             'Hyper Clicking Activated!',
@@ -499,32 +498,31 @@ export class EasterEggsSystem {
             'rare',
             '2x Casting Speed (5 min)'
         );
-        
+
         // Reset after 5 minutes
         setTimeout(() => {
             if (castButton) {
-                castButton.style.animation = '';
-                castButton.style.boxShadow = '';
+                castButton.classList.remove('hyper-click-active');
             }
         }, 300000);
     }
-    
+
     /**
      * Trigger midnight magic Easter egg
      * @private
      */
     triggerMidnightMagic() {
         // Add mystical visual effect
-        document.body.style.filter = 'hue-rotate(180deg) saturate(1.5)';
-        
+        document.body.classList.add('midnight-magic-effect');
+
         // Play mystical sound
         audioSystem.playSound('ritual_complete');
-        
+
         // Create magical particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         // Particle effects removed for memory optimization
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Midnight Magic!',
@@ -532,13 +530,13 @@ export class EasterEggsSystem {
             'epic',
             '2x Production (1 hour)'
         );
-        
+
         // Reset after 1 hour
         setTimeout(() => {
-            document.body.style.filter = '';
+            document.body.classList.remove('midnight-magic-effect');
         }, 3600000);
     }
-    
+
     /**
      * Trigger combo master Easter egg
      * @private
@@ -546,27 +544,12 @@ export class EasterEggsSystem {
     triggerComboMaster() {
         // Add matrix effect
         const matrixRain = document.createElement('div');
-        matrixRain.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9998;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0, 255, 0, 0.1) 2px
-            );
-            animation: matrixRain 3s linear infinite;
-        `;
+        matrixRain.className = 'matrix-rain';
         document.body.appendChild(matrixRain);
-        
+
         // Play matrix sound
         audioSystem.playSound('level_up');
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Combo Master!',
@@ -574,7 +557,7 @@ export class EasterEggsSystem {
             'legendary',
             'Free Upgrades (30 sec)'
         );
-        
+
         // Remove effect after 30 seconds
         setTimeout(() => {
             if (matrixRain.parentNode) {
@@ -582,7 +565,7 @@ export class EasterEggsSystem {
             }
         }, 30000);
     }
-    
+
     /**
      * Trigger secret command Easter egg
      * @param {string} phrase - Secret phrase that was entered
@@ -591,12 +574,12 @@ export class EasterEggsSystem {
     triggerSecretCommand(phrase) {
         // Play magical sound
         audioSystem.playSound('ritual_complete');
-        
+
         // Create magical particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         // Particle effects removed for memory optimization
-        
+
         // Show celebration with phrase-specific message
         const messages = {
             'abra cadabra': 'Ancient magic unlocked! +100 AB!',
@@ -604,9 +587,9 @@ export class EasterEggsSystem {
             'expecto patronum': 'Patronus charm learned! Ghosts repelled!',
             'wingardium leviosa': 'Levitation mastered! Objects float!'
         };
-        
+
         const message = messages[phrase] || 'Ancient knowledge revealed!';
-        
+
         celebrationAnimations.createAchievementCelebration(
             'Secret Command!',
             message,
@@ -614,18 +597,18 @@ export class EasterEggsSystem {
             'Ancient Knowledge'
         );
     }
-    
+
     /**
      * Trigger number of the beast Easter egg
      * @private
      */
     triggerNumberOfTheBeast() {
         // Add demonic visual effect
-        document.body.style.filter = 'invert(1) hue-rotate(180deg)';
-        
+        document.body.classList.add('demonic-effect');
+
         // Play evil sound
         audioSystem.playSound('error');
-        
+
         // Show dark celebration
         celebrationAnimations.createAchievementCelebration(
             'Number of the Beast!',
@@ -633,29 +616,29 @@ export class EasterEggsSystem {
             'epic',
             '+6.66% Production'
         );
-        
+
         // Reset after 10 seconds
         setTimeout(() => {
-            document.body.style.filter = '';
+            document.body.classList.remove('demonic-effect');
         }, 10000);
     }
-    
+
     /**
      * Trigger perfect balance Easter egg
      * @private
      */
     triggerPerfectBalance() {
         // Add harmony effect
-        document.body.style.filter = 'sepia(0.2) saturate(1.2)';
-        
+        document.body.classList.add('harmony-effect');
+
         // Play harmony sound
         audioSystem.playSound('achievement');
-        
+
         // Create balance particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         particleEffects.createAchievementEffect(centerX, centerY);
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Perfect Balance!',
@@ -663,24 +646,24 @@ export class EasterEggsSystem {
             'rare',
             '+25% Production (10 min)'
         );
-        
+
         // Reset after 10 minutes
         setTimeout(() => {
-            document.body.style.filter = '';
+            document.body.classList.remove('harmony-effect');
         }, 600000);
     }
-    
+
     /**
      * Trigger binary day Easter egg
      * @private
      */
     triggerBinaryDay() {
         // Add binary effect
-        document.body.style.filter = 'contrast(1.5) grayscale(1)';
-        
+        document.body.classList.add('binary-effect');
+
         // Play digital sound
         audioSystem.playSound('notification');
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Binary Day!',
@@ -688,29 +671,29 @@ export class EasterEggsSystem {
             'rare',
             'Binary Production'
         );
-        
+
         // Reset after 24 hours
         setTimeout(() => {
-            document.body.style.filter = '';
+            document.body.classList.remove('binary-effect');
         }, 86400000);
     }
-    
+
     /**
      * Trigger Pi day Easter egg
      * @private
      */
     triggerPiDay() {
         // Add mathematical effect
-        document.body.style.filter = 'hue-rotate(120deg) saturate(1.5)';
-        
+        document.body.classList.add('pi-day-effect');
+
         // Play mathematical sound
         audioSystem.playSound('achievement');
-        
+
         // Create pi particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         // Particle effects removed for memory optimization
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Pi Day!',
@@ -718,24 +701,24 @@ export class EasterEggsSystem {
             'epic',
             'Perfect Circles'
         );
-        
+
         // Reset after 24 hours
         setTimeout(() => {
-            document.body.style.filter = '';
+            document.body.classList.remove('pi-day-effect');
         }, 86400000);
     }
-    
+
     /**
      * Trigger Friday the 13th Easter egg
      * @private
      */
     triggerFriday13th() {
         // Add unlucky effect
-        document.body.style.filter = 'sepia(0.3) contrast(1.2)';
-        
+        document.body.classList.add('unlucky-effect');
+
         // Play spooky sound
         audioSystem.playSound('error');
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Friday the 13th!',
@@ -743,13 +726,13 @@ export class EasterEggsSystem {
             'rare',
             '+13% Production'
         );
-        
+
         // Reset after 24 hours
         setTimeout(() => {
-            document.body.style.filter = '';
+            document.body.classList.remove('unlucky-effect');
         }, 86400000);
     }
-    
+
     /**
      * Trigger developer mode Easter egg
      * @param {string} phrase - Phrase that triggered the egg
@@ -758,24 +741,9 @@ export class EasterEggsSystem {
     triggerDeveloperMode(phrase) {
         // Add developer console
         const devConsole = document.createElement('div');
-        devConsole.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 300px;
-            height: 200px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #00ff00;
-            border-radius: 5px;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            padding: 10px;
-            z-index: 9999;
-            overflow-y: auto;
-        `;
+        devConsole.className = 'dev-console-overlay';
         devConsole.innerHTML = `
-            <div style="color: #00ff00; font-weight: bold; margin-bottom: 10px;">
+            <div class="dev-console-title">
                 DEVELOPER MODE ACTIVATED
             </div>
             <div>Access granted. Debug tools enabled.</div>
@@ -785,10 +753,10 @@ export class EasterEggsSystem {
             <div>- max_level()</div>
         `;
         document.body.appendChild(devConsole);
-        
+
         // Play admin sound
         audioSystem.playSound('level_up');
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Developer Mode!',
@@ -796,7 +764,7 @@ export class EasterEggsSystem {
             'legendary',
             'Debug Console'
         );
-        
+
         // Remove after 5 minutes
         setTimeout(() => {
             if (devConsole.parentNode) {
@@ -804,7 +772,7 @@ export class EasterEggsSystem {
             }
         }, 300000);
     }
-    
+
     /**
      * Trigger quantum entanglement Easter egg
      * @private
@@ -812,15 +780,15 @@ export class EasterEggsSystem {
     triggerQuantumEntanglement() {
         // Add quantum effect
         document.body.style.filter = 'blur(1px) hue-rotate(90deg)';
-        
+
         // Play quantum sound
         audioSystem.playSound('ritual_complete');
-        
+
         // Create quantum particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         // Particle effects removed for memory optimization
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Quantum Entanglement!',
@@ -828,13 +796,13 @@ export class EasterEggsSystem {
             'legendary',
             'Quantum Entanglement'
         );
-        
+
         // Reset after 1 hour
         setTimeout(() => {
             document.body.style.filter = '';
         }, 3600000);
     }
-    
+
     /**
      * Trigger hexadecimal mastery Easter egg
      * @private
@@ -842,15 +810,15 @@ export class EasterEggsSystem {
     triggerHexadecimalMastery() {
         // Add hex effect
         document.body.style.filter = 'hue-rotate(270deg) saturate(2)';
-        
+
         // Play hex sound
         audioSystem.playSound('level_up');
-        
+
         // Create hex particles
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
         // Particle effects removed for memory optimization
-        
+
         // Show celebration
         celebrationAnimations.createAchievementCelebration(
             'Hexadecimal Mastery!',
@@ -858,13 +826,13 @@ export class EasterEggsSystem {
             'legendary',
             '2.55x Production'
         );
-        
+
         // Reset after 30 minutes
         setTimeout(() => {
             document.body.style.filter = '';
         }, 1800000);
     }
-    
+
     /**
      * Show discovery notification
      * @param {EasterEgg} egg - Discovered Easter egg
@@ -873,37 +841,22 @@ export class EasterEggsSystem {
     showDiscoveryNotification(egg) {
         // Create notification element
         const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            z-index: 10000;
-            animation: easterEggNotification 0.5s ease-out;
-            max-width: 300px;
-        `;
-        
+        notification.className = 'easter-egg-notification';
+
         notification.innerHTML = `
-            <div style="font-size: 16px; margin-bottom: 5px;">🥚 EASTER EGG FOUND!</div>
-            <div style="font-weight: normal;">${egg.name}</div>
-            <div style="font-size: 12px; margin-top: 5px; opacity: 0.8;">${egg.description}</div>
+            <div class="easter-egg-title">🥚 EASTER EGG FOUND!</div>
+            <div class="easter-egg-name">${egg.name}</div>
+            <div class="easter-egg-desc">${egg.description}</div>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         // Play discovery sound
         audioSystem.playSound('achievement');
-        
+
         // Particle effects removed for memory optimization
         // Achievement effect removed
-        
+
         // Remove notification after 5 seconds
         setTimeout(() => {
             if (notification.parentNode) {
@@ -916,7 +869,7 @@ export class EasterEggsSystem {
             }
         }, 5000);
     }
-    
+
     /**
      * Check combo-based Easter eggs
      * @param {number} multiplier - Current combo multiplier
@@ -927,7 +880,7 @@ export class EasterEggsSystem {
             this.discoverEasterEgg('combo_master');
         }
     }
-    
+
     /**
      * Check AB amount Easter eggs
      * @param {number} abAmount - Current AB amount
@@ -938,7 +891,7 @@ export class EasterEggsSystem {
             this.discoverEasterEgg('number_of_the_beast');
         }
     }
-    
+
     /**
      * Check workstation count Easter eggs
      * @param {number} workstationCount - Current workstation count
@@ -948,13 +901,13 @@ export class EasterEggsSystem {
         if (quantumEgg && !quantumEgg.discovered && workstationCount >= quantumEgg.trigger.workstationCount) {
             this.discoverEasterEgg('quantum_entanglement');
         }
-        
+
         const hexEgg = this.easterEggs.get('hexadecimal_mastery');
         if (hexEgg && !hexEgg.discovered && workstationCount >= hexEgg.trigger.workstationCount) {
             this.discoverEasterEgg('hexadecimal_mastery');
         }
     }
-    
+
     /**
      * Check ingredient balance Easter eggs
      * @param {Object} ingredients - Current ingredient amounts
@@ -966,13 +919,13 @@ export class EasterEggsSystem {
             const hasPerfectBalance = Object.entries(requiredIngredients).every(
                 ([ingredient, amount]) => Math.floor(ingredients[ingredient] || 0) === amount
             );
-            
+
             if (hasPerfectBalance) {
                 this.discoverEasterEgg('perfect_balance');
             }
         }
     }
-    
+
     /**
      * Load discovered Easter eggs from localStorage
      * @private
@@ -983,7 +936,7 @@ export class EasterEggsSystem {
             if (saved) {
                 const discovered = JSON.parse(saved);
                 this.discoveredEggs = new Set(discovered);
-                
+
                 // Update egg discovery status
                 for (const eggId of this.discoveredEggs) {
                     const egg = this.easterEggs.get(eggId);
@@ -996,7 +949,7 @@ export class EasterEggsSystem {
             handleError(error, 'loadEasterEggs');
         }
     }
-    
+
     /**
      * Save discovered Easter eggs to localStorage
      * @private
@@ -1011,7 +964,7 @@ export class EasterEggsSystem {
             handleError(error, 'saveEasterEggs');
         }
     }
-    
+
     /**
      * Get Easter egg statistics
      * @returns {Object} Easter egg statistics
@@ -1020,7 +973,7 @@ export class EasterEggsSystem {
         const totalEggs = this.easterEggs.size;
         const discoveredCount = this.discoveredEggs.size;
         const discoveryRate = totalEggs > 0 ? (discoveredCount / totalEggs) * 100 : 0;
-        
+
         return {
             totalEggs: totalEggs,
             discoveredCount: discoveredCount,
@@ -1029,7 +982,7 @@ export class EasterEggsSystem {
             specialDates: Object.fromEntries(this.specialDates)
         };
     }
-    
+
     /**
      * Reset all Easter eggs
      */
@@ -1038,65 +991,24 @@ export class EasterEggsSystem {
         this.konamiCode = [];
         this.clickPattern = [];
         this.textInputBuffer = '';
-        
+
         // Reset all egg discovery status
         for (const egg of this.easterEggs.values()) {
             egg.discovered = false;
             egg.discoveryCount = 0;
             egg.lastDiscovery = 0;
         }
-        
+
         // Save reset state
         this.saveDiscoveredEggs();
     }
-    
+
     /**
      * Add custom CSS for Easter egg effects
      * @private
      */
     addEasterEggStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes konamiEffect {
-                0% { filter: hue-rotate(0deg); }
-                50% { filter: hue-rotate(180deg) saturate(2); }
-                100% { filter: hue-rotate(360deg); }
-            }
-            
-            @keyframes hyperClickPulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-            }
-            
-            @keyframes matrixRain {
-                0% { transform: translateY(-100%); }
-                100% { transform: translateY(100%); }
-            }
-            
-            @keyframes easterEggNotification {
-                0% {
-                    opacity: 0;
-                    transform: translateX(100%);
-                }
-                100% {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-            
-            @keyframes easterEggNotificationFade {
-                0% {
-                    opacity: 1;
-                    transform: translateX(0) scale(1);
-                }
-                100% {
-                    opacity: 0;
-                    transform: translateX(100%) scale(0.8);
-                }
-            }
-        `;
-        
-        document.head.appendChild(style);
+        // Styles moved to CSS
     }
 }
 

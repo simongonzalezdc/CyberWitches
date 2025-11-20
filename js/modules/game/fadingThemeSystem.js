@@ -136,16 +136,7 @@ export class FadingThemeSystem {
                 if (!indicator) {
                     indicator = document.createElement('div');
                     indicator.className = `element-fade-indicator element-fade-indicator-${element}`;
-                    indicator.style.cssText = `
-                        width: 40px;
-                        height: 3px;
-                        background: currentColor;
-                        border-radius: 2px;
-                        opacity: 0.4;
-                        margin-top: 4px;
-                        pointer-events: none;
-                        display: none;
-                    `;
+                    // Styles moved to CSS
                     counter.appendChild(indicator);
                 }
                 this.indicatorElements.set(element, indicator);

@@ -1100,19 +1100,20 @@ function initUI() {
 
     // Initialize feedback loop manager
     if (feedbackLoopManager) {
-        // Feedback loop manager starts automatically
     }
 
     // Force visibility of main game area
     const mainGame = document.querySelector('.main-game');
     if (mainGame) {
-        mainGame.style.cssText = 'margin-top: 80px !important; padding: 20px !important; max-width: 1400px !important; margin-left: auto !important; margin-right: auto !important; position: relative !important; z-index: 1 !important; pointer-events: auto !important; visibility: visible !important; display: block !important;';
+        // Force visibility of main elements
+        mainGame.classList.add('force-visible-important');
         console.log('Main game area styles forced');
     }
 
     const tabContent = document.querySelector('.tabs-content');
     if (tabContent) {
-        tabContent.style.cssText = 'position: relative !important; width: 100% !important; min-height: 400px !important; display: block !important; visibility: visible !important; z-index: 1 !important; pointer-events: auto !important;';
+        // Force visibility of tab content
+        tabContent.classList.add('force-visible-relative');
         console.log('Tab content styles forced');
     }
 
@@ -1124,19 +1125,23 @@ function initUI() {
     const workstationsTab = document.getElementById('workstations-tab');
     if (workstationsTab) {
         workstationsTab.classList.add('active');
-        workstationsTab.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; position: relative !important; z-index: 1 !important; pointer-events: auto !important;';
+        // Force visibility of active tab
+        // Force visibility of specific tabs if they are active
+        if (workstationsTab && workstationsTab.classList.contains('active')) {
+            workstationsTab.classList.add('force-visible-block');
+        }
         console.log('Workstations tab styles forced');
     }
 
     const workstationList = document.getElementById('workstation-list');
     if (workstationList) {
-        workstationList.style.cssText = 'display: flex !important; flex-direction: column !important; gap: 15px !important; max-height: 70vh !important; overflow-y: auto !important; padding: 10px !important; position: relative !important; z-index: 1 !important; pointer-events: auto !important; visibility: visible !important; width: 100% !important;';
+        workstationList.classList.add('content-list-visible');
         console.log('Workstation list container styles forced');
     }
 
     const upgradeList = document.getElementById('upgrade-list');
     if (upgradeList) {
-        upgradeList.style.cssText = 'display: flex !important; flex-direction: column !important; gap: 15px !important; max-height: 70vh !important; overflow-y: auto !important; padding: 10px !important; position: relative !important; z-index: 1 !important; pointer-events: auto !important; visibility: visible !important; width: 100% !important;';
+        upgradeList.classList.add('content-list-visible');
         console.log('Upgrade list container styles forced');
     }
 
@@ -1606,29 +1611,30 @@ function updateSettingsTab() {
 function showDestructiveConfirmation(title, message, confirmText = 'RESET') {
     return new Promise((resolve) => {
         // Create modal overlay
+        // Create modal overlay
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
-        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+        // Styles moved to CSS
 
         // Create modal content
         const modal = document.createElement('div');
         modal.className = 'destructive-confirmation-modal';
-        modal.style.cssText = 'background: var(--bg-card); border: 2px solid var(--error, #FF4444); border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);';
+        // Styles moved to CSS
 
         modal.innerHTML = `
-            <h2 style="color: var(--error, #FF4444); margin-bottom: 16px; font-size: 24px;">${title}</h2>
-            <p style="color: var(--text); margin-bottom: 20px; line-height: 1.6;">${message}</p>
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; color: var(--text); margin-bottom: 8px; font-weight: 600;">
+            <h2 class="destructive-title">${title}</h2>
+            <p class="destructive-text">${message}</p>
+            <div class="destructive-input-container">
+                <label class="destructive-input-label">
                     Type "${confirmText}" to confirm:
                 </label>
                 <input type="text" id="destructive-confirm-input" 
-                    style="width: 100%; padding: 12px; background: var(--bg-dark); border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-size: 16px;"
+                    class="destructive-input"
                     autocomplete="off" spellcheck="false">
             </div>
-            <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                <button id="destructive-confirm-cancel" class="btn-secondary" style="padding: 12px 24px;">Cancel</button>
-                <button id="destructive-confirm-ok" class="btn-danger" style="padding: 12px 24px;" disabled>Confirm</button>
+            <div class="destructive-actions">
+                <button id="destructive-confirm-cancel" class="btn-secondary destructive-btn">Cancel</button>
+                <button id="destructive-confirm-ok" class="btn-danger destructive-btn" disabled>Confirm</button>
             </div>
         `;
 

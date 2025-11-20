@@ -187,33 +187,13 @@ class OnboardingSystem {
         // Create semi-transparent overlay
         this.tutorialOverlay = document.createElement('div');
         this.tutorialOverlay.id = 'tutorial-overlay';
-        this.tutorialOverlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 9998;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        `;
+        // Styles moved to CSS
         document.body.appendChild(this.tutorialOverlay);
 
         // Create tooltip container
         this.tutorialTooltip = document.createElement('div');
         this.tutorialTooltip.id = 'tutorial-tooltip';
-        this.tutorialTooltip.style.cssText = `
-            position: fixed;
-            max-width: 400px;
-            background: var(--bg-card);
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            padding: 20px;
-            z-index: 10000;
-            box-shadow: 0 8px 32px rgba(255, 45, 170, 0.3);
-            pointer-events: auto;
-        `;
+        // Styles moved to CSS
         document.body.appendChild(this.tutorialTooltip);
     }
 
@@ -269,32 +249,16 @@ class OnboardingSystem {
 
         this.highlightElement = document.createElement('div');
         this.highlightElement.className = 'tutorial-highlight';
-        this.highlightElement.style.cssText = `
-            position: fixed;
-            top: ${rect.top - 8}px;
-            left: ${rect.left - 8}px;
-            width: ${rect.width + 16}px;
-            height: ${rect.height + 16}px;
-            border: 3px solid var(--primary);
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 9999;
-            animation: tutorial-pulse 2s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(255, 45, 170, 0.5);
-        `;
 
-        // Add pulse animation
-        if (!document.getElementById('tutorial-styles')) {
-            const style = document.createElement('style');
-            style.id = 'tutorial-styles';
-            style.textContent = `
-                @keyframes tutorial-pulse {
-                    0%, 100% { transform: scale(1); opacity: 1; }
-                    50% { transform: scale(1.05); opacity: 0.8; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
+        // Dynamic positioning still needs to be inline
+        this.highlightElement.style.top = `${rect.top - 8}px`;
+        this.highlightElement.style.left = `${rect.left - 8}px`;
+        this.highlightElement.style.width = `${rect.width + 16}px`;
+        this.highlightElement.style.height = `${rect.height + 16}px`;
+
+        // Static styles moved to CSS
+
+        // Animation styles moved to CSS, no need to inject style tag
 
         document.body.appendChild(this.highlightElement);
 
@@ -312,17 +276,17 @@ class OnboardingSystem {
         // Build tooltip content
         tooltip.innerHTML = `
             <div class="tutorial-tooltip-content">
-                <h3 style="color: var(--primary); margin: 0 0 12px 0; font-size: 20px;">
+                <h3>
                     ${step.title}
                 </h3>
-                <p style="color: var(--text); margin: 0 0 16px 0; line-height: 1.6;">
+                <p>
                     ${step.message}
                 </p>
-                <div class="tutorial-tooltip-actions" style="display: flex; gap: 8px; justify-content: flex-end;">
+                <div class="tutorial-tooltip-actions">
                     ${step.canSkip ? '<button class="btn-secondary tutorial-skip">Skip Tutorial</button>' : ''}
                     ${!step.action ? '<button class="btn-primary tutorial-next">Next</button>' : ''}
                 </div>
-                <div class="tutorial-progress" style="margin-top: 12px; font-size: 12px; color: var(--text-dim); text-align: center;">
+                <div class="tutorial-progress">
                     Step ${this.currentStep + 1} of ${TUTORIAL_STEPS.length}
                 </div>
             </div>
@@ -471,13 +435,13 @@ class OnboardingSystem {
         if (this.tutorialTooltip) {
             this.tutorialTooltip.innerHTML = `
                 <div class="tutorial-tooltip-content">
-                    <h3 style="color: var(--success); margin: 0 0 12px 0; font-size: 20px;">
+                    <h3 class="success-title">
                         ✨ Tutorial Complete!
                     </h3>
-                    <p style="color: var(--text); margin: 0 0 16px 0; line-height: 1.6;">
+                    <p>
                         You're now a certified Hex Compiler! Keep exploring, and may your magic never fade.
                     </p>
-                    <div class="tutorial-tooltip-actions" style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <div class="tutorial-tooltip-actions">
                         <button class="btn-primary tutorial-finish">Let's Go!</button>
                     </div>
                 </div>
