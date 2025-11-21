@@ -54,6 +54,7 @@ import { DesignTierSystem } from './modules/game/designTierSystem.js';
 import { FadingThemeSystem } from './modules/game/fadingThemeSystem.js';
 import { TutorialSystem } from './modules/game/tutorialSystem.js';
 import { stripEmojisIfLowTier, initUIHelpers } from './modules/ui/uiHelpers.js';
+import { ParticleSystem } from './modules/game/particleSystem.js';
 
 
 /**
@@ -82,6 +83,7 @@ let feedbackLoopManager;
 let craftingManager;
 let inputManager;
 let pwaManager;
+let uiManager;
 
 // UI Elements (will be set after DOM loads)
 let abDisplay;
@@ -261,9 +263,9 @@ function initUI() {
     gameState = new GameState();
     gameState.start(); // Start the game tick loop
     // Initialize Daily Rituals
-    dailyRituals = new DailyRituals(gameState, uiManager);
-    dailyRituals.init();
-    uiManager.systems.dailyRituals = dailyRituals;
+    dailyRituals = new DailyRituals(gameState);
+    // dailyRituals.init() moved to after uiManager initialization
+    // uiManager.systems.dailyRituals assignment removed as it is handled in UIManager constructor
     achievements = new AchievementSystem(gameState);
     comboSystem = new ComboSystem(gameState);
     eventSystem = new EventSystem(gameState);
@@ -280,6 +282,11 @@ function initUI() {
         eventSystem,
         craftingManager
     });
+
+    // Initialize Daily Rituals (after UI Manager is ready)
+    if (dailyRituals) {
+        dailyRituals.init();
+    }
 
 
     // Initialize InputManager
@@ -501,7 +508,9 @@ function initUI() {
     }
 
     // Update meditation tab visibility based on prestige count
-    updateMeditationVisibility();
+    if (uiManager.hudUI) {
+        uiManager.hudUI.updateMeditationVisibility();
+    }
 
     // Initialize auto-save
     initAutoSave();
@@ -703,9 +712,6 @@ function initUI() {
             e.preventDefault(); // Prevent mouse emulation
             castManager.handleCast();
         }, { passive: false });
-
-        // Store handler for auto-cast
-        castButton.addEventListener('click', handleCast);
 
         // Debug: Confirm event listener attached
         console.log('Cast button initialized and event listeners attached');
@@ -910,7 +916,7 @@ function initUI() {
 
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabButtonsWorking = tabButtons.length > 0 && Array.from(tabButtons).every(btn => {
-            return btn.dataset.tab && typeof switchTab === 'function';
+            return btn.dataset.tab && uiManager && typeof uiManager.switchTab === 'function';
         });
 
         const results = {
@@ -970,16 +976,16 @@ function initUI() {
             dailyRituals.updateTaskProgress('craft', wsId, gameState.totalWorkstationsCrafted);
             dailyRituals.updateTaskProgress('own', wsId, count);
         }
-        debouncedUIUpdate('workstationsTab', updateWorkstationsTab);
+        debouncedUIUpdate('workstationsTab', () => uiManager.workstationUI.update());
     };
 
     gameState.onUpgradePurchased = () => {
-        debouncedUIUpdate('inscriptionsTab', updateInscriptionsTab);
+        debouncedUIUpdate('inscriptionsTab', () => uiManager.inscriptionsUI.update());
     };
 
     gameState.onPrestigeCompleted = (ekGained) => {
         // Show element specialization choice UI
-        showElementSpecializationChoice();
+        uiManager.modalManager.showElementSpecializationChoice();
 
         // Check if meditation should be unlocked after this ascension
         meditationManager.checkUnlock();
@@ -988,7 +994,7 @@ function initUI() {
         if (castManager && castManager.updateAutoButtonVisibility) {
             castManager.updateAutoButtonVisibility();
         }
-        debouncedUIUpdate('allUI', updateAllUI);
+        debouncedUIUpdate('allUI', uiManager.updateAllUI);
     };
 
     gameState.onRecipeDiscovered = (recipeId) => {
@@ -996,7 +1002,7 @@ function initUI() {
         if (dailyRituals) {
             dailyRituals.updateTaskProgress('discover_recipe', '', gameState.discoveredRecipes.length);
         }
-        debouncedUIUpdate('experimentTab', updateExperimentTab);
+        debouncedUIUpdate('experimentTab', () => uiManager.experimentUI.update());
     };
 
     gameState.onWelcomeBack = (elapsed, abGained) => {
@@ -1009,7 +1015,7 @@ function initUI() {
     // Update inventory when ingredients change (optimized)
     gameState.onIngredientChanged = (ingId, newValue) => {
         // Update element counters immediately (always visible in HUD)
-        updateElementCounters();
+        if (uiManager.hudUI) uiManager.hudUI.updateElementCounters();
 
         // Only update if relevant tabs are currently active
         const activeTabs = ['inventory-tab', 'workstations-tab', 'inscriptions-tab', 'experiment-tab'];
@@ -1028,7 +1034,7 @@ function initUI() {
                 debouncedUIUpdate(tabId, () => {
                     switch (tabId) {
                         case 'inventory-tab':
-                            updateInventoryTab();
+                            uiManager.inventoryUI.update();
                             break;
                         case 'workstations-tab':
                             if (!isUpdatingWorkstations) {
@@ -1038,7 +1044,7 @@ function initUI() {
                                     console.log('Refreshing virtual scroll due to ingredient change...');
                                     virtualWorkstationList.refresh();
                                 } else {
-                                    updateWorkstationsTab();
+                                    uiManager.workstationUI.update();
                                 }
                                 setTimeout(() => { isUpdatingWorkstations = false; }, 100);
                             }
@@ -1051,13 +1057,13 @@ function initUI() {
                                     console.log('Refreshing virtual scroll for upgrades due to ingredient change...');
                                     virtualUpgradeList.refresh();
                                 } else {
-                                    updateInscriptionsTab();
+                                    uiManager.inscriptionsUI.update();
                                 }
                                 setTimeout(() => { isUpdatingInscriptions = false; }, 100);
                             }
                             break;
                         case 'experiment-tab':
-                            updateExperimentTab();
+                            uiManager.experimentUI.update();
                             break;
                     }
                 });
@@ -1068,15 +1074,15 @@ function initUI() {
 
     // Daily rituals callbacks
     dailyRituals.onTaskProgressUpdated = () => {
-        updateDailiesTab();
+        uiManager.dailiesUI.update();
     };
 
     dailyRituals.onTaskCompleted = () => {
-        updateDailiesTab();
+        uiManager.dailiesUI.update();
     };
 
     dailyRituals.onTasksRefreshed = () => {
-        updateDailiesTab();
+        uiManager.dailiesUI.update();
     };
 
     // Start game
@@ -1119,7 +1125,7 @@ function initUI() {
 
     // Initialize first tab (workstations)
     console.log('Switching to workstations tab...');
-    switchTab('workstations');
+    uiManager.switchTab('workstations');
 
     // Force visibility of workstations tab immediately
     const workstationsTab = document.getElementById('workstations-tab');
@@ -1227,7 +1233,7 @@ function initUI() {
         if (eventSystem) {
             eventSystem.checkForEvents();
             eventSystem.updateEvents(0.1);
-            updateActiveEvents();
+            if (uiManager.hudUI) uiManager.hudUI.updateActiveEvents();
 
             // Update auto-cast interval if Inspiration event starts/ends
             if (window.updateAutoCastInterval) {
@@ -1259,7 +1265,7 @@ function initUI() {
 
     // Update element counters live (optimized) - update every second
     const elementCounterInterval = setInterval(() => {
-        updateElementCounters();
+        if (uiManager.hudUI) uiManager.hudUI.updateElementCounters();
     }, 1000);
 
     // Track interval for cleanup
@@ -1313,11 +1319,11 @@ function initUI() {
     }
 
     // Update specialization indicator
-    updateSpecializationIndicator();
+    if (uiManager.hudUI) uiManager.hudUI.updateSpecializationIndicator();
 
     // Initial element counters display
     if (gameState) {
-        updateElementCounters();
+        if (uiManager.hudUI) uiManager.hudUI.updateElementCounters();
     }
 
     // Mark as initialized
@@ -2188,7 +2194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Fallback error display
             const errorDiv = document.createElement('div');
-            errorDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: red; color: white; padding: 20px; z-index: 99999;';
+            errorDiv.className = 'fatal-error-display';
+            // Styles moved to CSS
             errorDiv.textContent = `Game initialization failed: ${error.message}`;
             document.body.appendChild(errorDiv);
         }

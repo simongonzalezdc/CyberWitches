@@ -48,6 +48,11 @@ export class GameState {
         this.totalWorkstationsCrafted = 0;
         this.totalPotionsCrafted = 0;
 
+        // Story Flags
+        this.storyFlags = {
+            introShown: false
+        };
+
         // Milestone rewards (Feature 3: Dopamine Maximization)
         this.unlockedMilestones = new Set();
         this.milestones = GAME_CONSTANTS.MILESTONE_THRESHOLDS;

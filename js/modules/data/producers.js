@@ -5,7 +5,7 @@ export const PRODUCERS = [
         id: "ws_fire_forge",
         displayName: "Fire Forge",
         description: "A digital preservation chamber that compiles Fire essence into stable data structures. Your code creates crystalline matrices that capture heat as information before it dissipates. Fire fades faster than other elements—every forge you program is a small victory against entropy.",
-        unlockAtAb: 25.0,
+        unlockAtAb: 0.0,
         recipe: { fire_essence: 10 },
         growth: 1.12,
         outputs: { dist_fire: 0.20 }
@@ -15,7 +15,7 @@ export const PRODUCERS = [
         id: "ws_aqua_well",
         displayName: "Aqua Well",
         description: "A digital preservation chamber that encodes Water essence into flowing data streams. Your algorithms create perpetual loops—constant data circulation preserves what static storage would lose. Motion coded into logic.",
-        unlockAtAb: 30.0,
+        unlockAtAb: 0.0,
         recipe: { water_essence: 10 },
         growth: 1.12,
         outputs: { liquid_essence: 0.20 }
@@ -25,7 +25,7 @@ export const PRODUCERS = [
         id: "ws_zephyr_generator",
         displayName: "Zephyr Generator",
         description: "A preservation chamber that stabilizes Air essence before it fades. The constant circulation creates a barrier against entropy. Air is the most elusive element—capturing wind is like holding onto a memory.",
-        unlockAtAb: 35.0,
+        unlockAtAb: 0.0,
         recipe: { air_essence: 10 },
         growth: 1.12,
         outputs: { ethereal_gust: 0.20 }
@@ -35,7 +35,7 @@ export const PRODUCERS = [
         id: "ws_crystal_chamber",
         displayName: "Crystal Chamber",
         description: "A preservation chamber that stabilizes Crystal essence before it fades. Crystal structures resist entropy better than other elements—they're the foundation of all your preservation work. When everything else fades, crystal endures.",
-        unlockAtAb: 40.0,
+        unlockAtAb: 0.0,
         recipe: { crystal_dust: 10 },
         growth: 1.12,
         outputs: { shaped_crys: 0.20 }
@@ -45,7 +45,7 @@ export const PRODUCERS = [
         id: "ws_aether_synthesizer",
         displayName: "Aether Synthesizer",
         description: "A digital chamber that runs synthesis algorithms to merge all four elemental data streams into Aether. Your code combines Fire, Water, Air, and Crystal into something greater than their sum. Aether—the binding force—fades fastest, but compiled together, the elements resist entropy better than apart.",
-        unlockAtAb: 50.0,
+        unlockAtAb: 0.0,
         recipe: {
             fire_essence: 2,
             water_essence: 2,

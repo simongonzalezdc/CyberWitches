@@ -1,14 +1,16 @@
 // Service Worker for Cyber Witches Game
 
-const CACHE_NAME = 'spellwright-cache-v3';
+const CACHE_NAME = 'spellwright-cache-v14';
 const CACHE_URLS = [
     '/',
     '/index.html',
-    '/styles.css',
+    '/css/style.css',
+    '/css/utilities.css',
+    '/css/animations.css',
     '/manifest.json',
     '/sw.js',
-    // Bundled JavaScript (production) or individual files (development)
-    '/js/game.bundle.js',
+    '/js/game.v7.js', // Bundled JavaScript (production) or individual files (development)
+    // '/js/game.bundle.js', // Removed as it doesn't exist in dev
     // Fallback for development - individual files
     '/js/loadingState.js',
     '/js/errorHandler.js',
@@ -16,7 +18,6 @@ const CACHE_URLS = [
     '/js/utils.js',
     '/js/data.js',
     '/js/gameState.js',
-    '/js/game.js',
     // External dependencies (CDN)
     'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
 ];
@@ -81,15 +82,15 @@ self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') {
         return;
     }
-    
+
     // Handle same-origin and CDN requests
     const isSameOrigin = event.request.url.startsWith(self.location.origin);
     const isCDN = event.request.url.includes('cdn.jsdelivr.net');
-    
+
     if (!isSameOrigin && !isCDN) {
         return; // Skip other cross-origin requests
     }
-    
+
     event.respondWith(
         caches.open(CACHE_NAME)
             .then((cache) => {
@@ -112,7 +113,7 @@ self.addEventListener('fetch', (event) => {
                                 }
                                 // If no cache and network fails, return error
                                 console.error('Fetch failed and no cache:', error);
-                                return new Response('Offline - Network error', { 
+                                return new Response('Offline - Network error', {
                                     status: 503,
                                     statusText: 'Service Unavailable',
                                     headers: { 'Content-Type': 'text/plain' }
@@ -123,8 +124,8 @@ self.addEventListener('fetch', (event) => {
             .catch((error) => {
                 console.error('Cache error:', error);
                 // Final fallback: try network
-                return fetch(event.request).catch(() => 
-                    new Response('Service Unavailable', { 
+                return fetch(event.request).catch(() =>
+                    new Response('Service Unavailable', {
                         status: 503,
                         statusText: 'Service Unavailable',
                         headers: { 'Content-Type': 'text/plain' }
