@@ -27,6 +27,11 @@ class CodeDuplicationDetector {
      * @returns {string} Formatted number
      */
     static formatShort(num) {
+        // Defensive check: handle invalid input
+        if (num === undefined || num === null || isNaN(num)) {
+            console.warn('formatShort called with invalid value:', num);
+            return '0.00';
+        }
         if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
         if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
         if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';

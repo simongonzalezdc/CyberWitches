@@ -1,7 +1,7 @@
 // Service Worker for Cyber Witches Game
 // Updated with improved caching strategies (Week 1, Day 3)
 
-const CACHE_NAME = 'spellwright-cache-v15';
+const CACHE_NAME = 'spellwright-cache-v17'; // Updated: Cache clear for bug fixes
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
 const CACHE_URLS = [

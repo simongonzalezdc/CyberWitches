@@ -111,12 +111,21 @@ export class ExperimentUI {
             const card = document.createElement('div');
             card.className = 'card';
 
+            // Validate recipe has required fields
+            const recipeInputs = recipe.inputs || {};
+            const recipeOutputs = recipe.outputs || {};
+            
             card.innerHTML = `
-                <div class="card-title">${recipe.name}</div>
-                <div class="card-description">${recipe.description}</div>
+                <div class="card-title">${recipe.name || 'Unknown Recipe'}</div>
+                <div class="card-description">${recipe.description || 'No description'}</div>
                 <div class="card-section">
                             <div class="card-label">Cost:</div>
-                    ${Object.entries(recipe.inputs).map(([ingId, amount]) => {
+                    ${Object.entries(recipeInputs).map(([ingId, amount]) => {
+                // Validate amount is a valid number
+                if (amount === undefined || amount === null || isNaN(amount)) {
+                    console.warn(`Invalid recipe input amount for ${ingId}:`, amount);
+                    amount = 0;
+                }
                 const have = this.gameState.inventory[ingId] || 0;
                 const canAfford = have >= amount;
                 return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
@@ -127,9 +136,14 @@ export class ExperimentUI {
                 </div>
                 <div class="card-section">
                             <div class="card-label">Makes:</div>
-                    ${Object.entries(recipe.outputs).map(([outputId, amount]) =>
-                `<div class="card-value">${outputId}: ${window.formatShort(amount)}</div>`
-            ).join('')}
+                    ${Object.entries(recipeOutputs).map(([outputId, amount]) => {
+                // Validate amount is a valid number
+                if (amount === undefined || amount === null || isNaN(amount)) {
+                    console.warn(`Invalid recipe output amount for ${outputId}:`, amount);
+                    amount = 0;
+                }
+                return `<div class="card-value">${outputId}: ${window.formatShort(amount)}</div>`;
+            }).join('')}
                 </div>
                 <button class="btn-primary craft-recipe-btn" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
             `;
