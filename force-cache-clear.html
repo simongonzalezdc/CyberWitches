@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Cache Clear - CyberWitches</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a0033, #330066);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ff10f0, #00ffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .status.success {
+            background: rgba(57, 255, 20, 0.2);
+            border: 1px solid #39ff14;
+        }
+        
+        .status.error {
+            background: rgba(255, 16, 240, 0.2);
+            border: 1px solid #ff10f0;
+        }
+        
+        .status.info {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #ff10f0, #00ffff);
+            color: #1a0033;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 16, 240, 0.5);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border-left: 4px solid #00ffff;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #00ffff;
+            color: #1a0033;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #39ff14;
+        }
+        
+        ul {
+            margin: 15px 0 15px 20px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Force Cache Clear</h1>
+        
+        <div id="status" class="status info">
+            <strong>Ready to clear all caches</strong><br>
+            This will unregister service workers and clear all cached data.
+        </div>
+        
+        <button id="clearBtn" onclick="forceClearCache()">
+            🗑️ Clear All Caches Now
+        </button>
+        
+        <button id="reloadBtn" onclick="window.location.href = 'index.html'" style="display: none;">
+            🚀 Launch Game
+        </button>
+        
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>What this does:</strong>
+            <ul>
+                <li>Unregisters all service workers</li>
+                <li>Clears all cache storage</li>
+                <li>Clears localStorage (preserves game saves)</li>
+                <li>Clears sessionStorage</li>
+                <li>Forces browser to fetch fresh files</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>Manual steps (if button doesn't work):</strong>
+            <ul>
+                <li>Press <code>Cmd+Option+I</code> (Mac) or <code>F12</code> (Windows)</li>
+                <li>Go to <strong>Application</strong> tab</li>
+                <li>Click <strong>Clear site data</strong> button</li>
+                <li>Refresh with <code>Cmd+Shift+R</code> or <code>Ctrl+Shift+R</code></li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>After clearing:</strong>
+            <ul>
+                <li>Click "Launch Game" button above</li>
+                <li>Your game saves are preserved</li>
+                <li>All code will be fresh (cache version: v18)</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        const statusEl = document.getElementById('status');
+        const clearBtn = document.getElementById('clearBtn');
+        const reloadBtn = document.getElementById('reloadBtn');
+        
+        function updateStatus(message, type = 'info') {
+            statusEl.className = `status ${type}`;
+            statusEl.innerHTML = message;
+        }
+        
+        async function forceClearCache() {
+            clearBtn.disabled = true;
+            updateStatus('⏳ Clearing caches...', 'info');
+            
+            let steps = [];
+            
+            try {
+                // Step 1: Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                    steps.push('✅ Unregistered ' + registrations.length + ' service worker(s)');
+                } else {
+                    steps.push('ℹ️ No service workers found');
+                }
+                
+                // Step 2: Clear all cache storage
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                    steps.push('✅ Deleted ' + cacheNames.length + ' cache(s): ' + cacheNames.join(', '));
+                } else {
+                    steps.push('ℹ️ Cache API not available');
+                }
+                
+                // Step 3: Clear storage (but preserve game saves)
+                try {
+                    // Get game saves before clearing
+                    const gameSave = localStorage.getItem('hex_compiler_save');
+                    const autosave = localStorage.getItem('hex_compiler_autosave');
+                    
+                    // Clear all storage
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    // Restore game saves
+                    if (gameSave) localStorage.setItem('hex_compiler_save', gameSave);
+                    if (autosave) localStorage.setItem('hex_compiler_autosave', autosave);
+                    
+                    steps.push('✅ Cleared storage (game saves preserved)');
+                } catch (e) {
+                    steps.push('⚠️ Could not clear storage: ' + e.message);
+                }
+                
+                // Success!
+                updateStatus(
+                    '<strong>✅ Cache cleared successfully!</strong><br><br>' +
+                    steps.join('<br>') +
+                    '<br><br><strong>Ready to launch game with fresh code (v18)</strong>',
+                    'success'
+                );
+                
+                clearBtn.style.display = 'none';
+                reloadBtn.style.display = 'block';
+                
+            } catch (error) {
+                updateStatus(
+                    '<strong>❌ Error clearing cache</strong><br><br>' +
+                    'Error: ' + error.message + '<br><br>' +
+                    steps.join('<br>') +
+                    '<br><br>Try manual method in Step 2 below.',
+                    'error'
+                );
+                clearBtn.disabled = false;
+            }
+        }
+        
+        // Show service worker status on load
+        window.addEventListener('load', async () => {
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length > 0) {
+                    updateStatus(
+                        `Found ${registrations.length} active service worker(s).<br>` +
+                        'Click button to clear all caches.',
+                        'info'
+                    );
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
