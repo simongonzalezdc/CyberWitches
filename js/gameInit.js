@@ -263,9 +263,15 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
             // It expects formatting functions passed in!
             // We need to import them here.
             
-            import('./utils.js').then(({ formatShort, formatTimeDuration }) => {
-                uiManager.modalManager.showWelcomeBack(elapsed, abGained, formatTimeDuration, formatShort);
-            });
+            import('./utils.js')
+                .then(({ formatShort, formatTimeDuration }) => {
+                    uiManager.modalManager.showWelcomeBack(elapsed, abGained, formatTimeDuration, formatShort);
+                })
+                .catch(err => {
+                    console.error('Failed to load utils for welcome back modal:', err);
+                    // Fallback: show simple notification without formatting
+                    uiManager.showNotification(`Offline for ${Math.floor(elapsed / 1000)}s, gained energy!`, 'info');
+                });
         }
     };
 

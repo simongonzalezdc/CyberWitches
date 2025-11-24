@@ -59,12 +59,22 @@ export default [
             'no-unused-vars': ['warn', { 
                 argsIgnorePattern: '^_',
                 varsIgnorePattern: '^_',
-                caughtErrorsIgnorePattern: '^_'
+                caughtErrorsIgnorePattern: '^_',
+                caughtErrors: 'all'           // Check all catch blocks (not just used vars)
             }], 
             'no-const-assign': 'error',       // Catch reassigning const
             'no-dupe-keys': 'error',          // Catch duplicate keys in objects
             'no-unreachable': 'error',        // Catch code after return
             'valid-typeof': 'error',          // Catch invalid typeof checks
+
+            // Error Handling (Critical for observability)
+            'no-empty': ['error', { 
+                allowEmptyCatch: false         // NEVER allow empty catch blocks (silent failures)
+            }],
+            'no-useless-catch': 'error',       // Prevent catch blocks that just rethrow
+            'prefer-promise-reject-errors': ['error', { 
+                allowEmptyReject: false        // Always reject with Error objects
+            }],
 
             // Best Practices
             'eqeqeq': ['warn', 'smart'],      // Encourage === over ==

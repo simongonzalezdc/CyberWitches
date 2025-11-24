@@ -3,7 +3,7 @@
  * Tests non-DOM logic: tier calculations, element mapping, recipe scaling
  */
 
-import { getScaledRecipe } from '../../js/game.js';
+import { VirtualWorkstationList } from '../../js/virtualScroll.js';
 import {
   getTierSymbol,
   getTierAppropriateStyle,
@@ -12,6 +12,9 @@ import {
 } from '../../js/modules/ui/uiHelpers.js';
 import { getIngredientElement } from '../../js/elementSpecialization.js';
 import { PRODUCERS, INGREDIENTS } from '../../js/data.js';
+
+// Helper function to access static method
+const getScaledRecipe = VirtualWorkstationList.getScaledRecipeStatic.bind(VirtualWorkstationList);
 
 describe('Game Utility Functions', () => {
   describe('getTierSymbol', () => {

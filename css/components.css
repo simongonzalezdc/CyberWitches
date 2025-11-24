@@ -75,17 +75,19 @@
 }
 
 /* 2. Module Cards (Workstations) */
-.card {
+.card,
+.workstation-card {
     background: var(--bg-panel);
     border: 1px solid var(--border-light);
-    border-left: 4px solid var(--border-light); /* Status indicator line */
+    border-left: 4px solid var(--border-light); /* Status indicator line - will be overridden by tier colors */
     border-radius: 2px;
     padding: var(--spacing-md);
     position: relative;
     transition: all 0.2s ease;
 }
 
-.card:hover {
+.card:hover,
+.workstation-card:hover {
     border-color: var(--color-code);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     transform: translateY(-2px);
@@ -107,10 +109,141 @@
     text-transform: uppercase;
 }
 
-.card-description {
+.card-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: var(--spacing-xs);
+}
+
+.card-owned {
+    font-family: var(--font-mono);
+    color: var(--color-code);
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: var(--spacing-sm);
+}
+
+.card-description,
+.card-desc {
     font-size: 12px;
     color: var(--color-dim);
     margin-bottom: var(--spacing-md);
+    margin-top: var(--spacing-xs);
+}
+
+/* Workstation Card Specific Styles */
+.workstation-card .card-header {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* Cost and Production Display */
+.cost-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.cost-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 2px solid var(--color-code);
+    font-size: 11px;
+}
+
+.cost-item.affordable {
+    background: rgba(0, 240, 255, 0.1);
+    border-left-color: var(--color-code);
+}
+
+.cost-item.unaffordable {
+    background: rgba(0, 0, 0, 0.3);
+    border-left-color: var(--color-dim);
+    opacity: 0.6;
+}
+
+.cost-amount {
+    font-weight: bold;
+    color: var(--color-code);
+}
+
+.cost-name {
+    color: var(--color-dim);
+}
+
+.production-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.production-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.prod-amount {
+    color: var(--success, #3CE3C5);
+    font-weight: bold;
+}
+
+.prod-name {
+    color: var(--color-dim);
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.button-group {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.btn-craft,
+.btn-craft-max {
+    flex: 1;
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--color-code);
+    color: var(--color-code);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-craft:hover,
+.btn-craft-max:hover {
+    background: var(--color-code);
+    color: var(--bg-terminal);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+}
+
+.btn-craft:disabled,
+.btn-craft-max:disabled {
+    border-color: var(--color-dim);
+    color: var(--color-dim);
+    cursor: not-allowed;
+    box-shadow: none;
+    background: transparent;
 }
 
 /* 3. Tab Navigation (File Path Style) */

@@ -60,9 +60,14 @@ export class UIManager {
 
         // Inject dependencies into notification manager
         if (this.systems.audioSystem) {
-            import('./notifications.js').then(({ notificationManager }) => {
-                notificationManager.setAudioSystem(this.systems.audioSystem);
-            });
+            import('./notifications.js')
+                .then(({ notificationManager }) => {
+                    notificationManager.setAudioSystem(this.systems.audioSystem);
+                })
+                .catch(err => {
+                    console.error('Failed to load notification manager:', err);
+                    // Non-critical - notifications will still work without audio
+                });
         }
     }
 

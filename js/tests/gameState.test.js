@@ -4,7 +4,7 @@
  */
 
 // Mock data
-const mockData = {
+const _mockData = {
     INGREDIENTS: [],
     PRODUCERS: [],
     UPGRADES: []

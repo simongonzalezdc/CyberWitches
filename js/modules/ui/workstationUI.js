@@ -95,7 +95,7 @@ export class WorkstationUI {
         for (const tier of tiers) {
             const tierNum = parseInt(tier);
             const tierStyle = getTierAppropriateStyle(tierNum);
-            const tierSymbol = getTierSymbol(tierNum);
+            const tierSymbol = getTierSymbol(tierNum); // Get tier symbol for colors
 
             // Create tier header if we have multiple tiers
             if (tiers.length > 1) {
@@ -121,27 +121,59 @@ export class WorkstationUI {
             // Render workstations for this tier
             for (const prodData of workstationsByTier[tier]) {
                 const card = document.createElement('div');
-                card.className = 'workstation-card';
+                card.className = 'workstation-card card'; // Use both classes for compatibility
                 card.dataset.id = prodData.id;
+                card.dataset.tier = tierNum; // Store tier for CSS targeting
 
-                // Apply tier styles to card
+                // Always apply tier colors to the card border-left (the status indicator)
+                // This makes workstations colorful regardless of design tier
+                const tierSymbol = getTierSymbol(tierNum);
+                card.style.borderLeftColor = tierSymbol.color;
+                card.style.borderLeftWidth = '4px';
+                
+                // Apply tier styles to card (glows/shadows only if design tier allows)
                 if (tierStyle.hasGlow) {
                     card.style.boxShadow = `0 0 15px ${tierStyle.borderGlow.replace('0.8', '0.2')}`;
-                    card.style.border = `1px solid ${tierStyle.borderGlow.replace('0.8', '0.4')}`;
+                    card.style.borderColor = tierStyle.borderGlow.replace('0.8', '0.4');
+                } else {
+                    // Even without glow, use tier color for border
+                    card.style.borderColor = tierSymbol.color;
                 }
 
                 const owned = this.gameState.workstations[prodData.id] || 0;
-                const cost = Balance ? Balance.scaledRecipe(prodData.recipe, owned, prodData.growth) : {};
+                
+                // Validate recipe exists and has valid structure
+                if (!prodData.recipe || typeof prodData.recipe !== 'object') {
+                    console.warn(`🔴 Invalid recipe for workstation ${prodData.id}:`, prodData.recipe);
+                    continue; // Skip this workstation
+                }
+                
+                // Validate growth is a valid number
+                const growth = Number(prodData.growth);
+                if (isNaN(growth) || growth <= 0) {
+                    console.warn(`🔴 Invalid growth for workstation ${prodData.id}:`, prodData.growth);
+                    continue; // Skip this workstation
+                }
+                
+                const cost = Balance ? Balance.scaledRecipe(prodData.recipe, owned, growth) : {};
                 const canAfford = this.gameState.canAfford(cost);
 
                 // Calculate production
                 const production = {};
                 let totalProduction = 0;
 
-                // Base production
-                for (const [outputId, amount] of Object.entries(prodData.outputs)) {
-                    production[outputId] = (production[outputId] || 0) + (amount * owned);
-                    totalProduction += amount * owned;
+                // Base production - validate outputs exist
+                if (prodData.outputs && typeof prodData.outputs === 'object') {
+                    for (const [outputId, amount] of Object.entries(prodData.outputs)) {
+                        // Validate amount is a valid number
+                        const validAmount = Number(amount);
+                        if (isNaN(validAmount) || !isFinite(validAmount)) {
+                            console.warn(`🔴 Invalid output amount for ${prodData.id} -> ${outputId}:`, amount);
+                            continue; // Skip this output
+                        }
+                        production[outputId] = (production[outputId] || 0) + (validAmount * owned);
+                        totalProduction += validAmount * owned;
+                    }
                 }
 
                 // Apply inscription bonuses
@@ -153,34 +185,46 @@ export class WorkstationUI {
                     production[outputId] *= inscriptionMult;
                 }
 
-                // Format cost string
+                // Format cost string - validate amounts before formatting
                 let costHtml = '';
                 for (const [ingId, amount] of Object.entries(cost)) {
+                    // Validate amount is a valid number
+                    const validAmount = Number(amount);
+                    if (isNaN(validAmount) || !isFinite(validAmount) || validAmount < 0) {
+                        console.warn(`🔴 Invalid cost amount for ${prodData.id} -> ${ingId}:`, amount);
+                        continue; // Skip this cost item
+                    }
+                    
                     const ing = INGREDIENTS.find(i => i.id === ingId);
                     const userHas = this.gameState.inventory[ingId] || 0;
-                    const canAffordIng = userHas >= amount;
+                    const canAffordIng = userHas >= validAmount;
                     costHtml += `
                         <div class="cost-item ${canAffordIng ? 'affordable' : 'unaffordable'}">
-                            <span class="cost-amount">${formatNumber(amount)}</span>
+                            <span class="cost-amount">${formatNumber(validAmount)}</span>
                             <span class="cost-name">${ing ? ing.displayName : ingId}</span>
                         </div>
                     `;
                 }
 
-                // Format production string
+                // Format production string - validate amounts before formatting
                 let productionHtml = '';
                 if (owned > 0) {
                     productionHtml = '<div class="production-stats">';
                     for (const [outputId, amount] of Object.entries(production)) {
-                        if (amount > 0) {
-                            const ing = INGREDIENTS.find(i => i.id === outputId);
-                            productionHtml += `
-                                <div class="production-item">
-                                    <span class="prod-amount">+${formatNumber(amount)}/s</span>
-                                    <span class="prod-name">${ing ? ing.displayName : outputId}</span>
-                                </div>
-                            `;
+                        // Validate amount is a valid number
+                        const validAmount = Number(amount);
+                        if (isNaN(validAmount) || !isFinite(validAmount) || validAmount <= 0) {
+                            console.warn(`🔴 Invalid production amount for ${prodData.id} -> ${outputId}:`, amount);
+                            continue; // Skip this production item
                         }
+                        
+                        const ing = INGREDIENTS.find(i => i.id === outputId);
+                        productionHtml += `
+                            <div class="production-item">
+                                <span class="prod-amount">+${formatNumber(validAmount)}/s</span>
+                                <span class="prod-name">${ing ? ing.displayName : outputId}</span>
+                            </div>
+                        `;
                     }
 
                     // Show inscription bonus if active
@@ -221,11 +265,28 @@ export class WorkstationUI {
                     </div>
                 `;
 
-                // Apply dynamic styles programmatically
+                // Apply dynamic styles programmatically - ALWAYS apply tier colors
                 const cardTitle = card.querySelector('.card-title');
                 if (cardTitle) {
-                    cardTitle.style.color = tierStyle.color;
-                    cardTitle.style.textShadow = tierStyle.textShadow;
+                    // Always use tier color, not conditional on design tier
+                    cardTitle.style.color = tierSymbol.color;
+                    // Apply text shadow if design tier allows it
+                    if (tierStyle.textShadow && tierStyle.textShadow !== 'none') {
+                        cardTitle.style.textShadow = tierStyle.textShadow;
+                    } else {
+                        // Even without glow, use subtle shadow for readability
+                        cardTitle.style.textShadow = `0 0 4px ${tierSymbol.color}`;
+                    }
+                    // Apply tier font family
+                    if (tierStyle.fontFamily) {
+                        cardTitle.style.fontFamily = tierStyle.fontFamily;
+                    }
+                }
+                
+                // Apply tier color to owned level badge
+                const cardOwned = card.querySelector('.card-owned');
+                if (cardOwned) {
+                    cardOwned.style.color = tierSymbol.color;
                 }
 
                 container.appendChild(card);

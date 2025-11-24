@@ -2987,9 +2987,14 @@ export class AudioSystem {
         
         // Generate reverb (async, but we'll start it)
         // Note: reverb will be stored in this.toneMusic object later when it's created
-        reverb.generate().then(() => {
-            console.log('Reverb generated', isMeditationModeForReverb ? '(meditation mode - 100% reverb)' : '(normal mode - 70% reverb)');
-        });
+        reverb.generate()
+            .then(() => {
+                console.log('Reverb generated', isMeditationModeForReverb ? '(meditation mode - 100% reverb)' : '(normal mode - 70% reverb)');
+            })
+            .catch(err => {
+                console.error('Failed to generate reverb for music:', err);
+                handleError(err, 'AudioSystem.initializeToneMusic.reverb', false, ErrorCategory.AUDIO, ErrorSeverity.MEDIUM);
+            });
         
         // Create a delay for atmosphere
         const delay = new Tone.FeedbackDelay({
