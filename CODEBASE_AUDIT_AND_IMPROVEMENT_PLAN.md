@@ -246,6 +246,12 @@ async function enforceCacheSizeLimit() {
     
     for (const request of keys) {
         const response = await cache.match(request);
+        // cache.match() can return undefined if the request isn't cached
+        if (!response) {
+            console.warn(`No cached response found for: ${request.url}`);
+            continue;
+        }
+        
         const blob = await response.blob();
         const size = blob.size;
         totalSize += size;
@@ -392,27 +398,68 @@ class EnhancedMemoryLeakDetector {
 
 #### 3.3 Weak References for Non-Critical Data
 ```javascript
-// Use WeakMap for event listener tracking
-const listenerMap = new WeakMap();
+// Use Map with composite string keys for event listener tracking
+// WeakMap won't work here because we need to create keys consistently
+const listenerMap = new Map();
+
+function getListenerKey(element, event) {
+    // Create a consistent key from element identity and event name
+    // Use element's unique identifier or a WeakMap to store element ID
+    const elementId = element.id || 
+                     element.getAttribute('data-listener-id') || 
+                     Symbol.for(element);
+    return `${elementId}-${event}`;
+}
 
 function addTrackedListener(element, event, handler) {
-    const key = { element, event };
-    listenerMap.set(key, handler);
+    const key = getListenerKey(element, event);
+    listenerMap.set(key, { element, event, handler });
     element.addEventListener(event, handler);
 }
 
 function removeTrackedListener(element, event) {
-    const key = { element, event };
-    const handler = listenerMap.get(key);
-    if (handler) {
-        element.removeEventListener(event, handler);
+    const key = getListenerKey(element, event);
+    const entry = listenerMap.get(key);
+    if (entry) {
+        entry.element.removeEventListener(entry.event, entry.handler);
         listenerMap.delete(key);
+    }
+}
+
+// Alternative: Use WeakMap with element as key, store Map of events
+const listenerMapWeak = new WeakMap();
+
+function addTrackedListenerWeak(element, event, handler) {
+    if (!listenerMapWeak.has(element)) {
+        listenerMapWeak.set(element, new Map());
+    }
+    const eventMap = listenerMapWeak.get(element);
+    eventMap.set(event, handler);
+    element.addEventListener(event, handler);
+}
+
+function removeTrackedListenerWeak(element, event) {
+    const eventMap = listenerMapWeak.get(element);
+    if (eventMap) {
+        const handler = eventMap.get(event);
+        if (handler) {
+            element.removeEventListener(event, handler);
+            eventMap.delete(event);
+            if (eventMap.size === 0) {
+                listenerMapWeak.delete(element);
+            }
+        }
     }
 }
 ```
 
 **Priority:** 🟢 Medium  
 **Impact:** Prevents memory leaks from event listeners
+
+**Note:** The WeakMap alternative approach is preferred because:
+- Element is automatically garbage collected when removed from DOM
+- No need to manually clean up keys
+- More memory-efficient for long-lived elements
 
 ---
 
