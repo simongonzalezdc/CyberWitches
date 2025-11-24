@@ -19,6 +19,23 @@ This audit identifies **47 specific improvements** across 8 major categories, pr
 
 ---
 
+## 🔗 Integration with Tailwind CSS 4.1 Migration
+
+This JavaScript/Performance audit is **part of an integrated 7-week implementation plan** that includes:
+1. **Weeks 1-4:** JavaScript Performance Optimization (this document)
+2. **Weeks 5-6:** Tailwind CSS 4.1 Migration (see `TAILWIND_CSS_AUDIT.md`)
+3. **Week 7:** Integration & Polish
+
+**See `INTEGRATED_IMPLEMENTATION_PLAN.md` for the complete sequential implementation strategy.**
+
+**Key Compatibility Notes:**
+- ✅ CSS containment recommendations (Section 5.4) will be applied via Tailwind utilities
+- ✅ Tailwind migration starts AFTER JavaScript optimizations are complete (stable baseline)
+- ✅ Service worker updates (Section 2) will handle Tailwind-generated CSS
+- ✅ No conflicts - sequential implementation avoids issues
+
+---
+
 ## 1. 🎮 Game Loop Optimization (CRITICAL)
 
 ### Current State
@@ -730,6 +747,26 @@ if (supportsContentVisibility) {
     console.log('⚠️ Using fallback rendering (still performant)');
 }
 ```
+
+**🔗 Tailwind CSS Integration Note:**
+If you proceed with the Tailwind CSS 4.1 migration (recommended), these CSS containment properties will be applied using Tailwind's arbitrary value syntax during **Week 7 Integration**:
+
+```html
+<!-- Applied via Tailwind utilities -->
+<div class="game-hud [contain:layout_style_paint] [content-visibility:auto] [contain-intrinsic-size:auto_500px]">
+    <!-- HUD content -->
+</div>
+
+<div class="sidebar [contain:layout_style_paint] [content-visibility:auto]">
+    <!-- Sidebar content -->
+</div>
+```
+
+**Implementation Options:**
+1. **Option A:** Apply now with custom CSS (Week 2-4 of this plan)
+2. **Option B:** Wait and apply during Tailwind integration (Week 7 of integrated plan)
+
+**Recommendation:** If following the integrated plan, implement basic `contain: layout style paint` now (widely supported), then add `content-visibility` during Tailwind migration for optimal browser compatibility.
 
 **Priority:** 🟢 Medium  
 **Impact:** Faster repeated calculations

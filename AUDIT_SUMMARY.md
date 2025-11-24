@@ -129,6 +129,21 @@ measurePerformance();
 
 See `CODEBASE_AUDIT_AND_IMPROVEMENT_PLAN.md` for complete analysis with code examples and implementation details.
 
+### 🔗 Integrated with Tailwind CSS Migration
+
+This JavaScript/Performance audit has been **integrated with the Tailwind CSS 4.1 migration plan**. See `INTEGRATED_IMPLEMENTATION_PLAN.md` for the complete 7-week sequential implementation strategy.
+
+**Key Integration Points:**
+- ✅ **Weeks 1-4:** JavaScript Performance (this audit) - PRIORITY 1
+- ✅ **Weeks 5-6:** Tailwind CSS 4.1 Migration - PRIORITY 2  
+- ✅ **Week 7:** Integration & Polish - Combine optimizations
+
+**Why Sequential?**
+- JavaScript optimizations deliver 30-40% improvement (critical user-facing)
+- Need stable baseline before CSS refactoring
+- Avoid conflicts and clear attribution of improvements
+- CSS containment recommendations will be applied via Tailwind utilities
+
 ---
 
 ## ✅ Audit Verification (2025-01-27)

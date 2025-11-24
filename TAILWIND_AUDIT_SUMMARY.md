@@ -81,7 +81,32 @@ See `TAILWIND_CSS_AUDIT.md` for complete migration plan with code examples.
 
 ---
 
-**Status:** Ready to migrate  
-**Priority:** High (Perfect feature match)  
-**Estimated Time:** 2-3 weeks (gradual migration)
+## 🔗 Integrated Implementation Plan
+
+This Tailwind CSS migration is **part of an integrated 7-week plan** with JavaScript performance optimizations:
+
+**See `INTEGRATED_IMPLEMENTATION_PLAN.md` for the complete strategy.**
+
+**Timeline:**
+- ✅ **Weeks 1-4:** JavaScript Performance (PRIORITY 1) - Do first
+- ✅ **Weeks 5-6:** Tailwind CSS Migration (PRIORITY 2) - This audit
+- ✅ **Week 7:** Integration & Polish
+
+**Why Sequential?**
+- JavaScript optimizations deliver 30-40% performance improvement (critical)
+- Need stable baseline before CSS refactoring
+- Tailwind migration builds on optimized foundation
+- Final integration combines best of both (Week 7)
+
+**Compatibility:**
+- ✅ CSS containment from JS audit will be applied via Tailwind utilities
+- ✅ Service worker caching updated to handle Tailwind CSS
+- ✅ No conflicts - sequential implementation is safe
+
+---
+
+**Status:** Ready to migrate (after JavaScript optimizations complete)  
+**Priority:** High (Perfect feature match + developer experience)  
+**Estimated Time:** 2-3 weeks (Weeks 5-6 of integrated plan)  
+**Prerequisites:** JavaScript performance audit complete (Weeks 1-4)
 
