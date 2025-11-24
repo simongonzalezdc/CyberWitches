@@ -1,6 +1,7 @@
 import { ELEMENT_SPECIALIZATIONS } from '../../elementSpecialization.js';
-import { formatOneDecimal } from '../../utils.js';
+import { formatOneDecimal, formatShort } from '../../utils.js';
 import { animateNumberWithFormatter } from './uiHelpers.js';
+import { animateNumber } from '../../animations.js';
 import { calculateElementTotals } from '../utils/resourceUtils.js';
 
 export class HUDUI {
@@ -8,6 +9,13 @@ export class HUDUI {
         this.gameState = gameState;
         this.uiManager = uiManager;
         this.previousElementTotals = { fire: 0, water: 0, air: 0, crystal: 0, aether: 0, focus: 0, meditationBonus: 0 };
+        this.previousAbps = 0;
+        this.previousAb = 0;
+
+        // DOM Elements
+        this.abDisplay = document.getElementById('ab-display');
+        this.abpsDisplay = document.getElementById('abps-display');
+        this.comboDisplay = document.getElementById('combo-display');
     }
 
     /**
@@ -18,6 +26,88 @@ export class HUDUI {
         this.updateSpecializationIndicator();
         this.updateActiveEvents();
         this.updateMeditationVisibility();
+        this.updateABPS();
+        this.updateComboDisplay();
+        this.updateABDisplay();
+    }
+
+    /**
+     * Update Arcane Bits display with animation
+     */
+    updateABDisplay() {
+        if (!this.gameState || !this.abDisplay) return;
+
+        const currentAb = this.gameState.ab;
+
+        // Only animate for significant changes
+        if (Math.abs(currentAb - this.previousAb) > 1) {
+            // animateNumber preserves the "AB: " prefix if present
+            animateNumber(this.abDisplay, this.previousAb, currentAb, 200);
+        } else {
+            // Direct update for small changes
+            this.abDisplay.textContent = `AB: ${formatShort(currentAb)}`;
+        }
+        this.previousAb = currentAb;
+    }
+
+    /**
+     * Update AB per second display
+     */
+    updateABPS() {
+        if (!this.gameState || !this.abpsDisplay) return;
+
+        let eventMult = 1.0;
+        if (this.uiManager.eventSystem) {
+            eventMult = this.uiManager.eventSystem.getProductionMultiplier();
+        }
+        const abps = this.gameState.getAbPerSecond(eventMult);
+
+        if (abps !== this.previousAbps) {
+            animateNumberWithFormatter(this.abpsDisplay, this.previousAbps, abps, 500, (val) => {
+                return `${formatOneDecimal(val)} AB/s`;
+            });
+
+            // Add glow effect if SE/s increased
+            if (abps > this.previousAbps && abps > 0) {
+                this.abpsDisplay.style.textShadow = '0 0 10px rgba(34, 227, 255, 0.8)';
+                setTimeout(() => {
+                    this.abpsDisplay.style.textShadow = '0 0 8px rgba(255, 255, 255, 0.375)';
+                }, 500);
+            }
+
+            this.previousAbps = abps;
+        }
+    }
+
+    /**
+     * Update Combo display
+     */
+    updateComboDisplay() {
+        // Access comboSystem via uiManager.systems
+        const comboSystem = this.uiManager.systems.comboSystem;
+        if (!comboSystem || !this.comboDisplay) return;
+
+        const comboCount = comboSystem.getComboCount();
+
+        if (comboCount > 0) {
+            const mult = comboSystem.getComboMultiplier();
+            // Check if auto-cast is maintaining this combo
+            const castManager = this.uiManager.systems.castManager;
+            const autoMaintaining = castManager && castManager.getAutoCastEnabled && castManager.getAutoCastEnabled();
+
+            this.comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)${autoMaintaining ? ' <span class="auto-indicator">⚡</span>' : ''}`;
+            this.comboDisplay.style.display = 'block';
+
+            // Update auto-combo visual feedback
+            if (autoMaintaining) {
+                this.comboDisplay.classList.add('auto-combo-active');
+            } else {
+                this.comboDisplay.classList.remove('auto-combo-active');
+            }
+        } else {
+            this.comboDisplay.style.display = 'none';
+            this.comboDisplay.classList.remove('auto-combo-active');
+        }
     }
 
     /**
@@ -138,6 +228,10 @@ export class HUDUI {
 
         const activeEvents = eventSystem.getActiveEvents();
         const eventsContainer = document.getElementById('active-events');
+        // Note: active-events container might not exist in index.html, game.v7.js didn't seem to update it either.
+        // game.v7.js: uiManager.hudUI.updateActiveEvents();
+        // But where is the container? I don't recall seeing it in index.html.
+        // Let's check if it exists, if not, we skip.
         if (!eventsContainer) return;
 
         eventsContainer.innerHTML = '';
