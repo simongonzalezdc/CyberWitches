@@ -106,7 +106,10 @@ export class ExperimentUI {
 
         for (const recipeId of this.gameState.discoveredRecipes) {
             const recipe = window.HIDDEN_RECIPES.find(r => r.id === recipeId);
-            if (!recipe) continue;
+            if (!recipe) {
+                console.warn('🔴 Recipe not found:', recipeId);
+                continue;
+            }
 
             const card = document.createElement('div');
             card.className = 'card';
@@ -114,6 +117,13 @@ export class ExperimentUI {
             // Validate recipe has required fields
             const recipeInputs = recipe.inputs || {};
             const recipeOutputs = recipe.outputs || {};
+            
+            // Debug logging
+            console.log('📋 Rendering recipe:', recipeId, { 
+                name: recipe.name,
+                inputs: recipeInputs, 
+                outputs: recipeOutputs 
+            });
             
             card.innerHTML = `
                 <div class="card-title">${recipe.name || 'Unknown Recipe'}</div>

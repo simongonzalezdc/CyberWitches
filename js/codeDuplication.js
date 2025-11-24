@@ -28,10 +28,20 @@ class CodeDuplicationDetector {
      */
     static formatShort(num) {
         // Defensive check: handle invalid input
-        if (num === undefined || num === null || isNaN(num)) {
-            console.warn('formatShort called with invalid value:', num);
+        // Convert to number if it's a string
+        if (typeof num === 'string') {
+            num = parseFloat(num);
+        }
+        
+        // Check for invalid values
+        if (num === undefined || num === null || isNaN(num) || !isFinite(num)) {
+            console.warn('🔴 formatShort() received invalid value:', num, 'type:', typeof num);
             return '0.00';
         }
+        
+        // Convert to number just to be safe
+        num = Number(num);
+        
         if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
         if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
         if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
