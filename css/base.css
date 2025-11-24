@@ -1,62 +1,50 @@
-/* CSS Variables and Base Styles */
-
-/* CSS Variables - Enhanced Color Palette */
+/* CSS Variables and Base Styles - Arcane Terminal Redesign */
 :root {
-    /* Primary Colors */
-    --primary: #FF2DAA;
-    --primary-glow: #FF2DAA;
-    --secondary: #22E3FF;
-    --secondary-glow: #22E3FF;
-    --accent: #FFDB6E;
-    --accent-glow: #FFDB6E;
-    --success: #3CE3C5;
-    --success-glow: #3CE3C5;
+    /* Core Palette - Void & Data */
+    --bg-void: #050508;
+    --bg-terminal: #0a0a12;
+    --bg-panel: #11111a;
+    --bg-panel-trans: rgba(17, 17, 26, 0.85);
+    
+    /* Semantic Colors */
+    --color-magic: #FFB84C;      /* Amber/Gold - Raw Magic */
+    --color-magic-dim: #8a6220;
+    
+    --color-code: #00F0FF;       /* Neon Cyan - Compiled Data */
+    --color-code-dim: #007a82;
+    
+    --color-corruption: #FF2A6D; /* Glitch Red - Fading/Error */
+    --color-corruption-dim: #821638;
+    
+    --color-system: #b8b8d0;     /* Silver - System Text */
+    --color-dim: #5a5a70;        /* Dimmed Text */
 
-    /* Background Colors */
-    --bg-dark: #0A0A0F;
-    --bg-light: #1A1A2A;
-    --bg-card: #1F1F3A;
-    --bg-card-hover: #252540;
-
-    /* Text Colors - WCAG AA Compliant */
-    --text: #FFFFFF;
-    --text-bright: #FFFFFF;
-    --text-dim: #CCCCCC;
-    --text-muted: #999999;
-
-    /* Error Colors - WCAG AA Compliant */
-    --error: #FF6B6B;
-    --error-bg: #4A1F1F;
-
-    /* Success Colors - WCAG AA Compliant */
-    --success-text: #3CE3C5;
-    --success-bg: #1A3A35;
-
-    /* Border & Shadow */
-    --border: #333366;
-    --border-bright: #555588;
-    --shadow: rgba(0, 0, 0, 0.5);
-    --shadow-glow: rgba(255, 45, 170, 0.225);
-    --shadow-secondary: rgba(34, 227, 255, 0.225);
-
-    /* Glassmorphism */
-    --glass-bg: rgba(31, 31, 58, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-blur: blur(20px);
-
-    /* Animations */
-    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* Spacing Scale - Standardized */
+    /* Functional Variables (Mapped to Semantic) */
+    --primary: var(--color-code);
+    --primary-glow: var(--color-code);
+    --accent: var(--color-magic);
+    --accent-glow: var(--color-magic);
+    --error: var(--color-corruption);
+    
+    /* Terminal Specifics */
+    --font-main: 'Orbitron', sans-serif;
+    --font-mono: 'Fira Code', 'Courier New', monospace;
+    
+    --scanline-color: rgba(0, 240, 255, 0.03);
+    --border-light: rgba(0, 240, 255, 0.2);
+    --border-focus: rgba(0, 240, 255, 0.6);
+    
+    /* Spacing Scale */
     --spacing-xs: 4px;
     --spacing-sm: 8px;
     --spacing-md: 12px;
     --spacing-lg: 16px;
     --spacing-xl: 24px;
     --spacing-2xl: 32px;
-    --spacing-3xl: 48px;
+    
+    /* Animations */
+    --anim-flash: 0.1s ease-out;
+    --anim-boot: 1s cubic-bezier(0.1, 0.9, 0.2, 1);
 }
 
 /* Reset & Base Styles */
@@ -67,36 +55,78 @@
 }
 
 html {
-    scroll-behavior: smooth;
+    height: 100%;
+    overflow: hidden; /* Prevent page scroll, we use internal scrolling */
 }
 
 body {
-    font-family: 'Rajdhani', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.6;
-    color: var(--text);
-    background: var(--bg-dark);
-    min-height: 100vh;
-    overflow-x: hidden;
+    font-family: var(--font-main);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-system);
+    background: var(--bg-void);
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
     position: relative;
 }
 
-/* Screen reader only content */
-.sr-only {
+/* CRT Scanline Overlay */
+body::after {
+    content: " ";
+    display: block;
     position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 9999;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.6;
 }
 
-/* Focus styles for accessibility */
-*:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+/* Typography Override */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--color-code);
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-void);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-dim);
+    border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-code-dim);
+}
+
+/* Selection */
+::selection {
+    background: var(--color-code);
+    color: var(--bg-void);
+    text-shadow: none;
+}
+
+/* Utility: High Contrast / No Animation Mode (Accessibility) */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

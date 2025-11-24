@@ -1,194 +1,151 @@
-/* Main Layout Styles */
+/* Layout Styles - Dashboard Architecture */
 
-/* Container */
+/* Main Container - The Terminal Screen */
 .main-game {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: var(--spacing-lg);
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Flexbox utilities */
-.flex {
-    display: flex;
-}
-
-.flex-column {
-    flex-direction: column;
-}
-
-.flex-center {
-    justify-content: center;
-    align-items: center;
-}
-
-.flex-between {
-    justify-content: space-between;
-}
-
-.flex-wrap {
-    flex-wrap: wrap;
-}
-
-/* Grid utilities */
-.grid {
     display: grid;
+    grid-template-columns: 280px 1fr; /* Sidebar | Main Content */
+    grid-template-rows: 60px 1fr 100px; /* HUD | Content | Controls */
+    height: 100vh;
+    width: 100vw;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
-.grid-2 {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-lg);
+/* 1. Top HUD - System Status Bar */
+.hud {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--spacing-xl);
+    z-index: 50;
 }
 
-.grid-3 {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-lg);
-}
-
-.grid-4 {
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-lg);
-}
-
-/* Spacing utilities */
-.mt-sm { margin-top: var(--spacing-sm); }
-.mt-md { margin-top: var(--spacing-md); }
-.mt-lg { margin-top: var(--spacing-lg); }
-.mb-sm { margin-bottom: var(--spacing-sm); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.mb-lg { margin-bottom: var(--spacing-lg); }
-.p-sm { padding: var(--spacing-sm); }
-.p-md { padding: var(--spacing-md); }
-.p-lg { padding: var(--spacing-lg); }
-
-/* Content lists */
-.content-list {
+/* 2. Sidebar - Resource Monitor */
+.sidebar {
+    grid-column: 1;
+    grid-row: 2 / -1; /* Span to bottom */
+    background: var(--bg-terminal);
+    border-right: 1px solid var(--border-light);
+    padding: var(--spacing-lg);
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
-    overflow-y: auto;
-    max-height: calc(100vh - 300px);
-    contain: layout style paint;
+    gap: var(--spacing-lg);
+    position: relative; /* Remove fixed positioning */
+    height: auto;
+    width: auto;
+    transform: none; /* Reset transform */
 }
 
-/* Tabs */
-.tabs-nav {
-    display: flex;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    border-bottom: 2px solid var(--border);
-    flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-    background: var(--bg-dark);
-    z-index: 10;
+.sidebar-header {
+    border-bottom: 1px solid var(--color-dim);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
 }
 
+.sidebar-header h3 {
+    font-size: 12px;
+    color: var(--color-dim);
+    letter-spacing: 1px;
+}
+
+/* 3. Main Content Area - The "Viewport" */
 .tabs-content {
-    flex: 1;
+    grid-column: 2;
+    grid-row: 2; /* Occupy middle space */
     position: relative;
-    min-height: 400px;
-}
-
-.tab-panel {
-    display: none;
-    contain: layout style;
-}
-
-.tab-panel.active {
-    display: block;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Sidebar */
-.sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    width: 250px;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border-right: 1px solid var(--glass-border);
-    padding: var(--spacing-lg);
-    z-index: 100;
-    transition: transform var(--transition-normal);
     overflow-y: auto;
-    contain: layout style paint;
+    padding: var(--spacing-xl);
+    background: radial-gradient(circle at center, #1a1a24 0%, var(--bg-void) 100%);
 }
 
-.sidebar.collapsed {
-    transform: translateX(-210px);
-}
-
-/* HUD */
-.hud {
-    position: sticky;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    border-bottom: 1px solid var(--glass-border);
-    padding: var(--spacing-md);
-    z-index: 50;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.hud-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* Footer */
-.game-footer {
-    margin-top: auto;
-    padding: var(--spacing-xl) var(--spacing-lg);
-    background: var(--glass-bg);
-    border-top: 1px solid var(--border);
-}
-
-.footer-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.footer-links {
+/* 4. Bottom Control Deck - The Interaction Zone */
+.control-deck {
+    grid-column: 2;
+    grid-row: 3;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-light);
     display: flex;
     justify-content: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
-    margin-bottom: var(--spacing-md);
+    align-items: center;
+    position: relative;
+    z-index: 60;
 }
 
-.footer-link {
-    color: var(--text-dim);
-    text-decoration: none;
-    transition: color var(--transition-fast);
+/* Tab Navigation - File Directory Style */
+.tabs-nav {
+    grid-column: 2;
+    grid-row: 1; /* Move tabs to HUD area or just below */
+    /* Actually, let's float them in the main content area top or integrate with HUD */
+    /* For this design, let's put them at the top of the main content area */
+    display: flex;
+    gap: 2px;
+    padding: 0;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-terminal);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    margin: 0; /* Reset margin */
 }
 
-.footer-link:hover {
-    color: var(--primary);
+.content-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    padding-bottom: 100px; /* Space for scrolling */
+    max-height: none; /* Let grid handle height */
 }
 
-.footer-text {
-    color: var(--text-muted);
-    font-size: 14px;
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .main-game {
+        grid-template-columns: 1fr;
+        grid-template-rows: 50px 50px 1fr 120px; /* HUD | Tabs | Content | Controls */
+    }
+
+    .hud {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .tabs-nav {
+        grid-column: 1;
+        grid-row: 2;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .sidebar {
+        display: none; /* Hide sidebar on mobile by default */
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 250px;
+        z-index: 200;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.active {
+        display: flex;
+        transform: translateX(0);
+    }
+
+    .tabs-content {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .control-deck {
+        grid-column: 1;
+        grid-row: 4;
+    }
 }
