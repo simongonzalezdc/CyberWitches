@@ -1606,7 +1606,7 @@ export class AudioSystem {
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
         if (currentTier < 2) {
             // Sound effects are only available from Tier 2 onwards
-            console.log('playSound: Tier too low, current tier:', currentTier);
+            // Silent return to prevent console spam
             return false;
         }
         

@@ -33,20 +33,21 @@ export class PerformanceBaseline {
         
         // Measure load time
         // Use performance.timing if available and valid, otherwise use performance.now()
+        let rawLoadTime = 0;
         if (performance.timing && performance.timing.loadEventEnd > 0) {
-            this.metrics.loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            rawLoadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
         } else {
             // Fallback: measure time since page load using performance.now()
-            // This is less accurate but works if timing API is not available
-            const navigationStart = performance.timing?.navigationStart || performance.timeOrigin || 0;
-            this.metrics.loadTime = Math.round(performance.now() - (performance.timeOrigin || 0));
+            rawLoadTime = performance.now();
         }
         
-        // Ensure loadTime is positive and reasonable
-        if (this.metrics.loadTime <= 0 || this.metrics.loadTime > 60000) {
-            // Invalid value, use a default or skip
-            this.metrics.loadTime = Math.round(performance.now() - (performance.timeOrigin || 0));
+        // Ensure loadTime is positive and reasonable (between 0 and 60s)
+        if (isNaN(rawLoadTime) || rawLoadTime <= 0 || rawLoadTime > 60000) {
+            // Invalid value detected, use simple performance.now() as fallback
+            rawLoadTime = performance.now();
         }
+        
+        this.metrics.loadTime = Math.round(rawLoadTime);
         
         // Measure memory
         if (performance.memory) {

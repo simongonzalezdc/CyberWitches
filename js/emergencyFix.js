@@ -44,6 +44,21 @@ window.fixCorruptedSave = function() {
         }
     }
 
+    // Fix Corrupted Performance Baseline
+    try {
+        const baseline = localStorage.getItem('performanceBaseline');
+        if (baseline) {
+            const data = JSON.parse(baseline);
+            if (data.loadTime < 0) {
+                console.log('🔧 Removing corrupted performance baseline (negative load time)');
+                localStorage.removeItem('performanceBaseline');
+                fixed = true;
+            }
+        }
+    } catch (e) {
+        console.warn('Error checking performance baseline:', e);
+    }
+
     if (fixed) {
         console.log('✅ Repairs complete. Saving clean state...');
         window.gameState.saveGameStateImmediate();
