@@ -26,6 +26,8 @@ import accessibilityManager from './accessibility.js';
 import featureIndicatorManager from './featureIndicators.js';
 import memoryLeakPreventionManager from './memoryLeakFix.js';
 import { handleError } from './errorHandler.js';
+import { UnifiedGameLoop } from './core/UnifiedGameLoop.js';
+import { createErrorBoundary } from './core/ErrorBoundary.js';
 
 export async function initGame() {
     console.log('Initializing Hex Compiler...');
@@ -53,15 +55,24 @@ export async function initGame() {
         });
 
         // 4. Initialize Feature Managers (depend on GameState and often UIManager)
-        const inputManager = new InputManager(gameState, uiManager, craftingManager);
-        const castManager = new CastManager(gameState, uiManager, comboSystem, eventSystem);
+        // Week 2: Wrap critical systems with error boundaries for module isolation
+        const inputManagerBoundary = createErrorBoundary('InputManager');
+        const inputManager = inputManagerBoundary.wrap(() => new InputManager(gameState, uiManager, craftingManager))();
+        
+        const castManagerBoundary = createErrorBoundary('CastManager');
+        const castManager = castManagerBoundary.wrap(() => new CastManager(gameState, uiManager, comboSystem, eventSystem))();
+        
         const pwaManager = new PWAFeaturesManager(gameState, uiManager);
         const tutorialSystem = new TutorialSystem(gameState, uiManager);
         const meditationManager = new MeditationManager(gameState, uiManager);
         const prestigeManager = new PrestigeManager(gameState, uiManager);
         const inscriptionsManager = new InscriptionsManager(gameState, uiManager);
-        const audioSystem = new AudioSystem();
-        const particleSystem = new ParticleSystem(gameState);
+        
+        const audioSystemBoundary = createErrorBoundary('AudioSystem');
+        const audioSystem = audioSystemBoundary.wrap(() => new AudioSystem())();
+        
+        const particleSystemBoundary = createErrorBoundary('ParticleSystem');
+        const particleSystem = particleSystemBoundary.wrap(() => new ParticleSystem(gameState))();
         
         // Design Tier System depends on AudioSystem
         const designTierSystem = new DesignTierSystem(gameState, uiManager, audioSystem);
@@ -95,17 +106,81 @@ export async function initGame() {
         // 7. Set up Game State callbacks
         setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager);
 
-        // 8. Start Game Loop
-        gameState.start();
+        // 8. Initialize Unified Game Loop (replaces multiple setInterval calls)
+        const gameLoop = new UnifiedGameLoop();
+        
+        // Register game state tick for logic updates (10 TPS)
+        gameLoop.registerLogicUpdate((delta) => {
+            gameState.tick(delta, 1.0); // Pass delta and event multiplier
+        });
+        
+        // Register visual updates (60 FPS) - particle systems, animations
+        if (particleSystem && particleSystem.initialized) {
+            gameLoop.registerVisualUpdate((delta) => {
+                // Particle system handles its own animation loop
+                // This is for other visual updates if needed
+            });
+        }
+        
+        // Register render callbacks (60 FPS with interpolation)
+        gameLoop.registerRender((alpha) => {
+            // Update UI at 60 FPS for smooth updates
+            uiManager.updateAllUI();
+            uiManager.hudUI.updateABPS();
+            uiManager.hudUI.updateComboDisplay();
+        });
+        
+        // Register periodic checks (integrated into game loop)
+        gameLoop.registerPeriodicCheck('tierCheck', () => {
+            try {
+                designTierSystem.checkTierUnlocks();
+            } catch (error) {
+                console.error('Error checking tier unlocks:', error);
+            }
+        });
+        
+        const shownAchievementNotifications = new Set();
+        gameLoop.registerPeriodicCheck('achievementCheck', () => {
+            if (achievements) {
+                const newAchievements = achievements.checkAchievements();
+                for (const achievement of newAchievements) {
+                    if (!shownAchievementNotifications.has(achievement.name)) {
+                        shownAchievementNotifications.add(achievement.name);
+                        uiManager.showNotification(`Achievement: ${achievement.name}!`, 'success');
+                        designTierSystem.checkTierUnlocks();
+                        if (uiManager.accessibilityManager) {
+                            uiManager.accessibilityManager.announce(`Achievement unlocked: ${achievement.name}`, 'polite');
+                        }
+                    }
+                }
+            }
+        });
+        
+        gameLoop.registerPeriodicCheck('eventCheck', () => {
+            if (eventSystem) {
+                eventSystem.checkForEvents();
+                eventSystem.updateEvents(1.0);
+                uiManager.hudUI.updateActiveEvents();
+            }
+        });
+        
+        gameLoop.registerPeriodicCheck('hudUpdate', () => {
+            uiManager.hudUI.updateABPS();
+            uiManager.hudUI.updateComboDisplay();
+        });
+        
+        // Store game loop for cleanup
+        window.gameLoop = gameLoop;
+        
+        // Start unified game loop (replaces gameState.start() tick loop)
+        gameState.loadGameState(); // Load state but don't start old tick loop
+        gameLoop.start();
 
         // 9. Initial UI Update
         uiManager.updateAllUI();
         
         // Switch to first tab
         uiManager.switchTab('workstations');
-
-        // 10. Set up periodic checks (that aren't in GameState tick)
-        setupPeriodicChecks(gameState, designTierSystem, achievements, eventSystem, uiManager);
 
         // 11. Unlock Audio on interaction
         setupAudioUnlock(audioSystem, designTierSystem);
@@ -122,7 +197,7 @@ export async function initGame() {
 
         console.log('Hex Compiler initialization complete.');
         
-        return { gameState, uiManager };
+        return { gameState, uiManager, gameLoop };
 
     } catch (error) {
         console.error('Critical error during game initialization:', error);
@@ -204,55 +279,12 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
     dailyRituals.onTasksRefreshed = () => uiManager.dailiesUI.update();
 }
 
+// DEPRECATED: setupPeriodicChecks - Replaced by UnifiedGameLoop periodic checks
+// This function is kept for reference but is no longer called.
+// All periodic checks are now integrated into UnifiedGameLoop (see gameInit.js lines 99-160)
 function setupPeriodicChecks(gameState, designTierSystem, achievements, eventSystem, uiManager) {
-    // 1. Check Tier Unlocks (every 10s)
-    const tierCheckInterval = setInterval(() => {
-        try {
-            designTierSystem.checkTierUnlocks();
-        } catch (error) {
-            console.error('Error checking tier unlocks:', error);
-        }
-    }, 10000);
-    memoryLeakPreventionManager.trackInterval(tierCheckInterval);
-
-    // 2. Check Achievements (every 2s)
-    const shownAchievementNotifications = new Set();
-    const achievementCheckInterval = setInterval(() => {
-        if (achievements) {
-            const newAchievements = achievements.checkAchievements();
-            for (const achievement of newAchievements) {
-                if (!shownAchievementNotifications.has(achievement.name)) {
-                    shownAchievementNotifications.add(achievement.name);
-                    uiManager.showNotification(`Achievement: ${achievement.name}!`, 'success');
-                    
-                    // Check tier unlocks after achievement
-                    designTierSystem.checkTierUnlocks();
-                    
-                    if (uiManager.accessibilityManager) {
-                        uiManager.accessibilityManager.announce(`Achievement unlocked: ${achievement.name}`, 'polite');
-                    }
-                }
-            }
-        }
-    }, 2000);
-    memoryLeakPreventionManager.trackInterval(achievementCheckInterval);
-
-    // 3. Check Events (every 1s)
-    const eventCheckInterval = setInterval(() => {
-        if (eventSystem) {
-            eventSystem.checkForEvents();
-            eventSystem.updateEvents(1.0); 
-            uiManager.hudUI.updateActiveEvents();
-        }
-    }, 1000);
-    memoryLeakPreventionManager.trackInterval(eventCheckInterval);
-
-    // 4. Update ABPS and Combo (every 0.5s)
-    const hudUpdateInterval = setInterval(() => {
-        uiManager.hudUI.updateABPS();
-        uiManager.hudUI.updateComboDisplay();
-    }, 500);
-    memoryLeakPreventionManager.trackInterval(hudUpdateInterval);
+    console.warn('setupPeriodicChecks is deprecated. Use UnifiedGameLoop.registerPeriodicCheck() instead.');
+    // This function is no longer used - periodic checks are handled by UnifiedGameLoop
 }
 
 function setupAudioUnlock(audioSystem, designTierSystem) {

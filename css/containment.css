@@ -1,0 +1,122 @@
+/**
+ * CSS Containment for Paint Optimization
+ * Week 2, Day 4 Optimization
+ * 
+ * Uses CSS containment to isolate rendering work and improve performance
+ * https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Containment
+ */
+
+/* Tab panels - contain layout and paint */
+.tab-panel,
+.tab-pane {
+    contain: layout style paint;
+    content-visibility: auto;
+}
+
+/* Workstation cards - contain layout and paint */
+.workstation-card,
+.upgrade-card,
+.ingredient-card {
+    contain: layout style paint;
+}
+
+/* Modal containers - contain layout, style, and paint */
+.modal,
+.modal-overlay,
+.modal-content {
+    contain: layout style paint;
+}
+
+/* HUD elements - contain layout and paint */
+.hud-element,
+.hud-panel,
+.hud-counter {
+    contain: layout style paint;
+}
+
+/* Inventory grid - contain layout and paint */
+.inventory-grid,
+.inventory-item {
+    contain: layout style paint;
+}
+
+/* Meditation canvas - contain layout, style, and paint */
+#meditation-canvas,
+.meditation-tower {
+    contain: layout style paint;
+}
+
+/* Particle system canvas - contain layout, style, and paint */
+#sparkle-canvas {
+    contain: layout style paint;
+}
+
+/* Notification system - contain layout, style, and paint */
+.notification,
+.notification-container {
+    contain: layout style paint;
+}
+
+/* Floating text - contain layout, style, and paint */
+.floating-text {
+    contain: layout style paint;
+}
+
+/* Stats panels - contain layout and paint */
+.stats-panel,
+.stats-row {
+    contain: layout style paint;
+}
+
+/* Achievement cards - contain layout and paint */
+.achievement-card,
+.achievement-grid {
+    contain: layout style paint;
+}
+
+/* Daily ritual items - contain layout and paint */
+.daily-ritual-item,
+.daily-ritual-list {
+    contain: layout style paint;
+}
+
+/* Experiment recipes - contain layout and paint */
+.recipe-card,
+.recipe-grid {
+    contain: layout style paint;
+}
+
+/* Inscription upgrades - contain layout and paint */
+.inscription-card,
+.inscription-grid {
+    contain: layout style paint;
+}
+
+/* Content visibility optimization for off-screen tabs */
+.tab-panel:not(.active) {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px; /* Estimated size for layout */
+}
+
+/* Optimize scrolling containers */
+.scrollable-container {
+    contain: layout style paint;
+    content-visibility: auto;
+}
+
+/* Optimize animation containers */
+.animated-container {
+    contain: layout style paint;
+    will-change: transform, opacity;
+}
+
+/* Optimize frequently updated elements */
+.dynamic-content {
+    contain: layout style paint;
+}
+
+/* Strict containment for isolated components */
+.isolated-component {
+    contain: strict; /* layout + style + paint + size */
+}
+

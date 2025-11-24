@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Hex Compiler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', 'Fira Code', monospace;
+            background: #050508;
+            color: #00F0FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            text-align: center;
+            max-width: 600px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+        }
+        
+        .error-code {
+            font-size: 1.2rem;
+            color: #FF2A6D;
+            margin-bottom: 2rem;
+        }
+        
+        .message {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            color: #b8b8d0;
+        }
+        
+        .retry-button {
+            background: rgba(0, 240, 255, 0.1);
+            border: 2px solid #00F0FF;
+            color: #00F0FF;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .retry-button:hover {
+            background: rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+        
+        .retry-button:active {
+            transform: scale(0.95);
+        }
+        
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <h1 class="glitch">OFFLINE</h1>
+        <div class="error-code">ERROR: NETWORK_CONNECTION_FAILED</div>
+        <div class="message">
+            <p>The Hex Compiler requires an active network connection.</p>
+            <p>Please check your internet connection and try again.</p>
+        </div>
+        <button class="retry-button" onclick="window.location.reload()">
+            RETRY_CONNECTION
+        </button>
+    </div>
+    
+    <script>
+        // Auto-retry when connection is restored
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>
+

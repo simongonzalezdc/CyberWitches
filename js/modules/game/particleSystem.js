@@ -2,7 +2,10 @@
  * Particle System
  * Manages background sparkles and other particle effects
  * Optimized for performance with visibility detection and cleanup
+ * Uses object pooling to reduce GC pressure (Week 1, Day 2 optimization)
  */
+
+import { ParticlePool } from '../../core/ObjectPool.js';
 
 export class ParticleSystem {
     constructor(gameState) {
@@ -19,6 +22,9 @@ export class ParticleSystem {
         this.gradientCache = new Map();
         this.resizeTimeout = null;
         this.initialized = false;
+        
+        // Object pool for particles (reduces GC pressure)
+        this.particlePool = null;
 
         // Bind methods
         this.animate = this.animate.bind(this);
@@ -44,8 +50,11 @@ export class ParticleSystem {
         // Performance optimization: reduce sparkle count on mobile/low-end devices
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const sparkleCount = isMobile ? 15 : 25;
+        
+        // Initialize object pool for particles
+        this.particlePool = new ParticlePool(sparkleCount * 2); // Pool size = 2x active particles
 
-        // Initialize sparkles
+        // Initialize sparkles using object pool
         this.createSparkles(sparkleCount);
 
         // Set initial size
@@ -63,24 +72,41 @@ export class ParticleSystem {
     }
 
     createSparkles(count) {
+        // Release existing sparkles to pool
+        if (this.particlePool) {
+            this.particlePool.releaseAll(this.sparkles);
+        }
+        
         this.sparkles = [];
+        const colors = [
+            { r: 255, g: 255, b: 255 }, // White
+            { r: 255, g: 45, b: 170 },  // Pink
+            { r: 34, g: 227, b: 255 },  // Cyan
+            { r: 255, g: 219, b: 110 }, // Yellow
+            { r: 60, g: 227, b: 197 }   // Teal
+        ];
+        
         for (let i = 0; i < count; i++) {
-            this.sparkles.push({
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                size: Math.random() * 1.5 + 0.5,
-                speed: Math.random() * 0.3 + 0.1,
-                angle: Math.random() * Math.PI * 2,
-                twinkle: Math.random() * Math.PI * 2,
-                color: [
-                    { r: 255, g: 255, b: 255 }, // White
-                    { r: 255, g: 45, b: 170 },  // Pink
-                    { r: 34, g: 227, b: 255 },  // Cyan
-                    { r: 255, g: 219, b: 110 }, // Yellow
-                    { r: 60, g: 227, b: 197 }   // Teal
-                ][Math.floor(Math.random() * 5)],
-                opacity: Math.random() * 0.5 + 0.3
-            });
+            // Acquire particle from pool and initialize
+            const sparkle = this.particlePool.acquireParticle(
+                Math.random() * window.innerWidth,
+                Math.random() * window.innerHeight,
+                {
+                    vx: Math.cos(Math.random() * Math.PI * 2) * (Math.random() * 0.3 + 0.1),
+                    vy: Math.sin(Math.random() * Math.PI * 2) * (Math.random() * 0.3 + 0.1),
+                    size: Math.random() * 1.5 + 0.5,
+                    life: 1.0,
+                    opacity: Math.random() * 0.5 + 0.3,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                }
+            );
+            
+            // Add particle-specific properties
+            sparkle.angle = Math.random() * Math.PI * 2;
+            sparkle.twinkle = Math.random() * Math.PI * 2;
+            sparkle.speed = Math.sqrt(sparkle.vx * sparkle.vx + sparkle.vy * sparkle.vy);
+            
+            this.sparkles.push(sparkle);
         }
     }
 
@@ -150,15 +176,35 @@ export class ParticleSystem {
 
         // Update and draw sparkles
         this.sparkles.forEach(sparkle => {
-            // Update position
-            sparkle.x += Math.cos(sparkle.angle) * sparkle.speed;
-            sparkle.y += Math.sin(sparkle.angle) * sparkle.speed;
+            if (!sparkle.active) return;
+            
+            // Update position using velocity (from pool) or angle/speed (legacy)
+            if (sparkle.vx !== undefined && sparkle.vy !== undefined) {
+                sparkle.x += sparkle.vx;
+                sparkle.y += sparkle.vy;
+            } else {
+                // Legacy support
+                sparkle.x += Math.cos(sparkle.angle) * sparkle.speed;
+                sparkle.y += Math.sin(sparkle.angle) * sparkle.speed;
+            }
 
             // Wrap around
-            if (sparkle.x < 0) sparkle.x = this.canvas.width;
-            if (sparkle.x > this.canvas.width) sparkle.x = 0;
-            if (sparkle.y < 0) sparkle.y = this.canvas.height;
-            if (sparkle.y > this.canvas.height) sparkle.y = 0;
+            if (sparkle.x < 0) {
+                sparkle.x = this.canvas.width;
+                if (sparkle.vx !== undefined) sparkle.vx = Math.abs(sparkle.vx);
+            }
+            if (sparkle.x > this.canvas.width) {
+                sparkle.x = 0;
+                if (sparkle.vx !== undefined) sparkle.vx = -Math.abs(sparkle.vx);
+            }
+            if (sparkle.y < 0) {
+                sparkle.y = this.canvas.height;
+                if (sparkle.vy !== undefined) sparkle.vy = Math.abs(sparkle.vy);
+            }
+            if (sparkle.y > this.canvas.height) {
+                sparkle.y = 0;
+                if (sparkle.vy !== undefined) sparkle.vy = -Math.abs(sparkle.vy);
+            }
 
             // Update twinkle
             sparkle.twinkle += deltaTime * 0.002;
@@ -226,5 +272,11 @@ export class ParticleSystem {
         document.removeEventListener('visibilitychange', this.handleVisibilityChange);
         if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
         this.gradientCache.clear();
+        
+        // Release all particles back to pool
+        if (this.particlePool && this.sparkles.length > 0) {
+            this.particlePool.releaseAll(this.sparkles);
+            this.sparkles = [];
+        }
     }
 }

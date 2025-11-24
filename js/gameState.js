@@ -108,10 +108,15 @@ export class GameState {
 
     /**
      * Initialize the game state
+     * Note: If using UnifiedGameLoop, call loadGameState() directly instead
      */
     start() {
         this.loadGameState();
-        this.startTickLoop();
+        // Only start tick loop if not using UnifiedGameLoop
+        // UnifiedGameLoop will call tick() directly
+        if (!window.gameLoop) {
+            this.startTickLoop();
+        }
     }
 
     /**
@@ -172,11 +177,16 @@ export class GameState {
 
     /**
      * Main game tick with optimized timing and batching
+     * @param {number} delta - Time delta in seconds (from unified game loop)
      * @param {number} eventMultiplier - Event multiplier for production
      */
-    tick(eventMultiplier = 1.0) {
+    tick(delta = null, eventMultiplier = 1.0) {
+        // If delta is provided (from unified game loop), use it
+        // Otherwise calculate from last tick time (backward compatibility)
         const now = Date.now();
-        const delta = (now - this.lastTickTime) / 1000;
+        if (delta === null || delta === undefined) {
+            delta = (now - this.lastTickTime) / 1000;
+        }
         this.lastTickTime = now;
 
         // Update buffs

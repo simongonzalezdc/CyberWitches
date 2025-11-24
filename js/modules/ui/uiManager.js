@@ -11,7 +11,8 @@ import { ExperimentUI } from './experimentUI.js';
 import { StatsUI } from './statsUI.js';
 import { DailiesUI } from './dailiesUI.js';
 import { BoonsUI } from './boonsUI.js';
-import { MeditationUI } from './meditationUI.js';
+// MeditationUI loaded lazily when meditation tab is accessed
+// import { MeditationUI } from './meditationUI.js';
 import { FloatingTextUI } from './floatingTextUI.js';
 import { HUDUI } from './hudUI.js';
 import { showNotification } from './notifications.js';
@@ -118,6 +119,24 @@ export class UIManager {
             const unlockCondition = tabButton.getAttribute('data-unlock-condition') || 'Prestige 1';
             showNotification(`This tab is locked. Unlocks at: ${unlockCondition}`, 'info');
             return;
+        }
+
+        // Week 2: Lazy load meditation system when meditation tab is accessed (non-blocking)
+        if (tabName === 'meditation' && !this.meditationUI && !this.systems.meditationState) {
+            // Load asynchronously without blocking tab switch
+            import('../../utils/lazyModuleLoader.js').then(({ loadMeditationSystem }) => {
+                return loadMeditationSystem();
+            }).then((meditationManager) => {
+                if (meditationManager && meditationManager.checkUnlock()) {
+                    // System initialized, update UI if still on meditation tab
+                    if (this.activeTab === 'meditation' && this.meditationUI) {
+                        this.meditationUI.update();
+                    }
+                }
+            }).catch((error) => {
+                console.error('Failed to lazy load meditation system:', error);
+                showNotification('Failed to load meditation system', 'error');
+            });
         }
 
         // Update browser history if browser navigation manager is available
