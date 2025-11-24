@@ -1,7 +1,7 @@
 {
-  "name": "Spellwright",
-  "short_name": "Spellwright",
-  "description": "Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. Play offline, save progress automatically, and enjoy a full desktop app experience!",
+  "name": "Hex Compiler",
+  "short_name": "Hex Compiler",
+  "description": "Magic is fading. You're a Hex Compiler—translating magical hexes into hexadecimal code. Build digital preservation chambers, compile spells into data, and fight the fading. Play offline with full app experience!",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0E0E12",
@@ -9,38 +9,17 @@
   "orientation": "any",
   "scope": "/",
   "lang": "en",
-  "categories": ["games", "entertainment"],
+  "categories": [
+    "games",
+    "entertainment"
+  ],
   "dir": "ltr",
   "iarc_rating_id": "",
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
       "src": "icons/icon-144x144.png",
       "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-152x152.png",
-      "sizes": "152x152",
       "type": "image/png",
       "purpose": "maskable any"
     },
@@ -51,54 +30,10 @@
       "purpose": "maskable any"
     },
     {
-      "src": "icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
       "src": "icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Cast Spell",
-      "short_name": "Cast",
-      "description": "Quick access to cast spells",
-      "url": "/?action=cast",
-      "icons": [
-        {
-          "src": "icons/cast-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "View Workstations",
-      "short_name": "Workstations",
-      "description": "Go to workstations tab",
-      "url": "/?tab=workstations",
-      "icons": [
-        {
-          "src": "icons/workstation-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "View Stats",
-      "short_name": "Stats",
-      "description": "View game statistics",
-      "url": "/?tab=stats",
-      "icons": [
-        {
-          "src": "icons/stats-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
     }
   ],
   "screenshots": [
@@ -118,7 +53,6 @@
     }
   ],
   "related_applications": [],
-  "prefer_related_applications": false,
   "edge_side_panel": {
     "preferred_width": 400
   }

@@ -10,6 +10,7 @@ import { readdir, stat, copyFile, mkdir } from 'fs/promises';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,7 +30,7 @@ const staticFiles = [
 ];
 
 // Directories to copy recursively
-const staticDirs = ['icons', 'docs', 'images'];
+const staticDirs = ['icons', 'docs', 'images', 'css'];
 
 async function copyStaticFiles() {
   console.log('📁 Copying static files...');
@@ -75,6 +76,52 @@ async function copyStaticFiles() {
       await copyDir(src, dst);
       console.log(`  ✓ Copied directory ${dir}`);
     }
+  }
+}
+
+async function buildTailwindCSS() {
+  console.log('🎨 Building Tailwind CSS...');
+  
+  const tailwindInput = join(__dirname, 'css', 'tailwind.css');
+  const tailwindOutput = join(distDir, 'css', 'tailwind.css');
+  const distCssDir = join(distDir, 'css');
+  
+  if (!existsSync(distCssDir)) {
+    await mkdir(distCssDir, { recursive: true });
+  }
+  
+  // Check if Tailwind is installed
+  try {
+    execSync('npx @tailwindcss/cli --version', { stdio: 'ignore' });
+  } catch (error) {
+    console.log('  ⚠️  Tailwind CSS not installed. Skipping Tailwind build.');
+    console.log('  💡 Run: npm install -D tailwindcss@latest @tailwindcss/cli@latest');
+    return;
+  }
+  
+  if (!existsSync(tailwindInput)) {
+    console.log('  ⚠️  tailwind.css not found. Skipping Tailwind build.');
+    return;
+  }
+  
+  try {
+    execSync(
+      `npx @tailwindcss/cli -i "${tailwindInput}" -o "${tailwindOutput}" ${isProduction ? '--minify' : ''}`,
+      {
+        cwd: __dirname,
+        stdio: 'inherit'
+      }
+    );
+    
+    if (existsSync(tailwindOutput)) {
+      const stats = await stat(tailwindOutput);
+      const sizeKB = (stats.size / 1024).toFixed(2);
+      console.log(`  ✓ Tailwind CSS built (${sizeKB} KB)`);
+    }
+  } catch (error) {
+    console.error('  ✗ Error building Tailwind CSS:', error.message);
+    // Don't fail the build if Tailwind fails
+    console.log('  ⚠️  Continuing build without Tailwind CSS...');
   }
 }
 
@@ -180,6 +227,8 @@ async function build() {
   
   try {
     await copyStaticFiles();
+    console.log('');
+    await buildTailwindCSS();
     console.log('');
     await buildJavaScript();
     console.log('');

@@ -46,15 +46,34 @@ async function start() {
         console.log('✅ Game started successfully.');
         console.log('🎮 Unified game loop active (10 TPS logic, 60 FPS visuals)');
         
-        // Measure performance after initialization (for comparison)
+        // Week 4: Measure performance after initialization (for comparison)
         setTimeout(async () => {
-            const currentBaseline = new PerformanceBaseline();
-            await currentBaseline.measure();
-            const comparison = window.performanceBaseline 
-                ? currentBaseline.compare(window.performanceBaseline)
-                : null;
+            const { performanceValidator } = await import('./utils/performanceValidator.js');
+            
+            // Load baseline if available
+            performanceValidator.loadBaseline();
+            
+            // Measure current performance
+            await performanceValidator.measureCurrent();
+            
+            // Compare and validate
+            const comparison = performanceValidator.compare();
             if (comparison) {
                 console.log('📈 Performance comparison:', comparison);
+            }
+            
+            // Validate improvements
+            const validation = performanceValidator.validate();
+            if (validation) {
+                performanceValidator.printReport();
+                
+                // Create migration baseline for Tailwind CSS
+                if (validation.valid) {
+                    performanceValidator.createMigrationBaseline();
+                    console.log('✅ Performance validation passed. Ready for Tailwind CSS migration.');
+                } else {
+                    console.warn('⚠️ Performance validation failed. Review regressions before proceeding.');
+                }
             }
         }, 6000); // Wait 6 seconds after load
         

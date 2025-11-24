@@ -1,555 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self';
-                   script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' blob:;
-                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-                   img-src 'self' data: blob:;
-                   font-src 'self' data: https://fonts.gstatic.com;
-                   connect-src 'self';
-                   media-src 'self';
-                   worker-src 'self' blob:;
-                   object-src 'none';
-                   frame-src 'none';
-                   base-uri 'self';
-                   form-action 'self';">
+        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 
     <!-- Primary Meta Tags -->
-    <title>Spellwright - Idle Magic Crafting Game | Play Free Online</title>
-    <meta name="title" content="Spellwright - Idle Magic Crafting Game">
-    <meta name="description" content="Magic is fading. You are a Spellwright—one of the last who can preserve it. Cast spells, build preservation chambers, and fight the fading. Play offline anytime! Free incremental/idle game.">
-    <meta name="keywords" content="idle game, incremental game, magic game, crafting game, browser game, offline game, free game, spellwright, magic crafting, prestige game">
-    <meta name="author" content="Spellwright Contributors">
-    <meta name="language" content="English">
-    <link rel="canonical" href="https://yourdomain.com/">
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://yourdomain.com/">
-    <meta property="og:title" content="Spellwright - Idle Magic Crafting Game">
-    <meta property="og:description" content="Magic is fading. Cast spells, build preservation chambers, and fight the fading. Free incremental/idle game with offline support!">
-    <meta property="og:image" content="https://yourdomain.com/images/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="Spellwright">
-
-    <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://yourdomain.com/">
-    <meta property="twitter:title" content="Spellwright - Idle Magic Crafting Game">
-    <meta property="twitter:description" content="Magic is fading. Cast spells, build preservation chambers, and fight the fading. Free incremental/idle game!">
-    <meta property="twitter:image" content="https://yourdomain.com/images/twitter-card.png">
-
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#FF2DAA">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Spellwright">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Spellwright">
-
-    <!-- Favicons & Icons -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
-
-    <!-- Preload critical resources -->
-    <link rel="preload" href="styles.css" as="style">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" as="style" crossorigin>
+    <title>HEX COMPILER // TERMINAL</title>
+    <meta name="title" content="Hex Compiler - Arcane Terminal">
+    <meta name="description"
+        content="Initialize... Loading Spell Protocols... Compile Magic into Code. The Fading is here.">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="styles.css">
-
-    <!-- Tone.js for audio - load with defer for better performance -->
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <!-- Tailwind CSS (Week 5-7: Migrated components) -->
+    <!-- Uncomment after running: npm install -D tailwindcss@latest @tailwindcss/cli@latest && npm run build:tailwind -->
+    <!-- <link rel="stylesheet" href="dist/css/tailwind.css"> -->
+    
+    <!-- Audio Engine -->
     <script src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js" defer></script>
 </head>
+
 <body>
-    <!-- Screen reader announcements (ARIA live region) -->
-    <div id="sr-announcements" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+    <!-- Boot Sequence Overlay -->
+    <div id="boot-screen" class="boot-screen" style="display: none;"></div>
 
-    <!-- Night Sky Stars Background -->
-    <div id="night-sky-stars" class="night-sky-stars"></div>
-    <!-- Floating Sparkles Canvas -->
-    <canvas id="sparkle-canvas" class="sparkle-canvas"></canvas>
-    <!-- Sidebar for Element Counters (Left Side) -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>Elements</h3>
-            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-                <span class="sidebar-toggle-icon">▶</span>
-            </button>
-        </div>
-        <div class="sidebar-content">
-            <div class="element-counters" id="element-counters">
-                <div class="element-counter" data-element="fire" id="element-counter-fire">
-                    <span class="element-icon element-icon-fire">🔥</span>
-                    <span class="element-label">Fire</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="water" id="element-counter-water">
-                    <span class="element-icon element-icon-water">💧</span>
-                    <span class="element-label">Water</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="air" id="element-counter-air">
-                    <span class="element-icon element-icon-air">💨</span>
-                    <span class="element-label">Air</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="crystal" id="element-counter-crystal">
-                    <span class="element-icon element-icon-crystal">💎</span>
-                    <span class="element-label">Crystal</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="aether" id="element-counter-aether">
-                    <span class="element-icon element-icon-aether">✨</span>
-                    <span class="element-label">Aether</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" data-element="focus" id="element-counter-focus">
-                    <span class="element-icon element-icon-focus">🧘</span>
-                    <span class="element-label">Focus</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter element-counter-settings" id="settings-counter" role="button" tabindex="0" aria-label="Open Settings" title="Settings (Ctrl+,)">
-                    <span class="element-icon element-icon-settings">⚙</span>
-                    <span class="element-label">Settings</span>
-                </div>
-            </div>
-            
-            <!-- Craft Notifications Area -->
-            <div class="sidebar-section">
-                <h4 class="sidebar-section-title">Recent Crafts</h4>
-                <div class="craft-notifications" id="craft-notifications"></div>
-            </div>
-            
-            <!-- Auto Mode Toggle -->
-            <div class="sidebar-section">
-                <button id="auto-cast-toggle" class="sidebar-auto-toggle" style="display: none;">
-                    <span class="auto-icon">⚡</span>
-                    <span class="auto-label">Auto Mode</span>
-                    <span class="auto-status" id="auto-status">OFF</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- HUD - Top Bar -->
-    <div class="hud" role="banner">
-        <div class="hud-content">
-            <div class="currency-display" role="group" aria-label="Resources">
-                <span id="ab-display" aria-live="polite" aria-atomic="true" title="Arcane Bits - Preserved energy captured from fading magic. Use it to build preservation structures.">AB: 0</span>
-                <span id="abps-display" class="seps-display" aria-live="polite" aria-atomic="false" title="Arcane Bits per second">0.0 AB/s</span>
-                <span id="specialization-indicator" style="display: none; margin-left: 10px; font-size: 20px;" aria-live="polite" title="Elemental Affinity"></span>
-            </div>
-                <div class="hud-controls">
-                    <button id="help-button" class="btn-secondary" title="How to play" aria-label="Open help menu" style="margin-right: 8px;">
-                        ❓ Help
-                    </button>
-                    <button id="install-app-button" class="btn-install" style="display: none;" title="Install to play offline" aria-label="Install App">
-                        <span class="install-icon">📱</span> Install
-                    </button>
-                    <button id="cast-button" class="btn-cast" title="Gather magic before it fades">
-                        <img src="images/ui/cast-button-icon.png" alt="Cast" class="cast-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">
-                        <span class="css-icon-sparkle"></span> Cast
-                    </button>
-                </div>
-        </div>
-    </div>
-
-    <!-- Main Game Area -->
-    <main id="main-game" class="main-game" role="main">
-        <!-- Particle Effects Canvas -->
-        <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: none;"></canvas>
+    <!-- Main Dashboard Container -->
+    <main class="main-game crt-flicker">
         
-        <!-- Tab Navigation -->
-        <div class="tabs-nav" role="tablist" aria-label="Game sections">
-            <button class="tab-btn active" data-tab="workstations" role="tab" aria-selected="true" aria-controls="workstations-tab" id="workstations-tab-btn" title="Preservation chambers that capture and hold spell energy before it fades"><span class="tab-icon tab-icon-workstations" aria-hidden="true">⚙</span> Workstations</button>
-            <button class="tab-btn" data-tab="inscriptions" role="tab" aria-selected="false" aria-controls="inscriptions-tab" id="inscriptions-tab-btn" title="Refine your preservation techniques with permanent upgrades"><span class="tab-icon tab-icon-inscriptions" aria-hidden="true">◇</span> Inscriptions</button>
-            <button class="tab-btn" data-tab="inventory" role="tab" aria-selected="false" aria-controls="inventory-tab" id="inventory-tab-btn" title="Your preserved materials that resist the fading"><span class="tab-icon tab-icon-inventory" aria-hidden="true">■</span> Inventory</button>
-            <button class="tab-btn" data-tab="experiment" role="tab" aria-selected="false" aria-controls="experiment-tab" id="experiment-tab-btn" title="Discover new preservation techniques through experimentation"><span class="tab-icon tab-icon-experiment" aria-hidden="true"><span class="css-icon-lightning"></span></span> Experiment</button>
-            <button class="tab-btn" data-tab="dailies" role="tab" aria-selected="false" aria-controls="dailies-tab" id="dailies-tab-btn" title="Maintenance rituals to keep preserved magic stable"><span class="tab-icon tab-icon-dailies" aria-hidden="true">●</span> Rituals</button>
-            <!-- Coven tab archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
-            <button class="tab-btn" data-tab="boons" role="tab" aria-selected="false" aria-controls="boons-tab" id="boons-tab-btn" title="Buy permanent bonuses with Eldritch Keys"><span class="tab-icon tab-icon-boons" aria-hidden="true">▲</span> Boons</button>
-            <button class="tab-btn" data-tab="meditation" role="tab" aria-selected="false" aria-controls="meditation-tab" id="meditation-tab-btn" title="Defend your mind from the mental toll of the fading"><span class="tab-icon tab-icon-meditation" aria-hidden="true">◐</span> Meditation</button>
-            <button class="tab-btn" data-tab="stats" role="tab" aria-selected="false" aria-controls="stats-tab" id="stats-tab-btn" title="Your preservation milestones and achievements"><span class="tab-icon tab-icon-stats" aria-hidden="true">▣</span> Stats</button>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="tabs-content">
-            <!-- Workstations Tab -->
-            <div id="workstations-tab" class="tab-panel active" role="tabpanel" aria-labelledby="workstations-tab-btn" tabindex="0">
-                <div id="workstation-list" class="content-list" role="list"></div>
-            </div>
-
-            <!-- Inscriptions Tab -->
-            <div id="inscriptions-tab" class="tab-panel" role="tabpanel" aria-labelledby="inscriptions-tab-btn" aria-hidden="true">
-                <div id="upgrade-list" class="content-list" role="list"></div>
-            </div>
-
-            <!-- Inventory Tab -->
-            <div id="inventory-tab" class="tab-panel" role="tabpanel" aria-labelledby="inventory-tab-btn" aria-hidden="true">
-                <div id="inventory-list" class="content-list" role="list"></div>
-            </div>
-
-            <!-- Experiment Tab -->
-            <div id="experiment-tab" class="tab-panel">
-                <div class="experiment-intro" style="margin-bottom: 20px; padding: 15px; background: var(--bg-secondary, #16213e); border-radius: 8px; border: 1px solid var(--border, #333);">
-                    <p style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.5; margin: 0;">
-                        <strong style="color: var(--text-primary, #fff);">Discover new preservation techniques</strong> by experimenting with different combinations of preserved materials. Each discovery helps you fight the fading more effectively.
-                    </p>
+        <!-- 1. Top HUD (System Status) -->
+        <header class="hud">
+            <div class="hud-left">
+                <div class="currency-display">
+                    <span id="ab-display" class="system-value">INIT...</span>
+                    <span id="abps-display" class="system-rate">--/s</span>
                 </div>
-                <button id="experiment-button" class="btn-primary" title="Discover new preservation techniques through experimentation">Try Experiment</button>
-                <div id="experiment-result" class="result-box"></div>
-                <div id="recipe-list" class="content-list"></div>
+            </div>
+            
+            <div class="hud-center">
+                <div id="active-events" class="active-events"></div>
             </div>
 
-            <!-- Rituals Tab -->
+            <div class="hud-right">
+                <div class="system-controls">
+                    <button id="help-button" class="btn-icon" aria-label="Help">?</button>
+                    <button id="settings-button" class="btn-icon" aria-label="Settings">⚙</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. Sidebar (Resource Monitor) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>RESOURCE MONITOR</h3>
+            </div>
+            <div class="element-counters" id="element-counters">
+                <div class="element-counter" id="element-counter-fire">
+                    <span class="element-label">FIRE_ESSENCE</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" id="element-counter-water">
+                    <span class="element-label">WATER_ESSENCE</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" id="element-counter-air">
+                    <span class="element-label">AIR_ESSENCE</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" id="element-counter-crystal">
+                    <span class="element-label">CRYSTAL_DUST</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" id="element-counter-aether">
+                    <span class="element-label">AETHER_FLUX</span>
+                    <span class="element-amount">0</span>
+                </div>
+                <div class="element-counter" id="element-counter-focus" style="display: none;">
+                    <span class="element-label">FOCUS</span>
+                    <span class="element-amount">0</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-header mt-lg">
+                <h3>SYSTEM LOG</h3>
+            </div>
+            <div class="craft-notifications" id="craft-notifications"></div>
+        </aside>
+
+        <!-- 3. Main Content Area (The Viewport) -->
+        <section class="tabs-content">
+            <!-- Tab Navigation (File Path Style) -->
+            <nav class="tabs-nav" role="tablist">
+                <button class="tab-btn active" data-tab="workstations">/MNT/WORKSTATIONS</button>
+                <button class="tab-btn" data-tab="inscriptions">/SYS/INSCRIPTIONS</button>
+                <button class="tab-btn" data-tab="inventory">/USR/INVENTORY</button>
+                <button class="tab-btn" data-tab="experiment">/BIN/EXPERIMENT</button>
+                <button class="tab-btn" data-tab="dailies">/CRON/RITUALS</button>
+                <button class="tab-btn" data-tab="boons">/ROOT/BOONS</button>
+                <button class="tab-btn" data-tab="meditation">/DEV/NULL/MEDITATE</button>
+                <button class="tab-btn" data-tab="stats">/LOG/STATS</button>
+                <button class="tab-btn" data-tab="settings">/CFG/SETTINGS</button>
+            </nav>
+
+            <!-- Tab Panels -->
+            <div id="workstations-tab" class="tab-panel active">
+                <div id="workstation-list" class="content-list"></div>
+            </div>
+            <div id="inscriptions-tab" class="tab-panel">
+                <div id="upgrade-list" class="content-list"></div>
+            </div>
+            <div id="inventory-tab" class="tab-panel">
+                <div id="inventory-list" class="content-list"></div>
+            </div>
+            <div id="experiment-tab" class="tab-panel">
+                <div class="experiment-interface">
+                    <button id="experiment-button" class="btn-primary">RUN_PROTOCOL</button>
+                    <div id="experiment-result" class="result-box"></div>
+                    <div id="recipe-list" class="content-list"></div>
+                </div>
+            </div>
             <div id="dailies-tab" class="tab-panel">
                 <div id="task-list" class="content-list"></div>
             </div>
-
-            <!-- Coven Tab - Archived for future development - see ARCHIVED_COVEN_FEATURES.md -->
-            <!-- <div id="coven-tab" class="tab-panel">
-                <div id="coven-content" class="content-list"></div>
-            </div> -->
-
-            <!-- Boons Tab -->
             <div id="boons-tab" class="tab-panel">
                 <div class="boon-header">
-                    <span id="ek-display">Eldritch Keys: 0</span>
+                    <span id="ek-display">KEYS: 0</span>
                 </div>
                 <div id="boon-list" class="content-list"></div>
             </div>
-
-            <!-- Meditation Tab -->
             <div id="meditation-tab" class="tab-panel">
-                <div class="meditation-header">
-                    <div class="meditation-currency">
-                        <span id="focus-display">Focus: 0</span>
-                        <span id="focusps-display">0 Focus/s</span>
+                <div class="meditation-interface">
+                    <div class="meditation-header">
+                        <span id="focus-display">FOCUS: 0</span>
+                        <span id="tranquility-display">TRANQUILITY: 100%</span>
                     </div>
-                    <div class="meditation-health">
-                        <span>Tranquility: </span>
-                        <span id="tranquility-display">100</span> / <span id="tranquility-max-display">100</span>
+                    <div class="meditation-controls">
+                        <button id="start-meditation-button" class="btn-primary">INIT_SEQUENCE</button>
+                        <button id="end-meditation-button" class="btn-secondary hidden">ABORT</button>
                     </div>
-                    <div class="meditation-wave">
-                        <span>Wave: </span>
-                        <span id="wave-display">0</span>
-                    </div>
-                </div>
-                <div class="meditation-controls">
-                    <button id="start-meditation-button" class="btn-primary">Start Meditation</button>
-                    <button id="end-meditation-button" class="btn-secondary" style="display: none;">End Meditation</button>
-                </div>
-                <div class="meditation-main">
                     <div class="meditation-grid-container">
                         <canvas id="meditation-canvas"></canvas>
                     </div>
                     <div class="meditation-sidebar">
-                        <div class="meditation-upgrades">
-                            <h3>Meditation Upgrades</h3>
-                            <div id="meditation-upgrade-list" class="meditation-upgrade-list"></div>
-                        </div>
-                        <div class="tower-selection">
-                            <h3>Towers</h3>
-                            <div id="tower-list" class="tower-list"></div>
-                        </div>
-                        <div class="meditation-inventory">
-                            <h3>Meditation Inventory</h3>
-                            <div id="meditation-inventory-list" class="meditation-inventory-list"></div>
-                        </div>
+                        <div id="tower-list" class="tower-list"></div>
+                        <div id="meditation-upgrade-list" class="meditation-upgrade-list"></div>
                     </div>
                 </div>
             </div>
-
-            <!-- Stats Tab -->
             <div id="stats-tab" class="tab-panel">
                 <div id="stats-content" class="content-list"></div>
             </div>
-
-            <!-- Settings Tab -->
             <div id="settings-tab" class="tab-panel">
                 <div class="settings-content">
-                    <h2 class="settings-header"><span class="tab-icon tab-icon-settings css-icon-settings"></span> Settings</h2>
-                    
-                    <!-- Design Tier Settings -->
+                    <!-- Settings content will be injected here -->
+                    <!-- Key Settings to preserve -->
                     <div class="settings-section">
-                        <h3>Design Tier</h3>
-                        <p>Current Tier: <span id="current-tier-display">0</span></p>
+                        <h3>DISPLAY_MODE</h3>
                         <select id="tier-selector" class="settings-select">
-                            <option value="0">Tier 0: Minimal</option>
-                            <option value="1">Tier 1: Basic Color</option>
-                            <option value="2">Tier 2: Sound Effects</option>
-                            <option value="3">Tier 3: Full Graphics</option>
-                            <option value="4">Tier 4: Music</option>
+                            <option value="0">TIER 0: DOS</option>
+                            <option value="1">TIER 1: BASIC</option>
+                            <option value="2">TIER 2: ENHANCED</option>
+                            <option value="3">TIER 3: TERMINAL</option>
+                            <option value="4">TIER 4: FULL</option>
                         </select>
-                        <p class="settings-note">Only unlocked tiers available</p>
                     </div>
-
-                        <!-- Sustainable Design Settings -->
-                        <div class="settings-section" id="sustainable-design-section">
-                            <h3>Energy & Performance</h3>
-                            <div class="setting-item">
-                                <label class="setting-label">
-                                    <input type="checkbox" id="low-power-mode-toggle" class="setting-checkbox">
-                                    <span>Low Power Mode</span>
-                                </label>
-                                    <p class="settings-note">Saves battery by reducing effects</p>
-                            </div>
-                            <div class="setting-item">
-                                <label class="setting-label" for="animation-quality-select">
-                                    Animation Quality:
-                                </label>
-                                <select id="animation-quality-select" class="settings-select">
-                                    <option value="high">High</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="low">Low</option>
-                                </select>
-                                <p class="settings-note">Lower = less battery</p>
-                            </div>
-                        </div>
-
-                        <!-- Audio Volume Settings -->
-                        <div class="settings-section">
-                            <h3>Audio Volume</h3>
-                        
-                        <!-- Sound Effects Volume (Tier 2+) -->
-                        <div class="volume-control">
-                            <label class="volume-label" for="sfx-volume-slider">
-                                Sound Effects Volume (Tier 2+)
-                            </label>
-                            <div class="volume-slider-container">
-                                <input 
-                                    type="range" 
-                                    id="sfx-volume-slider" 
-                                    class="volume-slider" 
-                                    min="0" 
-                                    max="1" 
-                                    step="0.05" 
-                                    value="1"
-                                >
-                                <span class="volume-value" id="sfx-volume-value">100%</span>
-                            </div>
-                        </div>
-
-                        <!-- Music Volume (Tier 4+) -->
-                        <div class="volume-control">
-                            <label class="volume-label" for="music-volume-slider">
-                                Music Volume (Tier 4+)
-                            </label>
-                            <div class="volume-slider-container">
-                                <input 
-                                    type="range" 
-                                    id="music-volume-slider" 
-                                    class="volume-slider" 
-                                    min="0" 
-                                    max="1" 
-                                    step="0.05" 
-                                    value="1"
-                                >
-                                <span class="volume-value" id="music-volume-value">100%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Story Section -->
-                    <div class="settings-section">
-                        <h3><span class="settings-icon">📖</span> The Story</h3>
-                        <p style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
-                            Magic is dying. The world's spell energy is fading, and once it's gone, it won't return. You are a <strong style="color: var(--success, #00d4aa);">Spellwright</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
-                        </p>
-                        <p style="color: var(--text-secondary, #aaa); font-size: 14px; line-height: 1.6; margin-bottom: 15px;">
-                            Every spell you cast pulls energy from a dwindling pool. If you don't act, magic will be gone forever. Your workstations are preservation chambers—structures that capture and hold spell energy before it fades.
-                        </p>
-                        <button id="read-full-story-button" class="btn-secondary" style="margin-top: 10px;">
-                            <span class="settings-icon">📚</span> Read Full Story
-                        </button>
-                    </div>
-
-                    <!-- Fading Theme Visual Effects -->
-                    <div class="settings-section">
-                        <h3><span class="settings-icon">✨</span> Fading Theme Effects</h3>
-                        <p class="settings-note">Visual effects that represent the fading magic (Gradient: Tier 2+, Indicators: Tier 1+)</p>
-                        <div class="setting-item">
-                            <label class="setting-label">
-                                <input type="checkbox" id="fading-gradient-toggle" class="setting-checkbox">
-                                <span>Background Fade Gradient</span>
-                            </label>
-                            <p class="settings-note">Subtle gradient overlay showing magic fading (Tier 2+)</p>
-                        </div>
-                    </div>
-
-                    <!-- Tutorial Section -->
-                    <div class="settings-section">
-                        <h3><span class="settings-icon">📚</span> Tutorial</h3>
-                        <p class="settings-note">Learn how to play</p>
-                        <button id="start-tutorial-button" class="btn-primary">
-                            <span class="settings-icon">▶</span> Start Tutorial
-                        </button>
-                        <button id="reset-tutorial-button" class="btn-secondary" style="margin-top: 8px;">
-                            <span class="settings-icon">🔄</span> Reset Tutorial
-                        </button>
-                    </div>
-
-                    <!-- Reset Progress Section -->
-                    <div class="settings-section settings-section-danger">
-                        <h3><span class="settings-icon settings-icon-warning css-icon-warning"></span> Danger Zone</h3>
-                        <p class="settings-warning">These actions cannot be undone!</p>
-                        <button id="reset-all-progress-button" class="btn-danger">
-                            <span class="settings-icon settings-icon-reset css-icon-reset"></span> Reset All Progress
-                        </button>
-                        <p class="settings-note">Deletes all progress, prestige points, and achievements.</p>
-                    </div>
+                    <button id="reset-all-progress-button" class="btn-danger mt-lg">FACTORY_RESET</button>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+
+        <!-- 4. Bottom Control Deck (The Cast Interface) -->
+        <footer class="control-deck">
+            <div class="cast-container">
+                <button id="cast-button" class="btn-cast">
+                    <span class="cast-icon">⚡</span>
+                    <span class="cast-label">EXEC</span>
+                </button>
+            </div>
+            
+            <!-- Combo Display floating near cast button -->
+            <div id="combo-display" class="combo-display" style="position: absolute; right: 20px; bottom: 20px;"></div>
+            
+            <!-- Auto Cast Toggle -->
+            <button id="auto-cast-toggle" class="auto-toggle hidden" style="position: absolute; left: 20px;">
+                AUTO_SEQ: <span id="auto-status">OFF</span>
+            </button>
+        </footer>
+
+    </main>
 
     <!-- Modals -->
     <div id="prestige-modal" class="modal">
         <div class="modal-content">
-            <h2>⚡ Ascend</h2>
-            <p>Eldritch Keys: <span id="prestige-ek">0</span></p>
-            <p>You'll get: +<span id="prestige-gain">0</span> EK</p>
+            <h2>SYSTEM_ASCENSION</h2>
+            <p>REBOOTING SYSTEM WITH NEW KERNEL...</p>
+            <p>KEYS_ACQUIRED: <span id="prestige-gain">0</span></p>
             <div class="modal-buttons">
-                <button id="ascend-button" class="btn-primary">Ascend</button>
-                <button id="close-prestige-button" class="btn-secondary">Close</button>
+                <button id="ascend-button" class="btn-primary">CONFIRM_REBOOT</button>
+                <button id="close-prestige-button" class="btn-secondary">CANCEL</button>
             </div>
         </div>
     </div>
 
     <div id="welcome-back-modal" class="modal">
         <div class="modal-content">
-            <h2>🌙 Welcome Back!</h2>
-            <p id="welcome-time">⏰ Away: 0s</p>
-            <p id="welcome-ab">✨ Earned: 0 SE</p>
-            <button id="close-welcome-button" class="btn-primary">Close</button>
+            <h2>SESSION_RESTORED</h2>
+            <p id="welcome-time">OFFLINE_DURATION: 0s</p>
+            <p id="welcome-ab">RESOURCES_COMPILED: 0</p>
+            <button id="close-welcome-button" class="btn-primary">RESUME</button>
         </div>
     </div>
 
-    <!-- Notifications Container -->
-    <div id="notifications-container"></div>
-
-    <!-- Help/Tutorial Modal -->
-    <div id="help-modal" class="modal" role="dialog" aria-labelledby="help-modal-title" aria-modal="true">
-        <div class="modal-content" style="max-width: 700px;">
-            <button class="modal-close" aria-label="Close help modal">&times;</button>
-            <h2 id="help-modal-title">How to Play Spellwright</h2>
-
+    <div id="help-modal" class="modal">
+        <div class="modal-content help-modal-content">
+            <button class="modal-close">&times;</button>
+            <h2>TERMINAL_MANUAL</h2>
             <div class="help-sections">
-                <section class="help-section">
-                    <h3>🎯 Goal</h3>
-                    <p>Magic is fading from the world. As a Spellwright, your job is to preserve it by capturing spell energy before it disappears forever.</p>
-                </section>
-
-                <section class="help-section">
-                    <h3>⚡ Getting Started</h3>
-                    <ol>
-                        <li><strong>Cast Spells</strong> - Click the "Cast" button to gather elemental essences (Fire, Water, Air, Crystal, Aether)</li>
-                        <li><strong>Build Workstations</strong> - Use essences to craft preservation chambers that automatically generate Arcane Bits (AB)</li>
-                        <li><strong>Earn AB</strong> - Arcane Bits are the currency for advanced workstations and upgrades</li>
-                    </ol>
-                </section>
-
-                <section class="help-section">
-                    <h3>📑 Tabs Explained</h3>
-                    <ul>
-                        <li><strong>Workstations</strong> - Build preservation chambers to generate resources automatically</li>
-                        <li><strong>Inscriptions</strong> - Permanent upgrades that boost your production</li>
-                        <li><strong>Inventory</strong> - View all your collected materials</li>
-                        <li><strong>Experiment</strong> - Discover new recipes by combining ingredients</li>
-                        <li><strong>Rituals</strong> - Daily tasks for bonus rewards</li>
-                        <li><strong>Boons</strong> - Spend Eldritch Keys on permanent bonuses</li>
-                        <li><strong>Meditation</strong> - Tower defense mini-game to earn Focus</li>
-                        <li><strong>Stats</strong> - Track your achievements and milestones</li>
-                    </ul>
-                </section>
-
-                <section class="help-section">
-                    <h3>⏫ Progression Path</h3>
-                    <ol>
-                        <li>Cast spells → Gather essences</li>
-                        <li>Craft basic workstations (Candle, Cauldron)</li>
-                        <li>Earn AB from workstations</li>
-                        <li>Build advanced workstations</li>
-                        <li>Unlock Inscriptions for permanent boosts</li>
-                        <li>Experiment to discover new recipes</li>
-                        <li>Ascend (Prestige) to earn Eldritch Keys</li>
-                        <li>Spend Keys on powerful Boons</li>
-                    </ol>
-                </section>
-
-                <section class="help-section">
-                    <h3>⌨️ Keyboard Shortcuts</h3>
-                    <ul>
-                        <li><kbd>1-8</kbd> - Switch between tabs</li>
-                        <li><kbd>Ctrl</kbd> + <kbd>,</kbd> - Open Settings</li>
-                        <li><kbd>Esc</kbd> - Close modals</li>
-                        <li><kbd>Tab</kbd> - Navigate between elements</li>
-                        <li><kbd>Enter</kbd>/<kbd>Space</kbd> - Activate buttons</li>
-                    </ul>
-                </section>
-
-                <section class="help-section">
-                    <h3>💡 Tips</h3>
-                    <ul>
-                        <li>The game continues running when you're away - offline progress included!</li>
-                        <li>Focus on one type of workstation at first to maximize efficiency</li>
-                        <li>Inscriptions are expensive but give permanent benefits</li>
-                        <li>Experiment often - some recipes are very powerful</li>
-                        <li>Meditation is optional but provides useful Focus bonuses</li>
-                        <li>Don't rush to Ascend - build up first for better returns</li>
-                    </ul>
-                </section>
-
-                <section class="help-section">
-                    <h3>💾 Saving</h3>
-                    <p>Your game saves automatically every few seconds to your browser's local storage. You can also export/import saves from the Settings tab.</p>
-                </section>
-
-                <section class="help-section">
-                    <h3>❓ Need More Help?</h3>
-                    <p>Check the <a href="https://github.com/yourusername/spellwright/wiki" target="_blank" rel="noopener">Wiki</a> for detailed guides, or join our <a href="https://discord.gg/spellwright" target="_blank" rel="noopener">Discord</a> community!</p>
-                </section>
+                <!-- Help content -->
+                <p>1. Click EXEC to compile raw magic.</p>
+                <p>2. Build workstations to automate compilation.</p>
+                <p>3. Manage resources to prevent system overflow.</p>
             </div>
-
-            <button class="btn-primary" id="close-help-button">Got it!</button>
+            <button class="btn-primary" id="close-help-button">ACKNOWLEDGED</button>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="game-footer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="PRIVACY.md" class="footer-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-                <span class="footer-separator">•</span>
-                <a href="TERMS.md" class="footer-link" target="_blank" rel="noopener noreferrer">Terms of Service</a>
-                <span class="footer-separator">•</span>
-                <a href="LICENSE" class="footer-link" target="_blank" rel="noopener noreferrer">License (MIT)</a>
-                <span class="footer-separator">•</span>
-                <a href="ATTRIBUTION.md" class="footer-link" target="_blank" rel="noopener noreferrer">Credits & Attribution</a>
-            </div>
-            <div class="footer-info">
-                <p class="footer-text">Spellwright v1.0.0 • Open Source • Made with ✨ by Spellwright Contributors</p>
-            </div>
-        </div>
-    </footer>
 
     <!-- Scripts -->
-    
-    <!-- Bundled JavaScript - All modules combined for better performance -->
-    <script type="module" src="js/game.bundle.js"></script>
+    <script type="module" src="js/lifecycleManager.js"></script>
+    <script type="module" src="js/loadingState.js"></script>
+    <script type="module" src="js/accessibility.js"></script>
+    <script type="module" src="js/errorRecovery.js"></script>
+    <script type="module" src="js/privacyControls.js"></script>
+    <script type="module" src="js/progressIndicators.js"></script>
+    <script type="module" src="js/featureIndicators.js"></script>
+    <script type="module" src="js/customTooltips.js"></script>
+    <script type="module" src="js/sustainableDesign.js"></script>
+    <script type="module" src="js/browserNavigation.js"></script>
+    <script type="module" src="js/mobileNavigation.js"></script>
+    <script type="module" src="js/mobilePerformance.js"></script>
+    <script type="module" src="js/errorReporting.js"></script>
+    <script type="module" src="js/domOptimization.js"></script>
+    <script type="module" src="js/memoryLeakFix.js"></script>
+    <script type="module" src="js/lazyAssetLoading.js"></script>
+    <script type="module" src="js/animationOptimization.js"></script>
+    <script type="module" src="js/questSystem.js"></script>
+    <script type="module" src="js/playerAnalytics.js"></script>
+    <script type="module" src="js/balanceAnalytics.js"></script>
 
+    <script type="module" src="js/tutorial.js"></script>
+    <script type="module" src="js/balanceTesting.js"></script>
+    <script type="module" src="js/codeOrganization.js"></script>
+    <script type="module" src="js/coreWebVitals.js"></script>
+    <script type="module" src="js/progressionAnalysis.js"></script>
+    <script type="module" src="js/economyBalancing.js"></script>
+    <script type="module" src="js/feedbackLoops.js"></script>
+    <script type="module" src="js/codeDuplication.js"></script>
+    <script type="module" src="js/game.js"></script>
 </body>
 </html>
-

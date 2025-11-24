@@ -249,7 +249,7 @@ export class ParticleSystem {
         this.ctx.globalCompositeOperation = 'source-over';
 
         // Only continue RAF loop if not managed by UnifiedGameLoop
-        const isManagedByGameLoop = window.gameLoop && window.gameLoop.isRunning;
+        // Reuse isManagedByGameLoop variable declared earlier in this function
         if (!isManagedByGameLoop) {
             this.animationFrameId = requestAnimationFrame(this.animate);
         } else {

@@ -18,6 +18,8 @@ import { HUDUI } from './hudUI.js';
 import { showNotification } from './notifications.js';
 import { accessibilityManager, announceToScreenReader } from '../../accessibility.js';
 import { showLoadingState, hideLoadingState } from '../../loadingState.js';
+import { batchDOMUpdate } from '../../utils/DOMBatcher.js'; // Week 3: DOM batching
+import { uiStore } from '../../state/uiStore.js'; // Week 4: Reactive UI store (optional)
 
 export class UIManager {
     constructor(gameState, gameSystems = {}) {
@@ -123,10 +125,16 @@ export class UIManager {
 
         // Week 2: Lazy load meditation system when meditation tab is accessed (non-blocking)
         if (tabName === 'meditation' && !this.meditationUI && !this.systems.meditationState) {
+            // Show skeleton screen while loading
+            this.showSkeletonScreen('meditation-tab');
+            
             // Load asynchronously without blocking tab switch
             import('../../utils/lazyModuleLoader.js').then(({ loadMeditationSystem }) => {
                 return loadMeditationSystem();
             }).then((meditationManager) => {
+                // Hide skeleton screen
+                this.hideSkeletonScreen('meditation-tab');
+                
                 if (meditationManager && meditationManager.checkUnlock()) {
                     // System initialized, update UI if still on meditation tab
                     if (this.activeTab === 'meditation' && this.meditationUI) {
@@ -134,6 +142,8 @@ export class UIManager {
                     }
                 }
             }).catch((error) => {
+                // Hide skeleton screen on error
+                this.hideSkeletonScreen('meditation-tab');
                 console.error('Failed to lazy load meditation system:', error);
                 showNotification('Failed to load meditation system', 'error');
             });
@@ -146,6 +156,11 @@ export class UIManager {
 
         // Set the active tab
         this.activeTab = tabName;
+        
+        // Week 4: Update reactive UI store
+        if (uiStore) {
+            uiStore.set('currentTab', tabName);
+        }
 
         // Update buttons with ARIA states
         this.tabButtons.forEach(btn => {
@@ -225,12 +240,16 @@ export class UIManager {
      * @param {Function} updateFn - Function to execute for update
      */
     debouncedUIUpdate(key, updateFn) {
+        // Week 3: Use DOM batching for better performance
+        batchDOMUpdate(key, updateFn, 0);
+        
+        // Also keep timeout-based debouncing for backward compatibility
         // Clear existing timeout for this key
         if (this.uiUpdateTimeouts.has(key)) {
             clearTimeout(this.uiUpdateTimeouts.get(key));
         }
 
-        // Set new timeout
+        // Set new timeout as fallback
         const timeoutId = setTimeout(() => {
             updateFn();
             this.uiUpdateTimeouts.delete(key);

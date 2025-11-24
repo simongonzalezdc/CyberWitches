@@ -1,0 +1,192 @@
+/**
+ * Tailwind CSS 4.1 Migration Examples
+ * Reference implementations for migrating components
+ * 
+ * Week 5-6: Tailwind CSS Migration
+ */
+
+/**
+ * Example 1: Button Migration
+ * Before: Custom CSS classes
+ * After: Tailwind utilities + @layer components
+ */
+
+/* OLD (components.css) */
+/*
+.btn-cast {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--color-code);
+    color: var(--color-code);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.btn-cast:hover {
+    background: rgba(0, 240, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+}
+*/
+
+/* NEW (tailwind.css @layer components) */
+/*
+.btn-cast {
+    @apply relative w-[100px] h-[100px] rounded-full;
+    @apply bg-black/50 border-2 border-code text-code;
+    @apply drop-shadow-xl drop-shadow-cyan-500/20;
+    @apply hover:bg-code/10 hover:drop-shadow-cyan-500/40;
+    @apply active:scale-95 transition-all duration-100;
+    @apply pointer-coarse:w-[120px] pointer-coarse:h-[120px];
+}
+*/
+
+/**
+ * Example 2: Card Component Migration
+ */
+
+/* OLD */
+/*
+.workstation-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+*/
+
+/* NEW */
+/*
+.workstation-card {
+    @apply bg-panel border border-light rounded-lg p-4 mb-3;
+    @apply drop-shadow-xl drop-shadow-cyan-500/10;
+    @apply pointer-coarse:p-5;
+}
+*/
+
+/**
+ * Example 3: Terminal Text with Text Shadow (NEW in Tailwind 4.1)
+ */
+
+/* OLD */
+/*
+.terminal-text {
+    font-family: var(--font-mono);
+    color: var(--color-code);
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+*/
+
+/* NEW - Using Tailwind 4.1 text-shadow utilities */
+/*
+.terminal-text {
+    @apply font-mono text-code;
+    @apply text-shadow-lg text-shadow-cyan-500/50;
+}
+*/
+
+/**
+ * Example 4: Layout with Safe Alignment (NEW in Tailwind 4.1)
+ */
+
+/* OLD */
+/*
+.tab-nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    overflow-x: auto;
+}
+*/
+
+/* NEW - Using safe alignment to prevent overflow */
+/*
+.tab-nav {
+    @apply flex justify-center-safe gap-2;
+    @apply overflow-x-auto;
+}
+*/
+
+/**
+ * Example 5: Mask Utilities for Fade Effects (NEW in Tailwind 4.1)
+ */
+
+/* OLD */
+/*
+.fade-bottom {
+    mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+}
+*/
+
+/* NEW - Using Tailwind 4.1 mask utilities */
+/*
+.fade-bottom {
+    @apply mask-b-to-0%;
+}
+*/
+
+/**
+ * Example 6: Pointer Variants for Touch Optimization (NEW in Tailwind 4.1)
+ */
+
+/* OLD */
+/*
+@media (max-width: 768px) {
+    .btn-action {
+        padding: 12px 24px;
+    }
+}
+*/
+
+/* NEW - Using pointer variants (better than viewport breakpoints) */
+/*
+.btn-action {
+    @apply px-4 py-2;
+    @apply pointer-coarse:px-6 pointer-coarse:py-3;
+}
+*/
+
+/**
+ * Example 7: Colored Drop Shadows (NEW in Tailwind 4.1)
+ */
+
+/* OLD */
+/*
+.glow-effect {
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+*/
+
+/* NEW - Using colored drop shadows */
+/*
+.glow-effect {
+    @apply drop-shadow-xl drop-shadow-cyan-500/30;
+}
+*/
+
+/**
+ * Example 8: Combining Multiple New Features
+ */
+
+/* Terminal-style card with all new features */
+/*
+.terminal-card {
+    @apply bg-panel border border-light rounded-lg p-4;
+    @apply drop-shadow-xl drop-shadow-cyan-500/20;
+    @apply text-shadow-md text-shadow-cyan-500/40;
+    @apply mask-b-from-10% mask-t-to-90%;
+    @apply pointer-coarse:p-5;
+    @apply transition-all duration-200;
+}
+
+.terminal-card-title {
+    @apply text-code font-bold uppercase tracking-wider;
+    @apply text-shadow-lg text-shadow-cyan-500/50;
+    @apply pointer-coarse:text-lg;
+}
+*/
+

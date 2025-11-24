@@ -7,6 +7,7 @@
  */
 
 import { scheduleIdleUpdate } from './scheduleIdleUpdate.js';
+import { showLoadingIndicator } from './loadingStates.js';
 
 /**
  * Lazy module loader with caching and loading indicators
@@ -41,8 +42,16 @@ class LazyModuleLoader {
         // Show loading indicator if callback provided
         const showLoading = options.showLoading !== false;
         let loadingIndicator = null;
-        if (showLoading && window.uiManager && window.uiManager.showLoadingIndicator) {
-            loadingIndicator = window.uiManager.showLoadingIndicator(`Loading ${options.moduleName || 'module'}...`);
+        if (showLoading) {
+            try {
+                loadingIndicator = showLoadingIndicator(`Loading ${options.moduleName || 'module'}...`, {
+                    position: 'center',
+                    overlay: true,
+                    spinner: true
+                });
+            } catch (error) {
+                console.warn('Could not show loading indicator:', error);
+            }
         }
         
         // Create loading promise
