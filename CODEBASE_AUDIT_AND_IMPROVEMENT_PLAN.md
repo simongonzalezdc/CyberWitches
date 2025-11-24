@@ -23,12 +23,13 @@ This audit identifies **47 specific improvements** across 8 major categories, pr
 
 This JavaScript/Performance audit is **part of an integrated 7-week implementation plan** that includes:
 1. **Weeks 1-4:** JavaScript Performance Optimization (this document)
-2. **Weeks 5-6:** Tailwind CSS 4.1 Migration (see `TAILWIND_CSS_AUDIT.md`)
+2. **Weeks 5-6:** Tailwind CSS 4.1 Migration (see `TAILWIND_CSS_AUDIT.md` and `UI_REDESIGN_PLAN.md`)
 3. **Week 7:** Integration & Polish
 
 **See `INTEGRATED_IMPLEMENTATION_PLAN.md` for the complete sequential implementation strategy.**
 
 **Key Compatibility Notes:**
+- ✅ **Visual Redesign:** See `UI_REDESIGN_PLAN.md` for the "Void Witch Protocol" aesthetic.
 - ✅ CSS containment recommendations (Section 5.4) will be applied via Tailwind utilities
 - ✅ Tailwind migration starts AFTER JavaScript optimizations are complete (stable baseline)
 - ✅ Service worker updates (Section 2) will handle Tailwind-generated CSS
@@ -67,7 +68,7 @@ class UnifiedGameLoop {
         this.visualAccumulator = 0;
         this.logicAccumulator = 0;
         this.lastTime = performance.now();
-        this.visualTimestep = 1000 / 60;  // 60 FPS for smooth rendering
+        this.visualTimestep = 1000 / 30;  // 30 FPS (Cinematic/Low Power)
         this.logicTimestep = 100;          // 10 TPS for game logic (matches current design)
         this.maxFrameTime = 250;           // Prevent spiral of death
         this.isRunning = false;
@@ -102,7 +103,7 @@ class UnifiedGameLoop {
             this.logicAccumulator -= this.logicTimestep;
         }
         
-        // Update visuals at 60 FPS for smooth animations
+        // Update visuals at 30 FPS (Cinematic Feel, Low CPU)
         while (this.visualAccumulator >= this.visualTimestep) {
             this.updateVisuals(this.visualTimestep / 1000);
             this.visualAccumulator -= this.visualTimestep;
@@ -121,7 +122,7 @@ class UnifiedGameLoop {
     }
     
     updateVisuals(delta) {
-        // Lightweight visual updates at 60 FPS
+        // Lightweight visual updates at 30 FPS
         // Particle systems, animations, transitions
     }
     
@@ -140,9 +141,9 @@ class UnifiedGameLoop {
 ```
 
 **Priority:** 🔴 Critical  
-**Impact:** Eliminates timing drift, improves performance by 30-40% (logic runs at 10 TPS, visuals at 60 FPS)  
-**Files to Modify:** `js/gameState.js`, `js/gameInit.js`  
-**Key Benefit:** Your game doesn't need 60 FPS for currency calculations - this saves massive CPU while keeping visuals smooth
+**Impact:** Eliminates timing drift, improves performance by 30-40% (logic runs at 10 TPS, visuals at 30 FPS)  
+**Files to Modify:** `js/gameState.js`, `js/gameInit.js`
+**Key Benefit:** Your game doesn't need 60 FPS for currency calculations - this saves massive CPU while keeping visuals smooth via CSS.
 
 #### 1.2 Consolidate Periodic Checks
 Instead of separate intervals, integrate into main loop:
@@ -459,8 +460,8 @@ function removeTrackedListenerWeak(element, event) {
     const eventMap = listenerMapWeak.get(element);
     if (eventMap) {
         const handler = eventMap.get(event);
-        if (handler) {
-            element.removeEventListener(event, handler);
+    if (handler) {
+        element.removeEventListener(event, handler);
             eventMap.delete(event);
             if (eventMap.size === 0) {
                 listenerMapWeak.delete(element);

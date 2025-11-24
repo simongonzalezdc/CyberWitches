@@ -1,6 +1,7 @@
 /**
  * Memory Leak Prevention System
  * Tracks and cleans up event listeners and references
+ * Enhanced with growth monitoring (Phase 1, Week 1)
  */
 
 class MemoryLeakPreventionManager {
@@ -9,6 +10,11 @@ class MemoryLeakPreventionManager {
         this.intervals = new Set();
         this.timeouts = new Set();
         this.observers = new Set();
+        
+        // Enhanced monitoring
+        this.baselineMemory = 0;
+        this.checkInterval = null;
+        
         this.init();
     }
 
@@ -18,8 +24,13 @@ class MemoryLeakPreventionManager {
             this.cleanup();
         });
 
-        // Periodic cleanup check
-        setInterval(() => {
+        // Initialize baseline memory if supported
+        if (performance.memory) {
+            this.baselineMemory = performance.memory.usedJSHeapSize;
+        }
+
+        // Periodic cleanup and monitoring check
+        this.checkInterval = setInterval(() => {
             this.checkForLeaks();
         }, 60000); // Check every minute
     }
@@ -115,21 +126,56 @@ class MemoryLeakPreventionManager {
         });
 
         // Clean up orphaned listeners
+        if (orphanedListeners.length > 0) {
+            console.warn(`Found ${orphanedListeners.length} orphaned event listeners. Cleaning up...`);
         orphanedListeners.forEach(id => {
             this.removeEventListener(id);
         });
+        }
 
-        // Check memory usage
+        // Enhanced Memory Monitoring
         if ('performance' in window && 'memory' in performance) {
             const memory = performance.memory;
-            const usedMB = memory.usedJSHeapSize / 1048576;
-            const totalMB = memory.totalJSHeapSize / 1048576;
+            const usedHeap = memory.usedJSHeapSize;
+            const totalHeap = memory.totalJSHeapSize;
+            
+            const usedMB = (usedHeap / 1048576).toFixed(2);
+            const totalMB = (totalHeap / 1048576).toFixed(2);
 
-            // Warn if memory usage is high
-            if (usedMB / totalMB > 0.9) {
-                console.warn('High memory usage detected. Consider cleaning up resources.');
-                this.cleanup();
+            // Warn if memory usage is high (>90% of total heap)
+            if (usedHeap / totalHeap > 0.9) {
+                console.warn(`Critical Memory Warning: Using ${usedMB}MB of ${totalMB}MB (${((usedHeap/totalHeap)*100).toFixed(1)}%)`);
+                this.forceCleanup();
             }
+            
+            // Check for rapid growth (>50% increase from baseline)
+            if (this.baselineMemory > 0) {
+                const growth = usedHeap - this.baselineMemory;
+                const growthPercent = (growth / this.baselineMemory) * 100;
+                
+                if (growthPercent > 50) {
+                     console.warn(`Potential Memory Leak: Memory grew by ${growthPercent.toFixed(1)}% (${((growth)/1048576).toFixed(2)}MB) since baseline.`);
+                     // Don't force cleanup immediately on growth alone, but log it.
+                     // Update baseline if we've stabilized at a higher level to prevent spamming
+                     this.baselineMemory = usedHeap; 
+                }
+            } else {
+                this.baselineMemory = usedHeap;
+            }
+        }
+    }
+    
+    /**
+     * Force aggressive cleanup
+     */
+    forceCleanup() {
+        console.log('Forcing memory cleanup...');
+                this.cleanup();
+        
+        // Optional: clear caches if critical
+        if ('caches' in window) {
+             // We generally don't want to wipe the app cache, but maybe others?
+             // Leaving this safe for now.
         }
     }
 
@@ -141,12 +187,16 @@ class MemoryLeakPreventionManager {
         this.eventListeners.forEach((listener, id) => {
             this.removeEventListener(id);
         });
+        this.eventListeners.clear();
 
         // Clear all intervals
         this.intervals.forEach(intervalId => {
             clearInterval(intervalId);
         });
         this.intervals.clear();
+        // Re-start our own check interval
+        if (this.checkInterval) clearInterval(this.checkInterval);
+        this.checkInterval = setInterval(() => this.checkForLeaks(), 60000);
 
         // Clear all timeouts
         this.timeouts.forEach(timeoutId => {
@@ -158,6 +208,7 @@ class MemoryLeakPreventionManager {
         this.observers.forEach(observer => {
             this.disconnectObserver(observer);
         });
+        this.observers.clear();
     }
 }
 
@@ -165,4 +216,3 @@ class MemoryLeakPreventionManager {
 const memoryLeakPreventionManager = new MemoryLeakPreventionManager();
 
 export default memoryLeakPreventionManager;
-

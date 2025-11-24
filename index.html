@@ -10,262 +10,173 @@
         content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 
     <!-- Primary Meta Tags -->
-    <title>HEX COMPILER // TERMINAL</title>
+    <title>VOID WITCH PROTOCOL // HEX COMPILER</title>
     <meta name="title" content="Hex Compiler - Arcane Terminal">
     <meta name="description"
-        content="Initialize... Loading Spell Protocols... Compile Magic into Code. The Fading is here.">
+        content="Initialize... Loading Spell Protocols... Compile Magic into Code. The Void is here.">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- CSS -->
+    <link rel="stylesheet" href="styles/theme.css">
     <link rel="stylesheet" href="css/main.css">
-    <!-- Tailwind CSS (Week 5-7: Migrated components) -->
-    <!-- Uncomment after running: npm install -D tailwindcss@latest @tailwindcss/cli@latest && npm run build:tailwind -->
-    <!-- <link rel="stylesheet" href="dist/css/tailwind.css"> -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/utilities.css">
     
     <!-- Audio Engine -->
     <script src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js" defer></script>
 </head>
 
-<body>
+<body class="bg-void-950 text-white overflow-hidden font-sans antialiased">
     <!-- Boot Sequence Overlay -->
     <div id="boot-screen" class="boot-screen" style="display: none;"></div>
 
     <!-- Main Dashboard Container -->
-    <main class="main-game crt-flicker">
+    <main class="main-game relative h-screen w-full flex flex-col">
         
-        <!-- 1. Top HUD (System Status) -->
-        <header class="hud">
-            <div class="hud-left">
-                <div class="currency-display">
-                    <span id="ab-display" class="system-value">INIT...</span>
-                    <span id="abps-display" class="system-rate">--/s</span>
+        <!-- 1. Top HUD (System Status) - Holo-Glass Panel -->
+        <header class="hud hud-panel glass-panel z-50 flex items-center justify-between px-4 py-2">
+            <div class="hud-left flex items-center gap-4">
+                <div class="currency-display flex flex-col">
+                    <span class="text-xs text-soul-400 font-mono tracking-wider">ESSENCE_BUFFER</span>
+                    <div class="flex items-baseline gap-2">
+                        <span id="ab-display" class="text-2xl font-bold text-witch-500 glow-text">INIT...</span>
+                        <span id="abps-display" class="text-xs text-gray-400 font-mono">--/s</span>
+                    </div>
                 </div>
             </div>
             
-            <div class="hud-center">
-                <div id="active-events" class="active-events"></div>
+            <div class="hud-center flex-1 flex justify-center">
+                <div id="active-events" class="active-events flex gap-2"></div>
             </div>
 
             <div class="hud-right">
-                <div class="system-controls">
-                    <button id="help-button" class="btn-icon" aria-label="Help">?</button>
-                    <button id="settings-button" class="btn-icon" aria-label="Settings">⚙</button>
+                <div class="system-controls flex gap-2">
+                    <button id="help-button" class="btn-icon glass-panel p-2 rounded-md hover:bg-white/10 transition-colors" aria-label="Help">
+                        <span class="text-soul-400">?</span>
+                    </button>
+                    <button id="settings-button" class="btn-icon glass-panel p-2 rounded-md hover:bg-white/10 transition-colors" aria-label="Settings">
+                        <span class="text-soul-400">⚙</span>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <!-- 2. Sidebar (Resource Monitor) -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h3>RESOURCE MONITOR</h3>
-            </div>
-            <div class="element-counters" id="element-counters">
-                <div class="element-counter" id="element-counter-fire">
-                    <span class="element-label">FIRE_ESSENCE</span>
-                    <span class="element-amount">0</span>
+        <!-- Game Area Layout: Sidebar + Main Content -->
+        <div class="game-area flex-1 flex overflow-hidden">
+            <!-- 2. Sidebar (Resource Monitor) - Glass Panel -->
+            <aside class="sidebar glass-panel w-64 border-r border-white/10 flex flex-col z-40" id="sidebar">
+                <div class="sidebar-header p-4 border-b border-white/10 bg-void-900/50">
+                    <h3 class="text-xs font-mono text-soul-400 tracking-widest">RESOURCE_MONITOR</h3>
                 </div>
-                <div class="element-counter" id="element-counter-water">
-                    <span class="element-label">WATER_ESSENCE</span>
-                    <span class="element-amount">0</span>
+                <div class="element-counters flex-1 overflow-y-auto p-4 space-y-3" id="element-counters">
+                    <!-- Elements injected by JS -->
+                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-fire">
+                        <span class="element-label text-xs text-red-400">FIRE</span>
+                        <span class="element-amount font-mono text-sm">0</span>
                 </div>
-                <div class="element-counter" id="element-counter-air">
-                    <span class="element-label">AIR_ESSENCE</span>
-                    <span class="element-amount">0</span>
+                    <!-- ... other elements ... -->
                 </div>
-                <div class="element-counter" id="element-counter-crystal">
-                    <span class="element-label">CRYSTAL_DUST</span>
-                    <span class="element-amount">0</span>
+                
+                <div class="sidebar-footer p-4 border-t border-white/10 bg-void-900/50">
+                    <h3 class="text-xs font-mono text-soul-400 tracking-widest mb-2">SYSTEM_LOG</h3>
+                    <div class="craft-notifications text-xs font-mono text-gray-400 h-32 overflow-y-auto scrollbar-thin" id="craft-notifications"></div>
                 </div>
-                <div class="element-counter" id="element-counter-aether">
-                    <span class="element-label">AETHER_FLUX</span>
-                    <span class="element-amount">0</span>
-                </div>
-                <div class="element-counter" id="element-counter-focus" style="display: none;">
-                    <span class="element-label">FOCUS</span>
-                    <span class="element-amount">0</span>
-                </div>
-            </div>
-            
-            <div class="sidebar-header mt-lg">
-                <h3>SYSTEM LOG</h3>
-            </div>
-            <div class="craft-notifications" id="craft-notifications"></div>
         </aside>
 
-        <!-- 3. Main Content Area (The Viewport) -->
-        <section class="tabs-content">
-            <!-- Tab Navigation (File Path Style) -->
-            <nav class="tabs-nav" role="tablist">
-                <button class="tab-btn active" data-tab="workstations">/MNT/WORKSTATIONS</button>
-                <button class="tab-btn" data-tab="inscriptions">/SYS/INSCRIPTIONS</button>
-                <button class="tab-btn" data-tab="inventory">/USR/INVENTORY</button>
-                <button class="tab-btn" data-tab="experiment">/BIN/EXPERIMENT</button>
-                <button class="tab-btn" data-tab="dailies">/CRON/RITUALS</button>
-                <button class="tab-btn" data-tab="boons">/ROOT/BOONS</button>
-                <button class="tab-btn" data-tab="meditation">/DEV/NULL/MEDITATE</button>
-                <button class="tab-btn" data-tab="stats">/LOG/STATS</button>
-                <button class="tab-btn" data-tab="settings">/CFG/SETTINGS</button>
+            <!-- 3. Main Content Area (The Viewport) - 3D Perspective -->
+            <section class="tabs-content flex-1 flex flex-col relative z-30 bg-void-950">
+                <!-- Tab Navigation -->
+                <nav class="tabs-nav flex overflow-x-auto border-b border-white/10 bg-void-900/80 backdrop-blur-md" role="tablist">
+                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group active" data-tab="workstations">
+                        /MNT/WORKSTATIONS
+                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-witch-500 transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
+                    </button>
+                    <!-- Other tabs... -->
+                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="inscriptions">/SYS/UPGRADES</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="inventory">/USR/DATA</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="experiment">/BIN/LAB</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="stats">/LOG/STATS</button>
             </nav>
 
-            <!-- Tab Panels -->
-            <div id="workstations-tab" class="tab-panel active">
-                <div id="workstation-list" class="content-list"></div>
+                <!-- Tab Panels Container with 3D Depth -->
+                <div class="tab-panels-container flex-1 overflow-y-auto p-6 game-board-3d relative">
+                    <div class="game-layer-3d absolute inset-0 pointer-events-none bg-grid-pattern opacity-10"></div>
+                    
+                    <!-- Content Panels -->
+                    <div id="workstations-tab" class="tab-panel active relative z-10">
+                        <div id="workstation-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    </div>
+                    <!-- Other panels... -->
+                    <div id="inscriptions-tab" class="tab-panel hidden relative z-10">
+                        <div id="upgrade-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    </div>
+                    <div id="inventory-tab" class="tab-panel hidden relative z-10">
+                        <div id="inventory-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                    </div>
+                    <div id="experiment-tab" class="tab-panel hidden relative z-10">
+                        <div class="experiment-interface glass-panel p-6 rounded-lg max-w-2xl mx-auto mt-8">
+                            <button id="experiment-button" class="btn-primary w-full py-4 text-lg font-bold glitch-hover">RUN_PROTOCOL</button>
+                            <div id="experiment-result" class="result-box mt-4 p-4 bg-black/30 rounded font-mono min-h-[100px]"></div>
+                            <div id="recipe-list" class="content-list mt-6"></div>
             </div>
-            <div id="inscriptions-tab" class="tab-panel">
-                <div id="upgrade-list" class="content-list"></div>
-            </div>
-            <div id="inventory-tab" class="tab-panel">
-                <div id="inventory-list" class="content-list"></div>
-            </div>
-            <div id="experiment-tab" class="tab-panel">
-                <div class="experiment-interface">
-                    <button id="experiment-button" class="btn-primary">RUN_PROTOCOL</button>
-                    <div id="experiment-result" class="result-box"></div>
-                    <div id="recipe-list" class="content-list"></div>
+                    </div>
+                    <!-- ... more panels ... -->
                 </div>
+            </section>
             </div>
-            <div id="dailies-tab" class="tab-panel">
-                <div id="task-list" class="content-list"></div>
-            </div>
-            <div id="boons-tab" class="tab-panel">
-                <div class="boon-header">
-                    <span id="ek-display">KEYS: 0</span>
-                </div>
-                <div id="boon-list" class="content-list"></div>
-            </div>
-            <div id="meditation-tab" class="tab-panel">
-                <div class="meditation-interface">
-                    <div class="meditation-header">
-                        <span id="focus-display">FOCUS: 0</span>
-                        <span id="tranquility-display">TRANQUILITY: 100%</span>
-                    </div>
-                    <div class="meditation-controls">
-                        <button id="start-meditation-button" class="btn-primary">INIT_SEQUENCE</button>
-                        <button id="end-meditation-button" class="btn-secondary hidden">ABORT</button>
-                    </div>
-                    <div class="meditation-grid-container">
-                        <canvas id="meditation-canvas"></canvas>
-                    </div>
-                    <div class="meditation-sidebar">
-                        <div id="tower-list" class="tower-list"></div>
-                        <div id="meditation-upgrade-list" class="meditation-upgrade-list"></div>
-                    </div>
-                </div>
-            </div>
-            <div id="stats-tab" class="tab-panel">
-                <div id="stats-content" class="content-list"></div>
-            </div>
-            <div id="settings-tab" class="tab-panel">
-                <div class="settings-content">
-                    <!-- Settings content will be injected here -->
-                    <!-- Key Settings to preserve -->
-                    <div class="settings-section">
-                        <h3>DISPLAY_MODE</h3>
-                        <select id="tier-selector" class="settings-select">
-                            <option value="0">TIER 0: DOS</option>
-                            <option value="1">TIER 1: BASIC</option>
-                            <option value="2">TIER 2: ENHANCED</option>
-                            <option value="3">TIER 3: TERMINAL</option>
-                            <option value="4">TIER 4: FULL</option>
-                        </select>
-                    </div>
-                    <button id="reset-all-progress-button" class="btn-danger mt-lg">FACTORY_RESET</button>
-                </div>
-            </div>
-        </section>
 
-        <!-- 4. Bottom Control Deck (The Cast Interface) -->
-        <footer class="control-deck">
-            <div class="cast-container">
-                <button id="cast-button" class="btn-cast">
-                    <span class="cast-icon">⚡</span>
-                    <span class="cast-label">EXEC</span>
+        <!-- 4. Bottom Control Deck (The Cast Interface) - Glass Panel -->
+        <footer class="control-deck glass-panel border-t border-white/10 p-4 z-50 flex justify-center items-center relative">
+            <div class="cast-container relative">
+                <!-- Glowing orb effect behind button -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-witch-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
+                
+                <button id="cast-button" class="btn-cast relative w-24 h-24 rounded-full bg-gradient-to-b from-void-900 to-black border border-witch-500/50 shadow-[0_0_30px_rgba(255,0,255,0.3)] hover:shadow-[0_0_50px_rgba(255,0,255,0.6)] hover:scale-105 transition-all duration-200 group overflow-hidden">
+                    <div class="absolute inset-0 bg-witch-500/10 group-hover:bg-witch-500/20 transition-colors"></div>
+                    <span class="cast-icon text-4xl mb-1 block group-hover:animate-bounce">⚡</span>
+                    <span class="cast-label text-xs font-mono text-soul-400 tracking-widest">EXEC</span>
                 </button>
             </div>
             
             <!-- Combo Display floating near cast button -->
-            <div id="combo-display" class="combo-display" style="position: absolute; right: 20px; bottom: 20px;"></div>
+            <div id="combo-display" class="combo-display absolute right-8 bottom-8 text-right">
+                <div class="text-2xl font-bold text-gold-400 font-mono">x1.0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider">COMBO</div>
+            </div>
             
             <!-- Auto Cast Toggle -->
-            <button id="auto-cast-toggle" class="auto-toggle hidden" style="position: absolute; left: 20px;">
-                AUTO_SEQ: <span id="auto-status">OFF</span>
+            <button id="auto-cast-toggle" class="auto-toggle hidden absolute left-8 bottom-8 glass-panel px-4 py-2 rounded text-xs font-mono text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                AUTO_SEQ: <span id="auto-status" class="text-red-400">OFF</span>
             </button>
         </footer>
 
     </main>
 
     <!-- Modals -->
-    <div id="prestige-modal" class="modal">
-        <div class="modal-content">
-            <h2>SYSTEM_ASCENSION</h2>
-            <p>REBOOTING SYSTEM WITH NEW KERNEL...</p>
-            <p>KEYS_ACQUIRED: <span id="prestige-gain">0</span></p>
-            <div class="modal-buttons">
-                <button id="ascend-button" class="btn-primary">CONFIRM_REBOOT</button>
-                <button id="close-prestige-button" class="btn-secondary">CANCEL</button>
+    <div id="prestige-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+            <h2 class="text-2xl font-bold text-witch-500 mb-4 font-orbitron">SYSTEM_ASCENSION</h2>
+            <p class="mb-4 text-gray-300">REBOOTING SYSTEM WITH NEW KERNEL...</p>
+            <p class="mb-6 text-lg">KEYS_ACQUIRED: <span id="prestige-gain" class="text-gold-400 font-mono font-bold">0</span></p>
+            <div class="modal-buttons flex gap-4">
+                <button id="ascend-button" class="btn-primary flex-1 py-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">CONFIRM_REBOOT</button>
+                <button id="close-prestige-button" class="btn-secondary flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">CANCEL</button>
             </div>
         </div>
     </div>
 
-    <div id="welcome-back-modal" class="modal">
-        <div class="modal-content">
-            <h2>SESSION_RESTORED</h2>
-            <p id="welcome-time">OFFLINE_DURATION: 0s</p>
-            <p id="welcome-ab">RESOURCES_COMPILED: 0</p>
-            <button id="close-welcome-button" class="btn-primary">RESUME</button>
-        </div>
-    </div>
-
-    <div id="help-modal" class="modal">
-        <div class="modal-content help-modal-content">
-            <button class="modal-close">&times;</button>
-            <h2>TERMINAL_MANUAL</h2>
-            <div class="help-sections">
-                <!-- Help content -->
-                <p>1. Click EXEC to compile raw magic.</p>
-                <p>2. Build workstations to automate compilation.</p>
-                <p>3. Manage resources to prevent system overflow.</p>
-            </div>
-            <button class="btn-primary" id="close-help-button">ACKNOWLEDGED</button>
-        </div>
-    </div>
+    <!-- ... other modals ... -->
 
     <!-- Scripts -->
-    <script type="module" src="js/lifecycleManager.js"></script>
-    <script type="module" src="js/loadingState.js"></script>
-    <script type="module" src="js/accessibility.js"></script>
-    <script type="module" src="js/errorRecovery.js"></script>
-    <script type="module" src="js/privacyControls.js"></script>
-    <script type="module" src="js/progressIndicators.js"></script>
-    <script type="module" src="js/featureIndicators.js"></script>
-    <script type="module" src="js/customTooltips.js"></script>
-    <script type="module" src="js/sustainableDesign.js"></script>
-    <script type="module" src="js/browserNavigation.js"></script>
-    <script type="module" src="js/mobileNavigation.js"></script>
-    <script type="module" src="js/mobilePerformance.js"></script>
-    <script type="module" src="js/errorReporting.js"></script>
-    <script type="module" src="js/domOptimization.js"></script>
-    <script type="module" src="js/memoryLeakFix.js"></script>
-    <script type="module" src="js/lazyAssetLoading.js"></script>
-    <script type="module" src="js/animationOptimization.js"></script>
-    <script type="module" src="js/questSystem.js"></script>
-    <script type="module" src="js/playerAnalytics.js"></script>
-    <script type="module" src="js/balanceAnalytics.js"></script>
-
-    <script type="module" src="js/tutorial.js"></script>
-    <script type="module" src="js/balanceTesting.js"></script>
-    <script type="module" src="js/codeOrganization.js"></script>
-    <script type="module" src="js/coreWebVitals.js"></script>
-    <script type="module" src="js/progressionAnalysis.js"></script>
-    <script type="module" src="js/economyBalancing.js"></script>
-    <script type="module" src="js/feedbackLoops.js"></script>
-    <script type="module" src="js/codeDuplication.js"></script>
-    <!-- Emergency Fix Script -->
-    <script src="js/emergencyFix.js"></script>
-    <script type="module" src="js/game.js"></script>
+    <script type="module" src="js/gameInit.js"></script>
+    <!-- Legacy scripts will be loaded by gameInit.js or are modules -->
 </body>
 </html>

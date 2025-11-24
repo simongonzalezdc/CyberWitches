@@ -21,7 +21,7 @@ export class UnifiedGameLoop {
         this.logicAccumulator = 0;
         
         this.lastTime = performance.now();
-        this.visualTimestep = 1000 / 60;  // 60 FPS for smooth rendering
+        this.visualTimestep = 1000 / 30;  // 30 FPS (Cinematic/Low Power)
         this.logicTimestep = GAME_CONSTANTS.TICK_RATE;  // 10 TPS for game logic
         this.maxFrameTime = 250;  // Prevent spiral of death (4x normal frame time)
         
@@ -167,7 +167,7 @@ export class UnifiedGameLoop {
             this.tickCounter++;
         }
         
-        // Update visuals at 60 FPS for smooth animations
+        // Update visuals at 30 FPS for cinematic feel and low CPU usage
         while (this.visualAccumulator >= this.visualTimestep) {
             const delta = this.visualTimestep / 1000; // Convert to seconds
             
