@@ -219,6 +219,9 @@ export class GameState {
      * @returns {Object} Total output per resource type
      */
     calculateTotalProduction(delta, eventMultiplier = 1.0) {
+        // Safety check for delta
+        if (isNaN(delta) || delta <= 0) return {};
+
         const totalOutput = {};
 
         // Apply Air specialization speed bonus to delta
@@ -513,6 +516,12 @@ export class GameState {
      * @param {number} amount - Amount of AB to add
      */
     addAb(amount) {
+        // Validation: prevent NaN corruption
+        if (amount === undefined || amount === null || isNaN(amount)) {
+            console.warn('⚠️ Attempted to add invalid AB amount:', amount);
+            return;
+        }
+        
         this.ab += amount;
         this.abTotalEarned += amount;
         this.prestigeLifetimeEarned += amount;
@@ -997,8 +1006,17 @@ export class GameState {
             const elapsed = (Date.now() / 1000) - (data.timestamp || Date.now() / 1000);
 
             // Load state
-            this.ab = data.ab || 0.0;
-            this.abTotalEarned = data.abTotal || 0.0;
+            this.ab = Number(data.ab);
+            if (isNaN(this.ab)) {
+                console.warn('⚠️ Corrupted Save: AB was NaN. Resetting to 0.');
+                this.ab = 0.0;
+            }
+            
+            this.abTotalEarned = Number(data.abTotal);
+            if (isNaN(this.abTotalEarned)) {
+                this.abTotalEarned = 0.0;
+            }
+
             this.inventory = data.inventory || {};
             this.workstations = data.workstations || {};
             this.upgradesOwned = data.upgrades || {};

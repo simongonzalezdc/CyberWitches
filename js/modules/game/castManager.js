@@ -55,7 +55,12 @@ export class CastManager {
             }
 
             // Calculate gain
-            const gain = this.gameState.abps * this.gameState.clickMult * comboMult * eventMult;
+            let gain = this.gameState.abps * this.gameState.clickMult * comboMult * eventMult;
+
+            // Sanitize gain
+            if (isNaN(gain) || !isFinite(gain) || gain < 0) {
+                gain = 1.0; // Fallback to base 1
+            }
 
             // Add to total
             this.gameState.ab += gain;
