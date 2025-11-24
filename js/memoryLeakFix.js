@@ -128,9 +128,9 @@ class MemoryLeakPreventionManager {
         // Clean up orphaned listeners
         if (orphanedListeners.length > 0) {
             console.warn(`Found ${orphanedListeners.length} orphaned event listeners. Cleaning up...`);
-        orphanedListeners.forEach(id => {
-            this.removeEventListener(id);
-        });
+            orphanedListeners.forEach(id => {
+                this.removeEventListener(id);
+            });
         }
 
         // Enhanced Memory Monitoring
