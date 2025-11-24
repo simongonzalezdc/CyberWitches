@@ -111,6 +111,10 @@ export async function initGame() {
         // 8. Initialize Unified Game Loop (replaces multiple setInterval calls)
         const gameLoop = new UnifiedGameLoop();
         
+        // Assign gameLoop to window BEFORE particle system checks for it
+        // This ensures particle system can detect UnifiedGameLoop management
+        window.gameLoop = gameLoop;
+        
         // Register game state tick for logic updates (10 TPS)
         gameLoop.registerLogicUpdate((delta) => {
             gameState.tick(delta, 1.0); // Pass delta and event multiplier
@@ -173,10 +177,8 @@ export async function initGame() {
             uiManager.hudUI.updateComboDisplay();
         });
         
-        // Store game loop for cleanup
-        window.gameLoop = gameLoop;
-        
         // Start unified game loop (replaces gameState.start() tick loop)
+        // Note: window.gameLoop was already assigned above for particle system detection
         gameState.loadGameState(); // Load state but don't start old tick loop
         gameLoop.start();
 

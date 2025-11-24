@@ -67,8 +67,16 @@ export class CastManager {
             }
             this.gameState.stats.totalCasts++;
 
-            // Check for unlocks
-            this.gameState.checkUnlocks();
+            // Check for milestone unlocks (gameState method)
+            if (typeof this.gameState.checkMilestones === 'function') {
+                this.gameState.checkMilestones();
+            }
+            
+            // Check for tier unlocks (design tier system)
+            const designTierSystem = this.uiManager?.systems?.designTierSystem;
+            if (designTierSystem && typeof designTierSystem.checkTierUnlocks === 'function') {
+                designTierSystem.checkTierUnlocks();
+            }
 
             // Visual feedback
             this.showVisualFeedback(gain);

@@ -241,21 +241,18 @@ export class UIManager {
      */
     debouncedUIUpdate(key, updateFn) {
         // Week 3: Use DOM batching for better performance
+        // DOM batching handles debouncing via batchDelay, so we don't need setTimeout
         batchDOMUpdate(key, updateFn, 0);
         
-        // Also keep timeout-based debouncing for backward compatibility
-        // Clear existing timeout for this key
+        // Clear any existing timeout for this key (legacy cleanup)
         if (this.uiUpdateTimeouts.has(key)) {
             clearTimeout(this.uiUpdateTimeouts.get(key));
-        }
-
-        // Set new timeout as fallback
-        const timeoutId = setTimeout(() => {
-            updateFn();
             this.uiUpdateTimeouts.delete(key);
-        }, this.uiUpdateDelay);
-
-        this.uiUpdateTimeouts.set(key, timeoutId);
+        }
+        
+        // Note: DOM batching replaces timeout-based debouncing
+        // The batchDOMUpdate function schedules updates to execute on the next RAF cycle
+        // which provides better performance than setTimeout
     }
 
     updateAllUI() {

@@ -69,10 +69,9 @@ export class ParticleSystem {
         this.lastFrameTime = performance.now();
 
         // Don't start animation here - UnifiedGameLoop will handle it if active
-        // Only start if UnifiedGameLoop is not available
-        if (!window.gameLoop || !window.gameLoop.isRunning) {
-            this.start();
-        }
+        // The gameLoop will be assigned to window.gameLoop after initialization
+        // We'll check for it in start() method instead
+        // Do NOT call start() here - let UnifiedGameLoop handle it via visual updates
 
         this.initialized = true;
         this.canvas.dataset.initialized = 'true';
