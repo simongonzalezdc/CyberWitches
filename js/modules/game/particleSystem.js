@@ -64,8 +64,15 @@ export class ParticleSystem {
         window.addEventListener('resize', this.handleResize);
         document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
-        // Start animation
-        this.start();
+        // Initialize timing
+        this.lastTime = performance.now();
+        this.lastFrameTime = performance.now();
+
+        // Don't start animation here - UnifiedGameLoop will handle it if active
+        // Only start if UnifiedGameLoop is not available
+        if (!window.gameLoop || !window.gameLoop.isRunning) {
+            this.start();
+        }
 
         this.initialized = true;
         this.canvas.dataset.initialized = 'true';
@@ -127,8 +134,11 @@ export class ParticleSystem {
 
     handleVisibilityChange() {
         this.isPaused = document.hidden;
-        if (!this.isPaused && !this.animationFrameId) {
+        // Don't restart animation if UnifiedGameLoop is managing us
+        const isManagedByGameLoop = window.gameLoop && window.gameLoop.isRunning;
+        if (!this.isPaused && !this.animationFrameId && !isManagedByGameLoop) {
             this.lastTime = performance.now();
+            this.lastFrameTime = performance.now();
             this.animate(performance.now());
         }
     }
@@ -146,20 +156,23 @@ export class ParticleSystem {
     }
 
     animate(currentTime) {
-        if (this.isPaused) {
+        if (this.isPaused || !this.initialized || !this.canvas || !this.ctx) {
             this.animationFrameId = null;
             return;
         }
 
-        const elapsed = currentTime - this.lastFrameTime;
-
-        // Skip frames to maintain target FPS
-        if (elapsed < this.frameInterval) {
-            this.animationFrameId = requestAnimationFrame(this.animate);
-            return;
+        // If UnifiedGameLoop is managing us, don't chain RAF calls
+        const isManagedByGameLoop = window.gameLoop && window.gameLoop.isRunning;
+        
+        if (!isManagedByGameLoop) {
+            // Only do frame skipping if we're managing our own loop
+            const elapsed = currentTime - this.lastFrameTime;
+            if (elapsed < this.frameInterval) {
+                this.animationFrameId = requestAnimationFrame(this.animate);
+                return;
+            }
+            this.lastFrameTime = currentTime - (elapsed % this.frameInterval);
         }
-
-        this.lastFrameTime = currentTime - (elapsed % this.frameInterval);
 
         let deltaTime = currentTime - this.lastTime;
         if (isNaN(deltaTime) || deltaTime <= 0 || deltaTime > 100) {
@@ -235,12 +248,29 @@ export class ParticleSystem {
 
         this.ctx.globalCompositeOperation = 'source-over';
 
-        this.animationFrameId = requestAnimationFrame(this.animate);
+        // Only continue RAF loop if not managed by UnifiedGameLoop
+        const isManagedByGameLoop = window.gameLoop && window.gameLoop.isRunning;
+        if (!isManagedByGameLoop) {
+            this.animationFrameId = requestAnimationFrame(this.animate);
+        } else {
+            this.animationFrameId = null; // UnifiedGameLoop will call us
+        }
     }
 
     start() {
-        if (!this.isPaused && !document.hidden) {
+        // If UnifiedGameLoop is active, don't start our own RAF loop
+        // The UnifiedGameLoop will call animate() via visual updates
+        const isManagedByGameLoop = window.gameLoop && window.gameLoop.isRunning;
+        if (isManagedByGameLoop) {
             this.lastTime = performance.now();
+            this.lastFrameTime = performance.now();
+            return; // UnifiedGameLoop will handle animation
+        }
+        
+        // Fallback: start our own RAF loop if UnifiedGameLoop not available
+        if (!this.isPaused && !document.hidden && !this.animationFrameId) {
+            this.lastTime = performance.now();
+            this.lastFrameTime = performance.now();
             this.animate(performance.now());
         }
     }

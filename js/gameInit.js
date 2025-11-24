@@ -99,8 +99,10 @@ export async function initGame() {
         dailyRituals.init();
         
         // Initialize particles if Tier 3+
+        // Note: Particle system will integrate with UnifiedGameLoop automatically
         if (designTierSystem.getCurrentTier() >= 3) {
             particleSystem.init();
+            // Don't call start() - UnifiedGameLoop will handle animation
         }
 
         // 7. Set up Game State callbacks
@@ -115,12 +117,14 @@ export async function initGame() {
         });
         
         // Register visual updates (60 FPS) - particle systems, animations
-        if (particleSystem && particleSystem.initialized) {
-            gameLoop.registerVisualUpdate((delta) => {
-                // Particle system handles its own animation loop
-                // This is for other visual updates if needed
-            });
-        }
+        // Particle system will be updated via UnifiedGameLoop if initialized
+        gameLoop.registerVisualUpdate((delta) => {
+            // Update particle system if initialized and active
+            if (particleSystem && particleSystem.initialized && !particleSystem.isPaused) {
+                const currentTime = performance.now();
+                particleSystem.animate(currentTime);
+            }
+        });
         
         // Register render callbacks (60 FPS with interpolation)
         gameLoop.registerRender((alpha) => {

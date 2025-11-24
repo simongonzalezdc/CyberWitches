@@ -1,0 +1,187 @@
+/**
+ * Loading States Styles
+ * Week 3, Day 4-5 Optimization
+ */
+
+/* Loading Indicator */
+.loading-indicator {
+    position: fixed;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.loading-indicator.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.loading-indicator.hiding {
+    opacity: 0;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 18, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+/* Loading Content */
+.loading-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    min-width: 200px;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--color-dim);
+    border-top-color: var(--color-code);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Loading Message */
+.loading-message {
+    color: var(--color-code);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Position Variants */
+.loading-indicator.loading-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.loading-indicator.loading-top {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.loading-indicator.loading-bottom {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Skeleton Loader */
+.skeleton-loader {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-panel);
+    border-radius: 8px;
+}
+
+.skeleton-line {
+    height: 16px;
+    background: linear-gradient(
+        90deg,
+        var(--bg-panel) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        var(--bg-panel) 100%
+    );
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-line.short {
+    width: 60%;
+}
+
+.skeleton-line.medium {
+    width: 80%;
+}
+
+.skeleton-line.long {
+    width: 100%;
+}
+
+.skeleton-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(
+        90deg,
+        var(--bg-panel) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        var(--bg-panel) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-rectangle {
+    height: 100px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--bg-panel) 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        var(--bg-panel) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Skeleton Grid */
+.skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.skeleton-card {
+    padding: 16px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+}
+
+.skeleton-card .skeleton-line {
+    margin-bottom: 8px;
+}
+
+.skeleton-card .skeleton-line:last-child {
+    margin-bottom: 0;
+}
+

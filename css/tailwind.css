@@ -1,0 +1,113 @@
+/**
+ * Tailwind CSS 4.1 Entry Point
+ * Week 5-6: Tailwind CSS Migration
+ * 
+ * This file will replace main.css once migration is complete
+ */
+
+@import "tailwindcss";
+
+/**
+ * Theme Configuration
+ * Converted from CSS variables in base.css
+ */
+@theme {
+    /* Colors - Terminal & Magic */
+    --color-code: #00F0FF;
+    --color-code-dim: #007a82;
+    --color-magic: #FFB84C;
+    --color-magic-dim: #8a6220;
+    --color-corruption: #FF2A6D;
+    --color-corruption-dim: #821638;
+    --color-system: #b8b8d0;
+    --color-dim: #5a5a70;
+    
+    /* Backgrounds */
+    --bg-void: #050508;
+    --bg-terminal: #0a0a12;
+    --bg-panel: #11111a;
+    --bg-panel-trans: rgba(17, 17, 26, 0.85);
+    
+    /* Functional Variables */
+    --primary: var(--color-code);
+    --primary-glow: var(--color-code);
+    --accent: var(--color-magic);
+    --accent-glow: var(--color-magic);
+    --error: var(--color-corruption);
+    
+    /* Typography */
+    --font-main: 'Orbitron', sans-serif;
+    --font-mono: 'Fira Code', 'Courier New', monospace;
+    
+    /* Borders & Effects */
+    --scanline-color: rgba(0, 240, 255, 0.03);
+    --border-light: rgba(0, 240, 255, 0.2);
+    --border-focus: rgba(0, 240, 255, 0.6);
+    
+    /* Spacing Scale */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --spacing-2xl: 32px;
+    
+    /* Animation Durations */
+    --anim-flash: 0.1s ease-out;
+    --anim-boot: 1s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+/**
+ * Component Layer
+ * Migrate component classes here using @apply
+ */
+@layer components {
+    /* Cast Button - Terminal aesthetic */
+    .btn-cast {
+        @apply relative w-[100px] h-[100px] rounded-full;
+        @apply bg-black/50 border-2 border-code text-code;
+        @apply drop-shadow-xl drop-shadow-cyan-500/20;
+        @apply hover:bg-code/10 hover:drop-shadow-cyan-500/40;
+        @apply active:scale-95 transition-all duration-100;
+        @apply pointer-coarse:w-[120px] pointer-coarse:h-[120px];
+    }
+    
+    /* Terminal Text - Use new text-shadow utilities */
+    .terminal-text {
+        @apply text-shadow-lg text-shadow-cyan-500/50;
+        @apply font-mono text-code;
+    }
+    
+    /* Card Component */
+    .card {
+        @apply bg-panel border border-light rounded-lg;
+        @apply p-4 drop-shadow-xl drop-shadow-cyan-500/10;
+        @apply pointer-coarse:p-5;
+    }
+    
+    /* Card Title - Text shadow for glow effect */
+    .card-title {
+        @apply text-shadow-md text-shadow-cyan-500/40;
+        @apply text-code font-bold uppercase tracking-wider;
+    }
+}
+
+/**
+ * Utilities Layer
+ * Custom utilities if needed
+ */
+@layer utilities {
+    /* Glitch effect utility */
+    .glitch {
+        animation: glitch 0.3s infinite;
+    }
+    
+    @keyframes glitch {
+        0%, 100% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(-2px, -2px); }
+        60% { transform: translate(2px, 2px); }
+        80% { transform: translate(2px, -2px); }
+    }
+}
+
