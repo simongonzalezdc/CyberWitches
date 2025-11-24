@@ -206,17 +206,18 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
 
 function setupPeriodicChecks(gameState, designTierSystem, achievements, eventSystem, uiManager) {
     // 1. Check Tier Unlocks (every 10s)
-    setInterval(() => {
+    const tierCheckInterval = setInterval(() => {
         try {
             designTierSystem.checkTierUnlocks();
         } catch (error) {
             console.error('Error checking tier unlocks:', error);
         }
     }, 10000);
+    memoryLeakPreventionManager.trackInterval(tierCheckInterval);
 
     // 2. Check Achievements (every 2s)
     const shownAchievementNotifications = new Set();
-    setInterval(() => {
+    const achievementCheckInterval = setInterval(() => {
         if (achievements) {
             const newAchievements = achievements.checkAchievements();
             for (const achievement of newAchievements) {
@@ -234,29 +235,24 @@ function setupPeriodicChecks(gameState, designTierSystem, achievements, eventSys
             }
         }
     }, 2000);
+    memoryLeakPreventionManager.trackInterval(achievementCheckInterval);
 
     // 3. Check Events (every 1s)
-    setInterval(() => {
+    const eventCheckInterval = setInterval(() => {
         if (eventSystem) {
             eventSystem.checkForEvents();
-            eventSystem.updateEvents(0.1); // 0.1s (100ms) check? No, interval is 1s.
-            // But game.v7.js had 1s interval calling updateEvents(0.1). 
-            // This implies updateEvents expects seconds. 
-            // If we call it every 1s, we should pass 1.0.
-            // However, GameState tick handles production updates. 
-            // EventSystem updateEvents likely manages event duration.
-            // Let's check EventSystem.updateEvents.
-            // Assuming 1.0 for now if called every second.
             eventSystem.updateEvents(1.0); 
             uiManager.hudUI.updateActiveEvents();
         }
     }, 1000);
+    memoryLeakPreventionManager.trackInterval(eventCheckInterval);
 
     // 4. Update ABPS and Combo (every 0.5s)
-    setInterval(() => {
+    const hudUpdateInterval = setInterval(() => {
         uiManager.hudUI.updateABPS();
         uiManager.hudUI.updateComboDisplay();
     }, 500);
+    memoryLeakPreventionManager.trackInterval(hudUpdateInterval);
 }
 
 function setupAudioUnlock(audioSystem, designTierSystem) {
