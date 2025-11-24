@@ -29,7 +29,7 @@ export class PerformanceBaseline {
      * @returns {Promise<Object>} Performance metrics
      */
     async measure() {
-        console.log('📊 Starting performance baseline measurement...');
+        console.info('📊 Starting performance baseline measurement...');
         
         // Measure load time
         // Use performance.timing if available and valid, otherwise use performance.now()
@@ -90,7 +90,7 @@ export class PerformanceBaseline {
                         );
                     }
                     
-                    console.log('✅ Performance baseline measurement complete:', this.metrics);
+                    console.info('✅ Performance baseline measurement complete:', this.metrics);
                     resolve(this.metrics);
                 }
             };
@@ -138,7 +138,7 @@ export class PerformanceBaseline {
     save() {
         try {
             localStorage.setItem('performanceBaseline', JSON.stringify(this.metrics));
-            console.log('💾 Performance baseline saved to localStorage');
+            console.info('💾 Performance baseline saved to localStorage');
         } catch (error) {
             console.warn('Could not save baseline to localStorage:', error);
         }

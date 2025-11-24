@@ -21,7 +21,7 @@ export class PerformanceValidator {
         const saved = PerformanceBaseline.load();
         if (saved) {
             this.baseline = saved;
-            console.log('📊 Loaded baseline:', saved);
+            console.info('📊 Loaded baseline:', saved);
             return true;
         }
         return false;
@@ -169,7 +169,7 @@ export class PerformanceValidator {
         // Save to localStorage
         try {
             localStorage.setItem('migrationBaseline', JSON.stringify(migrationBaseline));
-            console.log('💾 Migration baseline saved:', migrationBaseline);
+            console.info('💾 Migration baseline saved:', migrationBaseline);
         } catch (error) {
             console.warn('Could not save migration baseline:', error);
         }
@@ -202,7 +202,7 @@ export class PerformanceValidator {
                     Array.from(sheet.cssRules || []).forEach(() => {
                         totalSize += 100; // Rough estimate per rule
                     });
-                } catch (e) {
+                } catch (_e) {
                     // Cross-origin stylesheet, skip
                 }
             });
@@ -217,50 +217,50 @@ export class PerformanceValidator {
      * Print validation report
      */
     printReport() {
-        console.log('═══════════════════════════════════════');
-        console.log('📊 Performance Validation Report');
-        console.log('═══════════════════════════════════════');
+        console.info('═══════════════════════════════════════');
+        console.info('📊 Performance Validation Report');
+        console.info('═══════════════════════════════════════');
         
         if (this.baseline) {
-            console.log('\n📈 Baseline Metrics:');
-            console.log(`  FPS: ${this.baseline.averageFps}`);
-            console.log(`  Memory: ${this.baseline.memoryUsage.toFixed(2)}MB`);
-            console.log(`  Load Time: ${this.baseline.loadTime}ms`);
+            console.info('\n📈 Baseline Metrics:');
+            console.info(`  FPS: ${this.baseline.averageFps}`);
+            console.info(`  Memory: ${this.baseline.memoryUsage.toFixed(2)}MB`);
+            console.info(`  Load Time: ${this.baseline.loadTime}ms`);
         }
         
         if (this.current) {
-            console.log('\n📊 Current Metrics:');
-            console.log(`  FPS: ${this.current.averageFps}`);
-            console.log(`  Memory: ${this.current.memoryUsage.toFixed(2)}MB`);
-            console.log(`  Load Time: ${this.current.loadTime}ms`);
+            console.info('\n📊 Current Metrics:');
+            console.info(`  FPS: ${this.current.averageFps}`);
+            console.info(`  Memory: ${this.current.memoryUsage.toFixed(2)}MB`);
+            console.info(`  Load Time: ${this.current.loadTime}ms`);
         }
         
         if (this.comparison) {
-            console.log('\n📉 Comparison:');
-            console.log(`  FPS: ${this.comparison.fps.percentChange}`);
-            console.log(`  Memory: ${this.comparison.memory.percentChange}`);
-            console.log(`  Load Time: ${this.comparison.loadTime.percentChange}`);
+            console.info('\n📉 Comparison:');
+            console.info(`  FPS: ${this.comparison.fps.percentChange}`);
+            console.info(`  Memory: ${this.comparison.memory.percentChange}`);
+            console.info(`  Load Time: ${this.comparison.loadTime.percentChange}`);
         }
         
         const validation = this.validate();
         if (validation) {
-            console.log('\n✅ Validation Results:');
+            console.info('\n✅ Validation Results:');
             if (validation.improvements.length > 0) {
-                console.log('  Improvements:');
-                validation.improvements.forEach(imp => console.log(`    ✅ ${imp}`));
+                console.info('  Improvements:');
+                validation.improvements.forEach(imp => console.info(`    ✅ ${imp}`));
             }
             if (validation.regressions.length > 0) {
-                console.log('  Regressions:');
-                validation.regressions.forEach(reg => console.log(`    ❌ ${reg}`));
+                console.info('  Regressions:');
+                validation.regressions.forEach(reg => console.info(`    ❌ ${reg}`));
             }
             if (validation.warnings.length > 0) {
-                console.log('  Warnings:');
-                validation.warnings.forEach(warn => console.log(`    ⚠️  ${warn}`));
+                console.info('  Warnings:');
+                validation.warnings.forEach(warn => console.info(`    ⚠️  ${warn}`));
             }
-            console.log(`\n  Overall: ${validation.valid ? '✅ VALID' : '❌ INVALID'}`);
+            console.info(`\n  Overall: ${validation.valid ? '✅ VALID' : '❌ INVALID'}`);
         }
         
-        console.log('═══════════════════════════════════════');
+        console.info('═══════════════════════════════════════');
     }
 }
 

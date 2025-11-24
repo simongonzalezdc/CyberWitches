@@ -85,9 +85,6 @@ class DOMBatcher {
         
         // Use requestAnimationFrame for smooth batching
         requestAnimationFrame(() => {
-            // Batch DOM reads first
-            const readOperations = [];
-            const writeOperations = [];
             
             updates.forEach(({ updateFn }) => {
                 try {

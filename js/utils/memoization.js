@@ -107,7 +107,7 @@ export function memoize(fn, options = {}) {
             // Default: JSON.stringify (works for primitive types and simple objects)
             try {
                 key = JSON.stringify(args);
-            } catch (error) {
+            } catch (_error) {
                 // Fallback: use first argument as key if JSON.stringify fails
                 key = args[0];
             }
@@ -162,7 +162,7 @@ export function memoizeAsync(asyncFn, options = {}) {
         } else {
             try {
                 key = JSON.stringify(args);
-            } catch (error) {
+            } catch (_error) {
                 key = args[0];
             }
         }
