@@ -40,7 +40,7 @@
     "jsdoc": "^4.0.5",
     "prettier": "^3.6.2",
     "sharp": "^0.34.5",
-    "tailwindcss": "^4.1.17",
+    "tailwindcss": "^4.3.0",
     "terser": "^5.44.1"
   },
   "dependencies": {
