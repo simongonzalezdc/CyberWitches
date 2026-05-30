@@ -1,6 +1,5 @@
 # Node modules
 node_modules/
-package-lock.json
 
 # IDE files
 .idea/
@@ -32,6 +31,8 @@ build/
 .env
 .env.local
 .env.*.local
+*.pem
+*.key
 
 # Testing
 coverage/
