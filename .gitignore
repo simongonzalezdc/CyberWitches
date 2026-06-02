@@ -50,3 +50,10 @@ temp/
 # Package files for sharing
 cyber-witches-game.zip
 *.zip
+
+# Security-sensitive local files
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+!.env.example
