@@ -1,111 +1,54 @@
 # Hex Compiler
 
-Magic is fading. You're a Hex Compiler—one of the last who can translate magical hexes into hexadecimal code. Compile spells into data, build digital preservation chambers, and fight the fading. An idle game about programming magic before it disappears forever.
+**A browser-based idle/incremental game where you compile fading magic into hexadecimal code — for fans of clicker and incremental games who like a story.**
 
-## Quick Start
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8.svg)](manifest.json)
 
-### Development
+## What it is
+
+Hex Compiler is an idle game that runs entirely in the browser. You play one of the last Hex Compilers, translating magical hexes into hexadecimal code and building digital preservation chambers to fight the fading of magic. It is built in vanilla JavaScript (ES2023 modules) with no runtime framework, bundled with esbuild, and ships as an installable Progressive Web App. As you preserve more magic, the deliberately glitched UI progressively stabilizes — the interface itself is part of the story.
+
+## Install / Quick start
+
 ```bash
 npm install
-npm start
+npm start        # dev server on http://localhost:3000 (opens a browser)
 ```
 
-### Production Build
+Production build:
+
 ```bash
-npm run build:prod
+npm run build:prod   # outputs static files to dist/
 ```
 
-The built files will be in the `dist/` folder, ready for deployment.
+Serve the contents of `dist/` from any static web host (configure it to serve `index.html` for all routes). See [DEPLOYMENT_README.md](DEPLOYMENT_README.md) for full deployment steps.
 
-## Deployment
+## Usage
 
-See [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) for detailed deployment instructions.
+Once the dev server is running, the game plays in the browser — cast spells manually or automate them, craft preservation chambers, buy upgrades, and run experiments to discover new techniques. Useful scripts:
 
-Quick deployment steps:
-1. Build: `npm run build:prod`
-2. Upload `dist/` folder contents to your web server
-3. Configure server to serve `index.html` for all routes (SPA)
-
-## Features
-
-- ✨ Manual and automatic spell casting (gather magic before it fades)
-- 🏭 Preservation chamber crafting and automation
-- 📜 Upgrade system with inscriptions (refine preservation techniques)
-- 🔬 Experimentation to discover new preservation techniques
-- ⚡ Ascension system with elemental specialization choices
-- 🏆 Achievement system
-- 📅 Daily rituals (maintenance rituals to keep preserved magic stable)
-- 🧘 Meditation mini-game (defend your mind from the mental toll of the fading)
-- 🎵 Procedural ambient music (Tier 4+)
-- 🔊 Sound effects (Tier 2+)
-- 📱 Progressive Web App (PWA) support
-- ♿ Accessibility features
-- 🎨 Progressive glitch effects (UI starts glitchy and stabilizes as you progress)
-- 🌈 Visual fading theme effects (represent the fading magic)
-
-## Technology Stack
-
-- **Frontend**: Vanilla JavaScript (ES2023 modules)
-- **Build Tool**: esbuild
-- **Audio**: Tone.js
-- **Styling**: CSS3 with CSS variables
-- **PWA**: Service Worker + Web App Manifest
-
-## Project Structure
-
-```
-CyberWitches/
-├── index.html          # Main HTML file
-├── styles.css          # Main stylesheet
-├── manifest.json       # PWA manifest
-├── sw.js              # Service worker
-├── js/                # JavaScript modules
-├── images/            # Game images
-├── icons/             # PWA icons
-├── dist/              # Production build output
-└── docs/              # Documentation
+```bash
+npm test               # run the Jest test suite
+npm run lint           # ESLint over js/**
+npm run optimize:images # re-compress background images with sharp
 ```
 
-## Development
+Core systems: manual & automatic spell casting, preservation-chamber automation, an upgrade/inscription tree, experimentation, an ascension system with elemental specialization, achievements, daily rituals, and a meditation mini-game.
 
-### Available Scripts
+## Why / how it works
 
-- `npm start` - Start development server
-- `npm run build` - Build for development
-- `npm run build:prod` - Build for production
-- `npm test` - Run tests
-- `npm run optimize:images` - Optimize images
+The hook is that the **UI is diegetic**. Hex Compiler uses a five-tier design system (Tier 0–4) that maps your progress onto the interface: Tier 0 is monochrome with maximum glitch (screen tearing, chromatic aberration, scanlines, text corruption, jitter), and each tier you reach adds color, sound effects (Tier 2+), full graphics, and finally procedural ambient music (Tier 4+) as the glitches resolve to nothing. The "fading magic" theme is literally rendered as visual instability that you fix by playing. Audio is driven by [Tone.js](https://tonejs.github.io/) (loaded via CDN), styling is plain CSS with custom properties, and offline play comes from a service worker + web app manifest.
 
-### Design Tiers
+## Best-fit searches
 
-The game uses a progressive design tier system that reveals features as players progress. The UI starts heavily glitched and progressively stabilizes as you preserve more magic:
+browser idle game · incremental clicker game open source · vanilla JavaScript idle game · PWA incremental game · esbuild game project · hexadecimal coding game · idle game with glitch UI · Tone.js procedural game music
 
-- **Tier 0**: Minimal UI (monochrome, maximum glitch effects)
-- **Tier 1**: Basic color (heavy glitch effects)
-- **Tier 2**: Sound effects (moderate glitch effects)
-- **Tier 3**: Full graphics (light glitch effects)
-- **Tier 4**: Music (perfect, no glitches)
+## Links
 
-### Glitch Effects System
-
-The UI starts heavily glitched at Tier 0 and progressively stabilizes until it's perfect at Tier 4. This represents the "fading magic" theme - as you preserve more magic, the UI becomes more stable. Effects include:
-- Screen tearing / horizontal glitch lines
-- Chromatic aberration (RGB channel separation)
-- Scanlines (CRT monitor effect)
-- Text corruption / character flicker
-- Position jitter (micro-shifts)
-- Opacity flicker
-- Distortion waves
-- Glitchy gradient (fading theme overlay)
-
-## Documentation
-
-- [GAME_MANUAL.md](./GAME_MANUAL.md) - Complete game manual
-- [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) - Deployment guide
-- [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) - Deployment checklist
-- [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) - Comprehensive deployment guide
-- [docs/API.md](./docs/API.md) - API documentation
-
-## License
-
-MIT
+- **Game manual:** [GAME_MANUAL.md](GAME_MANUAL.md)
+- **Deployment guide:** [DEPLOYMENT_README.md](DEPLOYMENT_README.md)
+- **API docs:** [docs/API.md](docs/API.md)
+- **License:** [MIT](LICENSE)
+- **KyaniteLabs:** [kyanitelabs.tech](https://kyanitelabs.tech)
+- **Sibling projects:** [GameStory-Lab](https://github.com/simongonzalezdc/GameStory-Lab) · [voice-to-sculpture-app](https://github.com/simongonzalezdc/voice-to-scultpure-app) · [Print-OS](https://github.com/simongonzalezdc/Print-OS) · [grocery-flywheel](https://github.com/simongonzalezdc/grocery-flywheel) · [HealthAdvocate](https://github.com/simongonzalezdc/healthadvocate)
