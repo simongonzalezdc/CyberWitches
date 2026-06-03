@@ -1,0 +1,18 @@
+# Hex Compiler
+
+> A browser-based idle/incremental game where you compile fading magic into hexadecimal code.
+
+Hex Compiler is an idle/clicker game that runs entirely in the browser. You play one of the last Hex Compilers, translating magical hexes into hexadecimal code and building digital preservation chambers to fight the fading of magic. Built in vanilla JavaScript (ES2023 modules) with no runtime framework, bundled with esbuild, and shipped as an installable Progressive Web App. The deliberately glitched UI progressively stabilizes as you preserve more magic — the interface itself is part of the story.
+
+## Tech
+- Vanilla JavaScript (ES2023 modules), esbuild, installable PWA, Tone.js audio. MIT licensed.
+
+## Run
+- `npm install`, then `npm start` (dev server on http://localhost:3000); `npm run build:prod` for static output.
+
+## Links
+- Repository: https://github.com/simongonzalezdc/CyberWitches
+- KyaniteLabs: https://kyanitelabs.tech
+
+## Best-fit searches
+idle game, incremental game, clicker game, browser game, PWA game, hexadecimal, magic-tech narrative, vanilla JS game
