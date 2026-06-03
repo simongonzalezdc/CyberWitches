@@ -21,12 +21,10 @@ const distDir = join(__dirname, 'dist');
 // Files to copy as-is
 const staticFiles = [
   'index.html',
-  'styles.css',
   'manifest.json',
   'sw.js',
   'start-server.sh',
-  'start-server.bat',
-  'README.txt'
+  'start-server.bat'
 ];
 
 // Directories to copy recursively
