@@ -30,8 +30,12 @@
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/utilities.css">
     
-    <!-- Audio Engine -->
-    <script src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js" defer></script>
+    <!-- Audio Engine. SRI-pinned: if jsdelivr ever serves tampered bytes for this
+         exact version, the browser refuses to execute it. crossorigin is required
+         for SRI on cross-origin scripts. -->
+    <script src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js"
+            integrity="sha384-NWoslxaf/3dYwQk+uGziDYJFdsjBpVlU1WpFRexuDFcIk/5PJpCbpVXia2Uikeix"
+            crossorigin="anonymous" defer></script>
 </head>
 
 <body class="bg-void-950 text-white overflow-hidden font-sans antialiased">
