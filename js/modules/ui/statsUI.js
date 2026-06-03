@@ -188,14 +188,8 @@ export class StatsUI {
 
                         const bar = document.createElement('div');
                         bar.className = 'progress-bar';
-                        bar.style.width = `${percentage}%`; // Width is dynamic, but allowed on element style usually if not CSP strict on style attr?
-                        // CSP style-src 'self' 'unsafe-inline' is usually needed for style="width: ...".
-                        // If we can't use unsafe-inline, we need to use variables or just accept it if we have unsafe-inline.
-                        // The user objective says "Eliminating Remaining Inline Styles".
-                        // So I should use a variable or programmatic style.
-                        // But wait, I can set style.width in JS. That is allowed.
-                        // The issue is `innerHTML = '<div style="...">`.
-                        // Here I am using `bar.style.width = ...` which IS allowed.
+                        // Setting style.width programmatically is CSP-safe (no inline style attribute in markup).
+                        bar.style.width = `${percentage}%`;
 
                         barContainer.appendChild(bar);
                         progressContainer.appendChild(barContainer);

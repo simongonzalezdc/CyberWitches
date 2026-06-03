@@ -90,11 +90,15 @@ async function start() {
         errorDiv.style.padding = '20px';
         errorDiv.style.border = '2px solid #ff0000';
         errorDiv.style.zIndex = '9999';
-        errorDiv.innerHTML = `
-            <h2>Game Failed to Load</h2>
-            <p>${error.message}</p>
-            <p>Please refresh the page. If the issue persists, clear your browser data.</p>
-        `;
+        // Build with static markup + textContent for the dynamic message so an
+        // error string can never inject markup into the page.
+        const heading = document.createElement('h2');
+        heading.textContent = 'Game Failed to Load';
+        const detail = document.createElement('p');
+        detail.textContent = error.message;
+        const hint = document.createElement('p');
+        hint.textContent = 'Please refresh the page. If the issue persists, clear your browser data.';
+        errorDiv.append(heading, detail, hint);
         document.body.appendChild(errorDiv);
     }
 }
