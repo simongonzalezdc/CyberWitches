@@ -986,6 +986,17 @@ export class GameState {
             if (data.version && this.migrateSaveData) {
                 if (!this.migrateSaveData(data)) {
                     console.warn('Save data migration failed, starting fresh');
+                    // Preserve the un-migratable save so it is never silently lost.
+                    try {
+                        localStorage.setItem('cyberWitchesSave_migration_failed_' + Date.now(), saveDataStr);
+                    } catch (e) {
+                        console.error('Failed to back up un-migratable save:', e);
+                    }
+                    // Tell the player rather than silently resetting their progress.
+                    handleError(
+                        new Error('Your save could not be upgraded to this version and was reset. A backup was kept in this browser.'),
+                        'load:migration', true
+                    );
                     return;
                 }
             }
@@ -999,6 +1010,11 @@ export class GameState {
                 } catch (e) {
                     console.error('Failed to create backup:', e);
                 }
+                // Surface the reset to the player instead of failing silently.
+                handleError(
+                    new Error('Your save was corrupted and could not be loaded, so the game was reset. A backup was kept in this browser.'),
+                    'load:validation', true
+                );
                 return;
             }
 
