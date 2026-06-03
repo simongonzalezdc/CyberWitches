@@ -17,8 +17,8 @@
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --runInBand",
     "optimize:images": "node optimize-backgrounds.js",
-    "lint": "eslint js/**/*.js",
-    "lint:fix": "eslint js/**/*.js --fix",
+    "lint": "eslint js/**/*.js sw.js",
+    "lint:fix": "eslint js/**/*.js sw.js --fix",
     "format": "prettier --write \"js/**/*.js\" \"*.{html,css,md}\"",
     "docs": "jsdoc js -d docs -c jsdoc.json",
     "ci": "npm run lint && npm run test"

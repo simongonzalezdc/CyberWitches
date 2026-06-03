@@ -7,7 +7,6 @@
 const CACHE_VERSION = 'v19';
 const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
-const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
 const CACHE_URLS = [
     '/',
