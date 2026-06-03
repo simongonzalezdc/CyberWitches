@@ -930,19 +930,17 @@ export class GameState {
      * Load game state from localStorage with validation and error handling
      */
     loadGameState() {
+        // Declared outside try so the finally block can always hide this loader.
+        let loadingId = null;
         try {
             // Show loading state if available
-            let loadingId = null;
             if (showLoadingState) {
                 loadingId = showLoadingState('Loading game...');
             }
 
             const saveDataStr = localStorage.getItem('cyberWitchesSave');
             if (!saveDataStr) {
-                // Hide loading state if no save data
-                if (loadingId && window.hideLoadingState) {
-                    window.hideLoadingState(loadingId);
-                }
+                // No save (first-time player). The finally block hides the loader.
                 return;
             }
 
@@ -1108,16 +1106,16 @@ export class GameState {
 
             this.lastSaveTime = Date.now() / 1000;
 
-            // Hide loading state
-            if (loadingId && hideLoadingState) {
+        } catch (error) {
+            handleError(error, 'load', true);
+        } finally {
+            // Always clear the loading overlay, no matter which path we exited on.
+            // Several early returns (no save, parse/migration/validation failure)
+            // previously bypassed the hide and left a full-screen, click-blocking
+            // "Loading game..." overlay stuck over the game.
+            if (hideLoadingState) {
                 hideLoadingState(loadingId);
             }
-        } catch (error) {
-            // Hide loading state on error
-            if (hideLoadingState) {
-                hideLoadingState();
-            }
-            handleError(error, 'load', true);
         }
     }
 

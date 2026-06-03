@@ -48,6 +48,32 @@ describe('GameState.loadGameState save recovery', () => {
     expect(backupKeys()).toHaveLength(0);
   });
 
+  // Regression: a first-time player (no save) previously got a permanent
+  // full-screen "Loading game..." overlay because the no-save path hid it via
+  // an unbound window.hideLoadingState. loadGameState must always clear it.
+  test('clears the loading overlay on every exit path', () => {
+    const overlayActive = () => {
+      const ov = document.getElementById('loading-overlay');
+      return ov ? ov.classList.contains('active') : false;
+    };
+
+    // No-save path.
+    gameState.loadGameState();
+    expect(overlayActive()).toBe(false);
+
+    // Corrupt-save path.
+    localStorage.setItem(SAVE_KEY, '{ broken json ');
+    gameState.loadGameState();
+    expect(overlayActive()).toBe(false);
+
+    // Valid-save path.
+    const good = { version: '2.1', ab: 5, abTotalEarned: 5, timestamp: Date.now() / 1000 };
+    good.checksum = gameState.calculateChecksum(good);
+    localStorage.setItem(SAVE_KEY, JSON.stringify(good));
+    gameState.loadGameState();
+    expect(overlayActive()).toBe(false);
+  });
+
   test('corrupt (unparseable) save is not loaded and is backed up', () => {
     localStorage.setItem(SAVE_KEY, '{ this is not valid json ');
     gameState.loadGameState();

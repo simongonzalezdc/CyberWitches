@@ -62,3 +62,9 @@ id_ed25519
 # Local agent workspace
 .omx/
 .omc/
+
+# Playwright MCP test artifacts
+.playwright-mcp/
+
+# Generated jsdoc output (npm run docs)
+docs/
