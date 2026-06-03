@@ -1,16 +1,21 @@
 name: Deploy
 
+# Manual-only until a real deploy target is configured. Previously this ran on
+# every push to main and just echoed "Deployment would happen here", reporting a
+# green "Deploy to Production" with no deploy actually occurring. Wire a real
+# provider in the step below (GitHub Pages / Netlify / Vercel), then re-enable
+# the push/tag triggers.
 on:
-  push:
-    branches: [ main ]
-    tags:
-      - 'v*'
+  workflow_dispatch:
+  # push:
+  #   branches: [ main ]
+  #   tags:
+  #     - 'v*'
 
 jobs:
   deploy:
-    name: Deploy to Production
+    name: Build & Deploy
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -21,7 +26,7 @@ jobs:
       - run: npm run build:prod
       - name: Deploy to hosting service
         run: |
-          # Add deployment steps here
-          # Example: Deploy to GitHub Pages, Netlify, Vercel, etc.
-          echo "Deployment would happen here"
+          echo "::error::No deploy target configured. Wire GitHub Pages / Netlify /"
+          echo "::error::Vercel here and re-enable the push triggers in this workflow."
+          exit 1
 

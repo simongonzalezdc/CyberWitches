@@ -16,9 +16,9 @@ export class DOMBatcher {
      * Schedule a DOM update
      * @param {string} key - Unique key for the update (e.g., element ID or update type)
      * @param {Function} updateFn - Function that performs the DOM update
-     * @param {number} priority - Priority (0 = normal, 1 = high)
+     * @param {number} _priority - Reserved for future prioritization (currently unused)
      */
-    schedule(key, updateFn, priority = 0) {
+    schedule(key, updateFn, _priority = 0) {
         this.pendingUpdates.set(key, updateFn);
         
         if (!this.rafId) {
@@ -42,9 +42,9 @@ export class DOMBatcher {
         updates.forEach((updateFn, key) => {
             try {
                 updateFn();
-                } catch (error) {
+            } catch (error) {
                 console.error(`Error in batched DOM update (${key}):`, error);
-                }
+            }
         });
     }
     

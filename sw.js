@@ -1,7 +1,11 @@
-// Service Worker for Cyber Witches Game
-// Updated with improved caching strategies (Week 1, Day 3)
+// Service Worker for Hex Compiler
 
-const CACHE_NAME = 'spellwright-cache-v18'; // Force cache clear after error handling fixes
+// Bump CACHE_VERSION on every deploy that changes cached assets. The activate
+// handler deletes any cache whose name !== CACHE_NAME, so changing this string
+// purges stale assets and forces one fresh fetch for returning players. The
+// prefix was renamed from the legacy "spellwright-cache" to match the product.
+const CACHE_VERSION = 'v19';
+const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
 const CACHE_URLS = [

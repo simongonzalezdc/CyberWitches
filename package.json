@@ -15,10 +15,10 @@
     "package": "bash package-for-friend.sh || ./package-for-friend.sh",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --runInBand",
     "optimize:images": "node optimize-backgrounds.js",
-    "lint": "eslint js/**/*.js",
-    "lint:fix": "eslint js/**/*.js --fix",
+    "lint": "eslint js/**/*.js sw.js",
+    "lint:fix": "eslint js/**/*.js sw.js --fix",
     "format": "prettier --write \"js/**/*.js\" \"*.{html,css,md}\"",
     "docs": "jsdoc js -d docs -c jsdoc.json",
     "ci": "npm run lint && npm run test"
@@ -28,6 +28,9 @@
     "game",
     "incremental"
   ],
+  "engines": {
+    "node": "^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0"
+  },
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -42,9 +45,5 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^4.1.17",
     "terser": "^5.44.1"
-  },
-  "dependencies": {
-    "qs": "^6.15.2",
-    "ws": "^8.20.1"
   }
 }

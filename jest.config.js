@@ -29,10 +29,14 @@ export default {
     '!js/**/*.spec.js',
   ],
 
-  // Coverage thresholds — adjusted to current baseline to fix CI (issue #12).
-  // Global coverage is low because many UI/module files lack tests;
-  // core data/utils modules have excellent coverage.
-  // Gradually raise thresholds as more module tests are added.
+  // Coverage thresholds are a regression ratchet, set just below the CURRENT
+  // enforced floor. NOTE: jest evaluates thresholds over the full
+  // collectCoverageFrom universe (every js/**/*.js, including never-imported
+  // modules at 0%), which is LOWER than the "All files" reporter table that
+  // only counts modules loaded during the run (~12%). The numbers below track
+  // the threshold evaluation (~9% stmts / 7% branch / 14% funcs / 9% lines).
+  // Raise them as UI/PWA modules gain tests; re-measure with
+  // `npm run test:coverage`.
   coverageThreshold: {
     global: {
       statements: 8,
@@ -57,11 +61,17 @@ export default {
     '**/tests/**/*.spec.js',
   ],
 
-  // Ignore patterns
+  // Ignore patterns.
+  // IMPORTANT: anchor project-relative ignores to <rootDir>. Bare '/archive/'
+  // or '/dist/' are matched against the file's ABSOLUTE path, so if the repo is
+  // checked out under a directory that itself contains "archive" or "dist"
+  // (e.g. .../workspaces/archive/personal/CyberWitches), the pattern silently
+  // excludes the ENTIRE repo and jest reports "No tests found". node_modules is
+  // safe unanchored because it only ever appears inside the dependency tree.
   testPathIgnorePatterns: [
     '/node_modules/',
-    '/dist/',
-    '/archive/',
+    '<rootDir>/dist/',
+    '<rootDir>/archive/',
   ],
 
   // Coverage report formats

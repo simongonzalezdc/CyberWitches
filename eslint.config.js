@@ -26,7 +26,15 @@ export default [
                 requestIdleCallback: 'readonly',
                 cancelIdleCallback: 'readonly',
                 Image: 'readonly',
-                
+                URL: 'readonly',
+                Response: 'readonly',
+                Request: 'readonly',
+
+                // Service worker globals (sw.js)
+                self: 'readonly',
+                caches: 'readonly',
+                clients: 'readonly',
+
                 // Node globals
                 process: 'readonly',
                 Buffer: 'readonly',
