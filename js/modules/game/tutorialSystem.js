@@ -3,11 +3,13 @@
  * Provides guided onboarding for new players
  * REDESIGNED: Boot Sequence Style
  */
+import { notify as defaultNotify } from '../../ui/notifier.js';
 
 export class TutorialSystem {
-    constructor(gameState, uiManager) {
+    constructor(gameState, notify = defaultNotify) {
         this.gameState = gameState;
-        this.uiManager = uiManager;
+        // Depend on the notifier port, not the whole UIManager.
+        this.notify = notify;
         this.currentStep = 0;
         this.completedSteps = new Set();
         this.tutorialSteps = [];
@@ -274,9 +276,7 @@ export class TutorialSystem {
         
         localStorage.setItem('tutorialCompleted', 'true');
         
-        if (this.uiManager?.showNotification) {
-            this.uiManager.showNotification('SYSTEM_READY. BEGIN_OPERATIONS.', 'success');
-        }
+        this.notify('SYSTEM_READY. BEGIN_OPERATIONS.', 'success');
     }
     
     skipTutorial() {

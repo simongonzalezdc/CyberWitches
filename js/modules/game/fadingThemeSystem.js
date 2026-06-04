@@ -5,10 +5,9 @@
  */
 
 export class FadingThemeSystem {
-    constructor(gameState, designTierSystem, uiManager) {
+    constructor(gameState, designTierSystem) {
         this.gameState = gameState;
         this.designTierSystem = designTierSystem;
-        this.uiManager = uiManager;
 
         // Settings state (loaded from localStorage)
         this.settings = {

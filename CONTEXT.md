@@ -34,6 +34,16 @@ modules deepen; it is the map AI agents and new contributors read first.
   are its implementation and its test surface. GameState keeps the snapshot
   build/apply (its own field knowledge) and the localStorage I/O + corruption
   backups (a future **Save store** seam).
+- **Notifier** (`js/ui/notifier.js`) — the port game-logic modules emit
+  player-facing notifications through: `notify(message, type, duration)`. The
+  notification renderer (`js/modules/ui/notifications.js`) is the production
+  adapter; tests inject a recording fake. Modules take `notify` as an injected
+  constructor dependency (default = the real port) so they no longer hold the
+  whole UIManager just to notify. `TutorialSystem` is fully on this seam.
+  NOTE: the deeper game modules (cast, meditation, inscriptions, prestige) still
+  reach UIManager as a **service locator** (`uiManager.systems.audioSystem`,
+  `.accessibilityManager`) and a UI-update bus (`uiManager.hudUI.update()`).
+  Untangling those is a larger, separate deepening.
 - **GameState** (`js/gameState.js`) — the live game model + tick loop. Still
   large; the save integrity logic was lifted into the save codec.
 - **Entry point** — `js/game.js` bootstraps on `DOMContentLoaded` and calls
