@@ -33,7 +33,8 @@ export class PerformanceBaseline {
         
         // Measure load time
         // Use performance.timing if available and valid, otherwise use performance.now()
-        let rawLoadTime = 0;
+        // (the if/else below always assigns before rawLoadTime is read).
+        let rawLoadTime;
         if (performance.timing && performance.timing.loadEventEnd > 0) {
             rawLoadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
         } else {
