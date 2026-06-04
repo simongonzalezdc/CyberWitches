@@ -5,6 +5,7 @@ import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWith
 import { GAME_CONSTANTS } from './codeOrganization.js';
 import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
 import { debounce } from './commonUtils.js';
+import { encode, decode, validateSaveData } from './save/saveCodec.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
 
@@ -896,20 +897,14 @@ export class GameState {
             };
 
             // Validate save data before saving
-            if (!this.validateSaveData(saveData)) {
+            if (!validateSaveData(saveData)) {
                 console.error('Save data validation failed!', saveData);
                 handleError(new Error('Save data validation failed'), 'save', true);
                 return;
             }
 
-            // Compress save data before storing
-            const compressedDataObj = this.compressSaveDataObject(saveData);
-
-            // Add checksum for integrity verification (calculate on compressed data)
-            compressedDataObj.checksum = this.calculateChecksum(compressedDataObj);
-
-            // Stringify and save
-            const compressedData = JSON.stringify(compressedDataObj);
+            // Compress + checksum + stringify via the save codec.
+            const compressedData = encode(saveData);
             localStorage.setItem('cyberWitchesSave', compressedData);
             this.lastSaveTime = Date.now() / 1000;
 
@@ -944,70 +939,41 @@ export class GameState {
                 return;
             }
 
-            let data;
-            try {
-                data = JSON.parse(saveDataStr);
+            // Decode runs the integrity pipeline (parse -> checksum -> migrate ->
+            // validate). We decide what to do with each outcome here: back up the
+            // raw bytes, tell the player, or apply the snapshot.
+            const result = decode(saveDataStr);
 
-                // Check for save conflicts (multiple saves)
-                this.checkSaveConflicts();
-            } catch (parseError) {
-                console.error('Failed to parse save data:', parseError);
-                handleError(parseError, 'load', true);
-                // Try to create backup before clearing
-                try {
-                    localStorage.setItem('cyberWitchesSave_backup_' + Date.now(), saveDataStr);
-                } catch (e) {
-                    console.error('Failed to create backup:', e);
-                }
+            if (result.outcome === 'parse_error') {
+                console.error('Failed to parse save data:', result.error);
+                handleError(result.error, 'load', true);
+                this.backupRawSave('cyberWitchesSave_backup_', saveDataStr);
                 return;
             }
 
-            // Verify checksum for data integrity
-            if (!this.verifyChecksum(data)) {
+            // Parse succeeded — check for conflicting saves (multiple keys).
+            this.checkSaveConflicts();
+
+            if (result.outcome === 'checksum_recalculated') {
                 console.warn('Save data checksum verification failed - recalculating checksum');
-                // Recalculate checksum and update it (may have been saved with different property order or structure)
-                const newChecksum = this.calculateChecksum(data);
-                data.checksum = newChecksum;
-
-                // Create backup of the original save
-                try {
-                    localStorage.setItem('cyberWitchesSave_checksum_fix_' + Date.now(), saveDataStr);
-                } catch (e) {
-                    console.error('Failed to create checksum fix backup:', e);
-                }
-
-                // Continue loading with recalculated checksum
-                // The checksum will be updated on next save
+                this.backupRawSave('cyberWitchesSave_checksum_fix_', saveDataStr);
             }
 
-            // Migrate save data if needed
-            if (data.version && this.migrateSaveData) {
-                if (!this.migrateSaveData(data)) {
-                    console.warn('Save data migration failed, starting fresh');
-                    // Preserve the un-migratable save so it is never silently lost.
-                    try {
-                        localStorage.setItem('cyberWitchesSave_migration_failed_' + Date.now(), saveDataStr);
-                    } catch (e) {
-                        console.error('Failed to back up un-migratable save:', e);
-                    }
-                    // Tell the player rather than silently resetting their progress.
-                    handleError(
-                        new Error('Your save could not be upgraded to this version and was reset. A backup was kept in this browser.'),
-                        'load:migration', true
-                    );
-                    return;
-                }
+            if (result.outcome === 'migration_failed') {
+                console.warn('Save data migration failed, starting fresh');
+                // Preserve the un-migratable save so it is never silently lost.
+                this.backupRawSave('cyberWitchesSave_migration_failed_', saveDataStr);
+                // Tell the player rather than silently resetting their progress.
+                handleError(
+                    new Error('Your save could not be upgraded to this version and was reset. A backup was kept in this browser.'),
+                    'load:migration', true
+                );
+                return;
             }
 
-            // Validate save data structure
-            if (!this.validateSaveData(data)) {
+            if (result.outcome === 'invalid') {
                 console.warn('Invalid save data detected, starting fresh');
-                // Create backup before clearing
-                try {
-                    localStorage.setItem('cyberWitchesSave_backup_' + Date.now(), saveDataStr);
-                } catch (e) {
-                    console.error('Failed to create backup:', e);
-                }
+                this.backupRawSave('cyberWitchesSave_backup_', saveDataStr);
                 // Surface the reset to the player instead of failing silently.
                 handleError(
                     new Error('Your save was corrupted and could not be loaded, so the game was reset. A backup was kept in this browser.'),
@@ -1015,6 +981,8 @@ export class GameState {
                 );
                 return;
             }
+
+            const data = result.snapshot;
 
             // Calculate offline progress BEFORE loading state
             const elapsed = (Date.now() / 1000) - (data.timestamp || Date.now() / 1000);
@@ -1201,325 +1169,18 @@ export class GameState {
     }
 
     /**
-     * Validate save data structure and values
-     * @param {Object} data - Save data to validate
-     * @returns {boolean} - Whether the data is valid
+     * Write a timestamped backup of raw save bytes. Best-effort: a storage
+     * failure (quota, private mode) is logged, never thrown, so recovery never
+     * makes a bad situation worse.
+     * @param {string} prefix - localStorage key prefix
+     * @param {string} raw - the raw save string to preserve
      */
-    validateSaveData(data) {
-        // Check basic structure
-        if (!data || typeof data !== 'object' || Array.isArray(data)) {
-            console.error('Save validation failed: Invalid data structure');
-            return false;
-        }
-
-        // Check version exists and is valid
-        if (!data.version || typeof data.version !== 'string') {
-            console.warn('Save data missing version, attempting migration');
-            // Try to migrate old save data
-            return this.migrateSaveData(data);
-        }
-
-        // Validate numeric values
-        const numericFields = ['ab', 'abTotal', 'timestamp'];
-        for (const field of numericFields) {
-            if (data[field] !== undefined) {
-                if (typeof data[field] !== 'number' || isNaN(data[field])) {
-                    console.error(`Save validation failed: Invalid ${field} value`);
-                    return false;
-                }
-
-                // Check for bounded values (prevent negative/overflow)
-                if (field === 'ab' || field === 'abTotal') {
-                    if (data[field] < 0) {
-                        console.error(`Save validation failed: Negative ${field} value`);
-                        return false;
-                    }
-                    if (data[field] > Number.MAX_SAFE_INTEGER) {
-                        console.error(`Save validation failed: ${field} overflow`);
-                        return false;
-                    }
-                }
-
-                // Timestamp validation (reasonable range)
-                if (field === 'timestamp') {
-                    const currentTime = Date.now() / 1000;
-                    const year2020 = 1577836800; // Jan 1, 2020
-                    const futureLimit = currentTime + (365 * 24 * 60 * 60); // 1 year in future
-
-                    if (data[field] < year2020 || data[field] > futureLimit) {
-                        console.error(`Save validation failed: Invalid timestamp (${data[field]})`);
-                        return false;
-                    }
-                }
-            }
-        }
-
-        // Validate nested objects
-        const objectFields = ['inventory', 'workstations', 'upgrades', 'prestige', 'experiments', 'stats'];
-        for (const field of objectFields) {
-            if (data[field] !== undefined) {
-                if (typeof data[field] !== 'object' || data[field] === null) {
-                    console.error(`Save validation failed: Invalid ${field} object`);
-                    return false;
-                }
-
-                // Validate inventory/workstation values are non-negative numbers
-                if (field === 'inventory' || field === 'workstations') {
-                    for (const key in data[field]) {
-                        const value = data[field][key];
-                        if (typeof value !== 'number' || isNaN(value) || value < 0) {
-                            console.error(`Save validation failed: Invalid ${field}.${key} value`);
-                            return false;
-                        }
-                        if (value > Number.MAX_SAFE_INTEGER) {
-                            console.error(`Save validation failed: ${field}.${key} overflow`);
-                            return false;
-                        }
-                    }
-                }
-
-                // Validate prestige data
-                if (field === 'prestige' && data.prestige) {
-                    const prestigeFields = ['points', 'lifetimeEarned', 'count'];
-                    for (const pField of prestigeFields) {
-                        if (data.prestige[pField] !== undefined) {
-                            if (typeof data.prestige[pField] !== 'number' || isNaN(data.prestige[pField]) || data.prestige[pField] < 0) {
-                                console.error(`Save validation failed: Invalid prestige.${pField} value`);
-                                return false;
-                            }
-                        }
-                    }
-
-                    // Validate bonuses object
-                    if (data.prestige.bonuses && typeof data.prestige.bonuses === 'object') {
-                        for (const bonusId in data.prestige.bonuses) {
-                            const level = data.prestige.bonuses[bonusId];
-                            if (typeof level !== 'number' || isNaN(level) || level < 0 || level > 1000) {
-                                console.error(`Save validation failed: Invalid prestige bonus level for ${bonusId}`);
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Validate arrays
-        const arrayFields = ['discoveredRecipes'];
-        for (const field of arrayFields) {
-            if (data[field] !== undefined && !Array.isArray(data[field])) {
-                console.error(`Save validation failed: ${field} is not an array`);
-                return false;
-            }
-        }
-
-        // Validate experiments.discovered array if it exists
-        if (data.experiments?.discovered !== undefined) {
-            if (!Array.isArray(data.experiments.discovered)) {
-                console.error('Save validation failed: experiments.discovered is not an array');
-                return false;
-            }
-            // Limit array size to prevent memory issues
-            if (data.experiments.discovered.length > 1000) {
-                console.error('Save validation failed: experiments.discovered array too large');
-                return false;
-            }
-        }
-
-        // Validate milestones.unlocked if it exists
-        if (data.milestones?.unlocked !== undefined) {
-            if (!Array.isArray(data.milestones.unlocked)) {
-                console.error('Save validation failed: milestones.unlocked is not an array');
-                return false;
-            }
-            if (data.milestones.unlocked.length > 10000) {
-                console.error('Save validation failed: milestones.unlocked array too large');
-                return false;
-            }
-        }
-
-        // Check data size to prevent localStorage overflow
-        const dataStr = JSON.stringify(data);
-        const dataSizeKB = dataStr.length / 1024;
-        if (dataSizeKB > 4096) { // 4MB limit (localStorage usually has 5-10MB limit)
-            console.error(`Save validation failed: Save data too large (${dataSizeKB.toFixed(2)} KB)`);
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Recursively sort object keys for deterministic JSON stringification
-     * @param {*} obj - Object to sort
-     * @returns {*} Object with sorted keys
-     */
-    sortObjectKeys(obj) {
-        if (obj === null || typeof obj !== 'object') {
-            return obj;
-        }
-
-        if (Array.isArray(obj)) {
-            return obj.map(item => this.sortObjectKeys(item));
-        }
-
-        const sorted = {};
-        const keys = Object.keys(obj).sort();
-        for (const key of keys) {
-            sorted[key] = this.sortObjectKeys(obj[key]);
-        }
-        return sorted;
-    }
-
-    /**
-     * Calculate a simple checksum for save data integrity
-     * @param {Object} data - Save data to checksum
-     * @returns {string} Checksum value
-     */
-    calculateChecksum(data) {
-        // Create a clean copy without checksum field
-        const cleanData = { ...data };
-        delete cleanData.checksum;
-
-        // Sort keys recursively to ensure deterministic JSON stringification
-        const sortedData = this.sortObjectKeys(cleanData);
-
-        // Simple hash function (not cryptographic, just for corruption detection)
-        const str = JSON.stringify(sortedData);
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32-bit integer
-        }
-        return hash.toString(36);
-    }
-
-    /**
-     * Verify save data checksum
-     * @param {Object} data - Save data with checksum
-     * @returns {boolean} True if checksum is valid or missing (old save)
-     */
-    verifyChecksum(data) {
-        // If no checksum exists, it's an old save - allow it
-        if (!data.checksum) {
-            return true;
-        }
-
-        // Calculate expected checksum
-        const expectedChecksum = this.calculateChecksum(data);
-
-        if (data.checksum !== expectedChecksum) {
-            // Don't log as error - this is handled gracefully in loadGameState
-            // The mismatch might be due to property order differences
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Migrate save data from older versions
-     * @param {Object} data - Save data to migrate
-     * @returns {boolean} - Whether migration was successful
-     */
-    migrateSaveData(data) {
+    backupRawSave(prefix, raw) {
         try {
-            // Add version if missing
-            if (!data.version) {
-                data.version = "2.0";
-            }
-
-            // Migrate from version 1.0 to 2.0
-            if (data.version === "1.0" || parseFloat(data.version) < 2.0) {
-                // Ensure all required fields exist
-                if (!data.inventory) data.inventory = {};
-                if (!data.workstations) data.workstations = {};
-                if (!data.upgrades) data.upgrades = {};
-                if (!data.prestige) data.prestige = { points: 0, lifetimeEarned: 0.0, bonuses: {}, count: 0 };
-                if (!data.experiments) data.experiments = { discovered: [] };
-                if (!data.stats) data.stats = { totalTaps: 0, totalWorkstationsCrafted: 0, totalPotionsCrafted: 0 };
-                if (!data.milestones) data.milestones = { unlocked: [] };
-
-                data.version = "2.0";
-            }
-
-            // Migrate to version 2.1 (add validation and ensure prestige.count exists)
-            if (data.version === "2.0" || parseFloat(data.version) < 2.1) {
-                // Ensure prestige.count exists - if missing but has prestige points/bonuses, infer it
-                if (data.prestige) {
-                    if (data.prestige.count === undefined || data.prestige.count === null) {
-                        // If they have prestige points or bonuses, they must have ascended at least once
-                        if ((data.prestige.points > 0) || (data.prestige.bonuses && Object.keys(data.prestige.bonuses).length > 0)) {
-                            data.prestige.count = 1;
-                            console.log('Migrating save: Added missing prestige.count (inferred from prestige points/bonuses)');
-                        } else {
-                            data.prestige.count = 0;
-                        }
-                    }
-                }
-
-                data.version = "2.1";
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Save data migration failed:', error);
-            return false;
+            localStorage.setItem(prefix + Date.now(), raw);
+        } catch (e) {
+            console.error("Failed to create backup:", e);
         }
-    }
-
-    /**
-     * Compress save data to reduce size (returns object)
-     * @param {Object} data - Save data to compress
-     * @returns {Object} Compressed save data object
-     */
-    compressSaveDataObject(data) {
-        // Remove unnecessary data
-        const compressed = {
-            ab: data.ab,
-            abTotal: data.abTotal,
-            inventory: data.inventory,
-            workstations: data.workstations,
-            upgrades: data.upgrades,
-            prestige: data.prestige,
-            experiments: data.experiments,
-            stats: data.stats,
-            milestones: data.milestones,
-            elementSpecialization: data.elementSpecialization,
-            specializationBonuses: data.specializationBonuses,
-            timestamp: data.timestamp,
-            version: data.version
-        };
-
-        // Remove zero values to save space
-        Object.keys(compressed.inventory).forEach(key => {
-            if (compressed.inventory[key] === 0) {
-                delete compressed.inventory[key];
-            }
-        });
-
-        Object.keys(compressed.workstations).forEach(key => {
-            if (compressed.workstations[key] === 0) {
-                delete compressed.workstations[key];
-            }
-        });
-
-        return compressed;
-    }
-
-    /**
-     * Compress save data to reduce size (returns string)
-     * @param {Object} data - Save data to compress
-     * @returns {string} Compressed save data
-     */
-    compressSaveData(data) {
-        const compressed = this.compressSaveDataObject(data);
-        // Include checksum if it exists
-        if (data.checksum) {
-            compressed.checksum = data.checksum;
-        }
-        return JSON.stringify(compressed);
     }
 
     /**

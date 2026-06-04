@@ -11,6 +11,7 @@
  */
 
 import { GameState } from '../../js/gameState.js';
+import { calculateChecksum } from '../../js/save/saveCodec.js';
 
 // Match the lightweight global-mock style used by the other GameState tests.
 global.handleError = () => {};
@@ -68,7 +69,7 @@ describe('GameState.loadGameState save recovery', () => {
 
     // Valid-save path.
     const good = { version: '2.1', ab: 5, abTotalEarned: 5, timestamp: Date.now() / 1000 };
-    good.checksum = gameState.calculateChecksum(good);
+    good.checksum = calculateChecksum(good);
     localStorage.setItem(SAVE_KEY, JSON.stringify(good));
     gameState.loadGameState();
     expect(overlayActive()).toBe(false);
@@ -103,7 +104,7 @@ describe('GameState.loadGameState save recovery', () => {
       abTotalEarned: 1234,
       timestamp: Date.now() / 1000,
     };
-    good.checksum = gameState.calculateChecksum(good);
+    good.checksum = calculateChecksum(good);
     localStorage.setItem(SAVE_KEY, JSON.stringify(good));
 
     gameState.loadGameState();

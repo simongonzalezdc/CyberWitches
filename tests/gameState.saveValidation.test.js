@@ -3,6 +3,9 @@
  */
 
 import { GameState } from '../js/gameState.js';
+// Validation/checksum rules now live in the save codec; the save/load round-trip
+// block below still exercises them through GameState's orchestration.
+import { validateSaveData, calculateChecksum, verifyChecksum } from '../js/save/saveCodec.js';
 
 // Mock global functions - must be simple functions, not jest.fn()
 global.handleError = () => {};
@@ -27,17 +30,17 @@ describe('GameState - Save File Validation', () => {
 
     describe('validateSaveData', () => {
         test('should reject null data', () => {
-            expect(gameState.validateSaveData(null)).toBe(false);
+            expect(validateSaveData(null)).toBe(false);
         });
 
         test('should reject undefined data', () => {
-            expect(gameState.validateSaveData(undefined)).toBe(false);
+            expect(validateSaveData(undefined)).toBe(false);
         });
 
         test('should reject non-object data', () => {
-            expect(gameState.validateSaveData('string')).toBe(false);
-            expect(gameState.validateSaveData(123)).toBe(false);
-            expect(gameState.validateSaveData([])).toBe(false);
+            expect(validateSaveData('string')).toBe(false);
+            expect(validateSaveData(123)).toBe(false);
+            expect(validateSaveData([])).toBe(false);
         });
 
         test('should reject data with negative ab value', () => {
@@ -47,7 +50,7 @@ describe('GameState - Save File Validation', () => {
                 abTotal: 0,
                 timestamp: Date.now() / 1000
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with negative abTotal value', () => {
@@ -57,7 +60,7 @@ describe('GameState - Save File Validation', () => {
                 abTotal: -50,
                 timestamp: Date.now() / 1000
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with NaN values', () => {
@@ -67,7 +70,7 @@ describe('GameState - Save File Validation', () => {
                 abTotal: 0,
                 timestamp: Date.now() / 1000
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with overflow values', () => {
@@ -77,7 +80,7 @@ describe('GameState - Save File Validation', () => {
                 abTotal: 0,
                 timestamp: Date.now() / 1000
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with invalid timestamp (too old)', () => {
@@ -87,7 +90,7 @@ describe('GameState - Save File Validation', () => {
                 abTotal: 100,
                 timestamp: 946684800 // Year 2000
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with invalid timestamp (too far in future)', () => {
@@ -97,7 +100,7 @@ describe('GameState - Save File Validation', () => {
                 abTotal: 100,
                 timestamp: (Date.now() / 1000) + (2 * 365 * 24 * 60 * 60) // 2 years in future
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with invalid inventory values', () => {
@@ -110,7 +113,7 @@ describe('GameState - Save File Validation', () => {
                     fire_essence: -10 // Negative value
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with NaN inventory values', () => {
@@ -123,7 +126,7 @@ describe('GameState - Save File Validation', () => {
                     fire_essence: NaN
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with inventory overflow', () => {
@@ -136,7 +139,7 @@ describe('GameState - Save File Validation', () => {
                     fire_essence: Number.MAX_SAFE_INTEGER + 1
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with negative prestige points', () => {
@@ -152,7 +155,7 @@ describe('GameState - Save File Validation', () => {
                     count: 0
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with invalid prestige bonus levels', () => {
@@ -170,7 +173,7 @@ describe('GameState - Save File Validation', () => {
                     count: 1
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with excessively high prestige bonus levels', () => {
@@ -188,7 +191,7 @@ describe('GameState - Save File Validation', () => {
                     count: 1
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with too many discovered recipes', () => {
@@ -201,7 +204,7 @@ describe('GameState - Save File Validation', () => {
                     discovered: new Array(2000).fill('recipe_id') // Too many
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should reject data with too many unlocked milestones', () => {
@@ -214,7 +217,7 @@ describe('GameState - Save File Validation', () => {
                     unlocked: new Array(20000).fill('milestone_id') // Too many
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(false);
+            expect(validateSaveData(data)).toBe(false);
         });
 
         test('should accept valid save data', () => {
@@ -253,7 +256,7 @@ describe('GameState - Save File Validation', () => {
                     unlocked: ['milestone1', 'milestone2']
                 }
             };
-            expect(gameState.validateSaveData(data)).toBe(true);
+            expect(validateSaveData(data)).toBe(true);
         });
     });
 
@@ -265,8 +268,8 @@ describe('GameState - Save File Validation', () => {
                 timestamp: Date.now() / 1000
             };
 
-            const checksum1 = gameState.calculateChecksum(data);
-            const checksum2 = gameState.calculateChecksum(data);
+            const checksum1 = calculateChecksum(data);
+            const checksum2 = calculateChecksum(data);
 
             expect(checksum1).toBe(checksum2);
         });
@@ -284,8 +287,8 @@ describe('GameState - Save File Validation', () => {
                 timestamp: Date.now() / 1000
             };
 
-            const checksum1 = gameState.calculateChecksum(data1);
-            const checksum2 = gameState.calculateChecksum(data2);
+            const checksum1 = calculateChecksum(data1);
+            const checksum2 = calculateChecksum(data2);
 
             expect(checksum1).not.toBe(checksum2);
         });
@@ -297,9 +300,9 @@ describe('GameState - Save File Validation', () => {
                 timestamp: Date.now() / 1000
             };
 
-            data.checksum = gameState.calculateChecksum(data);
+            data.checksum = calculateChecksum(data);
 
-            expect(gameState.verifyChecksum(data)).toBe(true);
+            expect(verifyChecksum(data)).toBe(true);
         });
 
         test('should reject invalid checksum', () => {
@@ -310,7 +313,7 @@ describe('GameState - Save File Validation', () => {
                 checksum: 'invalid_checksum'
             };
 
-            expect(gameState.verifyChecksum(data)).toBe(false);
+            expect(verifyChecksum(data)).toBe(false);
         });
 
         test('should allow missing checksum (old saves)', () => {
@@ -320,7 +323,7 @@ describe('GameState - Save File Validation', () => {
                 timestamp: Date.now() / 1000
             };
 
-            expect(gameState.verifyChecksum(data)).toBe(true);
+            expect(verifyChecksum(data)).toBe(true);
         });
 
         test('should detect tampered data', () => {
@@ -331,13 +334,13 @@ describe('GameState - Save File Validation', () => {
             };
 
             // Calculate valid checksum
-            data.checksum = gameState.calculateChecksum(data);
+            data.checksum = calculateChecksum(data);
 
             // Tamper with data
             data.ab = 99999;
 
             // Should fail verification
-            expect(gameState.verifyChecksum(data)).toBe(false);
+            expect(verifyChecksum(data)).toBe(false);
         });
     });
 
