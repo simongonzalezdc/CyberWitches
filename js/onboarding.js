@@ -18,7 +18,7 @@ const TUTORIAL_STEPS = [
         position: 'center',
         action: null,
         highlight: false,
-        canSkip: true,
+        canSkip: true
     },
     {
         id: 'cast_intro',
@@ -28,7 +28,7 @@ const TUTORIAL_STEPS = [
         position: 'bottom',
         action: 'cast', // Wait for cast action
         highlight: true,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'resources_gained',
@@ -38,7 +38,7 @@ const TUTORIAL_STEPS = [
         position: 'right',
         action: null,
         highlight: true,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'cast_more',
@@ -48,7 +48,7 @@ const TUTORIAL_STEPS = [
         position: 'bottom',
         action: 'cast_5', // Wait for 5 casts
         highlight: true,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'workstations_tab',
@@ -58,7 +58,7 @@ const TUTORIAL_STEPS = [
         position: 'bottom',
         action: 'tab_workstations',
         highlight: true,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'first_workstation',
@@ -68,7 +68,7 @@ const TUTORIAL_STEPS = [
         position: 'right',
         action: 'craft_workstation',
         highlight: true,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'workstation_producing',
@@ -78,7 +78,7 @@ const TUTORIAL_STEPS = [
         position: 'bottom',
         action: null,
         highlight: true,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'inscriptions_intro',
@@ -88,7 +88,7 @@ const TUTORIAL_STEPS = [
         position: 'bottom',
         action: null,
         highlight: true,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'design_tier',
@@ -98,7 +98,7 @@ const TUTORIAL_STEPS = [
         position: 'center',
         action: null,
         highlight: false,
-        canSkip: false,
+        canSkip: false
     },
     {
         id: 'tutorial_complete',
@@ -108,8 +108,8 @@ const TUTORIAL_STEPS = [
         position: 'center',
         action: null,
         highlight: false,
-        canSkip: false,
-    },
+        canSkip: false
+    }
 ];
 
 /**
@@ -170,7 +170,7 @@ class OnboardingSystem {
 
         // Track tutorial start
         analytics.trackEvent('tutorial', 'start', {
-            timestamp: Date.now(),
+            timestamp: Date.now()
         });
 
         // Create overlay
@@ -212,7 +212,7 @@ class OnboardingSystem {
         // Track step view
         analytics.trackEvent('tutorial', 'step_view', {
             step_id: step.id,
-            step_index: stepIndex,
+            step_index: stepIndex
         });
 
         // Clear previous highlight
@@ -395,7 +395,7 @@ class OnboardingSystem {
         const currentStep = TUTORIAL_STEPS[this.currentStep];
         analytics.trackEvent('tutorial', 'step_complete', {
             step_id: currentStep.id,
-            step_index: this.currentStep,
+            step_index: this.currentStep
         });
 
         // Show next step
@@ -408,7 +408,7 @@ class OnboardingSystem {
     skipTutorial() {
         // Track skip
         analytics.trackEvent('tutorial', 'skip', {
-            step_index: this.currentStep,
+            step_index: this.currentStep
         });
 
         // Mark as skipped
@@ -424,7 +424,7 @@ class OnboardingSystem {
     completeTutorial() {
         // Track completion
         analytics.trackEvent('tutorial', 'complete', {
-            timestamp: Date.now(),
+            timestamp: Date.now()
         });
 
         // Mark as complete

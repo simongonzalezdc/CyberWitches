@@ -226,7 +226,7 @@ export class GameState {
 
         // Apply production
         for (const outputId in production) {
-            if (outputId === "ab") {
+            if (outputId === 'ab') {
                 this.addAb(production[outputId]);
             } else {
                 this.addIngredient(outputId, production[outputId]);
@@ -327,8 +327,8 @@ export class GameState {
         if (totalOutput.ab) {
             for (const upgId in this.upgradesOwned) {
                 const upgData = UPGRADES.find(u => u.id === upgId);
-                if (upgData && upgData.affects === "ab_production") {
-                    if (upgData.type === "multiplier") {
+                if (upgData && upgData.affects === 'ab_production') {
+                    if (upgData.type === 'multiplier') {
                         totalOutput.ab *= upgData.value;
                     }
                 }
@@ -337,7 +337,7 @@ export class GameState {
             // Apply prestige AB production multiplier
             for (const bonusId in this.prestigeBonuses) {
                 const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-                if (bonusData && bonusData.type === "ab_production_mult") {
+                if (bonusData && bonusData.type === 'ab_production_mult') {
                     const levels = this.prestigeBonuses[bonusId] || 0;
                     totalOutput.ab *= (1.0 + bonusData.value * levels);
                 }
@@ -374,16 +374,16 @@ export class GameState {
         // Global upgrades
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === 'global' && upgData.type === 'multiplier') {
                 mult *= upgData.value;
             }
         }
 
         // Producer-specific upgrades
-        const targetAffects = "producer:" + workstationId;
+        const targetAffects = 'producer:' + workstationId;
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === targetAffects && upgData.type === 'multiplier') {
                 mult *= upgData.value;
             }
         }
@@ -391,7 +391,7 @@ export class GameState {
         // Prestige bonuses (global)
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "global_mult") {
+            if (bonusData && bonusData.type === 'global_mult') {
                 const levels = this.prestigeBonuses[bonusId];
                 mult *= (1.0 + bonusData.value * levels);
             }
@@ -400,7 +400,7 @@ export class GameState {
         // Prestige bonuses (producer-specific)
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "producer_mult" && bonusData.param === workstationId) {
+            if (bonusData && bonusData.type === 'producer_mult' && bonusData.param === workstationId) {
                 const levels = this.prestigeBonuses[bonusId];
                 mult *= (1.0 + bonusData.value * levels);
             }
@@ -667,7 +667,7 @@ export class GameState {
         this.totalTaps++;
 
         // Base tier-0 ingredients (4 alchemical elements - Aether is synthesized from these)
-        let baseAmounts = {
+        const baseAmounts = {
             crystal_dust: 0.5,
             fire_essence: 0.5,
             water_essence: 0.5,
@@ -702,10 +702,10 @@ export class GameState {
 
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === "click") {
-                if (upgData.type === "multiplier") {
+            if (upgData && upgData.affects === 'click') {
+                if (upgData.type === 'multiplier') {
                     clickMult *= upgData.value;
-                } else if (upgData.type === "additive") {
+                } else if (upgData.type === 'additive') {
                     clickAdditive += upgData.value;
                 }
             }
@@ -714,7 +714,7 @@ export class GameState {
         // Apply prestige click multiplier
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "click_mult") {
+            if (bonusData && bonusData.type === 'click_mult') {
                 const levels = this.prestigeBonuses[bonusId] || 0;
                 clickMult *= (1.0 + bonusData.value * levels);
             }
@@ -834,7 +834,7 @@ export class GameState {
         // Starting AB
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "starting_currency") {
+            if (bonusData && bonusData.type === 'starting_currency') {
                 const levels = this.prestigeBonuses[bonusId];
                 this.addAb(bonusData.value * levels);
             }
@@ -843,7 +843,7 @@ export class GameState {
         // Starting ingredients
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "start_ingredient") {
+            if (bonusData && bonusData.type === 'start_ingredient') {
                 const levels = this.prestigeBonuses[bonusId];
                 this.addIngredient(bonusData.param, bonusData.value * levels);
             }
@@ -921,7 +921,7 @@ export class GameState {
                 // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
                 coven: null, // this.covenSystem ? this.covenSystem.saveCovenData() : null,
                 timestamp: Date.now() / 1000,
-                version: "2.1" // Updated version for save data validation
+                version: '2.1' // Updated version for save data validation
             };
 
             // Validate save data before saving
@@ -1207,7 +1207,7 @@ export class GameState {
         try {
             localStorage.setItem(prefix + Date.now(), raw);
         } catch (e) {
-            console.error("Failed to create backup:", e);
+            console.error('Failed to create backup:', e);
         }
     }
 

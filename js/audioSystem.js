@@ -1887,7 +1887,7 @@ export class AudioSystem {
         
         // Ensure SFX master gain is initialized
         if (!this.toneSfxMaster) {
-            console.warn(`playToneSound: SFX master gain not initialized, initializing now...`);
+            console.warn('playToneSound: SFX master gain not initialized, initializing now...');
             // Create master gain on the fly
             const sfxVolumeLinear = this.sfxVolume * this.masterVolume;
             const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6;

@@ -120,8 +120,8 @@ export default [
             'no-debugger': 'warn',
 
             // Style
-            'indent': ['warn', 4, { "SwitchCase": 1 }],
-            'quotes': ['warn', 'single', { "avoidEscape": true }],
+            'indent': ['warn', 4, { 'SwitchCase': 1 }],
+            'quotes': ['warn', 'single', { 'avoidEscape': true }],
             'semi': ['warn', 'always'],
             'comma-dangle': ['warn', 'never']
         }

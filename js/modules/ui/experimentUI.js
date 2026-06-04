@@ -93,7 +93,7 @@ export class ExperimentUI {
                     console.error('Error in experiment:', error);
                     const resultLabel = document.getElementById('experiment-result');
                     if (resultLabel) {
-                        resultLabel.innerHTML = `<div class="result-label error experiment-error-message">Experiment failed. Try again.</div>`;
+                        resultLabel.innerHTML = '<div class="result-label error experiment-error-message">Experiment failed. Try again.</div>';
                         resultLabel.className = 'result-box experiment-result-visible';
                     }
                     showNotification('Experiment failed. Try again.', 'error');
@@ -131,29 +131,29 @@ export class ExperimentUI {
                 <div class="card-section">
                             <div class="card-label">Cost:</div>
                     ${Object.entries(recipeInputs).map(([ingId, amount]) => {
-                // Validate amount is a valid number
-                if (amount === undefined || amount === null || isNaN(amount)) {
-                    console.warn(`Invalid recipe input amount for ${ingId}:`, amount);
-                    amount = 0;
-                }
-                const have = this.gameState.inventory[ingId] || 0;
-                const canAfford = have >= amount;
-                return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+        // Validate amount is a valid number
+        if (amount === undefined || amount === null || isNaN(amount)) {
+            console.warn(`Invalid recipe input amount for ${ingId}:`, amount);
+            amount = 0;
+        }
+        const have = this.gameState.inventory[ingId] || 0;
+        const canAfford = have >= amount;
+        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                             <span class="recipe-label">${ingId}:</span>
                             <span class="recipe-numbers">${window.formatShort(have)} / ${window.formatShort(amount)}</span>
                         </div>`;
-            }).join('')}
+    }).join('')}
                 </div>
                 <div class="card-section">
                             <div class="card-label">Makes:</div>
                     ${Object.entries(recipeOutputs).map(([outputId, amount]) => {
-                // Validate amount is a valid number
-                if (amount === undefined || amount === null || isNaN(amount)) {
-                    console.warn(`Invalid recipe output amount for ${outputId}:`, amount);
-                    amount = 0;
-                }
-                return `<div class="card-value">${outputId}: ${window.formatShort(amount)}</div>`;
-            }).join('')}
+        // Validate amount is a valid number
+        if (amount === undefined || amount === null || isNaN(amount)) {
+            console.warn(`Invalid recipe output amount for ${outputId}:`, amount);
+            amount = 0;
+        }
+        return `<div class="card-value">${outputId}: ${window.formatShort(amount)}</div>`;
+    }).join('')}
                 </div>
                 <button class="btn-primary craft-recipe-btn" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
             `;

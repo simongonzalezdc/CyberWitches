@@ -1248,9 +1248,6 @@ export class MeditationState {
      * @returns {number} Production multiplier (1.0 = no bonus)
      */
     getMeditationProductionBonus() {
-        // Base bonus: 1.0 (no bonus)
-        let bonus;
-
         // Focus contribution (major): 1% per 100 focus earned (capped at 50% = 1.5x)
         const focusContribution = Math.min(this.focusTotalEarned / 10000, 0.5); // 10,000 focus = 50% bonus
 
@@ -1263,8 +1260,8 @@ export class MeditationState {
         // Sessions contribution (tiny): 0.05% per session completed (capped at 5% = 1.05x)
         const sessionsContribution = Math.min(this.totalSessionsCompleted / 1000, 0.05); // 1,000 sessions = 5% bonus
 
-        // Total bonus: 1.0 + all contributions (max 1.9x = 90% bonus)
-        bonus = 1.0 + focusContribution + wavesContribution + distractionsContribution + sessionsContribution;
+        // Base bonus 1.0 + all contributions (max 1.9x = 90% bonus)
+        const bonus = 1.0 + focusContribution + wavesContribution + distractionsContribution + sessionsContribution;
 
         // Cap at 2.0x (100% bonus) maximum
         return Math.min(bonus, 2.0);

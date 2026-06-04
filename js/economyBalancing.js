@@ -246,7 +246,7 @@ class EconomyBalancing {
 }
 
 // Create global instance
-let economyBalancing = null;
+const economyBalancing = null;
 
 // Global functions
 window.getEconomyReport = () => {

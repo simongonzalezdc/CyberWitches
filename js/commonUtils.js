@@ -85,7 +85,7 @@ export function deepClone(obj) {
  * @returns {string} - Formatted number
  */
 export function formatWithCommas(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 /**

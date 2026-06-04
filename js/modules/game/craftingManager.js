@@ -144,7 +144,7 @@ export class CraftingManager {
 
         return {
             success: false,
-            message: "No new recipes discovered. Try gathering more materials!"
+            message: 'No new recipes discovered. Try gathering more materials!'
         };
     }
 
@@ -164,7 +164,7 @@ export class CraftingManager {
         this.gameState.consumeRecipe(recipe.inputs);
 
         for (const outputId in recipe.outputs) {
-            if (outputId === "ab") {
+            if (outputId === 'ab') {
                 this.gameState.addAb(recipe.outputs[outputId]);
             } else {
                 // A potion is anything getPotionEffect() recognizes — the single

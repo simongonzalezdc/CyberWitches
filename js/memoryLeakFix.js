@@ -154,10 +154,10 @@ class MemoryLeakPreventionManager {
                 const growthPercent = (growth / this.baselineMemory) * 100;
                 
                 if (growthPercent > 50) {
-                     console.warn(`Potential Memory Leak: Memory grew by ${growthPercent.toFixed(1)}% (${((growth)/1048576).toFixed(2)}MB) since baseline.`);
-                     // Don't force cleanup immediately on growth alone, but log it.
-                     // Update baseline if we've stabilized at a higher level to prevent spamming
-                     this.baselineMemory = usedHeap; 
+                    console.warn(`Potential Memory Leak: Memory grew by ${growthPercent.toFixed(1)}% (${((growth)/1048576).toFixed(2)}MB) since baseline.`);
+                    // Don't force cleanup immediately on growth alone, but log it.
+                    // Update baseline if we've stabilized at a higher level to prevent spamming
+                    this.baselineMemory = usedHeap; 
                 }
             } else {
                 this.baselineMemory = usedHeap;
@@ -170,12 +170,12 @@ class MemoryLeakPreventionManager {
      */
     forceCleanup() {
         console.log('Forcing memory cleanup...');
-                this.cleanup();
+        this.cleanup();
         
         // Optional: clear caches if critical
         if ('caches' in window) {
-             // We generally don't want to wipe the app cache, but maybe others?
-             // Leaving this safe for now.
+            // We generally don't want to wipe the app cache, but maybe others?
+            // Leaving this safe for now.
         }
     }
 

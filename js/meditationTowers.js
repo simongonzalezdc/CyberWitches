@@ -1149,7 +1149,7 @@ export class MeditationTowers {
                 const flashGradient = this.ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, flashSize);
                 flashGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.9})`);
                 flashGradient.addColorStop(0.5, `rgba(0, 255, 255, ${alpha * 0.6})`);
-                flashGradient.addColorStop(1, `rgba(0, 255, 255, 0)`);
+                flashGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
                 
                 this.ctx.fillStyle = flashGradient;
                 this.ctx.beginPath();

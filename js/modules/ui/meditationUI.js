@@ -300,7 +300,7 @@ export class MeditationUI {
                 });
 
                 const towerCard = document.createElement('div');
-                towerCard.className = `card tower-card placed-tower`;
+                towerCard.className = 'card tower-card placed-tower';
 
                 const upgradeCostItems = upgradeCosts.map(({ displayName, required, have, canAfford }) => {
                     return `<span class="recipe-item-inline ${canAfford ? 'can-afford' : 'cannot-afford'}">

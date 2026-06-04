@@ -37,7 +37,7 @@ export class WorkstationUI {
         // Styles moved to CSS
 
         // Filter unlocked workstations (with Air specialization unlock speed bonus)
-        let unlockedWorkstations = PRODUCERS.filter(prod => {
+        const unlockedWorkstations = PRODUCERS.filter(prod => {
             let unlockRequirement = prod.unlockAtAb;
             if (this.gameState.elementSpecialization === 'air' && this.gameState.specializationBonuses.unlockSpeedMult) {
                 unlockRequirement *= this.gameState.specializationBonuses.unlockSpeedMult;
@@ -304,7 +304,7 @@ export class WorkstationUI {
         // Global upgrades
         for (const upgId in this.gameState.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === 'global' && upgData.type === 'multiplier') {
                 mult *= upgData.value;
                 inscriptions.push({
                     name: upgData.displayName,
@@ -315,10 +315,10 @@ export class WorkstationUI {
         }
 
         // Producer-specific upgrades
-        const targetAffects = "producer:" + workstationId;
+        const targetAffects = 'producer:' + workstationId;
         for (const upgId in this.gameState.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === targetAffects && upgData.type === 'multiplier') {
                 mult *= upgData.value;
                 inscriptions.push({
                     name: upgData.displayName,

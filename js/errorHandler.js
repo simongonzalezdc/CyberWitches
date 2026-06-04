@@ -315,11 +315,11 @@ export function validateParams(params, schema, context = 'validation') {
         const actualType = params[key] === null ? 'null' : typeof params[key];
         if (actualType !== type) {
             handleError(new Error(`Invalid parameter type for ${key}: expected ${type}, got ${actualType}`), context, false, ErrorCategory.VALIDATION, ErrorSeverity.MEDIUM, {
-                    parameter: key,
-                    expected: type,
-                    received: actualType,
-                    value: params[key]
-                });
+                parameter: key,
+                expected: type,
+                received: actualType,
+                value: params[key]
+            });
             return false;
         }
     }

@@ -338,7 +338,7 @@ class TutorialSystem {
 }
 
 // Create global instance
-let tutorialSystem = null;
+const tutorialSystem = null;
 
 // Global functions
 window.startTutorial = () => {

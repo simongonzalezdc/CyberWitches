@@ -93,13 +93,13 @@ export class TutorialSystem {
         bootScreen.style.zIndex = '99999';
 
         const lines = [
-            "> KERNEL_INIT...",
-            "> LOADING_MAGIC_DRIVERS... [OK]",
-            "> CONNECTING_TO_AETHER_NET... [OK]",
-            "> COMPILING_HEX_PROTOCOLS... [OK]",
-            "> ERROR: MAGIC_RESERVES_CRITICAL.",
-            "> ACTION_REQUIRED: MANUAL_INTERVENTION.",
-            "> INITIALIZING_USER_INTERFACE..."
+            '> KERNEL_INIT...',
+            '> LOADING_MAGIC_DRIVERS... [OK]',
+            '> CONNECTING_TO_AETHER_NET... [OK]',
+            '> COMPILING_HEX_PROTOCOLS... [OK]',
+            '> ERROR: MAGIC_RESERVES_CRITICAL.',
+            '> ACTION_REQUIRED: MANUAL_INTERVENTION.',
+            '> INITIALIZING_USER_INTERFACE...'
         ];
 
         let lineIndex = 0;

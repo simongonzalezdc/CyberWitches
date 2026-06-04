@@ -9,26 +9,26 @@
 import { TutorialSystem } from '../../js/modules/game/tutorialSystem.js';
 
 describe('TutorialSystem notifier seam', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    // Skip the boot sequence so construction stays lightweight for the test.
-    localStorage.setItem('tutorialCompleted', 'true');
-  });
+    beforeEach(() => {
+        localStorage.clear();
+        // Skip the boot sequence so construction stays lightweight for the test.
+        localStorage.setItem('tutorialCompleted', 'true');
+    });
 
-  test('completeTutorial emits through the injected notifier, with no UIManager', () => {
-    const calls = [];
-    const fakeNotify = (message, type) => calls.push({ message, type });
+    test('completeTutorial emits through the injected notifier, with no UIManager', () => {
+        const calls = [];
+        const fakeNotify = (message, type) => calls.push({ message, type });
 
-    const tutorial = new TutorialSystem({}, fakeNotify);
-    tutorial.completeTutorial();
+        const tutorial = new TutorialSystem({}, fakeNotify);
+        tutorial.completeTutorial();
 
-    expect(calls).toEqual([
-      { message: 'SYSTEM_READY. BEGIN_OPERATIONS.', type: 'success' },
-    ]);
-  });
+        expect(calls).toEqual([
+            { message: 'SYSTEM_READY. BEGIN_OPERATIONS.', type: 'success' }
+        ]);
+    });
 
-  test('falls back to the default notifier when none is injected', () => {
+    test('falls back to the default notifier when none is injected', () => {
     // No notify argument: the default port is used and construction does not throw.
-    expect(() => new TutorialSystem({})).not.toThrow();
-  });
+        expect(() => new TutorialSystem({})).not.toThrow();
+    });
 });
