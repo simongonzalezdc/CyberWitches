@@ -1,5 +1,4 @@
 import { DAILY_TASKS_POOL } from './data.js';
-import { formatShort, formatTimeDuration } from './utils.js';
 
 export class DailyRituals {
     constructor(gameState) {
@@ -67,7 +66,7 @@ export class DailyRituals {
                 // For workstation tasks
                 if (conditionType === "craft" || conditionType === "own") {
                     if (parts.length > 2 && parts[2] === param) {
-                        const target = parts.length > 3 ? parseInt(parts[3]) : 1;
+                        const target = parts.length > 3 ? parseInt(parts[3], 10) : 1;
                         this.taskProgress[task.id] = value;
                         if (this.onTaskProgressUpdated) {
                             this.onTaskProgressUpdated(task.id, value, target);
@@ -80,7 +79,7 @@ export class DailyRituals {
                 }
                 // For tap tasks
                 else if (conditionType === "tap") {
-                    const target = parseInt(parts[1]);
+                    const target = parseInt(parts[1], 10);
                     this.taskProgress[task.id] = value;
                     if (this.onTaskProgressUpdated) {
                         this.onTaskProgressUpdated(task.id, value, target);
@@ -93,7 +92,7 @@ export class DailyRituals {
                 // For craft_item tasks
                 else if (conditionType === "craft_item") {
                     if (parts.length > 1 && parts[1] === param) {
-                        const target = parts.length > 2 ? parseInt(parts[2]) : 1;
+                        const target = parts.length > 2 ? parseInt(parts[2], 10) : 1;
                         this.taskProgress[task.id] = value;
                         if (this.onTaskProgressUpdated) {
                             this.onTaskProgressUpdated(task.id, value, target);
@@ -106,7 +105,7 @@ export class DailyRituals {
                 }
                 // For earn_ab tasks
                 else if (conditionType === "earn_ab") {
-                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    const target = parts.length > 1 ? parseInt(parts[1], 10) : 1;
                     this.taskProgress[task.id] = value;
                     if (this.onTaskProgressUpdated) {
                         this.onTaskProgressUpdated(task.id, value, target);
@@ -118,7 +117,7 @@ export class DailyRituals {
                 }
                 // For discover_recipe tasks
                 else if (conditionType === "discover_recipe") {
-                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    const target = parts.length > 1 ? parseInt(parts[1], 10) : 1;
                     this.taskProgress[task.id] = value;
                     if (this.onTaskProgressUpdated) {
                         this.onTaskProgressUpdated(task.id, value, target);
@@ -130,7 +129,7 @@ export class DailyRituals {
                 }
                 // For craft_potion tasks
                 else if (conditionType === "craft_potion") {
-                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    const target = parts.length > 1 ? parseInt(parts[1], 10) : 1;
                     this.taskProgress[task.id] = value;
                     if (this.onTaskProgressUpdated) {
                         this.onTaskProgressUpdated(task.id, value, target);
@@ -142,7 +141,7 @@ export class DailyRituals {
                 }
                 // For meditation tasks
                 else if (conditionType === "meditation_waves") {
-                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    const target = parts.length > 1 ? parseInt(parts[1], 10) : 1;
                     this.taskProgress[task.id] = value;
                     if (this.onTaskProgressUpdated) {
                         this.onTaskProgressUpdated(task.id, value, target);
@@ -153,7 +152,7 @@ export class DailyRituals {
                     }
                 }
                 else if (conditionType === "meditation_towers") {
-                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    const target = parts.length > 1 ? parseInt(parts[1], 10) : 1;
                     this.taskProgress[task.id] = value;
                     if (this.onTaskProgressUpdated) {
                         this.onTaskProgressUpdated(task.id, value, target);
@@ -164,7 +163,7 @@ export class DailyRituals {
                     }
                 }
                 else if (conditionType === "earn_focus") {
-                    const target = parts.length > 1 ? parseInt(parts[1]) : 1;
+                    const target = parts.length > 1 ? parseInt(parts[1], 10) : 1;
                     this.taskProgress[task.id] = value;
                     if (this.onTaskProgressUpdated) {
                         this.onTaskProgressUpdated(task.id, value, target);
@@ -186,7 +185,7 @@ export class DailyRituals {
         
         // Check completion
         const parts = task.condition.split(":");
-        const target = parts.length > 0 ? parseInt(parts[parts.length - 1]) : 1;
+        const target = parts.length > 0 ? parseInt(parts[parts.length - 1], 10) : 1;
         const progress = this.taskProgress[taskId] || 0;
         
         if (progress < target) return false;

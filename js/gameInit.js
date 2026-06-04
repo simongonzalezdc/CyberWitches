@@ -267,15 +267,9 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
 
     gameState.onWelcomeBack = (elapsed, abGained) => {
         if (abGained > 0 && elapsed > 60) {
-            // We need formatShort and formatTimeDuration. 
-            // Ideally GameState shouldn't know about formatting, passing raw values.
-            // ModalManager handles formatting or imports utils.
-            // But wait, ModalManager.showWelcomeBack expects formatted strings in the current implementation?
-            // Let's check ModalManager.js.
-            // showWelcomeBack(elapsed, abGained, formatTimeDuration, formatShort)
-            // It expects formatting functions passed in!
-            // We need to import them here.
-            
+            // GameState stays formatting-agnostic and emits raw values; the
+            // welcome-back modal takes the formatting helpers as arguments, so we
+            // lazy-load them here and hand them in.
             import('./utils.js')
                 .then(({ formatShort, formatTimeDuration }) => {
                     uiManager.modalManager.showWelcomeBack(elapsed, abGained, formatTimeDuration, formatShort);

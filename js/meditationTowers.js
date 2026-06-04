@@ -476,9 +476,9 @@ export class MeditationTowers {
         const colorMatch = baseColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
         if (!colorMatch) return;
         
-        const r = parseInt(colorMatch[1]);
-        const g = parseInt(colorMatch[2]);
-        const b = parseInt(colorMatch[3]);
+        const r = parseInt(colorMatch[1], 10);
+        const g = parseInt(colorMatch[2], 10);
+        const b = parseInt(colorMatch[3], 10);
         const a = colorMatch[4] ? parseFloat(colorMatch[4]) : 0.8;
         
         // Draw outer glow
@@ -775,9 +775,9 @@ export class MeditationTowers {
         const colorMatch = distractionColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
         if (!colorMatch) return;
         
-        const r = parseInt(colorMatch[1]);
-        const g = parseInt(colorMatch[2]);
-        const b = parseInt(colorMatch[3]);
+        const r = parseInt(colorMatch[1], 10);
+        const g = parseInt(colorMatch[2], 10);
+        const b = parseInt(colorMatch[3], 10);
         const a = colorMatch[4] ? parseFloat(colorMatch[4]) : 0.9;
         
         // Draw outer glow/pulse effect

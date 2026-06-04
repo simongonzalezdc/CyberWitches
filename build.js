@@ -93,7 +93,7 @@ async function buildTailwindCSS() {
   // Check if Tailwind is installed
   try {
     execSync('npx @tailwindcss/cli --version', { stdio: 'ignore' });
-  } catch (error) {
+  } catch (_error) {
     console.log('  ⚠️  Tailwind CSS not installed. Skipping Tailwind build.');
     console.log('  💡 Run: npm install -D tailwindcss@latest @tailwindcss/cli@latest');
     return;

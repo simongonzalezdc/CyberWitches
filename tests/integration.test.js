@@ -83,89 +83,6 @@ describe('Save/Load Integration Tests', () => {
     });
     
     describe('Complete Save/Load Cycle', () => {
-        test.skip('should save and load complete game state including coven data - ARCHIVED', () => {
-            // COVEN SYSTEM ARCHIVED - Test disabled
-            // Set up a complex game state
-            gameState.addAb(1000);
-            gameState.addIngredient('test_ingredient', 500);
-            gameState.craftWorkstation('test_producer', 5);
-            gameState.inscribeUpgrade('test_upgrade');
-            gameState.totalTaps = 250;
-            gameState.totalWorkstationsCrafted = 15;
-
-            // Create and join a coven
-            const covenCreated = gameState.covenSystem.createCoven('Integration Test Coven', 'A coven for integration testing');
-            expect(covenCreated).toBe(true);
-            
-            // Add some progress to coven
-            gameState.covenSystem.updateCovenProgress('production', 200, 'ab');
-            gameState.covenSystem.updateCovenProgress('casting', 50);
-            
-            // Save the game
-            gameState.saveGameStateImmediate();
-            
-            // Verify save data contains all expected fields
-            const saveData = JSON.parse(localStorage.getItem('cyberWitchesSave'));
-            
-            expect(saveData.ab).toBe(1000);
-            expect(saveData.abTotal).toBe(1000);
-            expect(saveData.inventory.test_ingredient).toBe(500);
-            expect(saveData.workstations.test_producer).toBe(5);
-            expect(saveData.upgrades.test_upgrade).toBe(true);
-            expect(saveData.stats.totalTaps).toBe(250);
-            expect(saveData.stats.totalWorkstationsCrafted).toBe(15);
-            expect(saveData.coven).toBeDefined();
-            expect(saveData.coven.coven.name).toBe('Integration Test Coven');
-            expect(saveData.coven.coven.level).toBe(1);
-            expect(saveData.version).toBe('2.0');
-            
-            // Create a new game state and load the saved data
-            const newGameState = new GameState();
-            localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
-            newGameState.loadGameState();
-            
-            // Verify all data was loaded correctly
-            expect(newGameState.ab).toBe(1000);
-            expect(newGameState.inventory.test_ingredient).toBe(500);
-            expect(newGameState.workstations.test_producer).toBe(5);
-            expect(newGameState.upgradesOwned.test_upgrade).toBe(true);
-            expect(newGameState.totalTaps).toBe(250);
-            expect(newGameState.totalWorkstationsCrafted).toBe(15);
-            expect(newGameState.covenSystem.isInCoven()).toBe(true);
-            expect(newGameState.covenSystem.getCurrentCoven().name).toBe('Integration Test Coven');
-        });
-        
-        test.skip('should handle save/load cycle with coven level progression - ARCHIVED', () => {
-            // COVEN SYSTEM ARCHIVED - Test disabled
-            // Set up game with coven
-            gameState.covenSystem.createCoven('Level Test Coven', 'Testing level progression');
-            
-            // Complete enough rituals to level up the coven
-            const coven = gameState.covenSystem.getCurrentCoven();
-            const productionRitual = coven.activeRituals.find(r => r.requirements.type === 'production');
-            
-            // Complete the ritual multiple times to gain enough experience
-            for (let i = 0; i < 5; i++) {
-                productionRitual.progress = productionRitual.maxProgress;
-                gameState.covenSystem.updateCovenProgress('production', 0, 'ab');
-            }
-            
-            // Save the game
-            gameState.saveGameStateImmediate();
-            
-            // Verify coven level increased
-            const saveData = JSON.parse(localStorage.getItem('cyberWitchesSave'));
-            expect(saveData.coven.coven.level).toBeGreaterThan(1);
-            
-            // Load the game
-            const newGameState = new GameState();
-            localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
-            newGameState.loadGameState();
-            
-            // Verify coven level was preserved
-            expect(newGameState.covenSystem.getCurrentCoven().level).toBeGreaterThan(1);
-        });
-        
         test('should handle save/load cycle with prestige data', () => {
             // Set up game with prestige
             gameState.prestigePoints = 25;
@@ -194,68 +111,6 @@ describe('Save/Load Integration Tests', () => {
     });
     
     describe('Backward Compatibility', () => {
-        test.skip('should load save data from version 1.0 without coven data - ARCHIVED', () => {
-            // COVEN SYSTEM ARCHIVED - Test disabled
-            // Create a version 1.0 save data (without coven)
-            const v1SaveData = {
-                ab: 500,
-                abTotal: 800,
-                inventory: { test_ingredient: 200 },
-                workstations: { test_producer: 3 },
-                upgrades: { test_upgrade: true },
-                prestige: {
-                    points: 10,
-                    lifetimeEarned: 2000,
-                    bonuses: { test_bonus: 1 }
-                },
-                experiments: { discovered: [] },
-                stats: {
-                    totalTaps: 100,
-                    totalWorkstationsCrafted: 8
-                },
-                timestamp: Date.now() / 1000,
-                version: "1.0"
-            };
-            
-            localStorage.setItem('cyberWitchesSave', JSON.stringify(v1SaveData));
-            gameState.loadGameState();
-            
-            // Verify data was loaded correctly
-            expect(gameState.ab).toBe(500);
-            expect(gameState.inventory.test_ingredient).toBe(200);
-            expect(gameState.workstations.test_producer).toBe(3);
-            expect(gameState.upgradesOwned.test_upgrade).toBe(true);
-            expect(gameState.prestigePoints).toBe(10);
-            expect(gameState.totalTaps).toBe(100);
-            
-            // Coven system should be initialized but not in a coven
-            expect(gameState.covenSystem).toBeDefined();
-            expect(gameState.covenSystem.isInCoven()).toBe(false);
-        });
-        
-        test.skip('should handle missing optional fields in save data - ARCHIVED', () => {
-            // COVEN SYSTEM ARCHIVED - Test disabled
-            // Create save data with missing optional fields
-            const incompleteSaveData = {
-                ab: 100,
-                version: "2.0"
-            };
-            
-            localStorage.setItem('cyberWitchesSave', JSON.stringify(incompleteSaveData));
-            gameState.loadGameState();
-            
-            // Should load without errors and use defaults
-            expect(gameState.ab).toBe(100);
-            expect(gameState.inventory).toEqual({});
-            expect(gameState.workstations).toEqual({});
-            expect(gameState.upgradesOwned).toEqual({});
-            expect(gameState.prestigePoints).toBe(0);
-            expect(gameState.totalTaps).toBe(0);
-            
-            // Coven system should be initialized but not in a coven
-            expect(gameState.covenSystem).toBeDefined();
-            expect(gameState.covenSystem.isInCoven()).toBe(false);
-        });
     });
     
     describe('Error Handling', () => {
@@ -272,97 +127,66 @@ describe('Save/Load Integration Tests', () => {
             expect(gameState.covenSystem).toBeDefined();
         });
         
-        test.skip('should handle save errors gracefully - requires jest.mock', () => {
-            // SKIPPED: Requires jest.mock support for localStorage
-            // Mock localStorage to throw an error on save
-            // localStorage.setItem.mockImplementation(() => {
-            //     throw new Error('Storage quota exceeded');
-            // });
+        test('should handle save errors gracefully (e.g. quota exceeded)', () => {
+            // Simulate localStorage.setItem throwing (quota exceeded / private mode).
+            const setItemSpy = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw new Error('Storage quota exceeded');
+            });
 
-            // Should not throw an error
-            // expect(() => gameState.saveGameStateImmediate()).not.toThrow();
-
-            // Should call error handler
-            // const { handleError } = require('../js/errorHandler.js');
-            // expect(handleError).toHaveBeenCalled();
+            const lastSaveBefore = gameState.lastSaveTime;
+            try {
+                // A failed persist must never crash the game...
+                expect(() => gameState.saveGameStateImmediate()).not.toThrow();
+                // ...and must not falsely advance lastSaveTime (that field is only
+                // set AFTER a successful localStorage write), so callers/autosave
+                // know the data did not actually persist.
+                expect(gameState.lastSaveTime).toBe(lastSaveBefore);
+            } finally {
+                setItemSpy.mockRestore();
+            }
         });
 
-        test.skip('should handle load errors gracefully - requires jest.mock', () => {
-            // SKIPPED: Requires jest.mock support for localStorage
-            // Mock localStorage to throw an error on load
-            // localStorage.getItem.mockImplementation(() => {
-            //     throw new Error('Access denied');
-            // });
+        test('should handle load errors gracefully (e.g. storage access denied)', () => {
+            // Simulate localStorage.getItem throwing on read.
+            const getItemSpy = jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+                throw new Error('Access denied');
+            });
 
-            // Should not throw an error
-            // expect(() => gameState.loadGameState()).not.toThrow();
+            try {
+                // A failed load must never crash the game...
+                expect(() => gameState.loadGameState()).not.toThrow();
+                // ...and the game must remain in a valid default state.
+                expect(gameState.ab).toBe(0);
+                expect(gameState.inventory).toEqual({});
+            } finally {
+                getItemSpy.mockRestore();
+            }
+        });
 
-            // Game should be in a valid state
-            // expect(gameState.ab).toBe(0);
-            expect(gameState.inventory).toEqual({});
+        test('flushPendingSave persists immediately only when a save is pending', () => {
+            const saveSpy = jest.spyOn(gameState, 'saveGameStateImmediate').mockImplementation(() => {});
+
+            // No pending change -> nothing persisted, flag stays clear.
+            gameState.hasPendingSave = false;
+            gameState.flushPendingSave();
+            expect(saveSpy).not.toHaveBeenCalled();
+
+            // Pending change (the tab-hide / pagehide case) -> flush now, clear flag.
+            // This is the core of the data-loss fix: progress accrued since the last
+            // autosave is persisted when the page is backgrounded/closed.
+            gameState.hasPendingSave = true;
+            gameState.flushPendingSave();
+            expect(saveSpy).toHaveBeenCalledTimes(1);
+            expect(gameState.hasPendingSave).toBe(false);
+
+            // force=true persists even with nothing pending.
+            gameState.flushPendingSave(true);
+            expect(saveSpy).toHaveBeenCalledTimes(2);
+
+            saveSpy.mockRestore();
         });
     });
     
     describe('Performance with Large Save Data', () => {
-        test.skip('should handle large save files efficiently - ARCHIVED', () => {
-            // COVEN SYSTEM ARCHIVED - Test disabled
-            // Create a large save file
-            gameState.addAb(1000000);
-
-            // Add many different ingredients
-            for (let i = 0; i < 100; i++) {
-                gameState.addIngredient(`ingredient_${i}`, Math.random() * 1000);
-            }
-
-            // Add many workstations
-            for (let i = 0; i < 50; i++) {
-                gameState.workstations[`workstation_${i}`] = Math.floor(Math.random() * 100);
-            }
-
-            // Create a large coven with many members
-            gameState.covenSystem.createCoven('Large Coven', 'A coven with many members');
-            const coven = gameState.covenSystem.getCurrentCoven();
-            
-            // Add many members
-            for (let i = 0; i < 50; i++) {
-                coven.members.push({
-                    id: `member_${i}`,
-                    name: `Member ${i}`,
-                    contribution: Math.random() * 1000,
-                    joinedAt: Date.now() - Math.random() * 86400000,
-                    isLeader: false
-                });
-            }
-            
-            // Measure save time
-            const startTime = performance.now();
-            gameState.saveGameStateImmediate();
-            const saveTime = performance.now() - startTime;
-            
-            // Save should complete in reasonable time (< 100ms)
-            expect(saveTime).toBeLessThan(100);
-            
-            // Verify save data contains all the large data
-            const saveData = JSON.parse(localStorage.getItem('cyberWitchesSave'));
-            expect(Object.keys(saveData.inventory)).toHaveLength(100);
-            expect(Object.keys(saveData.workstations)).toHaveLength(50);
-            expect(saveData.coven.coven.members).toHaveLength(51); // 50 + 1 leader
-            
-            // Measure load time
-            const loadStartTime = performance.now();
-            const newGameState = new GameState();
-            localStorage.setItem('cyberWitchesSave', JSON.stringify(saveData));
-            newGameState.loadGameState();
-            const loadTime = performance.now() - loadStartTime;
-            
-            // Load should complete in reasonable time (< 200ms)
-            expect(loadTime).toBeLessThan(200);
-            
-            // Verify all data was loaded correctly
-            expect(newGameState.ab).toBe(1000000);
-            expect(Object.keys(newGameState.inventory)).toHaveLength(100);
-            expect(Object.keys(newGameState.workstations)).toHaveLength(50);
-            expect(newGameState.covenSystem.getCurrentCoven().members).toHaveLength(51);
-        });
     });
 });

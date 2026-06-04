@@ -396,7 +396,26 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                         }
                     }
                 }
-                const canAfford10 = canAfford1; // Simplified
+                // Real bulk affordability: crafting N costs the SUM of N
+                // sequentially-scaled recipes (each craft raises the next one's
+                // cost via `growth`), so "can afford 10" is NOT "can afford 1".
+                // Mirrors CraftingManager.craftWorkstation's per-unit scaling.
+                const canAffordCount = (count) => {
+                    const totals = {};
+                    for (let i = 0; i < count; i++) {
+                        const scaled = VirtualWorkstationList.getScaledRecipeStatic(workstation.recipe, owned + i, workstation.growth);
+                        for (const ingId in scaled) {
+                            totals[ingId] = (totals[ingId] || 0) + scaled[ingId];
+                        }
+                    }
+                    for (const ingId in totals) {
+                        const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
+                        if (have < totals[ingId]) return false;
+                    }
+                    return true;
+                };
+                const canAfford10 = canAffordCount(10);
+                // "Max" is enabled whenever at least one craft is affordable.
                 const canAffordMax = canAfford1;
 
                 card.innerHTML = `

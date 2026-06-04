@@ -46,7 +46,9 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run build
+      # Build the PRODUCTION bundle in CI so the actually-deployed path (minified,
+      # console-stripped, bundled) is exercised on every push, not just dev build.
+      - run: npm run build:prod
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

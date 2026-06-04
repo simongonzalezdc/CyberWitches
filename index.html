@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Allow zoom up to 5x (WCAG 1.4.4): never disable user scaling. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy"
@@ -19,6 +20,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Favicon (reuses the PWA icon so /favicon.ico no longer 404s) -->
+    <link rel="icon" href="icons/icon-192x192.png" type="image/png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
     <!-- CSS -->
     <link rel="stylesheet" href="styles/theme.css">
@@ -39,11 +44,14 @@
 </head>
 
 <body class="bg-void-950 text-white overflow-hidden font-sans antialiased">
+    <!-- Skip to main content (must be the first focusable element) -->
+    <a href="#main-content" class="skip-link">Skip to game</a>
+
     <!-- Boot Sequence Overlay -->
     <div id="boot-screen" class="boot-screen" style="display: none;"></div>
 
     <!-- Main Dashboard Container -->
-    <main class="main-game relative h-screen w-full flex flex-col">
+    <main id="main-content" tabindex="-1" class="main-game relative h-screen w-full flex flex-col">
         
         <!-- 1. Top HUD (System Status) - Holo-Glass Panel -->
         <header class="hud hud-panel glass-panel z-50 flex items-center justify-between px-4 py-2">

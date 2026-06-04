@@ -141,17 +141,41 @@ export class GameState {
 
         this.tickInterval = setInterval(tick, GAME_CONSTANTS.TICK_RATE);
 
-        // Listen for visibility changes to pause/resume
+        // Listen for visibility changes to pause/resume.
+        // CRITICAL: when the tab is hidden we may never get another tick (and on
+        // mobile the page can be killed without `beforeunload` ever firing), so
+        // flush any pending debounced save to localStorage NOW. Without this,
+        // progress accrued since the last 30s autosave is silently lost on
+        // background/close — the most common cause of "my progress reset".
         if (!this.visibilityHandler) {
             this.visibilityHandler = () => {
                 if (document.hidden) {
-                    // Tab hidden - ticks will be skipped automatically
-                    // No need to clear interval, just skip processing
-                } else {
-                    // Tab visible - ticks will resume automatically
+                    this.flushPendingSave();
                 }
+                // Tab visible again - ticks resume automatically via setInterval.
             };
             document.addEventListener('visibilitychange', this.visibilityHandler);
+        }
+
+        // `pagehide` is the reliable "page is going away" signal on iOS/Safari
+        // where `beforeunload` does not fire. Flush on it too (idempotent).
+        if (!this.pageHideHandler) {
+            this.pageHideHandler = () => {
+                this.flushPendingSave();
+            };
+            window.addEventListener('pagehide', this.pageHideHandler);
+        }
+    }
+
+    /**
+     * Persist immediately if a save is pending (or always, when forced).
+     * Safe to call repeatedly; clears the pending flag.
+     * @param {boolean} force - Save even if no pending change is flagged.
+     */
+    flushPendingSave(force = false) {
+        if (this.hasPendingSave || force) {
+            this.saveGameStateImmediate();
+            this.hasPendingSave = false;
         }
     }
 
@@ -160,10 +184,7 @@ export class GameState {
      */
     stopTickLoop() {
         // Flush any pending saves before stopping
-        if (this.hasPendingSave) {
-            this.saveGameStateImmediate();
-            this.hasPendingSave = false;
-        }
+        this.flushPendingSave();
 
         if (this.tickInterval) {
             clearInterval(this.tickInterval);
@@ -174,6 +195,12 @@ export class GameState {
         if (this.visibilityHandler) {
             document.removeEventListener('visibilitychange', this.visibilityHandler);
             this.visibilityHandler = null;
+        }
+
+        // Remove pagehide handler
+        if (this.pageHideHandler) {
+            window.removeEventListener('pagehide', this.pageHideHandler);
+            this.pageHideHandler = null;
         }
     }
 

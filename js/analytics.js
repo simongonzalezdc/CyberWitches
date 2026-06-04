@@ -1,4 +1,4 @@
-import { handleError, safeFunction, safeAsyncFunction } from './errorHandler.js';
+import { handleError } from './errorHandler.js';
 
 /**
  * Analytics System - Tracks gameplay metrics and user behavior

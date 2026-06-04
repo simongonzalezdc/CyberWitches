@@ -38,7 +38,7 @@ export class DailiesUI {
 
             for (const task of activeTasks) {
                 const parts = task.condition.split(':');
-                const target = parts.length > 0 ? parseInt(parts[parts.length - 1]) : 1;
+                const target = parts.length > 0 ? parseInt(parts[parts.length - 1], 10) : 1;
                 const progress = taskProgress[task.id] || 0;
                 const claimed = claimedTasks.includes(task.id);
 

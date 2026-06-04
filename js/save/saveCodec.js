@@ -115,6 +115,14 @@ export function migrateSaveData(data) {
             data.version = '2.1';
         }
 
+        // Save written by a NEWER build than this one (e.g. the player opened an
+        // older deploy, or a downgrade). We can't downgrade a schema we don't
+        // know, so load best-effort and warn — validateSaveData is the safety net
+        // for anything actually malformed. Previously this passed silently.
+        if (parseFloat(data.version) > parseFloat(SAVE_VERSION)) {
+            console.warn(`Save version ${data.version} is newer than supported ${SAVE_VERSION}; loading best-effort.`);
+        }
+
         return true;
     } catch (error) {
         console.error('Save data migration failed:', error);

@@ -1,6 +1,8 @@
 /**
  * Unified Game Loop System
- * Implements dual-rate updates: 10 TPS for game logic, 60 FPS for visuals
+ * Implements dual-rate updates: 10 TPS for game logic, 30 FPS for visuals
+ * (cinematic / low-power; see visualTimestep below). Rendering still runs
+ * once per requestAnimationFrame with interpolation for smoothness.
  * Replaces multiple setInterval calls with single RAF-based loop
  * 
  * Key Benefits:
@@ -14,7 +16,7 @@ import { GAME_CONSTANTS } from '../codeOrganization.js';
 
 export class UnifiedGameLoop {
     constructor() {
-        // Visual accumulator (60 FPS = ~16.67ms per frame)
+        // Visual accumulator (30 FPS = ~33.3ms per visual step; see visualTimestep)
         this.visualAccumulator = 0;
         
         // Logic accumulator (10 TPS = 100ms per tick)

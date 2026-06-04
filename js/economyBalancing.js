@@ -195,7 +195,6 @@ class EconomyBalancing {
      */
     generateRecommendations() {
         const recommendations = [];
-        const comparison = this.compareProductionConsumption();
         const bottlenecks = this.identifyEconomyBottlenecks();
         
         bottlenecks.forEach(bottleneck => {

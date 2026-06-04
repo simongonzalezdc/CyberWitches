@@ -93,7 +93,7 @@ export class WorkstationUI {
         const tiers = Object.keys(workstationsByTier).sort((a, b) => b - a);
 
         for (const tier of tiers) {
-            const tierNum = parseInt(tier);
+            const tierNum = parseInt(tier, 10);
             const tierStyle = getTierAppropriateStyle(tierNum);
             const tierSymbol = getTierSymbol(tierNum); // Get tier symbol for colors
 

@@ -4,11 +4,14 @@
 // handler deletes any cache whose name !== CACHE_NAME, so changing this string
 // purges stale assets and forces one fresh fetch for returning players. The
 // prefix was renamed from the legacy "spellwright-cache" to match the product.
-const CACHE_VERSION = 'v19';
+const CACHE_VERSION = 'v20';
 const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
-const CACHE_URLS = [
+// Core app shell — present in both the dev server and the production build.
+// NOTE: the service worker must NOT precache itself ('/sw.js') — doing so can
+// serve a stale worker and wedge updates.
+const CORE_CACHE_URLS = [
     '/',
     '/index.html',
     '/css/main.css',
@@ -19,10 +22,17 @@ const CACHE_URLS = [
     '/css/responsive.css',
     '/css/utilities.css',
     '/manifest.json',
-    '/sw.js',
     '/offline.html',
     // External dependencies (CDN)
     'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
+];
+
+// Best-effort precache: the production JS bundle so the app is fully usable
+// offline immediately after install. It is ABSENT on the dev server (where ES
+// modules are fetched individually and runtime-cached instead), so a miss here
+// must never fail the install.
+const OPTIONAL_CACHE_URLS = [
+    '/js/game.bundle.js'
 ];
 
 // Cache strategies
@@ -181,7 +191,20 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('Service Worker installed, cache opened');
-                return cache.addAll(CACHE_URLS.map(url => new Request(url)));
+                // Per-URL caching (not atomic addAll): a single missing asset must
+                // not silently wipe the ENTIRE precache. Core misses are errors;
+                // optional misses (e.g. the prod bundle on the dev server) warn.
+                const core = CORE_CACHE_URLS.map(url =>
+                    cache.add(new Request(url)).catch(err => {
+                        console.error(`SW: failed to precache core asset ${url}:`, err);
+                    })
+                );
+                const optional = OPTIONAL_CACHE_URLS.map(url =>
+                    cache.add(new Request(url)).catch(() => {
+                        console.warn(`SW: optional asset not precached (expected on dev): ${url}`);
+                    })
+                );
+                return Promise.all([...core, ...optional]);
             })
             .then(() => {
                 console.log('Service Worker installed, files cached');

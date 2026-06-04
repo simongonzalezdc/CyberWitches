@@ -50,7 +50,7 @@ export function deepClone(obj) {
     if (typeof structuredClone !== 'undefined') {
         try {
             return structuredClone(obj);
-        } catch (e) {
+        } catch (_e) {
             // Fall back to manual clone if structuredClone fails
             // (e.g., for objects with functions or symbols)
         }
