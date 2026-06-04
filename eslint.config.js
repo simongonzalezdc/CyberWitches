@@ -29,6 +29,14 @@ export default [
                 URL: 'readonly',
                 Response: 'readonly',
                 Request: 'readonly',
+                Audio: 'readonly',
+                Blob: 'readonly',
+                screen: 'readonly',
+                location: 'readonly',
+                confirm: 'readonly',
+                Notification: 'readonly',
+                MutationObserver: 'readonly',
+                structuredClone: 'readonly',
 
                 // Service worker globals (sw.js)
                 self: 'readonly',

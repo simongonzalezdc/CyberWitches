@@ -2,6 +2,7 @@
  * Custom Tooltip System
  * Provides custom tooltips that work on both desktop and mobile
  */
+import { isMobile, isTouchDevice } from './commonUtils.js';
 
 class CustomTooltipManager {
     constructor() {
@@ -121,7 +122,7 @@ class CustomTooltipManager {
 
         // Desktop: show on hover
         element.addEventListener('mouseenter', () => {
-            if (!isMobile && !isTouchDevice) {
+            if (!isMobile() && !isTouchDevice()) {
                 this.show(element, text, position);
             }
         });
@@ -131,7 +132,7 @@ class CustomTooltipManager {
         });
 
         // Mobile: show on tap
-        if (mobileFriendly && (isMobile || isTouchDevice)) {
+        if (mobileFriendly && (isMobile() || isTouchDevice())) {
             let tapTimeout;
             element.addEventListener('touchstart', (e) => {
                 e.preventDefault();

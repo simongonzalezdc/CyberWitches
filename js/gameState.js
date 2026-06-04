@@ -6,6 +6,7 @@ import { GAME_CONSTANTS } from './codeOrganization.js';
 import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
 import { debounce } from './commonUtils.js';
 import { encode, decode, validateSaveData } from './save/saveCodec.js';
+import { pulseElement } from './animations.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
 
@@ -1219,7 +1220,7 @@ export class GameState {
         // Remove deprecated ingredients
         let removedCount = 0;
         for (const depIng of deprecatedIngredients) {
-            if (this.inventory.hasOwnProperty(depIng)) {
+            if (Object.hasOwn(this.inventory, depIng)) {
                 const amount = this.inventory[depIng];
                 delete this.inventory[depIng];
                 removedCount++;

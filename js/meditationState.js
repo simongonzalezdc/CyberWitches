@@ -1249,7 +1249,7 @@ export class MeditationState {
      */
     getMeditationProductionBonus() {
         // Base bonus: 1.0 (no bonus)
-        let bonus = 1.0;
+        let bonus;
 
         // Focus contribution (major): 1% per 100 focus earned (capped at 50% = 1.5x)
         const focusContribution = Math.min(this.focusTotalEarned / 10000, 0.5); // 10,000 focus = 50% bonus

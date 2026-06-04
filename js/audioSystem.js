@@ -1,4 +1,4 @@
-import { handleError, safeFunction } from './errorHandler.js';
+import { handleError, safeFunction, ErrorCategory, ErrorSeverity } from './errorHandler.js';
 
 /**
  * Audio System - Manages sound effects and audio playback
@@ -196,7 +196,7 @@ export class AudioSystem {
         // Determine output chain based on mode
         // Meditation mode: synths -> chorus -> delay -> reverb -> master
         // Normal mode: synths -> reverb -> master
-        let sfxOutput = this.toneSfxMaster;
+        let sfxOutput;
         
         if (isMeditationMode) {
             // Create chorus for meditation mode (thickening effect)
@@ -3783,7 +3783,7 @@ export class AudioSystem {
         }
         
         // Determine output chain based on mode
-        let sfxOutput = this.toneSfxMaster;
+        let sfxOutput;
         
         if (isMeditationMode) {
             // Meditation mode: synths -> chorus -> delay -> reverb -> master

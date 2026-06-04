@@ -71,7 +71,7 @@ export function deepClone(obj) {
 
     const cloned = {};
     for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.hasOwn(obj, key)) {
             cloned[key] = deepClone(obj[key]);
         }
     }
