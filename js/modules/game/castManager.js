@@ -2,6 +2,9 @@
  * CastManager
  * Manages spell casting logic, including resource generation, combo system interaction, and visual feedback.
  */
+import { getAudioSystem } from '../../audio/audioAccess.js';
+import { accessibilityManager } from '../../accessibility.js';
+
 export class CastManager {
     /**
      * @param {Object} gameState - The global game state
@@ -87,7 +90,7 @@ export class CastManager {
             this.showVisualFeedback(gain);
 
             // Play sound
-            const audioSystem = this.uiManager.systems.audioSystem || window.audioSystem;
+            const audioSystem = getAudioSystem();
             if (audioSystem && typeof audioSystem.playSound === 'function') {
                 audioSystem.playSound('cast');
             }
@@ -99,7 +102,6 @@ export class CastManager {
             }
 
             // Announce to screen reader
-            const accessibilityManager = this.uiManager.systems.accessibilityManager;
             if (accessibilityManager) {
                 accessibilityManager.announce(`Casted spell, gained ${this.formatNumber(gain)} energy`, 'polite');
             }

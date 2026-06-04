@@ -30,6 +30,7 @@ import memoryLeakPreventionManager from './memoryLeakFix.js';
 import { handleError } from './errorHandler.js';
 import { UnifiedGameLoop } from './core/UnifiedGameLoop.js';
 import { createErrorBoundary } from './core/ErrorBoundary.js';
+import { setAudioSystem } from './audio/audioAccess.js';
 
 export async function initGame() {
     console.log('Initializing Hex Compiler...');
@@ -81,6 +82,7 @@ export async function initGame() {
         
         const audioSystemBoundary = createErrorBoundary('AudioSystem');
         const audioSystem = audioSystemBoundary.wrap(() => new AudioSystem())();
+        setAudioSystem(audioSystem);
         
         const particleSystemBoundary = createErrorBoundary('ParticleSystem');
         const particleSystem = particleSystemBoundary.wrap(() => new ParticleSystem(gameState))();

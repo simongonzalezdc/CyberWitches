@@ -2,6 +2,8 @@
  * PrestigeManager
  * Manages prestige-related actions and logic.
  */
+import { getAudioSystem } from '../../audio/audioAccess.js';
+
 export class PrestigeManager {
     /**
      * @param {Object} gameState - The global game state
@@ -25,7 +27,7 @@ export class PrestigeManager {
 
         if (this.gameState.purchasePrestigeBonus(bonusId)) {
             // Play purchase sound
-            const audioSystem = this.uiManager.systems.audioSystem || window.audioSystem;
+            const audioSystem = getAudioSystem();
             if (audioSystem && typeof audioSystem.playSound === 'function') {
                 audioSystem.playSound('purchase');
             }
