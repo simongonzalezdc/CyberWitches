@@ -40,10 +40,16 @@ modules deepen; it is the map AI agents and new contributors read first.
   adapter; tests inject a recording fake. Modules take `notify` as an injected
   constructor dependency (default = the real port) so they no longer hold the
   whole UIManager just to notify. `TutorialSystem` is fully on this seam.
-  NOTE: the deeper game modules (cast, meditation, inscriptions, prestige) still
-  reach UIManager as a **service locator** (`uiManager.systems.audioSystem`,
-  `.accessibilityManager`) and a UI-update bus (`uiManager.hudUI.update()`).
-  Untangling those is a larger, separate deepening.
+- **Audio access** (`js/audio/audioAccess.js`) — `getAudioSystem()` /
+  `setAudioSystem()`. Managers are built before the AudioSystem exists (gameInit
+  wires it late), so they used to reach `uiManager.systems.audioSystem ||
+  window.audioSystem` (a service-locator read + a dead `window` fallback). They
+  now ask this accessor; gameInit registers the instance once built.
+  `accessibilityManager` is a module singleton, so cast/etc. import it directly.
+  REMAINING: the game modules still use UIManager as a **UI-update bus**
+  (`uiManager.hudUI.update()`, `.boonsUI.update()`, `.floatingTextUI.show()`) and
+  meditationManager still wires its sub-UI through it. That bus is the deeper
+  untangle left for a coverage-first follow-up.
 - **GameState** (`js/gameState.js`) — the live game model + tick loop. Still
   large; the save integrity logic was lifted into the save codec.
 - **Entry point** — `js/game.js` bootstraps on `DOMContentLoaded` and calls

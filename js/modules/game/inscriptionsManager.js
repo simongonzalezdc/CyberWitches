@@ -4,6 +4,8 @@
  */
 import { showNotification } from '../ui/notifications.js';
 
+import { getAudioSystem } from '../../audio/audioAccess.js';
+
 export class InscriptionsManager {
     /**
      * @param {Object} gameState - The global game state
@@ -65,7 +67,7 @@ export class InscriptionsManager {
 
         if (success) {
             // Play sound
-            const audioSystem = this.uiManager.systems.audioSystem || window.audioSystem;
+            const audioSystem = getAudioSystem();
             if (audioSystem && typeof audioSystem.playSound === 'function') {
                 audioSystem.playSound('upgrade');
             }
