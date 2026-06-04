@@ -45,10 +45,19 @@ export default {
       lines: 8,
     },
     './js/gameState.js': {
+      // Recalibrated after the save integrity/migration cluster moved to
+      // js/save/saveCodec.js (those well-covered functions now count there).
       statements: 64,
       branches: 54,
-      functions: 66,
+      functions: 65,
       lines: 65,
+    },
+    './js/save/saveCodec.js': {
+      // The extracted save codec is now its own test surface; hold the line.
+      statements: 75,
+      branches: 75,
+      functions: 88,
+      lines: 78,
     },
   },
 

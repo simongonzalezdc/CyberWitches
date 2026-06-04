@@ -74,7 +74,7 @@ export async function initGame() {
         const castManager = castManagerBoundary.wrap(() => new CastManager(gameState, uiManager, comboSystem, eventSystem))();
         
         const pwaManager = new PWAFeaturesManager(gameState, uiManager);
-        const tutorialSystem = new TutorialSystem(gameState, uiManager);
+        const tutorialSystem = new TutorialSystem(gameState);
         const meditationManager = new MeditationManager(gameState, uiManager);
         const prestigeManager = new PrestigeManager(gameState, uiManager);
         const inscriptionsManager = new InscriptionsManager(gameState, uiManager);
@@ -89,7 +89,7 @@ export async function initGame() {
         const designTierSystem = new DesignTierSystem(gameState, uiManager, audioSystem);
         initUIHelpers(designTierSystem);
 
-        const fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem, uiManager);
+        const fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
 
         // 5. Wire up systems to UIManager
         uiManager.systems.inputManager = inputManager;

@@ -5,6 +5,7 @@
 
 import { jest, describe, test, expect, beforeEach, afterEach } from '@jest/globals';
 import { GameState } from '../js/gameState.js';
+import { validateSaveData } from '../js/save/saveCodec.js';
 import { GAME_CONSTANTS } from '../js/codeOrganization.js';
 
 // Mock localStorage
@@ -160,7 +161,7 @@ describe('GameState', () => {
 
         test('should validate save data', () => {
             const invalidData = { version: '2.1', ab: 'invalid' };
-            const isValid = gameState.validateSaveData(invalidData);
+            const isValid = validateSaveData(invalidData);
             expect(isValid).toBe(false);
         });
     });
