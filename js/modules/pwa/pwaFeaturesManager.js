@@ -333,7 +333,7 @@ export class PWAFeaturesManager {
         const isEdge = /Edge/.test(navigator.userAgent);
         // const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent); // Unused
 
-        let instructions = '';
+        let instructions;
 
         if (isIOS) {
             instructions = `

@@ -77,7 +77,7 @@ export function calculateElementTotals(gameState) {
         if (amount <= 0) continue;
 
         const element = getIngredientElement(ingId);
-        if (element && totals.hasOwnProperty(element)) {
+        if (element && Object.hasOwn(totals, element)) {
             totals[element] += amount;
         }
     }

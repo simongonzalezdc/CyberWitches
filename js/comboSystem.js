@@ -1,4 +1,5 @@
 // Combo/Streak System
+import { pulseElement } from './animations.js';
 
 export class ComboSystem {
     constructor() {
