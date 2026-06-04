@@ -27,8 +27,10 @@ const staticFiles = [
   'start-server.bat'
 ];
 
-// Directories to copy recursively
-const staticDirs = ['icons', 'docs', 'images', 'css'];
+// Directories to copy recursively.
+// 'styles' holds theme.css, which index.html loads (<link href="styles/theme.css">);
+// omitting it 404s the design-token stylesheet in the production build.
+const staticDirs = ['icons', 'docs', 'images', 'css', 'styles'];
 
 async function copyStaticFiles() {
   console.log('📁 Copying static files...');

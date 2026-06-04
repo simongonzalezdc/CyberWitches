@@ -180,7 +180,10 @@
     <!-- ... other modals ... -->
 
     <!-- Scripts -->
-    <script type="module" src="js/gameInit.js"></script>
-    <!-- Legacy scripts will be loaded by gameInit.js or are modules -->
+    <!-- Entry point: game.js bootstraps the app (DOMContentLoaded -> initGame()).
+         gameInit.js only *exports* initGame and never self-invokes, so loading it
+         directly leaves the game uninitialised. esbuild bundles js/game.js too,
+         and build.js swaps this tag for js/game.bundle.js in the production dist. -->
+    <script type="module" src="js/game.js"></script>
 </body>
 </html>
