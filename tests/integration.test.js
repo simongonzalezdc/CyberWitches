@@ -185,8 +185,44 @@ describe('Save/Load Integration Tests', () => {
 
             saveSpy.mockRestore();
         });
-    });
-    
-    describe('Performance with Large Save Data', () => {
+
+        test('registerLifecycleHandlers wires hide/pagehide flush and is idempotent', () => {
+            // Regression guard: the game runs on UnifiedGameLoop (startTickLoop is
+            // skipped), so the save-flush handlers MUST be registered independently
+            // of the tick loop. If this regresses, progress is silently lost on
+            // mobile background/close.
+            const docAdd = jest.fn();
+            const winAdd = jest.fn();
+            const realDocAdd = global.document.addEventListener;
+            const realWinAdd = global.window.addEventListener;
+            global.document.addEventListener = docAdd;
+            global.window.addEventListener = winAdd;
+
+            try {
+                gameState.visibilityHandler = null;
+                gameState.pageHideHandler = null;
+
+                gameState.registerLifecycleHandlers();
+                expect(docAdd).toHaveBeenCalledWith('visibilitychange', expect.any(Function));
+                expect(winAdd).toHaveBeenCalledWith('pagehide', expect.any(Function));
+
+                // Idempotent: a second call must not re-register.
+                docAdd.mockClear();
+                winAdd.mockClear();
+                gameState.registerLifecycleHandlers();
+                expect(docAdd).not.toHaveBeenCalled();
+                expect(winAdd).not.toHaveBeenCalled();
+
+                // The pagehide handler actually flushes a pending save.
+                const saveSpy = jest.spyOn(gameState, 'saveGameStateImmediate').mockImplementation(() => {});
+                gameState.hasPendingSave = true;
+                gameState.pageHideHandler();
+                expect(saveSpy).toHaveBeenCalled();
+                saveSpy.mockRestore();
+            } finally {
+                global.document.addEventListener = realDocAdd;
+                global.window.addEventListener = realWinAdd;
+            }
+        });
     });
 });

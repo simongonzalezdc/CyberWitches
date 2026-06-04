@@ -141,24 +141,36 @@ export class GameState {
 
         this.tickInterval = setInterval(tick, GAME_CONSTANTS.TICK_RATE);
 
-        // Listen for visibility changes to pause/resume.
-        // CRITICAL: when the tab is hidden we may never get another tick (and on
-        // mobile the page can be killed without `beforeunload` ever firing), so
-        // flush any pending debounced save to localStorage NOW. Without this,
-        // progress accrued since the last 30s autosave is silently lost on
-        // background/close — the most common cause of "my progress reset".
+        // Ensure the save-on-hide/close handlers are active for the legacy loop
+        // path too (they're idempotent).
+        this.registerLifecycleHandlers();
+    }
+
+    /**
+     * Register save-flush handlers for when the page is hidden or going away.
+     * CRITICAL and loop-independent: the game normally runs on UnifiedGameLoop
+     * (startTickLoop is skipped), and when the tab is hidden we may never get
+     * another tick — and on mobile the page can be killed without `beforeunload`
+     * ever firing. Flushing the pending debounced save here is what prevents
+     * progress accrued since the last 30s autosave from being silently lost on
+     * background/close (the most common "my progress reset" report).
+     *
+     * Idempotent: safe to call from both startTickLoop() and initGame().
+     */
+    registerLifecycleHandlers() {
+        if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
         if (!this.visibilityHandler) {
             this.visibilityHandler = () => {
                 if (document.hidden) {
                     this.flushPendingSave();
                 }
-                // Tab visible again - ticks resume automatically via setInterval.
             };
             document.addEventListener('visibilitychange', this.visibilityHandler);
         }
 
         // `pagehide` is the reliable "page is going away" signal on iOS/Safari
-        // where `beforeunload` does not fire. Flush on it too (idempotent).
+        // where `beforeunload` does not fire.
         if (!this.pageHideHandler) {
             this.pageHideHandler = () => {
                 this.flushPendingSave();

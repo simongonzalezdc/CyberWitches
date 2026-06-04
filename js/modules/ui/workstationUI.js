@@ -245,7 +245,7 @@ export class WorkstationUI {
                             <h3 class="card-title">${prodData.displayName}</h3>
                             <span class="card-owned">Lv. ${formatNumber(owned)}</span>
                         </div>
-                        <p class="card-desc">${prodData.description}</p>
+                        ${prodData.description ? `<p class="card-desc">${prodData.description}</p>` : ''}
                     </div>
                     
                     ${productionHtml}

@@ -14,9 +14,8 @@ class FeatureIndicatorManager {
 
     init() {
         // Set up indicators for locked features.
-        // Workstation/upgrade lock state is rendered directly by their card
-        // renderers (workstationUI / virtualScroll, via each item's unlockAtAb),
-        // so only tab indicators are owned here.
+        // Workstation/upgrade lock state is rendered directly by workstationUI
+        // (via each item's unlockAtAb), so only tab indicators are owned here.
         this.setupTabIndicators();
     }
 
