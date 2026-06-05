@@ -53,7 +53,10 @@ export class ModalManager {
             // drives the element-specialization choice), and saves immediately.
             this.gameState.ascend();
             this.closeModal('prestige');
-            if (this.uiManager && this.uiManager.updateAllUI) this.uiManager.updateAllUI();
+            // ModalManager isn't given a uiManager reference (constructor takes
+            // gameState + designTierSystem), so the old `this.uiManager` guard was
+            // always false and never refreshed. Use the global handle instead.
+            if (window.uiManager && window.uiManager.updateAllUI) window.uiManager.updateAllUI();
         });
     }
 
@@ -251,7 +254,7 @@ export class ModalManager {
         const gainEl = document.getElementById('prestige-gain');
         if (gainEl) gainEl.textContent = gain;
 
-        const ascendButton = document.getElementById('ascend-button');
+        const ascendButton = /** @type {HTMLButtonElement} */ (document.getElementById('ascend-button'));
         if (ascendButton) {
             ascendButton.disabled = gain <= 0;
         }
@@ -510,7 +513,7 @@ export class ModalManager {
         document.body.appendChild(modal);
 
         // Add hover effects and click handlers
-        const choices = modal.querySelectorAll('.element-choice-card');
+        const choices = /** @type {NodeListOf<HTMLElement>} */ (modal.querySelectorAll('.element-choice-card'));
         choices.forEach(choice => {
             // Hover effects handled by CSS
 
@@ -560,17 +563,17 @@ export class ModalManager {
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
 
-            const input = modal.querySelector('#destructive-confirm-input');
-            const cancelBtn = modal.querySelector('#destructive-confirm-cancel');
-            const okBtn = modal.querySelector('#destructive-confirm-ok');
+            const input = /** @type {HTMLInputElement} */ (modal.querySelector('#destructive-confirm-input'));
+            const cancelBtn = /** @type {HTMLButtonElement} */ (modal.querySelector('#destructive-confirm-cancel'));
+            const okBtn = /** @type {HTMLButtonElement} */ (modal.querySelector('#destructive-confirm-ok'));
 
             // Enable OK button when text matches
             input.addEventListener('input', (e) => {
-                okBtn.disabled = e.target.value !== confirmText;
+                okBtn.disabled = /** @type {HTMLInputElement} */ (e.target).value !== confirmText;
             });
 
             // Handle Enter key
-            input.addEventListener('keydown', (e) => {
+            input.addEventListener('keydown', (/** @type {KeyboardEvent} */ e) => {
                 if (e.key === 'Enter' && !okBtn.disabled) {
                     okBtn.click();
                 }

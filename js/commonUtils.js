@@ -279,7 +279,7 @@ export function batchDOMUpdate(updateFn) {
     
     // Temporarily replace body with fragment for updates
     const originalBody = document.body;
-    document.body = fragment;
+    document.body = /** @type {any} */ (fragment);
     
     try {
         updateFn();
@@ -385,11 +385,11 @@ export function scrollIntoView(element, options = {}) {
  * @returns {Function} - Cleanup function
  */
 export function addEventListener(element, event, handler, options = {}) {
-    element.addEventListener(event, handler, options);
-    
+    element.addEventListener(event, /** @type {EventListener} */ (handler), options);
+
     // Return cleanup function
     return () => {
-        element.removeEventListener(event, handler, options);
+        element.removeEventListener(event, /** @type {EventListener} */ (handler), options);
     };
 }
 

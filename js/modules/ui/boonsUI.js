@@ -78,7 +78,7 @@ export class BoonsUI {
                 `;
 
                 // Attach event listener directly - always attach handler, check conditions inside
-                const button = card.querySelector('button[data-action="purchase-boon"]');
+                const button = /** @type {HTMLButtonElement} */ (card.querySelector('button[data-action="purchase-boon"]'));
                 const prestigeManager = this.uiManager.systems.prestigeManager;
 
                 if (button && prestigeManager) {

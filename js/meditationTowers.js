@@ -32,7 +32,7 @@ export class MeditationTowers {
      * Initialize canvas
      */
     init() {
-        this.canvas = document.getElementById('meditation-canvas');
+        this.canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('meditation-canvas'));
         if (!this.canvas) {
             console.error('Meditation canvas not found');
             return;

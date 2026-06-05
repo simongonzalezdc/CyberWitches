@@ -172,3 +172,47 @@ describe('MeditationState simulation — tower placement economy', () => {
         expect(sim.gameState.inventory.fire_essence).toBeLessThan(100); // ingredients spent
     });
 });
+
+describe('MeditationState — reset()', () => {
+    // Regression guard: `meditationManager.reset()` delegated to
+    // `this.state.reset()`, but the method did not exist — calling it threw
+    // "this.state.reset is not a function". reset() must now clear progression
+    // in memory AND drop the separate `meditationState` localStorage key.
+    test('reset() exists and clears progression + persisted state', () => {
+        const { sim, clock } = makeSim();
+
+        // Build up some progression: focus, a tower, persisted save.
+        sim.focus = 500;
+        sim.focusTotalEarned = 1200;
+        sim.totalWavesCompleted = 7;
+        sim.totalDistractionsKilled = 42;
+        sim.totalSessionsCompleted = 3;
+        sim.gameState.inventory = { fire_essence: 100 };
+        let gx = -1, gy = -1;
+        for (let y = 1; y < sim.gridSize - 1 && gx < 0; y++) {
+            for (let x = 1; x < sim.gridSize - 1; x++) {
+                if (!sim.pathTiles.has(`${x},${y}`)) { gx = x; gy = y; break; }
+            }
+        }
+        sim.placeTower('peace_circle', gx, gy);
+        sim.saveState();
+        expect(localStorage.getItem('meditationState')).not.toBeNull();
+        expect(sim.towers.length).toBe(1);
+
+        // Reset must not throw and must wipe everything.
+        clock.t = 999999;
+        expect(() => sim.reset()).not.toThrow();
+
+        expect(sim.focus).toBe(0);
+        expect(sim.focusTotalEarned).toBe(0);
+        expect(sim.totalWavesCompleted).toBe(0);
+        expect(sim.totalDistractionsKilled).toBe(0);
+        expect(sim.totalSessionsCompleted).toBe(0);
+        expect(sim.towers).toEqual([]);
+        expect(sim.distractions).toEqual([]);
+        expect(sim.activeSession).toBe(false);
+        expect(sim.tranquility).toBe(sim.tranquilityMax);
+        // Persisted progression must be gone so it can't resurrect on reload.
+        expect(localStorage.getItem('meditationState')).toBeNull();
+    });
+});

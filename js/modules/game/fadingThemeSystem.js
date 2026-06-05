@@ -366,7 +366,7 @@ export class FadingThemeSystem {
         }
 
         // Gradient toggle
-        const gradientToggle = document.getElementById('fading-gradient-toggle');
+        const gradientToggle = /** @type {HTMLInputElement} */ (document.getElementById('fading-gradient-toggle'));
         if (gradientToggle) {
             gradientToggle.checked = this.settings.gradientEnabled;
             // Remove existing listeners
@@ -374,7 +374,7 @@ export class FadingThemeSystem {
             gradientToggle.parentNode.replaceChild(newGradientToggle, gradientToggle);
 
             newGradientToggle.addEventListener('change', (e) => {
-                this.settings.gradientEnabled = e.target.checked;
+                this.settings.gradientEnabled = /** @type {HTMLInputElement} */ (e.target).checked;
                 this.saveSettings();
                 const tier = this.designTierSystem?.currentTier || 0;
                 if (tier >= 2 && this.settings.gradientEnabled) {
@@ -402,7 +402,7 @@ export class FadingThemeSystem {
         const tier = this.designTierSystem?.currentTier || 0;
 
         // Gradient: Available in Tier 2+ (Tier 1 has zero gradients)
-        const gradientToggle = document.getElementById('fading-gradient-toggle');
+        const gradientToggle = /** @type {HTMLInputElement} */ (document.getElementById('fading-gradient-toggle'));
         if (gradientToggle) {
             gradientToggle.disabled = tier < 2;
             if (tier < 2) {

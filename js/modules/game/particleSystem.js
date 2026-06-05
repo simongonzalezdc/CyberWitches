@@ -35,7 +35,7 @@ export class ParticleSystem {
     init() {
         if (this.initialized) return;
 
-        this.canvas = document.getElementById('sparkle-canvas');
+        this.canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('sparkle-canvas'));
         if (!this.canvas) {
             console.warn('ParticleSystem: Canvas element not found');
             return;

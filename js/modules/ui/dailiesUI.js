@@ -76,13 +76,13 @@ export class DailiesUI {
                 `;
 
                 // Set dynamic styles safely
-                const progressFill = card.querySelector('.progress-fill');
+                const progressFill = /** @type {HTMLElement} */ (card.querySelector('.progress-fill'));
                 if (progressFill) {
                     progressFill.style.width = `${Math.min(100, (progress / target) * 100)}%`;
                 }
 
                 // Attach event listener directly - always attach handler, check conditions inside
-                const button = card.querySelector('button[data-action="claim-task"]');
+                const button = /** @type {HTMLButtonElement} */ (card.querySelector('button[data-action="claim-task"]'));
                 if (button) {
                     // Ensure button is visible and clickable
                     button.style.position = 'relative';

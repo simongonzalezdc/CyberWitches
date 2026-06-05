@@ -27,7 +27,7 @@ export class LifecycleManager {
             return;
         }
 
-        target.addEventListener(event, handler, options);
+        target.addEventListener(event, /** @type {EventListener} */ (handler), options);
         this.eventListeners.push({ target, event, handler, options });
     }
 
@@ -38,7 +38,7 @@ export class LifecycleManager {
      * @param {Function} handler - Event handler
      */
     removeEventListener(target, event, handler) {
-        target.removeEventListener(event, handler);
+        target.removeEventListener(event, /** @type {EventListener} */ (handler));
 
         // Remove from tracking
         this.eventListeners = this.eventListeners.filter(

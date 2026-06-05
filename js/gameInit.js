@@ -198,8 +198,12 @@ export async function initGame() {
                         shownAchievementNotifications.add(achievement.name);
                         uiManager.showNotification(`Achievement: ${achievement.name}!`, 'success');
                         designTierSystem.checkTierUnlocks();
-                        if (uiManager.accessibilityManager) {
-                            uiManager.accessibilityManager.announce(`Achievement unlocked: ${achievement.name}`, 'polite');
+                        // Announce to screen readers via UIManager's own method. The
+                        // previous `uiManager.accessibilityManager` was never assigned
+                        // (UIManager imports the singleton but doesn't store it), so this
+                        // announcement silently never fired.
+                        if (typeof uiManager.announceToScreenReader === 'function') {
+                            uiManager.announceToScreenReader(`Achievement unlocked: ${achievement.name}`, 'polite');
                         }
                     }
                 }

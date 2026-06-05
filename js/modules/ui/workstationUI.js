@@ -90,7 +90,7 @@ export class WorkstationUI {
 
         // Render by tier
         // Sort tiers descending (highest tier first)
-        const tiers = Object.keys(workstationsByTier).sort((a, b) => b - a);
+        const tiers = Object.keys(workstationsByTier).sort((a, b) => Number(b) - Number(a));
 
         for (const tier of tiers) {
             const tierNum = parseInt(tier, 10);
@@ -112,7 +112,7 @@ export class WorkstationUI {
                 `;
 
                 // Apply font family programmatically
-                const title = tierHeader.querySelector('.tier-title');
+                const title = /** @type {HTMLElement} */ (tierHeader.querySelector('.tier-title'));
                 if (title) title.style.fontFamily = tierStyle.fontFamily;
 
                 container.appendChild(tierHeader);
@@ -123,7 +123,7 @@ export class WorkstationUI {
                 const card = document.createElement('div');
                 card.className = 'workstation-card card'; // Use both classes for compatibility
                 card.dataset.id = prodData.id;
-                card.dataset.tier = tierNum; // Store tier for CSS targeting
+                card.dataset.tier = String(tierNum); // Store tier for CSS targeting
 
                 // Always apply tier colors to the card border-left (the status indicator)
                 // This makes workstations colorful regardless of design tier
@@ -266,7 +266,7 @@ export class WorkstationUI {
                 `;
 
                 // Apply dynamic styles programmatically - ALWAYS apply tier colors
-                const cardTitle = card.querySelector('.card-title');
+                const cardTitle = /** @type {HTMLElement} */ (card.querySelector('.card-title'));
                 if (cardTitle) {
                     // Always use tier color, not conditional on design tier
                     cardTitle.style.color = tierSymbol.color;
@@ -284,7 +284,7 @@ export class WorkstationUI {
                 }
                 
                 // Apply tier color to owned level badge
-                const cardOwned = card.querySelector('.card-owned');
+                const cardOwned = /** @type {HTMLElement} */ (card.querySelector('.card-owned'));
                 if (cardOwned) {
                     cardOwned.style.color = tierSymbol.color;
                 }

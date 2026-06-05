@@ -252,7 +252,7 @@ export class HUDUI {
      * Update meditation tab visibility based on prestige count
      */
     updateMeditationVisibility() {
-        const meditationTabBtn = document.querySelector('.tab-btn[data-tab="meditation"]');
+        const meditationTabBtn = /** @type {HTMLElement} */ (document.querySelector('.tab-btn[data-tab="meditation"]'));
         if (meditationTabBtn) {
             if (this.gameState.prestigeCount >= 1) {
                 meditationTabBtn.style.display = 'flex';

@@ -11,6 +11,10 @@
 class ReactiveStore {
     constructor(initialState = {}) {
         this.state = { ...initialState };
+        // Keep an immutable snapshot of the seed state so reset() can restore it.
+        // Without this, `this.initialState` was undefined and reset() collapsed the
+        // store to `{}` (spreading undefined), silently dropping every default.
+        this.initialState = { ...initialState };
         this.listeners = new Map();
         this.batchUpdates = false;
         this.pendingUpdates = new Set();

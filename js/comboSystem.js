@@ -2,7 +2,11 @@
 import { pulseElement } from './animations.js';
 
 export class ComboSystem {
-    constructor() {
+    constructor(gameState = null) {
+        // gameInit constructs this as `new ComboSystem(gameState)`. The methods
+        // currently read `window.gameState`, but accept and retain the reference
+        // so the call site is correct and the dependency is explicit.
+        this.gameState = gameState;
         this.comboCount = 0;
         this.maxCombo = 0;
         this.lastActionTime = 0;

@@ -295,7 +295,7 @@ class TutorialSystem {
         }
         
         // Remove all highlights
-        document.querySelectorAll('[style*="outline"]').forEach(el => {
+        /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[style*="outline"]')).forEach(el => {
             el.style.outline = '';
             el.style.outlineOffset = '';
             el.style.zIndex = '';

@@ -490,7 +490,7 @@ class OnboardingSystem {
         }
 
         // Reset z-index of any highlighted elements
-        document.querySelectorAll('[style*="z-index: 9999"]').forEach(el => {
+        /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[style*="z-index: 9999"]')).forEach(el => {
             el.style.zIndex = '';
         });
     }

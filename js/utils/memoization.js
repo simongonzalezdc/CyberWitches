@@ -81,9 +81,9 @@ class LRUCache {
 /**
  * Memoize a function with LRU cache
  * @param {Function} fn - Function to memoize
- * @param {Object} options - Options
- * @param {Function} options.keyFn - Function to generate cache key from arguments
- * @param {number} options.maxSize - Maximum cache size (default: 100)
+ * @param {Object} [options] - Options
+ * @param {Function} [options.keyFn] - Function to generate cache key from arguments
+ * @param {number} [options.maxSize] - Maximum cache size (default: 100)
  * @returns {Function} Memoized function
  */
 export function memoize(fn, options = {}) {
