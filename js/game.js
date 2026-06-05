@@ -7,6 +7,7 @@
 import { initGame } from './gameInit.js';
 import { handleError } from './errorHandler.js';
 import { PerformanceBaseline } from './utils/performanceBaseline.js';
+import { restoreMissingFromIndexedDB } from './save/indexedDBBackup.js';
 
 // Global error handler for unhandled promise rejections
 window.addEventListener('unhandledrejection', event => {
@@ -57,8 +58,14 @@ async function start() {
             }
         }
 
+        // Before loading, restore any save that survives only in IndexedDB
+        // (e.g. localStorage was evicted under storage pressure). This copies the
+        // durable IndexedDB mirror back into localStorage so the existing
+        // synchronous load path picks it up. Never throws; never blocks for long.
+        await restoreMissingFromIndexedDB(['cyberWitchesSave', 'meditationState']);
+
         const { gameState, uiManager, gameLoop } = await initGame();
-        
+
         // Expose for debugging
         window.gameState = gameState;
         window.uiManager = uiManager;

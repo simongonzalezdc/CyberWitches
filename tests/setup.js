@@ -3,6 +3,14 @@
  * Configures global test environment and mocks
  */
 
+// jsdom's sandbox doesn't expose `structuredClone` (real browsers + modern Node
+// do). fake-indexeddb needs it to clone stored values. Provide a structural
+// clone so IndexedDB-backed tests work; the JSON fallback is sufficient for the
+// plain string/JSON payloads the save system stores.
+if (typeof globalThis.structuredClone !== 'function') {
+    globalThis.structuredClone = (value) => (value === undefined ? undefined : JSON.parse(JSON.stringify(value)));
+}
+
 // Mock localStorage with full Storage API implementation
 const createStorageMock = () => {
     let store = {};
