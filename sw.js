@@ -4,11 +4,13 @@
 // handler deletes any cache whose name !== CACHE_NAME, so changing this string
 // purges stale assets and forces one fresh fetch for returning players. The
 // prefix was renamed from the legacy "spellwright-cache" to match the product.
-const CACHE_VERSION = 'v20';
+const CACHE_VERSION = 'v21';
 const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
-// Core app shell — present in both the dev server and the production build.
+// Core app shell — same-origin assets required for the PWA to work offline.
+// This list is precached ATOMICALLY (any failure rejects the install), so it must
+// contain ONLY assets we control and that must always be present.
 // NOTE: the service worker must NOT precache itself ('/sw.js') — doing so can
 // serve a stale worker and wedge updates.
 const CORE_CACHE_URLS = [
@@ -22,17 +24,19 @@ const CORE_CACHE_URLS = [
     '/css/responsive.css',
     '/css/utilities.css',
     '/manifest.json',
-    '/offline.html',
-    // External dependencies (CDN)
-    'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
+    '/offline.html'
 ];
 
-// Best-effort precache: the production JS bundle so the app is fully usable
-// offline immediately after install. It is ABSENT on the dev server (where ES
-// modules are fetched individually and runtime-cached instead), so a miss here
-// must never fail the install.
+// Best-effort precache: a miss here only warns and must NEVER fail the install.
+//  - The production JS bundle is absent on the dev server (ES modules are fetched
+//    individually and runtime-cached instead).
+//  - The Tone.js CDN is an EXTERNAL, optional dependency: the game runs fine
+//    without audio (graceful no-music fallback), so a blocked/down jsdelivr must
+//    not break the entire PWA install for players on restricted networks. It is
+//    still runtime-cached (stale-while-revalidate) on the first successful load.
 const OPTIONAL_CACHE_URLS = [
-    '/js/game.bundle.js'
+    '/js/game.bundle.js',
+    'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
 ];
 
 // Cache strategies
