@@ -177,6 +177,7 @@
         <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
             <h2 class="text-2xl font-bold text-witch-500 mb-4 font-orbitron">SYSTEM_ASCENSION</h2>
             <p class="mb-4 text-gray-300">REBOOTING SYSTEM WITH NEW KERNEL...</p>
+            <p class="mb-2 text-lg">KEYS_HELD: <span id="prestige-ek" class="text-gold-400 font-mono font-bold">0</span></p>
             <p class="mb-6 text-lg">KEYS_ACQUIRED: <span id="prestige-gain" class="text-gold-400 font-mono font-bold">0</span></p>
             <div class="modal-buttons flex gap-4">
                 <button id="ascend-button" class="btn-primary flex-1 py-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">CONFIRM_REBOOT</button>
@@ -185,7 +186,52 @@
         </div>
     </div>
 
-    <!-- ... other modals ... -->
+    <!-- Help modal (opened by #help-button). Markup was missing, leaving Help dead. -->
+    <div id="help-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-witch-500 font-orbitron">FIELD_MANUAL</h2>
+                <button class="modal-close text-gray-400 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>
+            </div>
+            <ul class="space-y-3 text-gray-300 text-sm">
+                <li><strong class="text-code">RUN_PROTOCOL</strong> — execute to compile raw essence into Arcane Bits (AB).</li>
+                <li><strong class="text-code">/MNT/WORKSTATIONS</strong> — craft producers that generate essence automatically over time.</li>
+                <li><strong class="text-code">/SYS/UPGRADES</strong> — inscribe upgrades to multiply production.</li>
+                <li><strong class="text-code">/BIN/LAB</strong> — run experiments to discover hidden recipes and potions.</li>
+                <li><strong class="text-code">SYSTEM_ASCENSION</strong> — reboot to convert lifetime progress into permanent Keys.</li>
+                <li>Your progress auto-saves and is flushed when you leave the tab. Back it up from <strong class="text-code">Settings</strong>.</li>
+            </ul>
+            <button id="close-help-button" class="btn-primary w-full mt-6 py-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">GOT_IT</button>
+        </div>
+    </div>
+
+    <!-- Welcome-back modal (offline progress; populated by ModalManager.showWelcomeBack). -->
+    <div id="welcome-back-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+            <h2 class="text-2xl font-bold text-witch-500 mb-4 font-orbitron">WELCOME_BACK</h2>
+            <p id="welcome-time" class="mb-2 text-gray-300"></p>
+            <p id="welcome-ab" class="mb-6 text-lg text-gold-400 font-mono"></p>
+            <button id="close-welcome-button" class="modal-close btn-primary w-full py-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">CONTINUE</button>
+        </div>
+    </div>
+
+    <!-- Settings modal (opened by #settings-button). Hosts save management + install. -->
+    <div id="settings-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-witch-500 font-orbitron">SETTINGS</h2>
+                <button class="modal-close text-gray-400 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>
+            </div>
+            <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Save Data</h3>
+            <div class="flex flex-col gap-3 mb-6">
+                <button id="export-save-button" class="btn-primary py-3 bg-code/80 hover:bg-code text-black rounded font-bold tracking-wider transition-colors">EXPORT_SAVE</button>
+                <button id="import-save-button" class="btn-secondary py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">IMPORT_SAVE</button>
+                <button id="clear-save-button" class="btn-danger py-3 bg-corruption/80 hover:bg-corruption text-white rounded font-bold tracking-wider transition-colors">WIPE_SAVE</button>
+            </div>
+            <button id="install-pwa-button" class="btn-primary w-full py-3 mb-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors" style="display:none">INSTALL_APP</button>
+            <button id="close-settings-button" class="btn-secondary w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">CLOSE</button>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <!-- Entry point: game.js bootstraps the app (DOMContentLoaded -> initGame()).
