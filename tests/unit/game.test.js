@@ -3,7 +3,6 @@
  * Tests non-DOM logic: tier calculations, element mapping, recipe scaling
  */
 
-import { VirtualWorkstationList } from '../../js/virtualScroll.js';
 import {
     getTierSymbol,
     getTierAppropriateStyle,
@@ -12,9 +11,12 @@ import {
 } from '../../js/modules/ui/uiHelpers.js';
 import { getIngredientElement } from '../../js/elementSpecialization.js';
 import { PRODUCERS, INGREDIENTS } from '../../js/data.js';
+import { CraftingManager } from '../../js/modules/game/craftingManager.js';
 
-// Helper function to access static method
-const getScaledRecipe = VirtualWorkstationList.getScaledRecipeStatic.bind(VirtualWorkstationList);
+// Test the LIVE recipe-scaling used by the game (CraftingManager.scaledRecipe).
+// scaledRecipe is pure over its args (does not touch gameState), so a throwaway
+// instance is fine. NOTE: the live game FLOORS scaled costs.
+const getScaledRecipe = new CraftingManager(null).scaledRecipe;
 
 describe('Game Utility Functions', () => {
     describe('getTierSymbol', () => {
@@ -82,8 +84,8 @@ describe('Game Utility Functions', () => {
             const baseRecipe = { fire_essence: 10, water_essence: 5 };
             const scaled = getScaledRecipe(baseRecipe, 1, 1.15);
 
-            expect(scaled.fire_essence).toBe(Math.ceil(10 * 1.15));
-            expect(scaled.water_essence).toBe(Math.ceil(5 * 1.15));
+            expect(scaled.fire_essence).toBe(Math.floor(10 * 1.15)); // 11.5 -> 11
+            expect(scaled.water_essence).toBe(Math.floor(5 * 1.15)); // 5.75 -> 5
         });
 
         test('should scale recipe for 0 owned', () => {
@@ -97,7 +99,7 @@ describe('Game Utility Functions', () => {
             const baseRecipe = { crystal_dust: 100 };
             const scaled = getScaledRecipe(baseRecipe, 5, 1.2);
 
-            const expected = Math.ceil(100 * Math.pow(1.2, 5));
+            const expected = Math.floor(100 * Math.pow(1.2, 5));
             expect(scaled.crystal_dust).toBe(expected);
         });
 
@@ -114,12 +116,12 @@ describe('Game Utility Functions', () => {
             expect(scaled.air_essence).toBeGreaterThan(15);
         });
 
-        test('should always ceil the result', () => {
+        test('should floor the result (matches the live game)', () => {
             const baseRecipe = { fire_essence: 1 };
             const scaled = getScaledRecipe(baseRecipe, 1, 1.01);
 
-            // 1 * 1.01 = 1.01, should ceil to 2
-            expect(scaled.fire_essence).toBe(2);
+            // 1 * 1.01 = 1.01, floors to 1 (the production CraftingManager uses floor)
+            expect(scaled.fire_essence).toBe(1);
         });
 
         test('should handle empty recipe', () => {
@@ -131,7 +133,7 @@ describe('Game Utility Functions', () => {
             const baseRecipe = { fire_essence: 10 };
             const scaled = getScaledRecipe(baseRecipe, 3, 2.0);
 
-            expect(scaled.fire_essence).toBe(Math.ceil(10 * 8)); // 10 * 2^3 = 80
+            expect(scaled.fire_essence).toBe(Math.floor(10 * 8)); // 10 * 2^3 = 80
         });
     });
 

@@ -7,7 +7,7 @@ export class InscriptionsUI {
     constructor(gameState, uiManager) {
         this.gameState = gameState;
         this.uiManager = uiManager;
-        this.virtualUpgradeList = null;
+        this._inscribeDelegationBound = false;
     }
 
     /**
@@ -49,14 +49,26 @@ export class InscriptionsUI {
             );
         }
 
-        // Destroy existing virtual list if it exists
-        if (this.virtualUpgradeList) {
-            try {
-                this.virtualUpgradeList.destroy();
-            } catch (e) {
-                console.error('Error destroying virtual upgrade list:', e);
-            }
-            this.virtualUpgradeList = null;
+        // Bind the inscribe click handler ONCE via delegation on the stable
+        // #upgrade-list container, instead of re-attaching a listener to every
+        // card on every render (which churned ~31 listeners per update — a real
+        // leak signal over a long session). Buttons carry the upgrade id in
+        // data-inscribe-id; clearing container.innerHTML doesn't remove this
+        // listener since it lives on the container itself.
+        if (!this._inscribeDelegationBound) {
+            container.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-inscribe-id]');
+                if (!btn || !container.contains(btn)) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const im = this.uiManager && this.uiManager.systems && this.uiManager.systems.inscriptionsManager;
+                if (im) {
+                    im.inscribeUpgrade(btn.dataset.inscribeId, btn);
+                } else {
+                    console.error('InscriptionsManager not found in uiManager.systems');
+                }
+            });
+            this._inscribeDelegationBound = true;
         }
 
         // Use traditional rendering
@@ -207,16 +219,8 @@ export class InscriptionsUI {
                 button.style.visibility = 'visible';
                 button.style.display = 'inline-block';
 
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if (this.uiManager && this.uiManager.systems && this.uiManager.systems.inscriptionsManager) {
-                        this.uiManager.systems.inscriptionsManager.inscribeUpgrade(upgData.id, button);
-                    } else {
-                        console.error('InscriptionsManager not found in uiManager.systems');
-                    }
-                });
+                // Handled by the delegated listener on #upgrade-list (see update()).
+                button.dataset.inscribeId = upgData.id;
 
                 card.appendChild(button);
                 container.appendChild(card);
