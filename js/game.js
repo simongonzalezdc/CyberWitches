@@ -63,7 +63,14 @@ async function start() {
         window.gameState = gameState;
         window.uiManager = uiManager;
         window.gameLoop = gameLoop;
-        
+
+        // Now that window.gameState exists AND the save has loaded (prestigeCount
+        // is known), run the tab-lock pass. The boons/meditation tabs default to
+        // `locked` in the markup; this UNLOCKS them for saves with prestige >= 1.
+        // (FeatureIndicatorManager's earlier pass inside initGame no-ops because
+        // window.gameState isn't assigned until here.)
+        if (window.updateFeatureIndicators) window.updateFeatureIndicators();
+
         console.log('✅ Game started successfully.');
         console.log('🎮 Unified game loop active (10 TPS logic, 30 FPS visuals)');
         

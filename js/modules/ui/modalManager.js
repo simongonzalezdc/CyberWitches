@@ -29,9 +29,129 @@ export class ModalManager {
         this.modals.prestige = document.getElementById('prestige-modal');
         this.modals.welcomeBack = document.getElementById('welcome-back-modal');
         this.modals.help = document.getElementById('help-modal');
+        this.modals.settings = document.getElementById('settings-modal');
 
         // Initialize help modal listeners
         this.initHelpModal();
+        // Wire the welcome-back close button + the (previously dead) settings modal.
+        this.initWelcomeBackModal();
+        this.initSettingsModal();
+        // Wire the prestige modal's CONFIRM_REBOOT / CANCEL buttons (both were dead).
+        this.initPrestigeModal();
+    }
+
+    initPrestigeModal() {
+        if (!this.modals.prestige) return;
+        const close = () => this.closeModal('prestige');
+        document.getElementById('close-prestige-button')?.addEventListener('click', close);
+        this.modals.prestige.addEventListener('click', (e) => {
+            if (e.target === this.modals.prestige) close();
+        });
+        document.getElementById('ascend-button')?.addEventListener('click', () => {
+            if (!this.gameState) return;
+            // ascend() grants keys, resets the run, fires onPrestigeCompleted (which
+            // drives the element-specialization choice), and saves immediately.
+            this.gameState.ascend();
+            this.closeModal('prestige');
+            if (this.uiManager && this.uiManager.updateAllUI) this.uiManager.updateAllUI();
+        });
+    }
+
+    initWelcomeBackModal() {
+        if (!this.modals.welcomeBack) return;
+        const close = () => this.closeModal('welcomeBack');
+        this.modals.welcomeBack.querySelector('.modal-close')?.addEventListener('click', close);
+        this.modals.welcomeBack.addEventListener('click', (e) => {
+            if (e.target === this.modals.welcomeBack) close();
+        });
+    }
+
+    initSettingsModal() {
+        const settingsButton = document.getElementById('settings-button');
+        if (settingsButton && this.modals.settings) {
+            settingsButton.addEventListener('click', () => this.openModal('settings'));
+        }
+        if (!this.modals.settings) return;
+
+        const close = () => this.closeModal('settings');
+        document.getElementById('close-settings-button')?.addEventListener('click', close);
+        this.modals.settings.querySelector('.modal-close')?.addEventListener('click', close);
+        this.modals.settings.addEventListener('click', (e) => {
+            if (e.target === this.modals.settings) close();
+        });
+
+        // Wipe save (with confirmation).
+        document.getElementById('clear-save-button')?.addEventListener('click', () => {
+            const ok = (typeof window !== 'undefined' && window.confirm)
+                ? window.confirm('Wipe ALL save data? This cannot be undone.')
+                : true;
+            if (!ok) return;
+            try {
+                localStorage.removeItem('cyberWitchesSave');
+            } catch (e) {
+                console.error('Failed to wipe save:', e);
+            }
+            window.location.reload();
+        });
+
+        // Cross-browser save export/import FALLBACK. Chromium's File System Access
+        // path is wired by PWAFeaturesManager when `showSaveFilePicker` exists, so
+        // only attach these (Blob download / file input) when it does NOT — exactly
+        // one handler per button per browser, and export/import now work in
+        // Firefox/Safari instead of being Chromium-only.
+        if (typeof window !== 'undefined' && !('showSaveFilePicker' in window)) {
+            this.initSaveIOFallback();
+        }
+    }
+
+    initSaveIOFallback() {
+        const exportBtn = document.getElementById('export-save-button');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                try {
+                    const data = localStorage.getItem('cyberWitchesSave') || '{}';
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'cyber-witches-save.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    if (window.showNotification) window.showNotification('Save data exported.', 'success');
+                } catch (e) {
+                    console.error('Export failed:', e);
+                }
+            });
+        }
+
+        const importBtn = document.getElementById('import-save-button');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'application/json,.json';
+                input.addEventListener('change', async () => {
+                    const file = input.files && input.files[0];
+                    if (!file) return;
+                    try {
+                        const text = await file.text();
+                        const data = JSON.parse(text);
+                        const valid = this.gameState && this.gameState.validateSaveData
+                            ? this.gameState.validateSaveData(data) : true;
+                        if (!valid) {
+                            if (window.showNotification) window.showNotification('Invalid save file.', 'error');
+                            return;
+                        }
+                        localStorage.setItem('cyberWitchesSave', JSON.stringify(data));
+                        window.location.reload();
+                    } catch (e) {
+                        console.error('Import failed:', e);
+                        if (window.showNotification) window.showNotification('Could not read that save file.', 'error');
+                    }
+                });
+                input.click();
+            });
+        }
     }
 
     initHelpModal() {
@@ -64,6 +184,11 @@ export class ModalManager {
     openModal(modalName) {
         const modal = this.modals[modalName];
         if (modal) {
+            // CRITICAL: remove the `hidden` utility class. It is `display:none
+            // !important`, so the inline `display:flex` below cannot override it —
+            // without this, NO modal (prestige, help, settings, welcome-back) ever
+            // actually became visible to the user.
+            modal.classList.remove('hidden');
             modal.style.display = 'flex';
             modal.classList.add('active');
             // Force visibility
@@ -82,6 +207,8 @@ export class ModalManager {
     closeModal(modalName) {
         const modal = this.modals[modalName];
         if (modal) {
+            // Restore the `hidden` class (paired with openModal removing it).
+            modal.classList.add('hidden');
             modal.style.display = 'none';
             modal.classList.remove('active');
             modal.style.pointerEvents = 'none';
@@ -109,12 +236,17 @@ export class ModalManager {
     showPrestigeModal() {
         if (!this.gameState || !this.modals.prestige) return;
 
-        document.getElementById('prestige-ek').textContent = this.gameState.prestigePoints;
-        document.getElementById('prestige-gain').textContent = this.gameState.calculatePrestigeGain();
+        const gain = this.gameState.calculatePrestigeGain();
+        // Null-safe: previously `getElementById('prestige-ek')` was missing from
+        // the markup, so this threw and the ascension modal never opened.
+        const ekEl = document.getElementById('prestige-ek');
+        if (ekEl) ekEl.textContent = this.gameState.prestigePoints;
+        const gainEl = document.getElementById('prestige-gain');
+        if (gainEl) gainEl.textContent = gain;
 
         const ascendButton = document.getElementById('ascend-button');
         if (ascendButton) {
-            ascendButton.disabled = this.gameState.calculatePrestigeGain() <= 0;
+            ascendButton.disabled = gain <= 0;
         }
 
         this.openModal('prestige');

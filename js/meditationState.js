@@ -6,9 +6,19 @@ import { handleError, safeFunction } from './errorHandler.js';
  * Separate game mode with tower defense gameplay
  */
 export class MeditationState {
-    constructor(gameState) {
+    constructor(gameState, options = {}) {
         // Reference to main game state for accessing inventory
         this.gameState = gameState;
+
+        // Injectable clock + RNG. Production uses Date.now / Math.random; tests
+        // pass deterministic stubs so the whole tower-defense simulation can be
+        // stepped reproducibly and asserted on (it has no canvas/DOM deps).
+        this._now = options.now || (() => Date.now());
+        this._random = options.random || (() => Math.random());
+
+        // Sim-tracked wave timer (replaces real setTimeout chaining so wave
+        // progression is deterministic and testable). 0 = no wave scheduled.
+        this.nextWaveStartTime = 0;
 
         // Meditation resources
         this.focus = 0.0;
@@ -55,7 +65,7 @@ export class MeditationState {
 
         // Tick timer
         this.tickInterval = null;
-        this.lastTickTime = Date.now();
+        this.lastTickTime = this._now();
 
         // Callbacks
         this.onFocusChanged = null;
@@ -506,7 +516,7 @@ export class MeditationState {
         if (this.activeSession) return;
 
         this.activeSession = true;
-        this.sessionStartTime = Date.now();
+        this.sessionStartTime = this._now();
         this.waveActive = false;
         this.currentWave = 0;
         this.tranquility = this.tranquilityMax;
@@ -582,10 +592,8 @@ export class MeditationState {
             console.warn('Audio system not available');
         }
 
-        // Start wave after a delay
-        setTimeout(() => {
-            this.startWave();
-        }, 2000);
+        // Schedule the first wave (sim-tracked timer; checked in tick()).
+        this.nextWaveStartTime = this._now() + 2000;
     }
 
     /**
@@ -621,13 +629,13 @@ export class MeditationState {
 
         this.currentWave++;
         this.waveActive = true;
-        this.waveStartTime = Date.now();
+        this.waveStartTime = this._now();
         // Wave duration increases slightly with wave number (30s base, +2s per wave, max 60s)
         const waveDuration = Math.min(30000 + (this.currentWave * 2000), 60000);
         this.waveEndTime = this.waveStartTime + waveDuration;
         // Faster initial spawn with higher waves (wave 1 = 1s, wave 5 = 0.5s, wave 10+ = 0.3s)
         const initialSpawnDelay = Math.max(1000 - (this.currentWave * 50), 300);
-        this.nextSpawnTime = Date.now() + initialSpawnDelay;
+        this.nextSpawnTime = this._now() + initialSpawnDelay;
         this.waveDistractionsSpawned = 0;
         // Increase max distractions with wave number (wave 1 = 10, wave 2 = 15, etc.)
         this.waveMaxDistractions = 10 + (this.currentWave * 5);
@@ -646,7 +654,7 @@ export class MeditationState {
      * Main meditation tick
      */
     tick() {
-        const now = Date.now();
+        const now = this._now();
         const delta = (now - this.lastTickTime) / 1000;
         this.lastTickTime = now;
 
@@ -656,6 +664,13 @@ export class MeditationState {
         this.addFocus(passiveFocus);
 
         if (!this.activeSession) return;
+
+        // Deterministic wave scheduling (replaces the old setTimeout chaining):
+        // start the queued wave once its scheduled time arrives.
+        if (!this.waveActive && this.nextWaveStartTime && now >= this.nextWaveStartTime) {
+            this.nextWaveStartTime = 0;
+            this.startWave();
+        }
 
         // Update wave if active
         if (this.waveActive) {
@@ -691,9 +706,8 @@ export class MeditationState {
                     window.audioSystem.playSound('wave_complete');
                 }
 
-                setTimeout(() => {
-                    this.startWave();
-                }, 3000);
+                // Schedule the next wave (sim-tracked; checked in tick()).
+                this.nextWaveStartTime = this._now() + 3000;
             }
 
             // Check if tranquility reached 0
@@ -707,7 +721,7 @@ export class MeditationState {
      * Update wave spawning
      */
     updateWave(delta) {
-        const now = Date.now();
+        const now = this._now();
 
         // Check if wave should stop spawning
         const waveDurationExceeded = now >= this.waveEndTime;
@@ -738,7 +752,7 @@ export class MeditationState {
 
         if (availableDistractions.length === 0) return;
 
-        const distractionData = availableDistractions[Math.floor(Math.random() * availableDistractions.length)];
+        const distractionData = availableDistractions[Math.floor(this._random() * availableDistractions.length)];
 
         // Spawn at random path entry point (edge of path)
         // Find all path tiles on the edges
@@ -759,7 +773,7 @@ export class MeditationState {
                 { x: 0, y: this.gridSize - 1 },
                 { x: this.gridSize - 1, y: this.gridSize - 1 }
             ];
-            const entryPoint = entryPoints[Math.floor(Math.random() * entryPoints.length)];
+            const entryPoint = entryPoints[Math.floor(this._random() * entryPoints.length)];
 
             // Find nearest path tile
             let nearestPath = null;
@@ -783,7 +797,7 @@ export class MeditationState {
             }
         } else {
             // Pick a random edge path tile
-            const randomTile = edgePathTiles[Math.floor(Math.random() * edgePathTiles.length)];
+            const randomTile = edgePathTiles[Math.floor(this._random() * edgePathTiles.length)];
             x = randomTile.x;
             y = randomTile.y;
         }
@@ -811,7 +825,7 @@ export class MeditationState {
             targetX: this.gridSize / 2 - 0.5, // Center of grid
             targetY: this.gridSize / 2 - 0.5,
             progress: 0.0, // 0.0 to 1.0 (progress to center)
-            lastMoveTime: Date.now(), // Track when last moved
+            lastMoveTime: this._now(), // Track when last moved
             stuckCount: 0 // Track how many times stuck
         };
 
@@ -861,7 +875,7 @@ export class MeditationState {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             // Check if distraction is stuck (not moving for too long)
-            const now = Date.now();
+            const now = this._now();
             const timeSinceLastMove = now - (dist.lastMoveTime || now);
             const hasMoved = distance > 0.01; // Check if actually moving
 
@@ -1011,7 +1025,7 @@ export class MeditationState {
 
             if (nearestDist) {
                 // Check if tower can attack (based on attack speed)
-                const now = Date.now();
+                const now = this._now();
                 if (!tower.lastAttackTime) tower.lastAttackTime = 0;
                 const attackInterval = 1.0 / stats.attackSpeed;
                 const timeSinceAttack = (now - tower.lastAttackTime) / 1000;

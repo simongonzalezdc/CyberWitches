@@ -53,8 +53,11 @@ export class MeditationManager {
         this.state.loadState();
         this.state.startTickLoop();
 
-        // Create towers system
+        // Create towers system AND initialize it (grabs #meditation-canvas, sizes
+        // it, and starts the render loop). Without init() the play field never
+        // rendered — the instance was created but never wired to the canvas.
         this.towers = new MeditationTowers(this.state, this.gameState);
+        this.towers.init();
 
         // Initialize UI
         // Note: UIManager handles the MeditationUI instance creation, 

@@ -34,6 +34,7 @@ import { setAudioSystem } from './audio/audioAccess.js';
 import { PRODUCERS, INGREDIENTS, UPGRADES, HIDDEN_RECIPES, PRESTIGE_BONUSES } from './data.js';
 import { formatShort, formatNumber, formatTimeDuration } from './utils.js';
 import { pulseElement, shakeElement, slideIn } from './animations.js';
+import { ELEMENT_SPECIALIZATIONS } from './elementSpecialization.js';
 
 export async function initGame() {
     console.log('Initializing Hex Compiler...');
@@ -279,7 +280,10 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
     };
 
     gameState.onPrestigeCompleted = (ekGained) => {
-        uiManager.modalManager.showElementSpecializationChoice(uiManager.updateAllUI);
+        // Pass BOTH args: the method is showElementSpecializationChoice(ELEMENT_SPECIALIZATIONS,
+        // updateAllUI). Previously only updateAllUI was passed, landing in the data
+        // slot, so post-ascension the choice rendered with zero element options.
+        uiManager.modalManager.showElementSpecializationChoice(ELEMENT_SPECIALIZATIONS, uiManager.updateAllUI);
         
         // Check unlock
         uiManager.systems.meditationManager.checkUnlock();
