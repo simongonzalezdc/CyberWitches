@@ -8,7 +8,7 @@
 
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://cdn.jsdelivr.net; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
+        content="default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; media-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 
     <!-- Primary Meta Tags -->
     <title>VOID WITCH PROTOCOL // HEX COMPILER</title>
@@ -35,12 +35,11 @@
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/utilities.css">
     
-    <!-- Audio Engine. SRI-pinned: if jsdelivr ever serves tampered bytes for this
-         exact version, the browser refuses to execute it. crossorigin is required
-         for SRI on cross-origin scripts. -->
-    <script src="https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js"
-            integrity="sha384-NWoslxaf/3dYwQk+uGziDYJFdsjBpVlU1WpFRexuDFcIk/5PJpCbpVXia2Uikeix"
-            crossorigin="anonymous" defer></script>
+    <!-- Audio Engine. SELF-HOSTED (vendor/tone-15.1.22.js) — the exact bytes of
+         tone@15.1.22 from jsdelivr, integrity-verified at vendoring time against
+         the published SRI hash. Self-hosting removes the runtime CDN/supply-chain
+         dependency and makes the PWA work fully offline. -->
+    <script src="vendor/tone-15.1.22.js" defer></script>
 </head>
 
 <body class="bg-void-950 text-white overflow-hidden font-sans antialiased">

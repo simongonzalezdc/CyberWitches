@@ -4,7 +4,7 @@
 // handler deletes any cache whose name !== CACHE_NAME, so changing this string
 // purges stale assets and forces one fresh fetch for returning players. The
 // prefix was renamed from the legacy "spellwright-cache" to match the product.
-const CACHE_VERSION = 'v21';
+const CACHE_VERSION = 'v22';
 const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
@@ -30,21 +30,20 @@ const CORE_CACHE_URLS = [
 // Best-effort precache: a miss here only warns and must NEVER fail the install.
 //  - The production JS bundle is absent on the dev server (ES modules are fetched
 //    individually and runtime-cached instead).
-//  - The Tone.js CDN is an EXTERNAL, optional dependency: the game runs fine
-//    without audio (graceful no-music fallback), so a blocked/down jsdelivr must
-//    not break the entire PWA install for players on restricted networks. It is
-//    still runtime-cached (stale-while-revalidate) on the first successful load.
+//  - Tone.js is now SELF-HOSTED (vendored, same-origin). It's kept here as
+//    best-effort rather than in the atomic core list because audio is optional
+//    (graceful no-music fallback), so a precache hiccup must never break install.
+//    Being same-origin, it's also runtime-cached on first load -> true offline.
 const OPTIONAL_CACHE_URLS = [
     '/js/game.bundle.js',
-    'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
+    '/vendor/tone-15.1.22.js'
 ];
 
 // Cache strategies
 const CACHE_STRATEGIES = {
     static: 'cache-first',      // HTML, CSS, JS bundles
     images: 'cache-first',       // Images
-    api: 'network-first',        // API calls
-    cdn: 'stale-while-revalidate' // CDN resources
+    api: 'network-first'         // API calls
 };
 
 /**
@@ -61,11 +60,6 @@ function getCacheStrategy(request) {
     // Images - cache first
     if (url.pathname.match(/\.(png|jpg|jpeg|webp|svg|gif)$/)) {
         return 'cache-first';
-    }
-    
-    // CDN - stale while revalidate
-    if (url.hostname.includes('cdn.jsdelivr.net')) {
-        return 'stale-while-revalidate';
     }
     
     // API - network first
@@ -263,12 +257,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Handle same-origin and CDN requests
+    // Only handle same-origin requests. Tone.js is now self-hosted, so there are
+    // no external CDN requests for the worker to special-case.
     const isSameOrigin = event.request.url.startsWith(self.location.origin);
-    const isCDN = event.request.url.includes('cdn.jsdelivr.net');
-
-    if (!isSameOrigin && !isCDN) {
-        return; // Skip other cross-origin requests
+    if (!isSameOrigin) {
+        return; // Skip cross-origin requests
     }
 
     const strategy = getCacheStrategy(event.request);
