@@ -8,16 +8,16 @@
 import { getAudioSystem, setAudioSystem } from '../../js/audio/audioAccess.js';
 
 describe('audio access seam', () => {
-  afterEach(() => setAudioSystem(null));
+    afterEach(() => setAudioSystem(null));
 
-  test('returns whatever was registered', () => {
-    const fake = { playSound: () => {} };
-    setAudioSystem(fake);
-    expect(getAudioSystem()).toBe(fake);
-  });
+    test('returns whatever was registered', () => {
+        const fake = { playSound: () => {} };
+        setAudioSystem(fake);
+        expect(getAudioSystem()).toBe(fake);
+    });
 
-  test('returns null before an AudioSystem is wired', () => {
-    setAudioSystem(null);
-    expect(getAudioSystem()).toBeNull();
-  });
+    test('returns null before an AudioSystem is wired', () => {
+        setAudioSystem(null);
+        expect(getAudioSystem()).toBeNull();
+    });
 });

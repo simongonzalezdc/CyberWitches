@@ -6,7 +6,7 @@ const activeAnimations = new Map();
 
 // Animation frame throttling for better performance
 let animationFrameId = null;
-let pendingAnimations = new Set();
+const pendingAnimations = new Set();
 
 /**
  * Throttled requestAnimationFrame handler to batch animations

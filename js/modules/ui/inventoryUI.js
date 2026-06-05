@@ -192,7 +192,7 @@ export class InventoryUI {
         const tiers = Object.keys(itemsByTier).sort((a, b) => a - b);
 
         for (const tier of tiers) {
-            const tierNum = parseInt(tier);
+            const tierNum = parseInt(tier, 10);
             const tierItems = itemsByTier[tier];
             const tierStyle = getTierAppropriateStyle(tierNum);
 

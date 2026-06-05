@@ -183,7 +183,7 @@ class ProgressionAnalysis {
 }
 
 // Create global instance
-let progressionAnalysis = null;
+const progressionAnalysis = null;
 
 // Global functions
 window.getProgressionReport = () => {

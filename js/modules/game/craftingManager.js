@@ -144,7 +144,7 @@ export class CraftingManager {
 
         return {
             success: false,
-            message: "No new recipes discovered. Try gathering more materials!"
+            message: 'No new recipes discovered. Try gathering more materials!'
         };
     }
 
@@ -164,25 +164,21 @@ export class CraftingManager {
         this.gameState.consumeRecipe(recipe.inputs);
 
         for (const outputId in recipe.outputs) {
-            if (outputId === "ab") {
+            if (outputId === 'ab') {
                 this.gameState.addAb(recipe.outputs[outputId]);
             } else {
-                // Check if this is a potion that should be consumed immediately
-                const potionIds = ['production_elixir', 'haste_potion', 'ab_amplifier',
-                    'mega_production_elixir', 'speed_essence', 'ab_turbo_charge', 'rare_catalyst',
-                    'ultimate_production_elixir', 'quantum_speed_boost', 'ab_overdrive',
-                    'master_catalyst', 'prestige_boost',
-                    'infinity_production_elixir', 'void_speed_surge', 'ab_infinity_boost',
-                    'infinity_catalyst', 'prestige_mastery'];
-
-                if (potionIds.includes(outputId)) {
-                    // Potions activate immediately on craft (don't add to inventory)
-                    const effect = this.gameState.getPotionEffect ? this.gameState.getPotionEffect(outputId) : null;
-                    if (effect) {
-                        for (let i = 0; i < recipe.outputs[outputId]; i++) {
-                            this.gameState.addBuff(effect.type, effect.value, effect.duration);
-                            this.gameState.totalPotionsCrafted++; // Track potion crafting
-                        }
+                // A potion is anything getPotionEffect() recognizes — the single
+                // source of truth. Deriving from it (instead of a second hardcoded
+                // id list that silently drifts) means new potions activate
+                // correctly without touching this file. Previously e.g.
+                // `ab_eternal_boost` was a known effect but missing from the list,
+                // so it would have wrongly landed in inventory instead of activating.
+                const effect = this.gameState.getPotionEffect ? this.gameState.getPotionEffect(outputId) : null;
+                if (effect) {
+                    // Potions activate immediately on craft (don't add to inventory).
+                    for (let i = 0; i < recipe.outputs[outputId]; i++) {
+                        this.gameState.addBuff(effect.type, effect.value, effect.duration);
+                        this.gameState.totalPotionsCrafted++; // Track potion crafting
                     }
                 } else {
                     // Regular ingredients go to inventory

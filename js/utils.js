@@ -8,7 +8,7 @@ export const formatShort = memoize((value) => {
         return Math.floor(value).toString();
     }
 
-    const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"];
+    const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp'];
     let tier = 0;
     let num = value;
 
@@ -35,7 +35,7 @@ export function formatOneDecimal(value) {
         return value.toFixed(1);
     }
 
-    const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp"];
+    const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp'];
     let tier = 0;
     let num = value;
 

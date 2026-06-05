@@ -476,9 +476,9 @@ export class MeditationTowers {
         const colorMatch = baseColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
         if (!colorMatch) return;
         
-        const r = parseInt(colorMatch[1]);
-        const g = parseInt(colorMatch[2]);
-        const b = parseInt(colorMatch[3]);
+        const r = parseInt(colorMatch[1], 10);
+        const g = parseInt(colorMatch[2], 10);
+        const b = parseInt(colorMatch[3], 10);
         const a = colorMatch[4] ? parseFloat(colorMatch[4]) : 0.8;
         
         // Draw outer glow
@@ -775,9 +775,9 @@ export class MeditationTowers {
         const colorMatch = distractionColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
         if (!colorMatch) return;
         
-        const r = parseInt(colorMatch[1]);
-        const g = parseInt(colorMatch[2]);
-        const b = parseInt(colorMatch[3]);
+        const r = parseInt(colorMatch[1], 10);
+        const g = parseInt(colorMatch[2], 10);
+        const b = parseInt(colorMatch[3], 10);
         const a = colorMatch[4] ? parseFloat(colorMatch[4]) : 0.9;
         
         // Draw outer glow/pulse effect
@@ -1149,7 +1149,7 @@ export class MeditationTowers {
                 const flashGradient = this.ctx.createRadialGradient(effect.x, effect.y, 0, effect.x, effect.y, flashSize);
                 flashGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.9})`);
                 flashGradient.addColorStop(0.5, `rgba(0, 255, 255, ${alpha * 0.6})`);
-                flashGradient.addColorStop(1, `rgba(0, 255, 255, 0)`);
+                flashGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
                 
                 this.ctx.fillStyle = flashGradient;
                 this.ctx.beginPath();

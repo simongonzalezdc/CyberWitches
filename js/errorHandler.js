@@ -185,14 +185,28 @@ function formatUserMessage(errorEntry) {
  * @private
  */
 function reportCriticalError(errorEntry) {
-    // In a real implementation, this would send to an error reporting service
-    console.error('🚨 CRITICAL ERROR REPORTED 🚨', {
+    const payload = {
         error: errorEntry,
         timestamp: new Date(errorEntry.timestamp).toISOString(),
         sessionId: getSessionId()
-    });
-    
-    // Store critical errors separately
+    };
+
+    console.error('🚨 CRITICAL ERROR REPORTED 🚨', payload);
+
+    // Remote sink is opt-in: only beacons when the host app configures an
+    // endpoint (e.g. `window.CYBERWITCHES_ERROR_ENDPOINT = 'https://…'`). No URL
+    // is hardcoded, so this is a no-op for the default static build rather than a
+    // dead "in a real implementation…" comment.
+    try {
+        const endpoint = typeof window !== 'undefined' ? window.CYBERWITCHES_ERROR_ENDPOINT : null;
+        if (endpoint && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+            navigator.sendBeacon(endpoint, JSON.stringify(payload));
+        }
+    } catch (e) {
+        console.warn('Failed to beacon critical error:', e);
+    }
+
+    // Always persist locally so a crash is recoverable/inspectable offline.
     try {
         const criticalErrors = JSON.parse(localStorage.getItem('cyberWitchesCriticalErrors') || '[]');
         criticalErrors.push(errorEntry);
@@ -301,11 +315,11 @@ export function validateParams(params, schema, context = 'validation') {
         const actualType = params[key] === null ? 'null' : typeof params[key];
         if (actualType !== type) {
             handleError(new Error(`Invalid parameter type for ${key}: expected ${type}, got ${actualType}`), context, false, ErrorCategory.VALIDATION, ErrorSeverity.MEDIUM, {
-                    parameter: key,
-                    expected: type,
-                    received: actualType,
-                    value: params[key]
-                });
+                parameter: key,
+                expected: type,
+                received: actualType,
+                value: params[key]
+            });
             return false;
         }
     }
@@ -322,14 +336,10 @@ export function validateParams(params, schema, context = 'validation') {
  * @returns {Promise} Result of function
  */
 export async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000, context = 'retry') {
-    let lastError;
-    
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             return await fn();
         } catch (error) {
-            lastError = error;
-            
             if (attempt === maxRetries) {
                 handleError(error, context, true, ErrorCategory.NETWORK, ErrorSeverity.HIGH, {
                     maxRetries,

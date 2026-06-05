@@ -396,7 +396,26 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                         }
                     }
                 }
-                const canAfford10 = canAfford1; // Simplified
+                // Real bulk affordability: crafting N costs the SUM of N
+                // sequentially-scaled recipes (each craft raises the next one's
+                // cost via `growth`), so "can afford 10" is NOT "can afford 1".
+                // Mirrors CraftingManager.craftWorkstation's per-unit scaling.
+                const canAffordCount = (count) => {
+                    const totals = {};
+                    for (let i = 0; i < count; i++) {
+                        const scaled = VirtualWorkstationList.getScaledRecipeStatic(workstation.recipe, owned + i, workstation.growth);
+                        for (const ingId in scaled) {
+                            totals[ingId] = (totals[ingId] || 0) + scaled[ingId];
+                        }
+                    }
+                    for (const ingId in totals) {
+                        const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
+                        if (have < totals[ingId]) return false;
+                    }
+                    return true;
+                };
+                const canAfford10 = canAffordCount(10);
+                // "Max" is enabled whenever at least one craft is affordable.
                 const canAffordMax = canAfford1;
 
                 card.innerHTML = `
@@ -406,22 +425,22 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                     <div class="card-section">
                         <div class="card-label">Produces:</div>
                         ${Object.entries(workstation.outputs).map(([id, rate]) =>
-                    `<div class="card-value">${rate.toFixed(2)}/s ${id}</div>`
-                ).join('')}
+        `<div class="card-value">${rate.toFixed(2)}/s ${id}</div>`
+    ).join('')}
                     </div>
                 </div>
                 <div class="card-content-right">
                     <div class="card-section">
                         <div class="card-label">Recipe for next:</div>
                         ${Object.entries(recipe).map(([ingId, amount]) => {
-                    const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
-                    const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
-                    const canAfford = have >= amount;
-                    return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+        const currentGameState = typeof gameStateData === 'object' && gameStateData !== null ? gameStateData : window.gameState || gameStateData;
+        const have = (currentGameState.inventory && currentGameState.inventory[ingId]) || 0;
+        const canAfford = have >= amount;
+        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                                 <span class="recipe-label">${ingId}:</span>
                                 <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                             </div>`;
-                }).join('')}
+    }).join('')}
                     </div>
                 </div>
                 <div class="button-row">
@@ -510,7 +529,7 @@ export class VirtualWorkstationList extends VirtualScrollManager {
         // Global upgrades
         for (const upgId in gameState.upgradesOwned) {
             const upgData = UPGRADES?.find(u => u.id === upgId);
-            if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === 'global' && upgData.type === 'multiplier') {
                 inscriptionMult *= upgData.value;
                 inscriptions.push({
                     name: upgData.displayName,
@@ -521,10 +540,10 @@ export class VirtualWorkstationList extends VirtualScrollManager {
         }
 
         // Producer-specific upgrades
-        const targetAffects = "producer:" + workstation.id;
+        const targetAffects = 'producer:' + workstation.id;
         for (const upgId in gameState.upgradesOwned) {
             const upgData = UPGRADES?.find(u => u.id === upgId);
-            if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === targetAffects && upgData.type === 'multiplier') {
                 inscriptionMult *= upgData.value;
                 inscriptions.push({
                     name: upgData.displayName,
@@ -557,12 +576,12 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 <div class="card-label inscription-bonus-label"><span class="css-icon-scroll"></span> Inscription Bonuses:</div>
                 <div class="inscription-bonuses">
                     ${bonusEntries.map(([outputId, bonusRate]) => {
-                const ingredient = INGREDIENTS_LIST.find(ing => ing.id === outputId);
-                const displayName = ingredient?.displayName || outputId;
-                return `<div class="inscription-bonus-item">
+        const ingredient = INGREDIENTS_LIST.find(ing => ing.id === outputId);
+        const displayName = ingredient?.displayName || outputId;
+        return `<div class="inscription-bonus-item">
                             +${formatShortFn(bonusRate)}/s ${displayName}
                         </div>`;
-            }).join('')}
+    }).join('')}
                 </div>
                 ${inscriptions.length > 0 ? `
                     <div class="inscription-list">
@@ -595,27 +614,27 @@ export class VirtualWorkstationList extends VirtualScrollManager {
                 <div class="card-section">
                     <div class="card-label">Produces:</div>
                     ${Object.entries(workstation.outputs).map(([id, rate]) => {
-            const baseTotal = rate * owned;
-            const actualRate = owned > 0 ? baseTotal : rate;
-            const ingredient = INGREDIENTS_REF.find(ing => ing.id === id);
-            const displayName = ingredient?.displayName || id;
-            return `<div class="card-value">${formatPreciseFn(actualRate, 2)}/s ${displayName}</div>`;
-        }).join('')}
+        const baseTotal = rate * owned;
+        const actualRate = owned > 0 ? baseTotal : rate;
+        const ingredient = INGREDIENTS_REF.find(ing => ing.id === id);
+        const displayName = ingredient?.displayName || id;
+        return `<div class="card-value">${formatPreciseFn(actualRate, 2)}/s ${displayName}</div>`;
+    }).join('')}
                 </div>
             </div>
             <div class="card-content-right">
                 <div class="card-section">
                     <div class="card-label">Recipe for next:</div>
                     ${Object.entries(recipe).map(([ingId, amount]) => {
-            const have = gameState.inventory[ingId] || 0;
-            const canAfford = have >= amount;
-            const ingredient = INGREDIENTS_REF.find(ing => ing.id === ingId);
-            const displayName = ingredient?.displayName || ingId;
-            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+        const have = gameState.inventory[ingId] || 0;
+        const canAfford = have >= amount;
+        const ingredient = INGREDIENTS_REF.find(ing => ing.id === ingId);
+        const displayName = ingredient?.displayName || ingId;
+        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                             <span class="recipe-label">${displayName}:</span>
                             <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                         </div>`;
-        }).join('')}
+    }).join('')}
                 </div>
             </div>
             ${inscriptionBonusHTML ? `<div class="card-section full-width inscription-bonus-container">${inscriptionBonusHTML}</div>` : ''}
@@ -757,13 +776,13 @@ export class VirtualUpgradeList extends VirtualScrollManager {
                 <div class="card-section">
                     <div class="card-label">Recipe:</div>
                     ${Object.entries(upgrade.recipe).map(([ingId, amount]) => {
-                    const have = gameStateData.inventory[ingId] || 0;
-                    const canAfford = have >= amount;
-                    return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+        const have = gameStateData.inventory[ingId] || 0;
+        const canAfford = have >= amount;
+        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                             <span class="recipe-label">${ingId}:</span>
                             <span class="recipe-numbers">${formatShortFn(have)} / ${formatShortFn(amount)}</span>
                         </div>`;
-                }).join('')}
+    }).join('')}
                 </div>
                 <button class="btn-primary" data-action="inscribe" data-upgrade-id="${upgrade.id}" ${owned || !canAffordAll ? 'disabled' : ''}>
                     ${owned ? 'Owned' : 'Inscribe'}
@@ -854,13 +873,13 @@ export class VirtualUpgradeList extends VirtualScrollManager {
             <div class="card-section">
                 <div class="card-label">Recipe:</div>
                 ${Object.entries(upgrade.recipe).map(([ingId, amount]) => {
-            const have = gameState.inventory[ingId] || 0;
-            const canAfford = have >= amount;
-            return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
+        const have = gameState.inventory[ingId] || 0;
+        const canAfford = have >= amount;
+        return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
                         <span class="recipe-label">${ingId}:</span>
                         <span class="recipe-numbers">${formatShort(have)} / ${formatShort(amount)}</span>
                     </div>`;
-        }).join('')}
+    }).join('')}
             </div>
             <button class="primary-button" data-action="inscribe" data-upgrade-id="${upgrade.id}" ${owned ? 'disabled' : ''}>
                 ${owned ? 'Owned' : 'Inscribe'}

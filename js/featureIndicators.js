@@ -13,10 +13,10 @@ class FeatureIndicatorManager {
     }
 
     init() {
-        // Set up indicators for locked features
+        // Set up indicators for locked features.
+        // Workstation/upgrade lock state is rendered directly by workstationUI
+        // (via each item's unlockAtAb), so only tab indicators are owned here.
         this.setupTabIndicators();
-        this.setupWorkstationIndicators();
-        this.setupUpgradeIndicators();
     }
 
     /**
@@ -176,28 +176,10 @@ class FeatureIndicatorManager {
     }
 
     /**
-     * Setup workstation indicators
-     */
-    setupWorkstationIndicators() {
-        // This will be called when workstations are displayed
-        // Implementation in game.js
-    }
-
-    /**
-     * Setup upgrade indicators
-     */
-    setupUpgradeIndicators() {
-        // This will be called when upgrades are displayed
-        // Implementation in game.js
-    }
-
-    /**
      * Update all indicators
      */
     updateIndicators() {
         this.setupTabIndicators();
-        this.setupWorkstationIndicators();
-        this.setupUpgradeIndicators();
     }
 }
 

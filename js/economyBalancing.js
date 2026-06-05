@@ -195,7 +195,6 @@ class EconomyBalancing {
      */
     generateRecommendations() {
         const recommendations = [];
-        const comparison = this.compareProductionConsumption();
         const bottlenecks = this.identifyEconomyBottlenecks();
         
         bottlenecks.forEach(bottleneck => {
@@ -247,7 +246,7 @@ class EconomyBalancing {
 }
 
 // Create global instance
-let economyBalancing = null;
+const economyBalancing = null;
 
 // Global functions
 window.getEconomyReport = () => {

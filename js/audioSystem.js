@@ -1,4 +1,4 @@
-import { handleError, safeFunction, ErrorCategory, ErrorSeverity } from './errorHandler.js';
+import { handleError, ErrorCategory, ErrorSeverity } from './errorHandler.js';
 
 /**
  * Audio System - Manages sound effects and audio playback
@@ -1696,8 +1696,7 @@ export class AudioSystem {
             
             // Clone audio element to allow overlapping sounds
             let audioElement;
-            let useWebAudio = false;
-            
+
             // Check if music is playing - if so, use Web Audio API for better integration
             const musicIsPlaying = this.musicEnabled && this.musicNodes.length > 0;
             const tier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
@@ -1725,13 +1724,17 @@ export class AudioSystem {
                 }
             }
             
-            // Use Tone.js for sound effects if available (unified with music system)
+            // Use Tone.js for sound effects if available (unified with music system).
+            // Thread skipQuantization through so callers that request immediate
+            // playback (e.g. responsive UI clicks) actually bypass beat-grid
+            // alignment — playToneSound honors it but previously never received it.
             if (typeof Tone !== 'undefined' && this.toneSynths.size > 0) {
-                return this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode);
+                return this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode, skipQuantization);
             }
-            
-            // Quantize to rhythm when music is playing (fallback to old system)
-            if (musicIsPlaying && typeof Tone !== 'undefined' && Tone.Transport.state === 'started') {
+
+            // Quantize to rhythm when music is playing (fallback to old system),
+            // unless the caller asked for immediate playback.
+            if (musicIsPlaying && typeof Tone !== 'undefined' && Tone.Transport.state === 'started' && !skipQuantization) {
                 // Calculate quantized time - align to musical grid
                 const now = Tone.Transport.seconds;
                 const subdivision = autoTightMode ? '8n' : '16n'; // tighter (on-beat) when auto is ON
@@ -1764,7 +1767,6 @@ export class AudioSystem {
             } else if (sound.url && this.audioContext) {
                 // Use Web Audio API when music is playing for better mixing
                 if (musicIsPlaying && this.audioContext) {
-                    useWebAudio = true;
                     // Create AudioBufferSourceNode for better integration with music
                     this.createHarmoniousSoundEffect(sound, soundId, options);
                     return true; // Sound will be handled by createHarmoniousSoundEffect
@@ -1855,7 +1857,7 @@ export class AudioSystem {
                 console.log('Tone.js context started, retrying sound...');
                 // Retry playing the sound after context starts
                 setTimeout(() => {
-                    this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode);
+                    this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode, skipQuantization);
                 }, 100);
             }).catch(err => {
                 console.error('Failed to start Tone.js context:', err);
@@ -1870,7 +1872,7 @@ export class AudioSystem {
                 console.log('Tone.js synths initialized, retrying sound...');
                 // Retry playing the sound after synths are initialized
                 setTimeout(() => {
-                    this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode);
+                    this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode, skipQuantization);
                 }, 100);
             }).catch(err => {
                 console.error('Failed to initialize Tone.js synths:', err);
@@ -1885,7 +1887,7 @@ export class AudioSystem {
         
         // Ensure SFX master gain is initialized
         if (!this.toneSfxMaster) {
-            console.warn(`playToneSound: SFX master gain not initialized, initializing now...`);
+            console.warn('playToneSound: SFX master gain not initialized, initializing now...');
             // Create master gain on the fly
             const sfxVolumeLinear = this.sfxVolume * this.masterVolume;
             const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6;
@@ -2583,7 +2585,6 @@ export class AudioSystem {
      */
     disableMusic() {
         console.log('disableMusic called - disabling music');
-        console.trace('disableMusic call stack:'); // Debug: show where disableMusic was called from
         this.musicEnabled = false;
         this.stopMusic();
         console.log('Music disabled');
@@ -2676,7 +2677,6 @@ export class AudioSystem {
         }
         
         console.log('stopMusic called - stopping all music nodes');
-        console.trace('stopMusic call stack:'); // Debug: show where stopMusic was called from
         
         // Cancel any pending stop timeout
         if (this.stopMusicTimeout) {
@@ -2707,7 +2707,7 @@ export class AudioSystem {
                     try {
                         this.toneMusic.bassLoop.stop();
                         this.toneMusic.bassLoop.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2715,7 +2715,7 @@ export class AudioSystem {
                     try {
                         this.toneMusic.midLoop.stop();
                         this.toneMusic.midLoop.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2723,7 +2723,7 @@ export class AudioSystem {
                     try {
                         this.toneMusic.sparkleLoop.stop();
                         this.toneMusic.sparkleLoop.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2731,7 +2731,7 @@ export class AudioSystem {
                     try {
                         this.toneMusic.typingLoop.stop();
                         this.toneMusic.typingLoop.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2741,7 +2741,7 @@ export class AudioSystem {
                     try {
                         this.toneMusic.bassLFO.stop();
                         this.toneMusic.bassLFO.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2752,21 +2752,21 @@ export class AudioSystem {
                 if (this.toneMusic.bassPad && typeof this.toneMusic.bassPad.releaseAll === 'function') {
                     try {
                         this.toneMusic.bassPad.releaseAll();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
                 if (this.toneMusic.midPad && typeof this.toneMusic.midPad.releaseAll === 'function') {
                     try {
                         this.toneMusic.midPad.releaseAll();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
                 if (this.toneMusic.softPad && typeof this.toneMusic.softPad.releaseAll === 'function') {
                     try {
                         this.toneMusic.softPad.releaseAll();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2778,7 +2778,7 @@ export class AudioSystem {
                         } else {
                             this.toneMusic.typingBeat.triggerRelease();
                         }
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2787,21 +2787,21 @@ export class AudioSystem {
                 if (this.toneMusic.delay) {
                     try {
                         this.toneMusic.delay.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
                 if (this.toneMusic.reverb) {
                     try {
                         this.toneMusic.reverb.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
                 if (this.toneMusic.masterVol) {
                     try {
                         this.toneMusic.masterVol.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -2810,28 +2810,28 @@ export class AudioSystem {
                 if (this.toneMusic.bassPad) {
                     try {
                         this.toneMusic.bassPad.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
                 if (this.toneMusic.midPad) {
                     try {
                         this.toneMusic.midPad.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
                 if (this.toneMusic.softPad) {
                     try {
                         this.toneMusic.softPad.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
                 if (this.toneMusic.typingBeat) {
                     try {
                         this.toneMusic.typingBeat.dispose();
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore if already disposed
                     }
                 }
@@ -3240,7 +3240,7 @@ export class AudioSystem {
                 const higherChord = chord.map(note => {
                     const match = note.match(/([A-G])(\d)/);
                     if (match) {
-                        return match[1] + (parseInt(match[2]) + 2);
+                        return match[1] + (parseInt(match[2], 10) + 2);
                     }
                     return note;
                 });
@@ -3537,9 +3537,12 @@ export class AudioSystem {
      * @private
      */
     createAmbientMusicBasic() {
-        // This is the old method - keep it as fallback but don't use it
-        console.log('Using basic Web Audio API fallback (not recommended)');
-        // For now, just log - we can implement this later if needed
+        // Deliberate graceful no-op: background music is a Tone.js feature. When
+        // Tone.js is unavailable (CDN blocked/offline before cache) we skip music
+        // entirely rather than ship a second, lower-quality synth engine — the
+        // game is fully playable without music. This is the intended degraded
+        // path, not an unfinished stub.
+        console.info('Tone.js unavailable — running without background music.');
     }
     
     /**
@@ -3608,7 +3611,7 @@ export class AudioSystem {
                         if (this.activeSounds[index].gainNode) {
                             this.activeSounds[index].gainNode.disconnect();
                         }
-                    } catch (e) {
+                    } catch (_e) {
                         // Ignore cleanup errors
                     }
                     this.activeSounds.splice(index, 1);
@@ -3652,15 +3655,18 @@ export class AudioSystem {
         Tone.Transport.bpm.rampTo(targetBPM, 1); // Smooth transition over 1 second
         console.log('Music tempo updated to:', targetBPM, isMeditationMode ? '(meditation mode)' : '(normal mode)');
         
-        // Update reverb settings for meditation mode (100% reverb) or normal mode (65% reverb)
-        if (this.toneMusic.reverb) {
-            const targetRoomSize = isMeditationMode ? 1.0 : 0.65;
-            const targetDampening = isMeditationMode ? 2000 : 5000; // Warmer (lower dampening) in meditation mode, brighter (higher dampening) in normal mode
-            
-            // Reverb settings can't be changed after creation, so we need to recreate it
-            // For now, we'll just log the change - reverb will be set correctly on next music creation
-            console.log('Reverb settings for', isMeditationMode ? 'meditation mode' : 'normal mode', 
-                '- roomSize:', targetRoomSize, 'dampening:', targetDampening, 'ms');
+        // Update reverb intensity for meditation mode (100% wet) vs normal (65%).
+        // Tone.Reverb's roomSize/dampening (decay character) can't change after
+        // creation, but the wet/dry mix CAN — and that mix IS the "100% vs 65%
+        // reverb" the design calls for. Apply it live with a smooth ramp instead
+        // of waiting for the next music recreation (previously a no-op log).
+        if (this.toneMusic.reverb && this.toneMusic.reverb.wet) {
+            const targetWet = isMeditationMode ? 1.0 : 0.65;
+            if (typeof this.toneMusic.reverb.wet.rampTo === 'function') {
+                this.toneMusic.reverb.wet.rampTo(targetWet, 1);
+            } else {
+                this.toneMusic.reverb.wet.value = targetWet;
+            }
         }
         
         if (isMeditationMode) {
@@ -3749,7 +3755,7 @@ export class AudioSystem {
         if (this.toneSfxReverb) {
             try {
                 this.toneSfxReverb.dispose();
-            } catch (e) {
+            } catch (_e) {
                 // Ignore disposal errors
             }
             this.toneSfxReverb = null;
@@ -3758,7 +3764,7 @@ export class AudioSystem {
         if (this.toneSfxDelay) {
             try {
                 this.toneSfxDelay.dispose();
-            } catch (e) {
+            } catch (_e) {
                 // Ignore disposal errors
             }
             this.toneSfxDelay = null;
@@ -3767,7 +3773,7 @@ export class AudioSystem {
         if (this.toneSfxChorus) {
             try {
                 this.toneSfxChorus.dispose();
-            } catch (e) {
+            } catch (_e) {
                 // Ignore disposal errors
             }
             this.toneSfxChorus = null;

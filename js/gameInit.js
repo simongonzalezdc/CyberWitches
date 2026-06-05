@@ -31,11 +31,26 @@ import { handleError } from './errorHandler.js';
 import { UnifiedGameLoop } from './core/UnifiedGameLoop.js';
 import { createErrorBoundary } from './core/ErrorBoundary.js';
 import { setAudioSystem } from './audio/audioAccess.js';
+import { PRODUCERS, INGREDIENTS, UPGRADES, HIDDEN_RECIPES, PRESTIGE_BONUSES } from './data.js';
+import { formatShort, formatNumber, formatTimeDuration } from './utils.js';
+import { pulseElement, shakeElement, slideIn } from './animations.js';
 
 export async function initGame() {
     console.log('Initializing Hex Compiler...');
 
     try {
+        // 0. Expose the static data tables as globals. Several modules (inventoryUI,
+        //    experimentUI, balanceAnalytics, balanceTesting, economyBalancing) read
+        //    window.INGREDIENTS / window.HIDDEN_RECIPES / window.PRODUCERS etc., but
+        //    nothing ever set them — so e.g. the discovered-recipes list and inventory
+        //    item names silently failed to render (the error was swallowed by the DOM
+        //    batcher). Set them BEFORE any system or UI is created.
+        window.INGREDIENTS = INGREDIENTS;
+        window.PRODUCERS = PRODUCERS;
+        window.UPGRADES = UPGRADES;
+        window.HIDDEN_RECIPES = HIDDEN_RECIPES;
+        window.PRESTIGE_BONUSES = PRESTIGE_BONUSES;
+
         // 1. Initialize Game State
         const gameState = new GameState();
 
@@ -65,6 +80,19 @@ export async function initGame() {
         // globals, so every one of those notifications was a silent no-op.
         window.showNotification = showNotification;
         window.announceToScreenReader = announceToScreenReader;
+
+        // Formatting + animation helpers are likewise read as globals by several
+        // UI modules (inventoryUI/statsUI/experimentUI use window.formatShort
+        // UNGUARDED — an actual crash; modalManager/experimentUI use
+        // window.slideIn/pulseElement/shakeElement guarded — silent no-ops). None
+        // were ever assigned, so those panels failed to render and celebration
+        // animations never played. Expose them here.
+        window.formatShort = formatShort;
+        window.formatNumber = formatNumber;
+        window.formatTimeDuration = formatTimeDuration;
+        window.pulseElement = pulseElement;
+        window.shakeElement = shakeElement;
+        window.slideIn = slideIn;
 
         // 4. Initialize Feature Managers (depend on GameState and often UIManager)
         // Week 2: Wrap critical systems with error boundaries for module isolation
@@ -193,6 +221,10 @@ export async function initGame() {
         // Start unified game loop (replaces gameState.start() tick loop)
         // Note: window.gameLoop was already assigned above for particle system detection
         gameState.loadGameState(); // Load state but don't start old tick loop
+        // Register save-on-hide/close handlers. startTickLoop() is skipped under
+        // the unified loop, so this is where the data-loss-prevention flush gets
+        // wired up for the real game.
+        gameState.registerLifecycleHandlers();
         gameLoop.start();
 
         // 9. Initial UI Update
@@ -267,15 +299,9 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
 
     gameState.onWelcomeBack = (elapsed, abGained) => {
         if (abGained > 0 && elapsed > 60) {
-            // We need formatShort and formatTimeDuration. 
-            // Ideally GameState shouldn't know about formatting, passing raw values.
-            // ModalManager handles formatting or imports utils.
-            // But wait, ModalManager.showWelcomeBack expects formatted strings in the current implementation?
-            // Let's check ModalManager.js.
-            // showWelcomeBack(elapsed, abGained, formatTimeDuration, formatShort)
-            // It expects formatting functions passed in!
-            // We need to import them here.
-            
+            // GameState stays formatting-agnostic and emits raw values; the
+            // welcome-back modal takes the formatting helpers as arguments, so we
+            // lazy-load them here and hand them in.
             import('./utils.js')
                 .then(({ formatShort, formatTimeDuration }) => {
                     uiManager.modalManager.showWelcomeBack(elapsed, abGained, formatTimeDuration, formatShort);

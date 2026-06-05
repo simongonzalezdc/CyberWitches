@@ -141,17 +141,60 @@ export class GameState {
 
         this.tickInterval = setInterval(tick, GAME_CONSTANTS.TICK_RATE);
 
-        // Listen for visibility changes to pause/resume
+        // Ensure the save-on-hide/close handlers are active for the legacy loop
+        // path too (they're idempotent).
+        this.registerLifecycleHandlers();
+    }
+
+    /**
+     * Register save-flush handlers for when the page is hidden or going away.
+     * CRITICAL and loop-independent: the game normally runs on UnifiedGameLoop
+     * (startTickLoop is skipped), and when the tab is hidden we may never get
+     * another tick — and on mobile the page can be killed without `beforeunload`
+     * ever firing. Flushing the pending debounced save here is what prevents
+     * progress accrued since the last 30s autosave from being silently lost on
+     * background/close (the most common "my progress reset" report).
+     *
+     * Idempotent: safe to call from both startTickLoop() and initGame().
+     */
+    registerLifecycleHandlers() {
+        if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+        // FORCE the save on exit. `hasPendingSave` is only set by the 30s
+        // autosave branch, so a non-forced flush would skip progress made AFTER
+        // the last save but BEFORE that interval elapses (e.g. closing a mobile
+        // tab 10s after crafting) — exactly the close-before-autosave case this
+        // is meant to cover. Forcing always persists the current state on exit.
         if (!this.visibilityHandler) {
             this.visibilityHandler = () => {
                 if (document.hidden) {
-                    // Tab hidden - ticks will be skipped automatically
-                    // No need to clear interval, just skip processing
-                } else {
-                    // Tab visible - ticks will resume automatically
+                    this.flushPendingSave(true);
                 }
             };
             document.addEventListener('visibilitychange', this.visibilityHandler);
+        }
+
+        // `pagehide` is the reliable "page is going away" signal on iOS/Safari
+        // where `beforeunload` does not fire.
+        if (!this.pageHideHandler) {
+            this.pageHideHandler = () => {
+                this.flushPendingSave(true);
+            };
+            window.addEventListener('pagehide', this.pageHideHandler);
+        }
+    }
+
+    /**
+     * Persist immediately if a save is pending (or always, when forced).
+     * Safe to call repeatedly; clears the pending flag. Exit paths
+     * (visibilitychange-hidden / pagehide) pass force=true so progress is never
+     * lost just because the periodic autosave hasn't marked a pending save yet.
+     * @param {boolean} force - Save even if no pending change is flagged.
+     */
+    flushPendingSave(force = false) {
+        if (this.hasPendingSave || force) {
+            this.saveGameStateImmediate();
+            this.hasPendingSave = false;
         }
     }
 
@@ -160,10 +203,7 @@ export class GameState {
      */
     stopTickLoop() {
         // Flush any pending saves before stopping
-        if (this.hasPendingSave) {
-            this.saveGameStateImmediate();
-            this.hasPendingSave = false;
-        }
+        this.flushPendingSave();
 
         if (this.tickInterval) {
             clearInterval(this.tickInterval);
@@ -174,6 +214,12 @@ export class GameState {
         if (this.visibilityHandler) {
             document.removeEventListener('visibilitychange', this.visibilityHandler);
             this.visibilityHandler = null;
+        }
+
+        // Remove pagehide handler
+        if (this.pageHideHandler) {
+            window.removeEventListener('pagehide', this.pageHideHandler);
+            this.pageHideHandler = null;
         }
     }
 
@@ -199,7 +245,7 @@ export class GameState {
 
         // Apply production
         for (const outputId in production) {
-            if (outputId === "ab") {
+            if (outputId === 'ab') {
                 this.addAb(production[outputId]);
             } else {
                 this.addIngredient(outputId, production[outputId]);
@@ -300,8 +346,8 @@ export class GameState {
         if (totalOutput.ab) {
             for (const upgId in this.upgradesOwned) {
                 const upgData = UPGRADES.find(u => u.id === upgId);
-                if (upgData && upgData.affects === "ab_production") {
-                    if (upgData.type === "multiplier") {
+                if (upgData && upgData.affects === 'ab_production') {
+                    if (upgData.type === 'multiplier') {
                         totalOutput.ab *= upgData.value;
                     }
                 }
@@ -310,7 +356,7 @@ export class GameState {
             // Apply prestige AB production multiplier
             for (const bonusId in this.prestigeBonuses) {
                 const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-                if (bonusData && bonusData.type === "ab_production_mult") {
+                if (bonusData && bonusData.type === 'ab_production_mult') {
                     const levels = this.prestigeBonuses[bonusId] || 0;
                     totalOutput.ab *= (1.0 + bonusData.value * levels);
                 }
@@ -347,16 +393,16 @@ export class GameState {
         // Global upgrades
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === 'global' && upgData.type === 'multiplier') {
                 mult *= upgData.value;
             }
         }
 
         // Producer-specific upgrades
-        const targetAffects = "producer:" + workstationId;
+        const targetAffects = 'producer:' + workstationId;
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === targetAffects && upgData.type === 'multiplier') {
                 mult *= upgData.value;
             }
         }
@@ -364,7 +410,7 @@ export class GameState {
         // Prestige bonuses (global)
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "global_mult") {
+            if (bonusData && bonusData.type === 'global_mult') {
                 const levels = this.prestigeBonuses[bonusId];
                 mult *= (1.0 + bonusData.value * levels);
             }
@@ -373,7 +419,7 @@ export class GameState {
         // Prestige bonuses (producer-specific)
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "producer_mult" && bonusData.param === workstationId) {
+            if (bonusData && bonusData.type === 'producer_mult' && bonusData.param === workstationId) {
                 const levels = this.prestigeBonuses[bonusId];
                 mult *= (1.0 + bonusData.value * levels);
             }
@@ -640,7 +686,7 @@ export class GameState {
         this.totalTaps++;
 
         // Base tier-0 ingredients (4 alchemical elements - Aether is synthesized from these)
-        let baseAmounts = {
+        const baseAmounts = {
             crystal_dust: 0.5,
             fire_essence: 0.5,
             water_essence: 0.5,
@@ -675,10 +721,10 @@ export class GameState {
 
         for (const upgId in this.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === "click") {
-                if (upgData.type === "multiplier") {
+            if (upgData && upgData.affects === 'click') {
+                if (upgData.type === 'multiplier') {
                     clickMult *= upgData.value;
-                } else if (upgData.type === "additive") {
+                } else if (upgData.type === 'additive') {
                     clickAdditive += upgData.value;
                 }
             }
@@ -687,7 +733,7 @@ export class GameState {
         // Apply prestige click multiplier
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "click_mult") {
+            if (bonusData && bonusData.type === 'click_mult') {
                 const levels = this.prestigeBonuses[bonusId] || 0;
                 clickMult *= (1.0 + bonusData.value * levels);
             }
@@ -807,7 +853,7 @@ export class GameState {
         // Starting AB
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "starting_currency") {
+            if (bonusData && bonusData.type === 'starting_currency') {
                 const levels = this.prestigeBonuses[bonusId];
                 this.addAb(bonusData.value * levels);
             }
@@ -816,7 +862,7 @@ export class GameState {
         // Starting ingredients
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
-            if (bonusData && bonusData.type === "start_ingredient") {
+            if (bonusData && bonusData.type === 'start_ingredient') {
                 const levels = this.prestigeBonuses[bonusId];
                 this.addIngredient(bonusData.param, bonusData.value * levels);
             }
@@ -894,7 +940,7 @@ export class GameState {
                 // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
                 coven: null, // this.covenSystem ? this.covenSystem.saveCovenData() : null,
                 timestamp: Date.now() / 1000,
-                version: "2.1" // Updated version for save data validation
+                version: '2.1' // Updated version for save data validation
             };
 
             // Validate save data before saving
@@ -1180,7 +1226,7 @@ export class GameState {
         try {
             localStorage.setItem(prefix + Date.now(), raw);
         } catch (e) {
-            console.error("Failed to create backup:", e);
+            console.error('Failed to create backup:', e);
         }
     }
 

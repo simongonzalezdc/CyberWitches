@@ -1,4 +1,39 @@
 /* CSS Variables and Base Styles - Arcane Terminal Redesign */
+
+/* ===== Accessibility ===== */
+/* Skip link: visually hidden until focused, then pinned top-left. Lets keyboard
+   users jump straight past chrome into the game. */
+.skip-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-120%);
+    z-index: 10000;
+    padding: 0.6rem 1rem;
+    background: var(--primary, #00F0FF);
+    color: #050508;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    transition: transform 0.15s ease;
+}
+.skip-link:focus {
+    transform: translateY(0);
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Keyboard focus ring for interactive elements (mouse clicks don't show it). */
+:focus-visible {
+    outline: 2px solid var(--primary, #00F0FF);
+    outline-offset: 2px;
+}
+/* The <main> skip target is programmatically focusable but shouldn't show a ring. */
+#main-content:focus,
+#main-content:focus-visible {
+    outline: none;
+}
+
 :root {
     /* Core Palette - Void & Data */
     --bg-void: #050508;

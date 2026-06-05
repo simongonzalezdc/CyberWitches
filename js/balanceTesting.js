@@ -288,7 +288,7 @@ class BalanceTestingFramework {
 }
 
 // Create global instance
-let balanceTestingFramework = null;
+const balanceTestingFramework = null;
 
 // Global functions
 window.runBalanceTests = () => {

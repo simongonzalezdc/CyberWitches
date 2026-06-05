@@ -1,6 +1,19 @@
 import js from '@eslint/js';
 
 export default [
+    // Global ignores: build output, deps, coverage, generated docs, and any
+    // minified bundle. Everything else (js/, sw.js, tests/, build.js, scripts/,
+    // *.config.js, root scripts) IS linted — see the `lint` script (`eslint .`).
+    // Previously only `js sw.js` was linted, so tooling/test code never was.
+    {
+        ignores: [
+            'node_modules/**',
+            'dist/**',
+            'coverage/**',
+            'docs/**',
+            '**/*.min.js'
+        ]
+    },
     js.configs.recommended,
     {
         languageOptions: {
@@ -27,6 +40,8 @@ export default [
                 cancelIdleCallback: 'readonly',
                 Image: 'readonly',
                 URL: 'readonly',
+                URLSearchParams: 'readonly',
+                Storage: 'readonly',
                 Response: 'readonly',
                 Request: 'readonly',
                 Audio: 'readonly',
@@ -52,6 +67,8 @@ export default [
                 require: 'readonly',
                 exports: 'readonly',
                 global: 'readonly',
+                setImmediate: 'readonly',
+                clearImmediate: 'readonly',
 
                 // Game specific globals
                 Tone: 'readonly',
@@ -63,9 +80,12 @@ export default [
                 // Test globals (Jest)
                 describe: 'readonly',
                 test: 'readonly',
+                it: 'readonly',
                 expect: 'readonly',
                 beforeEach: 'readonly',
                 afterEach: 'readonly',
+                beforeAll: 'readonly',
+                afterAll: 'readonly',
                 jest: 'readonly'
             }
         },
@@ -100,8 +120,8 @@ export default [
             'no-debugger': 'warn',
 
             // Style
-            'indent': ['warn', 4, { "SwitchCase": 1 }],
-            'quotes': ['warn', 'single', { "avoidEscape": true }],
+            'indent': ['warn', 4, { 'SwitchCase': 1 }],
+            'quotes': ['warn', 'single', { 'avoidEscape': true }],
             'semi': ['warn', 'always'],
             'comma-dangle': ['warn', 'never']
         }

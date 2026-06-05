@@ -27,90 +27,90 @@ global.HIDDEN_RECIPES = [];
 const SAVE_KEY = 'cyberWitchesSave';
 
 function backupKeys() {
-  const keys = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k !== SAVE_KEY && k.startsWith('cyberWitchesSave')) keys.push(k);
-  }
-  return keys;
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k !== SAVE_KEY && k.startsWith('cyberWitchesSave')) keys.push(k);
+    }
+    return keys;
 }
 
 describe('GameState.loadGameState save recovery', () => {
-  let gameState;
+    let gameState;
 
-  beforeEach(() => {
-    localStorage.clear();
-    gameState = new GameState();
-  });
+    beforeEach(() => {
+        localStorage.clear();
+        gameState = new GameState();
+    });
 
-  test('does nothing destructive when there is no save', () => {
-    expect(() => gameState.loadGameState()).not.toThrow();
-    expect(gameState.ab).toBe(0);
-    expect(backupKeys()).toHaveLength(0);
-  });
+    test('does nothing destructive when there is no save', () => {
+        expect(() => gameState.loadGameState()).not.toThrow();
+        expect(gameState.ab).toBe(0);
+        expect(backupKeys()).toHaveLength(0);
+    });
 
-  // Regression: a first-time player (no save) previously got a permanent
-  // full-screen "Loading game..." overlay because the no-save path hid it via
-  // an unbound window.hideLoadingState. loadGameState must always clear it.
-  test('clears the loading overlay on every exit path', () => {
-    const overlayActive = () => {
-      const ov = document.getElementById('loading-overlay');
-      return ov ? ov.classList.contains('active') : false;
-    };
+    // Regression: a first-time player (no save) previously got a permanent
+    // full-screen "Loading game..." overlay because the no-save path hid it via
+    // an unbound window.hideLoadingState. loadGameState must always clear it.
+    test('clears the loading overlay on every exit path', () => {
+        const overlayActive = () => {
+            const ov = document.getElementById('loading-overlay');
+            return ov ? ov.classList.contains('active') : false;
+        };
 
-    // No-save path.
-    gameState.loadGameState();
-    expect(overlayActive()).toBe(false);
+        // No-save path.
+        gameState.loadGameState();
+        expect(overlayActive()).toBe(false);
 
-    // Corrupt-save path.
-    localStorage.setItem(SAVE_KEY, '{ broken json ');
-    gameState.loadGameState();
-    expect(overlayActive()).toBe(false);
+        // Corrupt-save path.
+        localStorage.setItem(SAVE_KEY, '{ broken json ');
+        gameState.loadGameState();
+        expect(overlayActive()).toBe(false);
 
-    // Valid-save path.
-    const good = { version: '2.1', ab: 5, abTotalEarned: 5, timestamp: Date.now() / 1000 };
-    good.checksum = calculateChecksum(good);
-    localStorage.setItem(SAVE_KEY, JSON.stringify(good));
-    gameState.loadGameState();
-    expect(overlayActive()).toBe(false);
-  });
+        // Valid-save path.
+        const good = { version: '2.1', ab: 5, abTotalEarned: 5, timestamp: Date.now() / 1000 };
+        good.checksum = calculateChecksum(good);
+        localStorage.setItem(SAVE_KEY, JSON.stringify(good));
+        gameState.loadGameState();
+        expect(overlayActive()).toBe(false);
+    });
 
-  test('corrupt (unparseable) save is not loaded and is backed up', () => {
-    localStorage.setItem(SAVE_KEY, '{ this is not valid json ');
-    gameState.loadGameState();
+    test('corrupt (unparseable) save is not loaded and is backed up', () => {
+        localStorage.setItem(SAVE_KEY, '{ this is not valid json ');
+        gameState.loadGameState();
 
-    // Garbage must not become game state.
-    expect(gameState.ab).toBe(0);
-    // The original bytes must be preserved for recovery.
-    expect(backupKeys().length).toBeGreaterThan(0);
-  });
+        // Garbage must not become game state.
+        expect(gameState.ab).toBe(0);
+        // The original bytes must be preserved for recovery.
+        expect(backupKeys().length).toBeGreaterThan(0);
+    });
 
-  test('structurally invalid save (valid JSON, bad shape) is rejected and backed up', () => {
+    test('structurally invalid save (valid JSON, bad shape) is rejected and backed up', () => {
     // Valid JSON, but not a valid save: negative currency must fail validation.
-    localStorage.setItem(
-      SAVE_KEY,
-      JSON.stringify({ version: '2.1', ab: -5, timestamp: Date.now() / 1000 })
-    );
-    gameState.loadGameState();
+        localStorage.setItem(
+            SAVE_KEY,
+            JSON.stringify({ version: '2.1', ab: -5, timestamp: Date.now() / 1000 })
+        );
+        gameState.loadGameState();
 
-    expect(gameState.ab).toBe(0);
-    expect(backupKeys().length).toBeGreaterThan(0);
-  });
+        expect(gameState.ab).toBe(0);
+        expect(backupKeys().length).toBeGreaterThan(0);
+    });
 
-  test('a well-formed save still loads normally (recovery does not block valid saves)', () => {
-    const good = {
-      version: '2.1',
-      ab: 1234,
-      abTotalEarned: 1234,
-      timestamp: Date.now() / 1000,
-    };
-    good.checksum = calculateChecksum(good);
-    localStorage.setItem(SAVE_KEY, JSON.stringify(good));
+    test('a well-formed save still loads normally (recovery does not block valid saves)', () => {
+        const good = {
+            version: '2.1',
+            ab: 1234,
+            abTotalEarned: 1234,
+            timestamp: Date.now() / 1000
+        };
+        good.checksum = calculateChecksum(good);
+        localStorage.setItem(SAVE_KEY, JSON.stringify(good));
 
-    gameState.loadGameState();
+        gameState.loadGameState();
 
-    expect(gameState.ab).toBe(1234);
-    // A valid load must not spray backup keys.
-    expect(backupKeys()).toHaveLength(0);
-  });
+        expect(gameState.ab).toBe(1234);
+        // A valid load must not spray backup keys.
+        expect(backupKeys()).toHaveLength(0);
+    });
 });

@@ -13,6 +13,22 @@ window.addEventListener('unhandledrejection', event => {
     handleError(event.reason, 'unhandledRejection', true);
 });
 
+/**
+ * Performance instrumentation (baseline measurement + the Tailwind-migration
+ * validation pass) is developer tooling, not gameplay. It is OFF by default so
+ * players never pay its cost or see "Performance validation failed" warnings in
+ * their console. Enable it with `?perf` in the URL or
+ * `localStorage.setItem('cyberWitchesPerfDebug','true')`.
+ */
+function isPerfDebugEnabled() {
+    try {
+        if (new URLSearchParams(window.location.search).has('perf')) return true;
+        return localStorage.getItem('cyberWitchesPerfDebug') === 'true';
+    } catch {
+        return false;
+    }
+}
+
 // Initialize game when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', start);
@@ -22,20 +38,25 @@ if (document.readyState === 'loading') {
 
 async function start() {
     try {
-        // Week 1, Day 1: Establish performance baseline (if not already measured)
-        const savedBaseline = PerformanceBaseline.load();
-        if (!savedBaseline) {
-            console.log('📊 Measuring performance baseline...');
-            const baseline = new PerformanceBaseline();
-            await baseline.measure();
-            baseline.save();
-            window.performanceBaseline = baseline.getMetrics();
-            console.log('✅ Baseline saved:', window.performanceBaseline);
-        } else {
-            window.performanceBaseline = savedBaseline;
-            console.log('📊 Using saved baseline:', savedBaseline);
+        const perfDebug = isPerfDebugEnabled();
+
+        // Establish performance baseline (developer tooling, opt-in only —
+        // measuring it delays startup, so players skip it entirely).
+        if (perfDebug) {
+            const savedBaseline = PerformanceBaseline.load();
+            if (!savedBaseline) {
+                console.log('📊 Measuring performance baseline...');
+                const baseline = new PerformanceBaseline();
+                await baseline.measure();
+                baseline.save();
+                window.performanceBaseline = baseline.getMetrics();
+                console.log('✅ Baseline saved:', window.performanceBaseline);
+            } else {
+                window.performanceBaseline = savedBaseline;
+                console.log('📊 Using saved baseline:', savedBaseline);
+            }
         }
-        
+
         const { gameState, uiManager, gameLoop } = await initGame();
         
         // Expose for debugging
@@ -44,10 +65,12 @@ async function start() {
         window.gameLoop = gameLoop;
         
         console.log('✅ Game started successfully.');
-        console.log('🎮 Unified game loop active (10 TPS logic, 60 FPS visuals)');
+        console.log('🎮 Unified game loop active (10 TPS logic, 30 FPS visuals)');
         
-        // Week 4: Measure performance after initialization (for comparison)
-        setTimeout(async () => {
+        // Measure performance after initialization (developer tooling, opt-in).
+        // Previously this always ran 6s after load and printed a scary
+        // "Performance validation failed" warning into every player's console.
+        if (perfDebug) setTimeout(async () => {
             const { performanceValidator } = await import('./utils/performanceValidator.js');
             
             // Load baseline if available

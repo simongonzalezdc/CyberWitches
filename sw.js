@@ -4,11 +4,14 @@
 // handler deletes any cache whose name !== CACHE_NAME, so changing this string
 // purges stale assets and forces one fresh fetch for returning players. The
 // prefix was renamed from the legacy "spellwright-cache" to match the product.
-const CACHE_VERSION = 'v19';
+const CACHE_VERSION = 'v20';
 const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 
-const CACHE_URLS = [
+// Core app shell — present in both the dev server and the production build.
+// NOTE: the service worker must NOT precache itself ('/sw.js') — doing so can
+// serve a stale worker and wedge updates.
+const CORE_CACHE_URLS = [
     '/',
     '/index.html',
     '/css/main.css',
@@ -19,10 +22,17 @@ const CACHE_URLS = [
     '/css/responsive.css',
     '/css/utilities.css',
     '/manifest.json',
-    '/sw.js',
     '/offline.html',
     // External dependencies (CDN)
     'https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'
+];
+
+// Best-effort precache: the production JS bundle so the app is fully usable
+// offline immediately after install. It is ABSENT on the dev server (where ES
+// modules are fetched individually and runtime-cached instead), so a miss here
+// must never fail the install.
+const OPTIONAL_CACHE_URLS = [
+    '/js/game.bundle.js'
 ];
 
 // Cache strategies
@@ -181,14 +191,30 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('Service Worker installed, cache opened');
-                return cache.addAll(CACHE_URLS.map(url => new Request(url)));
+                // CORE shell is atomic: if ANY required asset fails, the whole
+                // install REJECTS so this worker does not activate and the previous
+                // worker + its complete cache are preserved. Activating with a
+                // half-populated core (then deleting the old cache in `activate`)
+                // would break offline/cache-first navigations.
+                const core = cache.addAll(CORE_CACHE_URLS);
+                // OPTIONAL assets are best-effort: a miss (e.g. the prod bundle on
+                // the dev server) only warns and must never fail the install.
+                const optional = OPTIONAL_CACHE_URLS.map(url =>
+                    cache.add(new Request(url)).catch(() => {
+                        console.warn(`SW: optional asset not precached (expected on dev): ${url}`);
+                    })
+                );
+                return Promise.all([core, ...optional]);
             })
             .then(() => {
                 console.log('Service Worker installed, files cached');
                 self.skipWaiting();
             })
             .catch((error) => {
-                console.error('Service Worker installation failed:', error);
+                // Re-throw so waitUntil() rejects and the install fails — keeping the
+                // last good worker instead of activating a broken one.
+                console.error('Service Worker installation failed (core precache):', error);
+                throw error;
             })
     );
 });

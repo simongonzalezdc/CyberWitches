@@ -122,7 +122,7 @@ async function optimizeImage(config) {
         // Restore from backup if optimization failed
         if (fs.existsSync(backupPath)) {
             fs.copyFileSync(backupPath, inputPath);
-            console.log(`   Restored from backup\n`);
+            console.log('   Restored from backup\n');
         }
     }
 }

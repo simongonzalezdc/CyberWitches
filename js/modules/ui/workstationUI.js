@@ -37,7 +37,7 @@ export class WorkstationUI {
         // Styles moved to CSS
 
         // Filter unlocked workstations (with Air specialization unlock speed bonus)
-        let unlockedWorkstations = PRODUCERS.filter(prod => {
+        const unlockedWorkstations = PRODUCERS.filter(prod => {
             let unlockRequirement = prod.unlockAtAb;
             if (this.gameState.elementSpecialization === 'air' && this.gameState.specializationBonuses.unlockSpeedMult) {
                 unlockRequirement *= this.gameState.specializationBonuses.unlockSpeedMult;
@@ -93,7 +93,7 @@ export class WorkstationUI {
         const tiers = Object.keys(workstationsByTier).sort((a, b) => b - a);
 
         for (const tier of tiers) {
-            const tierNum = parseInt(tier);
+            const tierNum = parseInt(tier, 10);
             const tierStyle = getTierAppropriateStyle(tierNum);
             const tierSymbol = getTierSymbol(tierNum); // Get tier symbol for colors
 
@@ -245,7 +245,7 @@ export class WorkstationUI {
                             <h3 class="card-title">${prodData.displayName}</h3>
                             <span class="card-owned">Lv. ${formatNumber(owned)}</span>
                         </div>
-                        <p class="card-desc">${prodData.description}</p>
+                        ${prodData.description ? `<p class="card-desc">${prodData.description}</p>` : ''}
                     </div>
                     
                     ${productionHtml}
@@ -304,7 +304,7 @@ export class WorkstationUI {
         // Global upgrades
         for (const upgId in this.gameState.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === "global" && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === 'global' && upgData.type === 'multiplier') {
                 mult *= upgData.value;
                 inscriptions.push({
                     name: upgData.displayName,
@@ -315,10 +315,10 @@ export class WorkstationUI {
         }
 
         // Producer-specific upgrades
-        const targetAffects = "producer:" + workstationId;
+        const targetAffects = 'producer:' + workstationId;
         for (const upgId in this.gameState.upgradesOwned) {
             const upgData = UPGRADES.find(u => u.id === upgId);
-            if (upgData && upgData.affects === targetAffects && upgData.type === "multiplier") {
+            if (upgData && upgData.affects === targetAffects && upgData.type === 'multiplier') {
                 mult *= upgData.value;
                 inscriptions.push({
                     name: upgData.displayName,

@@ -346,21 +346,21 @@ export class ModalManager {
                         <p class="element-choice-desc">${spec.description}</p>
                         <div class="element-bonuses-list">
                             ${Object.entries(spec.bonuses).map(([key, value]) => {
-            let display = '';
-            if (key === 'baseProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ${spec.id} production`;
-            else if (key === 'abProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% AB from ${spec.id} reactors`;
-            else if (key === 'costReduction') display = `-${(value * 100).toFixed(0)}% ${spec.id} costs`;
-            else if (key === 'castRewardMult') display = `+${((value - 1) * 100).toFixed(0)}% cast rewards`;
-            else if (key === 'globalProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% all production`;
-            else if (key === 'ingredientProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ingredient production`;
-            else if (key === 'unlockSpeedMult') display = `Unlock ${((1 - value) * 100).toFixed(0)}% earlier`;
-            else if (key === 'productionSpeedMult') display = `+${((value - 1) * 100).toFixed(0)}% production speed`;
-            else if (key === 'castSpeedMult') display = `+${((value - 1) * 100).toFixed(0)}% cast speed`;
-            else if (key === 'universalIngredientMult') display = `+${((value - 1) * 100).toFixed(0)}% universal ingredients`;
-            else if (key === 'bottleneckCostReduction') display = `-${(value * 100).toFixed(0)}% bottleneck costs`;
-            else if (key === 'crystalBuildingMult') display = `+${((value - 1) * 100).toFixed(0)}% Crystal building production`;
-            return `<div class="element-bonus-item">${display}</div>`;
-        }).join('')}
+        let display = '';
+        if (key === 'baseProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ${spec.id} production`;
+        else if (key === 'abProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% AB from ${spec.id} reactors`;
+        else if (key === 'costReduction') display = `-${(value * 100).toFixed(0)}% ${spec.id} costs`;
+        else if (key === 'castRewardMult') display = `+${((value - 1) * 100).toFixed(0)}% cast rewards`;
+        else if (key === 'globalProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% all production`;
+        else if (key === 'ingredientProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ingredient production`;
+        else if (key === 'unlockSpeedMult') display = `Unlock ${((1 - value) * 100).toFixed(0)}% earlier`;
+        else if (key === 'productionSpeedMult') display = `+${((value - 1) * 100).toFixed(0)}% production speed`;
+        else if (key === 'castSpeedMult') display = `+${((value - 1) * 100).toFixed(0)}% cast speed`;
+        else if (key === 'universalIngredientMult') display = `+${((value - 1) * 100).toFixed(0)}% universal ingredients`;
+        else if (key === 'bottleneckCostReduction') display = `-${(value * 100).toFixed(0)}% bottleneck costs`;
+        else if (key === 'crystalBuildingMult') display = `+${((value - 1) * 100).toFixed(0)}% Crystal building production`;
+        return `<div class="element-bonus-item">${display}</div>`;
+    }).join('')}
                         </div>
                     </div>
                 `).join('')}

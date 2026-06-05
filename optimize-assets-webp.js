@@ -17,7 +17,7 @@ const CONFIG = {
     imageDirs: ['images'], // Directories to process
     extensions: ['.png', '.jpg', '.jpeg'], // File extensions to convert
     skipExisting: false, // Skip if WebP already exists
-    createBackup: true, // Backup originals to /images-backup
+    createBackup: true // Backup originals to /images-backup
 };
 
 // Stats tracking
@@ -27,7 +27,7 @@ const stats = {
     skipped: 0,
     failed: 0,
     originalSize: 0,
-    newSize: 0,
+    newSize: 0
 };
 
 /**
