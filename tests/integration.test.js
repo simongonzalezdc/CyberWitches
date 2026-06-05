@@ -213,11 +213,25 @@ describe('Save/Load Integration Tests', () => {
                 expect(docAdd).not.toHaveBeenCalled();
                 expect(winAdd).not.toHaveBeenCalled();
 
-                // The pagehide handler actually flushes a pending save.
+                // The exit handlers FORCE a save — even when no autosave is pending.
+                // This is the key data-loss guard: closing the tab shortly after a
+                // craft/cast (before the 30s autosave sets hasPendingSave) must still
+                // persist. A non-forced flush would silently drop that progress.
                 const saveSpy = jest.spyOn(gameState, 'saveGameStateImmediate').mockImplementation(() => {});
-                gameState.hasPendingSave = true;
+                gameState.hasPendingSave = false;
                 gameState.pageHideHandler();
-                expect(saveSpy).toHaveBeenCalled();
+                expect(saveSpy).toHaveBeenCalledTimes(1); // forced despite no pending flag
+
+                gameState.hasPendingSave = false;
+                const hiddenDesc = Object.getOwnPropertyDescriptor(global.document, 'hidden');
+                Object.defineProperty(global.document, 'hidden', { configurable: true, get: () => true });
+                try {
+                    gameState.visibilityHandler();
+                    expect(saveSpy).toHaveBeenCalledTimes(2);
+                } finally {
+                    if (hiddenDesc) Object.defineProperty(global.document, 'hidden', hiddenDesc);
+                    else delete global.document.hidden;
+                }
                 saveSpy.mockRestore();
             } finally {
                 global.document.addEventListener = realDocAdd;

@@ -160,10 +160,15 @@ export class GameState {
     registerLifecycleHandlers() {
         if (typeof document === 'undefined' || typeof window === 'undefined') return;
 
+        // FORCE the save on exit. `hasPendingSave` is only set by the 30s
+        // autosave branch, so a non-forced flush would skip progress made AFTER
+        // the last save but BEFORE that interval elapses (e.g. closing a mobile
+        // tab 10s after crafting) — exactly the close-before-autosave case this
+        // is meant to cover. Forcing always persists the current state on exit.
         if (!this.visibilityHandler) {
             this.visibilityHandler = () => {
                 if (document.hidden) {
-                    this.flushPendingSave();
+                    this.flushPendingSave(true);
                 }
             };
             document.addEventListener('visibilitychange', this.visibilityHandler);
@@ -173,7 +178,7 @@ export class GameState {
         // where `beforeunload` does not fire.
         if (!this.pageHideHandler) {
             this.pageHideHandler = () => {
-                this.flushPendingSave();
+                this.flushPendingSave(true);
             };
             window.addEventListener('pagehide', this.pageHideHandler);
         }
@@ -181,7 +186,9 @@ export class GameState {
 
     /**
      * Persist immediately if a save is pending (or always, when forced).
-     * Safe to call repeatedly; clears the pending flag.
+     * Safe to call repeatedly; clears the pending flag. Exit paths
+     * (visibilitychange-hidden / pagehide) pass force=true so progress is never
+     * lost just because the periodic autosave hasn't marked a pending save yet.
      * @param {boolean} force - Save even if no pending change is flagged.
      */
     flushPendingSave(force = false) {
