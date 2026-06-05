@@ -191,27 +191,30 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('Service Worker installed, cache opened');
-                // Per-URL caching (not atomic addAll): a single missing asset must
-                // not silently wipe the ENTIRE precache. Core misses are errors;
-                // optional misses (e.g. the prod bundle on the dev server) warn.
-                const core = CORE_CACHE_URLS.map(url =>
-                    cache.add(new Request(url)).catch(err => {
-                        console.error(`SW: failed to precache core asset ${url}:`, err);
-                    })
-                );
+                // CORE shell is atomic: if ANY required asset fails, the whole
+                // install REJECTS so this worker does not activate and the previous
+                // worker + its complete cache are preserved. Activating with a
+                // half-populated core (then deleting the old cache in `activate`)
+                // would break offline/cache-first navigations.
+                const core = cache.addAll(CORE_CACHE_URLS);
+                // OPTIONAL assets are best-effort: a miss (e.g. the prod bundle on
+                // the dev server) only warns and must never fail the install.
                 const optional = OPTIONAL_CACHE_URLS.map(url =>
                     cache.add(new Request(url)).catch(() => {
                         console.warn(`SW: optional asset not precached (expected on dev): ${url}`);
                     })
                 );
-                return Promise.all([...core, ...optional]);
+                return Promise.all([core, ...optional]);
             })
             .then(() => {
                 console.log('Service Worker installed, files cached');
                 self.skipWaiting();
             })
             .catch((error) => {
-                console.error('Service Worker installation failed:', error);
+                // Re-throw so waitUntil() rejects and the install fails — keeping the
+                // last good worker instead of activating a broken one.
+                console.error('Service Worker installation failed (core precache):', error);
+                throw error;
             })
     );
 });
