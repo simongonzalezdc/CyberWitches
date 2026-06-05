@@ -1,11 +1,49 @@
 # Future Development Roadmap
 ## Hex Compiler - Technical & Design Improvements
 
-**Last Updated**: 2025-11-08
-**Version**: 1.0
+**Last Updated**: 2026-06-04
+**Version**: 1.1
 **Status**: Planning Phase
 
 This document outlines technical, design, and UX improvements for future development cycles. These recommendations are organized by priority and estimated effort.
+
+---
+
+## ✅ Modernization Cycle — June 2026 (shipped)
+
+A "make it work → make it stay working → make it modern" cycle. All items below
+are merged on `main` with CI green (Lint · Type Check · Tests · Browser Smoke ·
+Build).
+
+**Phase 2 — make it stay fixed (guardrails)**
+- **Type-checking in CI** — `tsc --noEmit` with `checkJs` over the vanilla-JS
+  source (#62). Caught 6 real latent bugs. New global registry in
+  `types/globals.d.ts`; declare any new `window.*` global there.
+- **Real-browser smoke test** — Playwright boots the game and fails the build on
+  any uncaught error jsdom misses (#63).
+
+**Phase 3 — make it modern**
+- **IndexedDB durable saves** (#65) — eviction-resistant mirror; localStorage
+  stays the synchronous source of truth (zero-data-loss design).
+- **View Transitions** crossfade on tab switch (#67).
+- **Self-hosted Tone.js** (#68, #70) — dropped the CDN/supply-chain dependency,
+  tightened CSP, true offline PWA; ships the MIT license.
+- **Dropped Tailwind** (#69) — it was never wired (utility classes were inert);
+  removed 2 deps + a build step + 4 stale files.
+- **CSS modernization** (#71) — `text-wrap: balance/pretty`, `accent-color`,
+  Firefox scrollbars (all additive).
+- **Modal keyboard accessibility** (#72) — Escape-to-close, focus trap, focus
+  restore. Chose this over a full native `<dialog>` rewrite to avoid regressing
+  the recently-repaired modal surface for marginal gain.
+
+**Deliberately NOT done — Web Worker (game loop / save serialization)**
+Evaluated and skipped. Measurement showed no CPU-bound work to offload: save
+"serialization" is object key-pruning + `JSON.stringify` of a few-KB object
+(sub-millisecond), and the per-tick loop is a handful of multiplications. A worker
+would add message-passing plumbing and an async ripple through the (just-hardened)
+save path — increasing risk and complexity for zero measurable benefit. Revisit
+only if a genuinely heavy operation is introduced (e.g. large-save export, batch
+analytics, or per-frame simulation work).
 
 ---
 
