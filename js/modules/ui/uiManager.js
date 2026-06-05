@@ -230,32 +230,48 @@ export class UIManager {
             }
         }
 
-        // Update panes with ARIA states
-        this.tabPanes.forEach(pane => {
-            const isActive = pane.id === `${tabName}-tab`;
-            pane.classList.toggle('active', isActive);
-            // Remove the `hidden` utility class from the active pane. It is
-            // `display:none !important`, so the inline `display:block` below cannot
-            // override it on its own — without this, panes that start hidden in the
-            // markup (stats/dailies/boons/meditation) never actually showed.
-            pane.classList.toggle('hidden', !isActive);
-            pane.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-            pane.setAttribute('tabindex', isActive ? '0' : '-1');
+        // The visual pane swap. Pulled into a function so it can run either
+        // directly or inside a View Transition.
+        const applyPaneVisibility = () => {
+            this.tabPanes.forEach(pane => {
+                const isActive = pane.id === `${tabName}-tab`;
+                pane.classList.toggle('active', isActive);
+                // Remove the `hidden` utility class from the active pane. It is
+                // `display:none !important`, so the inline `display:block` below
+                // cannot override it on its own — without this, panes that start
+                // hidden in the markup (stats/dailies/boons/meditation) never showed.
+                pane.classList.toggle('hidden', !isActive);
+                pane.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+                pane.setAttribute('tabindex', isActive ? '0' : '-1');
 
-            // Force visibility for active tab
-            if (isActive) {
-                pane.style.display = 'block';
-                pane.style.visibility = 'visible';
-                pane.style.opacity = '1';
-                pane.style.pointerEvents = 'auto';
-                pane.style.zIndex = '1';
-            } else {
-                pane.style.display = 'none';
-                pane.style.visibility = 'hidden';
-                pane.style.opacity = '0';
-                pane.style.pointerEvents = 'none';
-            }
-        });
+                // Force visibility for active tab
+                if (isActive) {
+                    pane.style.display = 'block';
+                    pane.style.visibility = 'visible';
+                    pane.style.opacity = '1';
+                    pane.style.pointerEvents = 'auto';
+                    pane.style.zIndex = '1';
+                } else {
+                    pane.style.display = 'none';
+                    pane.style.visibility = 'hidden';
+                    pane.style.opacity = '0';
+                    pane.style.pointerEvents = 'none';
+                }
+            });
+        };
+
+        // Use the View Transitions API for a smooth crossfade between tabs when
+        // it's supported and the user hasn't asked for reduced motion. Pure
+        // progressive enhancement: everywhere else the swap is instant, exactly
+        // as before. Cast avoids coupling to a specific TS DOM lib version.
+        const prefersReducedMotion = typeof window.matchMedia === 'function'
+            && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const startViewTransition = /** @type {any} */ (document).startViewTransition;
+        if (typeof startViewTransition === 'function' && !prefersReducedMotion) {
+            startViewTransition.call(document, applyPaneVisibility);
+        } else {
+            applyPaneVisibility();
+        }
 
         // Scroll to top of new tab
         window.scrollTo(0, 0);
