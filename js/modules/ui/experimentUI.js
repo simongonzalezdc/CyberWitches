@@ -44,7 +44,10 @@ export class ExperimentUI {
 
                 try {
                     console.log('Experiment button clicked');
-                    const result = window.craftingManager.tryExperiment();
+                    // tryExperiment lives on CraftingManager. The old call used a
+                    // never-set `window.craftingManager` global, so every "Try
+                    // Experiment" click threw (recipe discovery was unreachable here).
+                    const result = this.uiManager.systems.craftingManager.tryExperiment();
                     const resultLabel = document.getElementById('experiment-result');
 
                     // Ensure result label is visible
@@ -158,44 +161,12 @@ export class ExperimentUI {
                 <button class="btn-primary craft-recipe-btn" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
             `;
 
-            // Attach event listener directly - use event delegation for better reliability
-            const button = card.querySelector('button[data-action="craft-recipe"]');
-            if (button && typeof window.craftRecipe === 'function') {
-                // Styles handled by CSS class .craft-recipe-btn
-
-                // Attach handler directly - use capture phase to fire before unified handler
-                button.addEventListener('click', (e) => {
-                    // Mark button as handled BEFORE processing to prevent unified handler from firing
-                    button.dataset.handled = 'true';
-
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    console.log('Craft recipe button clicked:', { recipeId });
-                    const success = window.craftRecipe(recipeId);
-
-                    // Update UI after crafting
-                    if (success) {
-                        this.update();
-                        if (this.uiManager && typeof this.uiManager.updateAllUI === 'function') {
-                            // Trigger full UI update but debounced if possible, or just let the game loop handle it
-                            // For now, we rely on the next game loop tick or manual calls
-                        }
-                    }
-
-                    // Visual feedback
-                    if (success && typeof window.pulseElement === 'function') {
-                        window.pulseElement(button, 1.1, 200);
-                    } else if (!success && typeof window.shakeElement === 'function') {
-                        window.shakeElement(button, 3, 200);
-                    }
-
-                    // Clear handled flag after a short delay
-                    setTimeout(() => {
-                        delete button.dataset.handled;
-                    }, 100);
-                }, true); // Use capture phase
-            }
+            // The "Craft" button is handled by the unified delegated input handler
+            // (InputManager: data-action="craft-recipe" -> craftDiscoveredRecipe).
+            // A legacy per-button handler that depended on a never-set
+            // `window.craftRecipe` global used to live here; it never ran (so the
+            // unified path did the work) and, if revived, would have broken it by
+            // marking the button "handled". Removed.
 
             fragment.appendChild(card);
         }

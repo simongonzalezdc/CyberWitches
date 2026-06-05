@@ -5,6 +5,7 @@
 import { showNotification } from '../ui/notifications.js';
 
 import { getAudioSystem } from '../../audio/audioAccess.js';
+import { UPGRADES } from '../../data.js';
 
 export class InscriptionsManager {
     /**
@@ -62,8 +63,10 @@ export class InscriptionsManager {
             buttonElement.disabled = true;
         }
 
-        // Attempt to inscribe
-        const success = this.gameState.inscribeUpgrade(upgId);
+        // Attempt to inscribe. inscribeUpgrade lives on CraftingManager (it was
+        // moved off GameState); calling this.gameState.inscribeUpgrade threw on
+        // every click, so inscribing upgrades from the UI was completely broken.
+        const success = this.uiManager.systems.craftingManager.inscribeUpgrade(upgId);
 
         if (success) {
             // Play sound
@@ -73,7 +76,7 @@ export class InscriptionsManager {
             }
 
             // Show notification
-            const upgrade = this.gameState.upgrades[upgId];
+            const upgrade = UPGRADES.find(u => u.id === upgId);
             const displayName = upgrade ? upgrade.displayName : upgId;
             showNotification(`Inscribed ${displayName}!`, 'success');
 
@@ -87,7 +90,7 @@ export class InscriptionsManager {
                 this.uiManager.workstationUI.update();
             }
         } else {
-            const upgrade = this.gameState.upgrades[upgId];
+            const upgrade = UPGRADES.find(u => u.id === upgId);
             const displayName = upgrade ? upgrade.displayName : upgId;
             showNotification(`Failed to inscribe ${displayName}`, 'error');
         }
