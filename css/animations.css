@@ -175,3 +175,23 @@
 .number-ticker.down {
     color: var(--error);
 }
+
+/* ---------------------------------------------------------------------------
+ * View Transitions (tab switching)
+ * UIManager.switchTab wraps the pane swap in document.startViewTransition() when
+ * supported, giving a smooth crossfade between tabs. This tunes the default root
+ * transition to a quick, tasteful fade. The JS already skips the transition under
+ * prefers-reduced-motion; this is the CSS belt-and-suspenders.
+ * ------------------------------------------------------------------------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 180ms;
+    animation-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none;
+    }
+}
