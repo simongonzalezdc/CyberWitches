@@ -59,10 +59,19 @@ test('app boots and core flows raise no uncaught errors', async ({ page }) => {
     //    leaving it up means the forced clicks land on the overlay instead of the
     //    real cast/tab/experiment handlers, so the test would pass without actually
     //    exercising them. Close it (and the welcome-back modal) first.
-    await clickIfPresent('#close-story-intro');
+    // dispatchEvent targets the button node directly. A force-click here is
+    // unreliable: the story-intro overlay animates (perpetual rAF), so a
+    // coordinate-based click can miss/hit the overlay instead of the button —
+    // which is precisely how this dismissal silently failed before.
+    await page.locator('#close-story-intro').dispatchEvent('click').catch(() => {});
     await clickIfPresent('#close-welcome-button');
     // Wait for the story-intro overlay to actually leave the DOM before driving UI.
-    await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 }).catch(() => {});
+    // Do NOT swallow this timeout: waitForFunction resolves immediately when the
+    // modal is absent, so it only rejects if the overlay is genuinely stuck (close
+    // button missing/miswired/click swallowed). Letting it fail is the point — a
+    // stuck overlay + forced clicks would otherwise pass without exercising the
+    // real handlers, the exact false positive this dismissal exists to prevent.
+    await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 });
 
     // 3. Cast the main action a few times (the primary gameplay loop).
     for (let i = 0; i < 5; i++) await clickIfPresent('#cast-button');
@@ -159,9 +168,11 @@ test('modals close on Escape and trap focus (dialog-like a11y)', async ({ page }
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 
-    // Clear the first-run overlay so it doesn't intercept.
+    // Clear the first-run overlay so it doesn't intercept. (dispatchEvent may
+    // throw if the button is absent — that's fine; the wait below is the real
+    // guard and is NOT swallowed, so a stuck overlay fails the test.)
     await page.locator('#close-story-intro').dispatchEvent('click').catch(() => {});
-    await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 }).catch(() => {});
+    await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 });
 
     const settingsModal = page.locator('#settings-modal');
 
