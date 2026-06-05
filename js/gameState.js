@@ -6,6 +6,7 @@ import { GAME_CONSTANTS } from './codeOrganization.js';
 import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
 import { debounce } from './commonUtils.js';
 import { encode, decode, validateSaveData } from './save/saveCodec.js';
+import { mirrorToIndexedDB } from './save/indexedDBBackup.js';
 import { pulseElement } from './animations.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
@@ -953,6 +954,10 @@ export class GameState {
             // Compress + checksum + stringify via the save codec.
             const compressedData = encode(saveData);
             localStorage.setItem('cyberWitchesSave', compressedData);
+            // Mirror to IndexedDB (durable, eviction-resistant) without blocking
+            // the save. localStorage remains the source of truth; this is the
+            // backup that survives a localStorage eviction.
+            mirrorToIndexedDB('cyberWitchesSave', compressedData);
             this.lastSaveTime = Date.now() / 1000;
 
             // Hide loading state

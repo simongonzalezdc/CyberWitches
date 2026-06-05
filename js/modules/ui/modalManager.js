@@ -4,6 +4,7 @@
  */
 
 import { stripEmojisIfLowTier } from './uiHelpers.js';
+import { idbDelete } from '../../save/indexedDBBackup.js';
 
 export class ModalManager {
     constructor(gameState, designTierSystem) {
@@ -84,22 +85,29 @@ export class ModalManager {
         });
 
         // Wipe save (with confirmation).
-        document.getElementById('clear-save-button')?.addEventListener('click', () => {
+        document.getElementById('clear-save-button')?.addEventListener('click', async () => {
             const ok = (typeof window !== 'undefined' && window.confirm)
                 ? window.confirm('Wipe ALL save data? This cannot be undone.')
                 : true;
             if (!ok) return;
+            // Remove EVERY persisted progression key, not just the main save.
+            // MeditationState.saveState() writes to its own `meditationState`
+            // key, so wiping only `cyberWitchesSave` left meditation focus /
+            // towers / stats behind — they resurrected on reload, contradicting
+            // the "Wipe ALL save data" promise.
+            const keys = ['cyberWitchesSave', 'meditationState'];
             try {
-                // Remove EVERY persisted progression key, not just the main save.
-                // MeditationState.saveState() writes to its own `meditationState`
-                // key, so wiping only `cyberWitchesSave` left meditation focus /
-                // towers / stats behind — they resurrected on reload, contradicting
-                // the "Wipe ALL save data" promise.
-                ['cyberWitchesSave', 'meditationState'].forEach((key) => {
-                    localStorage.removeItem(key);
-                });
+                keys.forEach((key) => localStorage.removeItem(key));
             } catch (e) {
                 console.error('Failed to wipe save:', e);
+            }
+            // AWAIT the IndexedDB deletes before reloading — otherwise the reload
+            // can beat the async delete and restore-on-boot would resurrect the
+            // save from the durable mirror, silently defeating the wipe.
+            try {
+                await Promise.all(keys.map((key) => idbDelete(key)));
+            } catch (e) {
+                console.error('Failed to clear IndexedDB backup:', e);
             }
             window.location.reload();
         });

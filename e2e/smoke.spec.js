@@ -87,3 +87,40 @@ test('app boots and core flows raise no uncaught errors', async ({ page }) => {
     expect(pageErrors, `Uncaught exceptions:\n${pageErrors.join('\n') || '(none)'}`).toEqual([]);
     expect(crashLogs, `Crash-shaped console errors:\n${crashLogs.join('\n') || '(none)'}`).toEqual([]);
 });
+
+test('saves are mirrored into IndexedDB (durable backup)', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+
+    // Force an immediate save, which writes localStorage AND fire-and-forget
+    // mirrors into IndexedDB.
+    await page.evaluate(() => {
+        const gs = /** @type {any} */ (window).gameState;
+        if (gs && typeof gs.saveGameStateImmediate === 'function') gs.saveGameStateImmediate();
+    });
+
+    // Poll the IndexedDB backup store for the mirrored save (mirror is async).
+    const mirrored = await page.evaluate(async () => {
+        const read = () => new Promise((resolve) => {
+            let req;
+            try { req = indexedDB.open('cyberWitchesBackup', 1); } catch { resolve(null); return; }
+            req.onsuccess = () => {
+                const db = req.result;
+                if (!db.objectStoreNames.contains('saves')) { db.close(); resolve(null); return; }
+                const tx = db.transaction('saves', 'readonly');
+                const g = tx.objectStore('saves').get('cyberWitchesSave');
+                g.onsuccess = () => { resolve(g.result ?? null); db.close(); };
+                g.onerror = () => { resolve(null); db.close(); };
+            };
+            req.onerror = () => resolve(null);
+        });
+        for (let i = 0; i < 30; i++) {
+            const v = await read();
+            if (v) return true;
+            await new Promise((r) => setTimeout(r, 100));
+        }
+        return false;
+    });
+
+    expect(mirrored, 'expected cyberWitchesSave to be mirrored into IndexedDB').toBe(true);
+});

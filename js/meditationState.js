@@ -1,5 +1,6 @@
 import { MEDITATION_TOWERS, MEDITATION_DISTRACTIONS, MEDITATION_UPGRADES } from './data.js';
 import { handleError, safeFunction } from './errorHandler.js';
+import { mirrorToIndexedDB, idbDelete } from './save/indexedDBBackup.js';
 
 /**
  * Meditation State Manager - Manages meditation tower defense mode
@@ -1498,12 +1499,13 @@ export class MeditationState {
             this.stopTickLoop();
         }
 
-        // Drop persisted state so it can't resurrect on reload.
+        // Drop persisted state (both stores) so it can't resurrect on reload.
         try {
             localStorage.removeItem('meditationState');
         } catch {
             // localStorage may be unavailable (private mode / SSR); ignore.
         }
+        idbDelete('meditationState');
     }
 
     saveState() {
@@ -1525,7 +1527,10 @@ export class MeditationState {
             totalSessionsCompleted: this.totalSessionsCompleted
         };
 
-        localStorage.setItem('meditationState', JSON.stringify(state));
+        const serialized = JSON.stringify(state);
+        localStorage.setItem('meditationState', serialized);
+        // Durable, eviction-resistant mirror (non-blocking). See indexedDBBackup.js.
+        mirrorToIndexedDB('meditationState', serialized);
     }
 
     /**
