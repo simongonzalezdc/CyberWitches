@@ -152,7 +152,7 @@ class CustomTooltipManager {
 
             // Hide on tap outside
             document.addEventListener('touchstart', (e) => {
-                if (!element.contains(e.target)) {
+                if (!element.contains(/** @type {Node} */ (e.target))) {
                     this.hide();
                 }
             });

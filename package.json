@@ -19,9 +19,10 @@
     "optimize:images": "node optimize-backgrounds.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write \"js/**/*.js\" \"*.{html,css,md}\"",
     "docs": "jsdoc js -d docs -c jsdoc.json",
-    "ci": "npm run lint && npm run test"
+    "ci": "npm run lint && npm run typecheck && npm run test"
   },
   "keywords": [
     "idle",
@@ -45,6 +46,7 @@
     "prettier": "^3.6.2",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0",
-    "terser": "^5.44.1"
+    "terser": "^5.44.1",
+    "typescript": "^5.9.3"
   }
 }

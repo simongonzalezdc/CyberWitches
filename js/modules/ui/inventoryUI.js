@@ -189,7 +189,7 @@ export class InventoryUI {
         fragment.appendChild(headerCard);
 
         // Render items by tier
-        const tiers = Object.keys(itemsByTier).sort((a, b) => a - b);
+        const tiers = Object.keys(itemsByTier).sort((a, b) => Number(a) - Number(b));
 
         for (const tier of tiers) {
             const tierNum = parseInt(tier, 10);

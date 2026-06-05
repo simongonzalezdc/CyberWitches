@@ -101,7 +101,7 @@ class GlobalStateManager {
         Object.keys(this.state).forEach(key => {
             delete window[key];
         });
-        this.state = {};
+        this.state = /** @type {any} */ ({});
     }
 }
 

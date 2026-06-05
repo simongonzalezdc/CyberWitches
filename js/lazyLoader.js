@@ -102,7 +102,7 @@ export const lazyLoader = new LazyLoader();
 
 /**
  * Lazy load tutorial system
- * @returns {Promise<TutorialSystem>}
+ * @returns {Promise<any>} The TutorialSystem default export
  */
 export async function loadTutorial() {
     return lazyLoader.loadModule('./tutorial.js', 'default');
@@ -138,7 +138,7 @@ export async function loadAnalytics() {
 
 /**
  * Lazy load balance testing framework
- * @returns {Promise<BalanceTestingFramework>}
+ * @returns {Promise<any>} The BalanceTestingFramework default export
  */
 export async function loadBalanceTesting() {
     return lazyLoader.loadModule('./balanceTesting.js', 'default');
@@ -146,7 +146,7 @@ export async function loadBalanceTesting() {
 
 /**
  * Lazy load economy balancing
- * @returns {Promise<EconomyBalancing>}
+ * @returns {Promise<any>} The EconomyBalancing default export
  */
 export async function loadEconomyBalancing() {
     return lazyLoader.loadModule('./economyBalancing.js', 'default');

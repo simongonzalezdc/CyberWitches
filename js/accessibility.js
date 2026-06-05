@@ -117,8 +117,8 @@ class AccessibilityManager {
             'input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
 
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
+        const firstElement = /** @type {HTMLElement} */ (focusableElements[0]);
+        const lastElement = /** @type {HTMLElement} */ (focusableElements[focusableElements.length - 1]);
 
         container.addEventListener('keydown', (e) => {
             if (e.key === 'Tab') {
@@ -139,7 +139,7 @@ class AccessibilityManager {
 
             // Close on Escape
             if (e.key === 'Escape') {
-                const closeButton = container.querySelector('[data-close-modal]');
+                const closeButton = /** @type {HTMLElement} */ (container.querySelector('[data-close-modal]'));
                 if (closeButton) {
                     closeButton.click();
                 }

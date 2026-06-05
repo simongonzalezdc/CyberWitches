@@ -1587,7 +1587,7 @@ export class AudioSystem {
             };
             
             this.soundEffects.set(soundData.id, sound);
-            return sound;
+            return /** @type {any} */ (sound);
         } catch (error) {
             handleError(error, 'loadSound');
             return null;
@@ -1598,7 +1598,7 @@ export class AudioSystem {
      * Play a sound effect
      * @param {string} soundId - Sound ID to play
      * @param {Object} options - Playback options
-     * @returns {boolean} Whether sound was played successfully
+     * @returns {Promise<boolean>} Whether sound was played successfully
      */
     async playSound(soundId, options = {}) {
         // Check if sound effects are enabled (Tier 2+)
@@ -1974,7 +1974,7 @@ export class AudioSystem {
     
     /**
      * Trigger a Tone.js sound (handles single notes, chords, and noise)
-     * @param {Tone.Synth} synth - Tone.js synth to use
+     * @param {any} synth - Tone.js synth to use
      * @param {Object} sound - Sound configuration
      * @param {number|string} time - Time to trigger (Tone.js time or Transport time)
      * @private
@@ -2074,8 +2074,8 @@ export class AudioSystem {
                         // Calculate delay in seconds and ensure strictly increasing time
                         const delaySeconds = noteDuration * index;
                         // Ensure at least 1ms gap between notes to prevent timing errors
-                        const minDelay = Math.max(delaySeconds, (lastTriggerTime + 0.001) - time);
-                        const nextTime = time + minDelay;
+                        const minDelay = Math.max(delaySeconds, (/** @type {number} */ (lastTriggerTime) + 0.001) - /** @type {number} */ (time));
+                        const nextTime = /** @type {number} */ (time) + minDelay;
                         
                         // Use absolute time instead of relative delay to ensure strict ordering
                         synth.triggerAttackRelease(note, noteDurationStr, nextTime);
@@ -2426,12 +2426,9 @@ export class AudioSystem {
             const musicVolume = this.musicVolume * this.masterVolume;
             this.toneMusic.masterVol.volume.value = musicVolume * 20 - 20; // Convert 0-1 to dB
         }
-        
-        // Also check if masterVol is stored directly
-        if (this.masterVol && window.Tone) {
-            const musicVolume = this.musicVolume * this.masterVolume;
-            this.masterVol.volume.value = musicVolume * 20 - 20; // Convert 0-1 to dB
-        }
+        // (Removed a dead `if (this.masterVol …)` fallback: `this.masterVol` is
+        // never assigned anywhere — the real handle is `this.toneMusic.masterVol`
+        // above — so the block could never run.)
     }
     
     /**

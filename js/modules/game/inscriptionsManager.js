@@ -60,7 +60,7 @@ export class InscriptionsManager {
 
         // Disable button temporarily to prevent double-clicks
         if (buttonElement) {
-            buttonElement.disabled = true;
+            /** @type {HTMLButtonElement} */ (buttonElement).disabled = true;
         }
 
         // Attempt to inscribe. inscribeUpgrade lives on CraftingManager (it was
@@ -98,7 +98,7 @@ export class InscriptionsManager {
         // Re-enable button and clear processing flag
         if (buttonElement) {
             setTimeout(() => {
-                buttonElement.disabled = false;
+                /** @type {HTMLButtonElement} */ (buttonElement).disabled = false;
             }, 50);
         }
 

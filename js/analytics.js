@@ -447,8 +447,9 @@ export class AnalyticsSystem {
     }
     
     /**
-     * Track page load performance
-     * @private
+     * Track page load performance.
+     * Invoked from the module-level `window.load` listener, so it is part of the
+     * public surface — not `@private` (which made the external call a type error).
      */
     trackPageLoad() {
         if (window.performance && window.performance.timing) {

@@ -1443,6 +1443,61 @@ export class MeditationState {
     /**
      * Save meditation state
      */
+    /**
+     * Fully reset meditation progression — in memory AND on disk.
+     *
+     * `meditationManager.reset()` delegated here but the method never existed, so
+     * calling it threw "this.state.reset is not a function". This clears every
+     * persisted/progression field back to constructor defaults, drops active
+     * combat objects, stops the tick loop, and removes the separate
+     * `meditationState` localStorage key (the one the save-wipe handler also
+     * clears) so no stale focus/towers/stats survive a reset.
+     */
+    reset() {
+        // Resources
+        this.focus = 0.0;
+        this.focusTotalEarned = 0.0;
+        this.focusPassiveRate = 0.1;
+
+        // Health
+        this.tranquility = this.tranquilityMax;
+
+        // Combat objects
+        this.towers = [];
+        this.distractions = [];
+
+        // Wave system
+        this.currentWave = 0;
+        this.waveActive = false;
+        this.nextWaveStartTime = 0;
+        this.waveDistractionsSpawned = 0;
+
+        // Session
+        this.activeSession = false;
+        this.sessionStartTime = 0;
+
+        // Inventory / upgrades
+        this.meditationInventory = {};
+        this.meditationUpgrades = {};
+
+        // Statistics
+        this.totalWavesCompleted = 0;
+        this.totalDistractionsKilled = 0;
+        this.totalSessionsCompleted = 0;
+
+        // Stop any running tick loop
+        if (typeof this.stopTickLoop === 'function') {
+            this.stopTickLoop();
+        }
+
+        // Drop persisted state so it can't resurrect on reload.
+        try {
+            localStorage.removeItem('meditationState');
+        } catch {
+            // localStorage may be unavailable (private mode / SSR); ignore.
+        }
+    }
+
     saveState() {
         const state = {
             focus: this.focus,

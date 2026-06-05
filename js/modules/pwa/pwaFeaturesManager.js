@@ -220,9 +220,11 @@ export class PWAFeaturesManager {
     async handleInstallButtonClick() {
         if (this.deferredPrompt) {
             try {
-                // Show install prompt
-                this.deferredPrompt.prompt();
-                const { outcome } = await this.deferredPrompt.userChoice;
+                // Show install prompt (BeforeInstallPromptEvent — not in the standard
+                // DOM lib, so treat as `any`).
+                const deferredPrompt = /** @type {any} */ (this.deferredPrompt);
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
 
                 if (outcome === 'accepted') {
                     console.log('User accepted install prompt');
@@ -294,7 +296,7 @@ export class PWAFeaturesManager {
         // Install button
         if (installBtn) {
             installBtn.addEventListener('click', async () => {
-                const prompt = this.deferredPrompt;
+                const prompt = /** @type {any} */ (this.deferredPrompt);
                 if (prompt) {
                     try {
                         prompt.prompt();

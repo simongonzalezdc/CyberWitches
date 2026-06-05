@@ -72,18 +72,20 @@ export class UIManager {
     }
 
     init() {
-        // Query for tab buttons - try both class names for compatibility
-        this.tabButtons = document.querySelectorAll('.tab-btn');
+        // Query for tab buttons - try both class names for compatibility.
+        // Array.from yields a real array (these fields are used as arrays via
+        // .forEach/.find elsewhere); the HTMLElement cast keeps `.dataset` typed.
+        this.tabButtons = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.tab-btn')));
         if (this.tabButtons.length === 0) {
             console.warn('No elements found with .tab-btn, trying .tab-button');
-            this.tabButtons = document.querySelectorAll('.tab-button');
+            this.tabButtons = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.tab-button')));
         }
 
         // Query for tab panes - try both class names for compatibility
-        this.tabPanes = document.querySelectorAll('.tab-panel');
+        this.tabPanes = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.tab-panel')));
         if (this.tabPanes.length === 0) {
             console.warn('No elements found with .tab-panel, trying .tab-pane');
-            this.tabPanes = document.querySelectorAll('.tab-pane');
+            this.tabPanes = /** @type {HTMLElement[]} */ (Array.from(document.querySelectorAll('.tab-pane')));
         }
 
         // Verify we found the elements
@@ -106,7 +108,7 @@ export class UIManager {
         });
 
         // Set initial active tab if any is marked active in HTML
-        const initialActiveButton = document.querySelector('.tab-btn.active, .tab-button.active');
+        const initialActiveButton = /** @type {HTMLElement|null} */ (document.querySelector('.tab-btn.active, .tab-button.active'));
         if (initialActiveButton) {
             this.activeTab = initialActiveButton.dataset.tab;
         } else if (this.tabButtons.length > 0) {

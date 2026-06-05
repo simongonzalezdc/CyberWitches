@@ -128,7 +128,7 @@ class FeatureIndicatorManager {
             const prestigeCount = window.gameState.prestigeCount || 0;
 
             // Meditation tab unlocks at prestige 1
-            const meditationTab = document.querySelector('[data-tab="meditation"]');
+            const meditationTab = /** @type {HTMLElement} */ (document.querySelector('[data-tab="meditation"]'));
             if (meditationTab) {
                 // Show tab instead of hiding it
                 meditationTab.style.display = '';
@@ -151,7 +151,7 @@ class FeatureIndicatorManager {
             }
 
             // Boons tab unlocks at prestige 1
-            const boonsTab = document.querySelector('[data-tab="boons"]');
+            const boonsTab = /** @type {HTMLElement} */ (document.querySelector('[data-tab="boons"]'));
             if (boonsTab) {
                 // Show tab instead of hiding it
                 boonsTab.style.display = '';

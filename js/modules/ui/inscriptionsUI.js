@@ -57,7 +57,7 @@ export class InscriptionsUI {
         // listener since it lives on the container itself.
         if (!this._inscribeDelegationBound) {
             container.addEventListener('click', (e) => {
-                const btn = e.target.closest('button[data-inscribe-id]');
+                const btn = /** @type {HTMLElement} */ (/** @type {HTMLElement} */ (e.target).closest('button[data-inscribe-id]'));
                 if (!btn || !container.contains(btn)) return;
                 e.preventDefault();
                 e.stopPropagation();

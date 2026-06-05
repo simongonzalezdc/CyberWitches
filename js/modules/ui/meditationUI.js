@@ -162,10 +162,10 @@ export class MeditationUI {
      */
     updateTranquilityDisplay() {
         if (this.tranquilityDisplay && this.meditationState) {
-            this.tranquilityDisplay.textContent = Math.floor(this.meditationState.tranquility);
+            this.tranquilityDisplay.textContent = String(Math.floor(this.meditationState.tranquility));
         }
         if (this.tranquilityMaxDisplay && this.meditationState) {
-            this.tranquilityMaxDisplay.textContent = Math.floor(this.meditationState.tranquilityMax);
+            this.tranquilityMaxDisplay.textContent = String(Math.floor(this.meditationState.tranquilityMax));
         }
     }
 
@@ -361,7 +361,7 @@ export class MeditationUI {
             console.log('Tower selected for placement:', towerId);
 
             // Add visual feedback
-            const buttons = document.querySelectorAll('.tower-place-button');
+            const buttons = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.tower-place-button'));
             buttons.forEach(btn => {
                 btn.classList.remove('selected');
                 if (btn.dataset.towerId === towerId) {
