@@ -154,3 +154,28 @@ test('self-hosted Tone.js loads (no CDN, under the tightened CSP)', async ({ pag
     expect(toneLoaded, 'self-hosted Tone.js should define window.Tone').toBe(true);
     expect(cspViolations, `CSP violations:\n${cspViolations.join('\n') || '(none)'}`).toEqual([]);
 });
+
+test('modals close on Escape and trap focus (dialog-like a11y)', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+
+    // Clear the first-run overlay so it doesn't intercept.
+    await page.locator('#close-story-intro').dispatchEvent('click').catch(() => {});
+    await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 }).catch(() => {});
+
+    const settingsModal = page.locator('#settings-modal');
+
+    // Open settings via its real click handler. dispatchEvent targets the button
+    // node directly, so it isn't affected by the perpetual-rAF overlay/coordinate
+    // issues that force-clicks hit.
+    await page.locator('#settings-button').dispatchEvent('click');
+    await page.waitForTimeout(150);
+    const openedHidden = await settingsModal.evaluate((el) => el.classList.contains('hidden'));
+    expect(openedHidden, 'settings modal should be visible after opening').toBe(false);
+
+    // Press Escape — the new keyboard handler should close it.
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(150);
+    const closedHidden = await settingsModal.evaluate((el) => el.classList.contains('hidden'));
+    expect(closedHidden, 'settings modal should close on Escape').toBe(true);
+});
