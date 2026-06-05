@@ -116,6 +116,21 @@ export class UIManager {
         }
     }
 
+    /**
+     * Show/hide a lightweight loading state on a panel while a system lazy-loads.
+     * Non-destructive (toggles a class only) — must NOT replace the panel's
+     * content, which holds the real, statically-rendered UI (e.g. the meditation
+     * canvas + HUD). Previously these were called but never defined, so switching
+     * to the meditation tab threw.
+     */
+    showSkeletonScreen(panelId) {
+        document.getElementById(panelId)?.classList.add('is-loading');
+    }
+
+    hideSkeletonScreen(panelId) {
+        document.getElementById(panelId)?.classList.remove('is-loading');
+    }
+
     switchTab(tabName) {
         console.log('switchTab called with:', tabName);
 
@@ -217,6 +232,11 @@ export class UIManager {
         this.tabPanes.forEach(pane => {
             const isActive = pane.id === `${tabName}-tab`;
             pane.classList.toggle('active', isActive);
+            // Remove the `hidden` utility class from the active pane. It is
+            // `display:none !important`, so the inline `display:block` below cannot
+            // override it on its own — without this, panes that start hidden in the
+            // markup (stats/dailies/boons/meditation) never actually showed.
+            pane.classList.toggle('hidden', !isActive);
             pane.setAttribute('aria-hidden', isActive ? 'false' : 'true');
             pane.setAttribute('tabindex', isActive ? '0' : '-1');
 

@@ -193,18 +193,20 @@ export class MeditationTowers {
         }
         
         const animate = () => {
-            // Stop if tab is hidden (save CPU)
-            if (document.hidden) {
+            // Stop if tab is hidden (save CPU) or explicitly paused (for
+            // deterministic verification — see pause()/stepFrames()).
+            if (document.hidden || this.paused) {
                 this.animationFrame = null;
                 return;
             }
-            
+
             this.render();
             this.animationFrame = requestAnimationFrame(animate);
         };
-        
-        // Only start if tab is visible
-        if (!document.hidden) {
+        this._animate = animate;
+
+        // Only start if tab is visible and not paused
+        if (!document.hidden && !this.paused) {
             this.animationFrame = requestAnimationFrame(animate);
         }
         
@@ -240,6 +242,31 @@ export class MeditationTowers {
             document.removeEventListener('visibilitychange', this.visibilityHandler);
             this.visibilityHandler = null;
         }
+    }
+
+    /**
+     * Pause the render loop. The simulation (MeditationState.tick) is independent,
+     * so pausing only freezes drawing — leaving the canvas on a static frame.
+     * Enables deterministic verification: the page settles (no perpetual RAF) and
+     * the harness can drive the sim + render exact frames.
+     */
+    pause() {
+        this.paused = true;
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+    }
+
+    /** Resume the render loop. */
+    resume() {
+        this.paused = false;
+        this.startAnimationLoop();
+    }
+
+    /** Render exactly `n` frames synchronously (no-op unless canvas is ready). */
+    stepFrames(n = 1) {
+        for (let i = 0; i < n; i++) this.render();
     }
     
     /**
