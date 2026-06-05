@@ -1,15 +1,30 @@
 /* Layout Styles - Dashboard Architecture */
 
-/* Main Container - The Terminal Screen */
+/* Main Container - The Terminal Screen.
+   Flex column matching the actual DOM (header / .game-area / control-deck). The
+   old CSS used `display:grid` with a 280px sidebar column, but the markup was
+   refactored to wrap the sidebar + content in a `.game-area` flex row — so the
+   wrapper landed in the 280px column and ALL tab content collapsed to ~280px.
+   The Tailwind utility classes (flex/flex-1/w-64) that were meant to drive this
+   are not loaded (tailwind.css is never linked), so the layout must be defined
+   here explicitly. */
 .main-game {
-    display: grid;
-    grid-template-columns: 280px 1fr; /* Sidebar | Main Content */
-    grid-template-rows: 60px 1fr 100px; /* HUD | Content | Controls */
+    display: flex;
+    flex-direction: column;
     height: 100vh;
     width: 100vw;
     max-width: none;
     margin: 0;
     padding: 0;
+    overflow: hidden;
+}
+
+/* Row holding the sidebar + the tab content; fills the space between the HUD and
+   the control deck. */
+.game-area {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: hidden;
 }
 
@@ -28,8 +43,8 @@
 
 /* 2. Sidebar - Resource Monitor */
 .sidebar {
-    grid-column: 1;
-    grid-row: 2 / -1; /* Span to bottom */
+    flex: 0 0 280px; /* Fixed-width column in the .game-area flex row */
+    width: 280px;
     background: var(--bg-terminal);
     border-right: 1px solid var(--border-light);
     padding: var(--spacing-lg);
@@ -39,7 +54,6 @@
     gap: var(--spacing-lg);
     position: relative; /* Remove fixed positioning */
     height: auto;
-    width: auto;
     transform: none; /* Reset transform */
 }
 
@@ -55,10 +69,11 @@
     letter-spacing: 1px;
 }
 
-/* 3. Main Content Area - The "Viewport" */
+/* 3. Main Content Area - The "Viewport". Grows to fill the rest of the
+   .game-area row (min-width:0 lets it shrink instead of forcing overflow). */
 .tabs-content {
-    grid-column: 2;
-    grid-row: 2; /* Occupy middle space */
+    flex: 1 1 0%;
+    min-width: 0;
     position: relative;
     overflow-y: auto;
     padding: var(--spacing-xl);
