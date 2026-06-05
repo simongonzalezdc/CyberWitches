@@ -12,6 +12,10 @@ export class ModalManager {
         this.designTierSystem = designTierSystem;
         this.modals = {};
         this.activeModal = null;
+        // Element that had focus before a modal opened, so we can restore it on
+        // close (the focus-management behavior a native <dialog> gives for free).
+        this._lastFocused = null;
+        this._onModalKeydown = this._onModalKeydown.bind(this);
 
         // Bind methods
         this.showPrestigeModal = this.showPrestigeModal.bind(this);
@@ -216,8 +220,65 @@ export class ModalManager {
 
             this.activeModal = modal;
 
+            // Accessibility / keyboard behavior — the practical value of a native
+            // <dialog>, delivered without rewriting the (recently-repaired) modal
+            // markup/CSS:
+            //  - remember what had focus, then move focus into the modal
+            //  - Escape closes; Tab is trapped inside the modal
+            //  - focus is restored to the trigger on close
+            this._lastFocused = document.activeElement;
+            const focusables = this._getFocusable(modal);
+            if (focusables.length > 0) {
+                focusables[0].focus();
+            } else {
+                modal.tabIndex = -1;
+                modal.focus();
+            }
+            document.addEventListener('keydown', this._onModalKeydown, true);
+
             if (window.announceToScreenReader) {
                 window.announceToScreenReader(`${modalName} modal opened`, 'polite');
+            }
+        }
+    }
+
+    /**
+     * Focusable elements within a container, in DOM order (visible ones only).
+     * @returns {HTMLElement[]}
+     */
+    _getFocusable(container) {
+        const sel = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const els = /** @type {HTMLElement[]} */ (Array.from(container.querySelectorAll(sel)));
+        return els.filter((el) => el.offsetParent !== null || el === document.activeElement);
+    }
+
+    /** Escape-to-close + Tab focus-trap for the active managed modal. */
+    _onModalKeydown(e) {
+        const modal = this.activeModal;
+        if (!modal) return;
+
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            const name = Object.keys(this.modals).find((k) => this.modals[k] === modal);
+            if (name) this.closeModal(name);
+            return;
+        }
+
+        if (e.key === 'Tab') {
+            const focusables = this._getFocusable(modal);
+            if (focusables.length === 0) {
+                e.preventDefault();
+                return;
+            }
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            const active = document.activeElement;
+            if (e.shiftKey && active === first) {
+                e.preventDefault();
+                /** @type {HTMLElement} */ (last).focus();
+            } else if (!e.shiftKey && active === last) {
+                e.preventDefault();
+                /** @type {HTMLElement} */ (first).focus();
             }
         }
     }
@@ -235,6 +296,14 @@ export class ModalManager {
 
             if (this.activeModal === modal) {
                 this.activeModal = null;
+                // Tear down the keyboard trap and restore focus to whatever opened
+                // the modal (falls back to no-op if that element is gone).
+                document.removeEventListener('keydown', this._onModalKeydown, true);
+                const last = /** @type {any} */ (this._lastFocused);
+                if (last && typeof last.focus === 'function') {
+                    last.focus();
+                }
+                this._lastFocused = null;
             }
 
             if (window.announceToScreenReader) {
