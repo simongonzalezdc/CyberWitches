@@ -87,7 +87,14 @@ export class ModalManager {
                 : true;
             if (!ok) return;
             try {
-                localStorage.removeItem('cyberWitchesSave');
+                // Remove EVERY persisted progression key, not just the main save.
+                // MeditationState.saveState() writes to its own `meditationState`
+                // key, so wiping only `cyberWitchesSave` left meditation focus /
+                // towers / stats behind — they resurrected on reload, contradicting
+                // the "Wipe ALL save data" promise.
+                ['cyberWitchesSave', 'meditationState'].forEach((key) => {
+                    localStorage.removeItem(key);
+                });
             } catch (e) {
                 console.error('Failed to wipe save:', e);
             }

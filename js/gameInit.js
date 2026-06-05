@@ -287,10 +287,17 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
         
         // Check unlock
         uiManager.systems.meditationManager.checkUnlock();
-        
+
         // Update auto button
         castManager.updateAutoButtonVisibility();
-        
+
+        // Refresh ALL tab locks now that prestigeCount changed. checkUnlock()
+        // above only clears the Meditation lock; the Boons tab also unlocks at
+        // Prestige 1 but would otherwise stay `locked` (switchTab blocks it)
+        // until a reload. Re-running the full tab-lock pass unlocks both
+        // immediately after an in-session ascension.
+        if (window.updateFeatureIndicators) window.updateFeatureIndicators();
+
         uiManager.updateAllUI();
     };
 
