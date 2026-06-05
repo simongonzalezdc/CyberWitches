@@ -1,6 +1,6 @@
-/* @import "tailwindcss"; */
-/* Temporarily disabled - will be enabled after Tailwind 4 migration (Week 5-6) */
-/* For now, the game uses main.css with custom CSS */
+/* Design tokens + theme. The game uses bespoke CSS (main.css et al.); the old
+   half-started Tailwind migration was never wired (tailwind.css was never linked)
+   and has been removed. */
 
 @theme {
   /* 🌌 Colors - Void Witch Protocol */

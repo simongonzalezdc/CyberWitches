@@ -9,8 +9,6 @@
     "start": "npx http-server . -p 3000 -o",
     "build": "node build.js",
     "build:prod": "node build.js --production",
-    "build:tailwind": "node scripts/build-tailwind.js",
-    "validate:migration": "node scripts/validate-migration.js",
     "preview": "npx http-server dist -p 3000 -o",
     "package": "bash package-for-friend.sh || ./package-for-friend.sh",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
@@ -38,7 +36,6 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
-    "@tailwindcss/cli": "^4.3.0",
     "esbuild": "^0.26.0",
     "eslint": "^10.4.1",
     "fake-indexeddb": "^6.2.5",
@@ -48,7 +45,6 @@
     "jsdoc": "^4.0.5",
     "prettier": "^3.6.2",
     "sharp": "^0.34.5",
-    "tailwindcss": "^4.3.0",
     "terser": "^5.44.1",
     "typescript": "^5.9.3"
   }
