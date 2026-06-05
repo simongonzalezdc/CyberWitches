@@ -1,0 +1,89 @@
+// @ts-check
+import { test, expect } from '@playwright/test';
+
+/**
+ * Real-browser smoke test.
+ *
+ * Boots the actual game and drives the core operator journeys — cast the main
+ * action, visit every tab, open/close the modals, run an experiment — while
+ * recording uncaught exceptions and crash-shaped console errors. The build fails
+ * if any appear.
+ *
+ * This is the guard that would have caught the bugs from the recent audit: the
+ * inscribe/experiment actions threw at runtime (a method moved off its class)
+ * while jsdom unit tests stayed green. jsdom can't catch that; a real browser can.
+ */
+
+// Console-error text that signals an actual app crash (vs. third-party/network
+// noise). The "moved / never-wired symbol" bug class surfaces as these.
+const CRASH_PATTERN =
+    /(is not a function|is not defined|cannot read|cannot access|undefined is not|is not a constructor|TypeError|ReferenceError|SyntaxError)/i;
+
+// Third-party / environmental noise to ignore — CDN audio lib, favicon, SW, and
+// generic resource-load failures are not app-logic crashes.
+const IGNORE_PATTERN =
+    /(tone(\.js)?|cdn|favicon|service.?worker|sw\.js|net::|Failed to load resource|manifest|the AudioContext|play\(\) request)/i;
+
+test('app boots and core flows raise no uncaught errors', async ({ page }) => {
+    /** @type {string[]} */
+    const pageErrors = [];
+    /** @type {string[]} */
+    const crashLogs = [];
+
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+    page.on('console', (msg) => {
+        if (msg.type() !== 'error') return;
+        const text = msg.text();
+        if (IGNORE_PATTERN.test(text)) return;
+        if (CRASH_PATTERN.test(text)) crashLogs.push(text);
+    });
+
+    // 1. Boot — the game sets window.gameState once initGame resolves.
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+
+    // The game runs a perpetual requestAnimationFrame loop, so elements never go
+    // "stable" — Playwright's default actionability checks would hang on it. Every
+    // click below uses force + a short timeout: we don't care whether a given
+    // button was strictly actionable, only that driving the UI raises no crash.
+    /** @param {string} selector */
+    const clickIfPresent = async (selector) => {
+        const el = page.locator(selector).first();
+        if (await el.count().catch(() => 0)) {
+            await el.click({ force: true, timeout: 4000 }).catch(() => {});
+        }
+    };
+
+    // 2. Dismiss any first-run / welcome-back modal so it can't block clicks.
+    await clickIfPresent('#close-welcome-button');
+
+    // 3. Cast the main action a few times (the primary gameplay loop).
+    for (let i = 0; i < 5; i++) await clickIfPresent('#cast-button');
+
+    // 4. Visit every tab. Locked tabs (boons/meditation pre-prestige) just toast
+    //    a notification — that must NOT throw.
+    const tabs = ['workstations', 'inventory', 'inscriptions', 'experiment', 'stats', 'dailies', 'boons', 'meditation'];
+    for (const tab of tabs) {
+        await clickIfPresent(`.tab-btn[data-tab="${tab}"], .tab-button[data-tab="${tab}"]`);
+        await page.waitForTimeout(120);
+    }
+
+    // 5. Open and close the help + settings modals.
+    for (const [openId, closeId] of [['help-button', 'close-help-button'], ['settings-button', 'close-settings-button']]) {
+        await clickIfPresent(`#${openId}`);
+        await page.waitForTimeout(120);
+        await clickIfPresent(`#${closeId}`);
+        await page.waitForTimeout(80);
+    }
+
+    // 6. Exercise the experiment action (one of the actions that was dead before).
+    await clickIfPresent('.tab-btn[data-tab="experiment"], .tab-button[data-tab="experiment"]');
+    await page.waitForTimeout(120);
+    await clickIfPresent('#experiment-button');
+    await page.waitForTimeout(120);
+
+    // 7. Settle, then assert no crashes were observed at any point.
+    await page.waitForTimeout(300);
+    expect(pageErrors, `Uncaught exceptions:\n${pageErrors.join('\n') || '(none)'}`).toEqual([]);
+    expect(crashLogs, `Crash-shaped console errors:\n${crashLogs.join('\n') || '(none)'}`).toEqual([]);
+});
