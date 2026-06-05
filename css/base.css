@@ -165,3 +165,36 @@ h1, h2, h3, h4, h5, h6 {
         scroll-behavior: auto !important;
     }
 }
+
+/* ---------------------------------------------------------------------------
+ * Modern CSS progressive enhancements (2026)
+ * All purely additive — they refine wrapping quality, native-control tinting,
+ * and Firefox scrollbars WITHOUT changing any layout box. Unsupported browsers
+ * simply ignore them.
+ * ------------------------------------------------------------------------- */
+
+/* Balance headings (no orphan last word), and improve body wrapping/orphans. */
+h1, h2, h3,
+.story-title, .tier-title, .sidebar-header h3, .modal-title {
+    text-wrap: balance;
+}
+
+p, .story-text, .story-text-secondary, .destructive-text {
+    text-wrap: pretty;
+}
+
+/* Tint native form controls (checkboxes, radios, range sliders) with the brand
+ * accent instead of the OS default blue. */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+progress {
+    accent-color: var(--accent, var(--color-code));
+}
+
+/* Standard scrollbar styling for Firefox, mirroring the existing -webkit- rules
+ * so the terminal aesthetic is consistent across engines. */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-dim) transparent;
+}
