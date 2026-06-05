@@ -66,5 +66,11 @@ id_ed25519
 # Playwright MCP test artifacts
 .playwright-mcp/
 
+# Playwright e2e test output
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
 # Generated jsdoc output (npm run docs)
 docs/
