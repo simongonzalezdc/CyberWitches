@@ -131,3 +131,26 @@ test('saves are mirrored into IndexedDB (durable backup)', async ({ page }) => {
 
     expect(mirrored, 'expected cyberWitchesSave to be mirrored into IndexedDB').toBe(true);
 });
+
+test('self-hosted Tone.js loads (no CDN, under the tightened CSP)', async ({ page }) => {
+    // Catch any Content-Security-Policy violation — if the tightened CSP or the
+    // local path were wrong, the vendored script would be blocked and this fails.
+    /** @type {string[]} */
+    const cspViolations = [];
+    page.on('console', (msg) => {
+        if (msg.type() === 'error' && /content security policy|refused to load|refused to execute/i.test(msg.text())) {
+            cspViolations.push(msg.text());
+        }
+    });
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    // The vendored Tone.js is a deferred same-origin script; it should define the
+    // global once parsed. Poll briefly to avoid load-order flakiness.
+    const toneLoaded = await page
+        .waitForFunction(() => typeof (/** @type {any} */ (window).Tone) !== 'undefined', null, { timeout: 15_000 })
+        .then(() => true)
+        .catch(() => false);
+
+    expect(toneLoaded, 'self-hosted Tone.js should define window.Tone').toBe(true);
+    expect(cspViolations, `CSP violations:\n${cspViolations.join('\n') || '(none)'}`).toEqual([]);
+});

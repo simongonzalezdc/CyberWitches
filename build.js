@@ -30,7 +30,9 @@ const staticFiles = [
 // Directories to copy recursively.
 // 'styles' holds theme.css, which index.html loads (<link href="styles/theme.css">);
 // omitting it 404s the design-token stylesheet in the production build.
-const staticDirs = ['icons', 'docs', 'images', 'css', 'styles'];
+// 'vendor' holds the self-hosted Tone.js, loaded via <script src="vendor/...">;
+// without copying it the production audio engine 404s.
+const staticDirs = ['icons', 'docs', 'images', 'css', 'styles', 'vendor'];
 
 async function copyStaticFiles() {
     console.log('📁 Copying static files...');
