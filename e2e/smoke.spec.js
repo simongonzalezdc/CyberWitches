@@ -54,8 +54,15 @@ test('app boots and core flows raise no uncaught errors', async ({ page }) => {
         }
     };
 
-    // 2. Dismiss any first-run / welcome-back modal so it can't block clicks.
+    // 2. Dismiss any first-run overlays so they can't intercept the clicks below.
+    //    A fresh save shows the full-screen story-intro modal (`introShown` false);
+    //    leaving it up means the forced clicks land on the overlay instead of the
+    //    real cast/tab/experiment handlers, so the test would pass without actually
+    //    exercising them. Close it (and the welcome-back modal) first.
+    await clickIfPresent('#close-story-intro');
     await clickIfPresent('#close-welcome-button');
+    // Wait for the story-intro overlay to actually leave the DOM before driving UI.
+    await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 }).catch(() => {});
 
     // 3. Cast the main action a few times (the primary gameplay loop).
     for (let i = 0; i < 5; i++) await clickIfPresent('#cast-button');
