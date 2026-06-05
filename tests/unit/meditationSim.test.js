@@ -214,5 +214,13 @@ describe('MeditationState — reset()', () => {
         expect(sim.tranquility).toBe(sim.tranquilityMax);
         // Persisted progression must be gone so it can't resurrect on reload.
         expect(localStorage.getItem('meditationState')).toBeNull();
+
+        // Every grid cell's tower slot must be freed — otherwise placeTower()
+        // would reject the previously-used cell forever.
+        expect(sim.grid.some(c => c && c.tower)).toBe(false);
+        // And the freed cell must be buildable again.
+        sim.gameState.inventory = { fire_essence: 100 };
+        expect(sim.placeTower('peace_circle', gx, gy)).toBe(true);
+        expect(sim.towers.length).toBe(1);
     });
 });

@@ -1466,6 +1466,14 @@ export class MeditationState {
         this.towers = [];
         this.distractions = [];
 
+        // Free every grid cell's tower slot. placeTower() and the placement
+        // preview reject cells where `cell.tower` is truthy, so emptying only the
+        // towers array would leave previously-used cells permanently unbuildable
+        // after a reset even though no tower exists there anymore.
+        for (const cell of this.grid) {
+            if (cell) cell.tower = null;
+        }
+
         // Wave system
         this.currentWave = 0;
         this.waveActive = false;
