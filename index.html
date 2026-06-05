@@ -116,6 +116,8 @@
                     <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="inventory">/USR/DATA</button>
                     <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="experiment">/BIN/LAB</button>
                     <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="stats">/LOG/STATS</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="dailies">/ETC/RITUALS</button>
+                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="boons">/OPT/BOONS</button>
             </nav>
 
                 <!-- Tab Panels Container with 3D Depth -->
@@ -140,7 +142,22 @@
                             <div id="recipe-list" class="content-list mt-6"></div>
             </div>
                     </div>
-                    <!-- ... more panels ... -->
+                    <!-- Stats panel (StatsUI renders into #stats-tab directly). Was missing,
+                         so the visible /LOG/STATS tab showed nothing. -->
+                    <div id="stats-tab" class="tab-panel hidden relative z-10"></div>
+
+                    <!-- Daily rituals (DailiesUI renders into #task-list). -->
+                    <div id="dailies-tab" class="tab-panel hidden relative z-10">
+                        <h2 class="text-xl font-bold text-witch-500 mb-4 font-orbitron">DAILY_RITUALS</h2>
+                        <div id="task-list" class="flex flex-col gap-3"></div>
+                    </div>
+
+                    <!-- Boons (BoonsUI renders into #boon-list; #ek-display shows Keys).
+                         Locked until Prestige 1 (FeatureIndicators marks the tab). -->
+                    <div id="boons-tab" class="tab-panel hidden relative z-10">
+                        <div class="mb-4 font-mono text-sm text-gray-300">ELDRITCH_KEYS: <span id="ek-display" class="text-gold-400 font-bold">0</span></div>
+                        <div id="boon-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    </div>
                 </div>
             </section>
             </div>
