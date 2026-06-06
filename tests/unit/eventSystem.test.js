@@ -75,7 +75,7 @@ describe('Event System', () => {
     describe('Event Chance Scaling', () => {
         test('should double chance after 100 taps', () => {
             gameState.totalTaps = 150;
-            const baseChance = eventSystem.eventChance;
+            const _baseChance = eventSystem.eventChance;
 
             // Check that chance would be doubled (we can't test internal logic directly,
             // but we can verify the threshold exists)

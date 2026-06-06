@@ -37,21 +37,21 @@ export class EventSystem {
         const events = [
             {
                 id: 'lucky_strike',
-                name: '✨ Lucky Strike',
+                name: 'Lucky Strike',
                 description: 'All production doubled for 30 seconds!',
                 duration: 30,
                 effect: (mult) => mult * 2.0
             },
             {
                 id: 'windfall',
-                name: '💰 Windfall',
+                name: 'Windfall',
                 description: 'Instant AB bonus!',
                 instant: true,
                 reward: () => Math.max(100, this.gameState.ab * 0.1)
             },
             {
                 id: 'inspiration',
-                name: '💡 Inspiration',
+                name: 'Inspiration',
                 description: 'Double cast rewards for 20 seconds!',
                 duration: 20,
                 effect: 'double_casts'
@@ -98,7 +98,7 @@ export class EventSystem {
         }
     }
     
-    updateEvents(delta) {
+    updateEvents(_delta) {
         for (let i = this.activeEvents.length - 1; i >= 0; i--) {
             const event = this.activeEvents[i];
             
@@ -138,4 +138,3 @@ export class EventSystem {
         return mult;
     }
 }
-

@@ -14,6 +14,10 @@
 
 /* Touch targets - minimum 44x44px for accessibility */
 .btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-icon,
 .tab-btn,
 .workstation-card,
 .upgrade-card,
@@ -25,6 +29,10 @@
 
 /* Improved tap feedback */
 .btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-danger:active,
+.btn-icon:active,
 .tab-btn:active,
 .btn-cast:active {
     transform: scale(0.95);
@@ -33,6 +41,10 @@
 
 /* Prevent text selection on buttons (better UX on touch) */
 .btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-icon,
 .tab-btn,
 .btn-cast {
     user-select: none;
@@ -50,14 +62,8 @@
         font-size: 14px; /* Slightly smaller for mobile */
     }
 
-    /* Full-width sidebar on mobile */
     .sidebar {
-        width: 100%;
-        max-width: 100%;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        padding: 12px;
+        display: none;
     }
 
     /* Collapsible sidebar toggle */
@@ -81,21 +87,23 @@
     }
 
     .tab-btn {
-        width: 100%;
+        flex: 0 0 auto;
+        width: auto;
         justify-content: center;
         padding: 12px 16px;
     }
 
     /* Optimize main content for mobile */
-    .main-content {
-        padding: 12px;
+    .tabs-content {
+        min-height: 0;
         margin: 0;
     }
 
     /* Card grids - single column on mobile */
-    .workstation-grid,
-    .upgrade-grid,
-    .inventory-grid {
+    #workstation-list,
+    #upgrade-list,
+    #inventory-list,
+    #boon-list {
         grid-template-columns: 1fr !important;
         gap: 12px;
     }
@@ -109,9 +117,11 @@
 
     /* Cast button - prominent on mobile */
     .btn-cast {
-        font-size: 20px;
-        padding: 20px 32px;
-        min-height: 60px;
+        width: 82px;
+        height: 82px;
+        min-width: 82px;
+        min-height: 82px;
+        font-size: 16px;
     }
 
     /* Modal full-screen on mobile */
@@ -166,7 +176,7 @@
     }
 
     /* Reduce padding on mobile */
-    .tab-panel {
+    .tab-panels-container {
         padding: 12px;
     }
 
@@ -179,6 +189,7 @@
     }
 
     /* Notification positioning for mobile */
+    #notification-container,
     #notifications-container {
         top: 60px; /* Below header */
         left: 8px;
@@ -204,7 +215,7 @@
         overflow-y: auto;
     }
 
-    .main-content {
+    .tabs-content {
         max-height: 100vh;
         overflow-y: auto;
     }
@@ -237,13 +248,14 @@
     }
 
     /* 2-column grid for cards on tablet */
-    .workstation-grid,
-    .upgrade-grid {
+    #workstation-list,
+    #upgrade-list,
+    #boon-list {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 16px;
     }
 
-    .inventory-grid {
+    #inventory-list {
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 12px;
     }
@@ -262,12 +274,6 @@
     }
 
     /* Tabs - horizontal on tablet */
-    .tabs-container {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
     .tab-btn {
         flex: 1 1 auto;
         min-width: 120px;
@@ -280,8 +286,9 @@
 
 @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
     /* More horizontal space - utilize it */
-    .workstation-grid,
-    .upgrade-grid {
+    #workstation-list,
+    #upgrade-list,
+    #boon-list {
         grid-template-columns: repeat(3, 1fr) !important;
     }
 
@@ -307,13 +314,14 @@
     }
 
     /* 3-column grid on desktop */
-    .workstation-grid,
-    .upgrade-grid {
+    #workstation-list,
+    #upgrade-list,
+    #boon-list {
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 20px;
     }
 
-    .inventory-grid {
+    #inventory-list {
         grid-template-columns: repeat(4, 1fr) !important;
         gap: 16px;
     }
@@ -362,13 +370,14 @@
     }
 
     /* 4-column grid on large screens */
-    .workstation-grid,
-    .upgrade-grid {
+    #workstation-list,
+    #upgrade-list,
+    #boon-list {
         grid-template-columns: repeat(4, 1fr) !important;
         gap: 24px;
     }
 
-    .inventory-grid {
+    #inventory-list {
         grid-template-columns: repeat(5, 1fr) !important;
     }
 
@@ -397,17 +406,18 @@
 
 @media (min-width: 1920px) {
     /* 5-column grid for ultra-wide */
-    .workstation-grid,
-    .upgrade-grid {
+    #workstation-list,
+    #upgrade-list,
+    #boon-list {
         grid-template-columns: repeat(5, 1fr) !important;
     }
 
-    .inventory-grid {
+    #inventory-list {
         grid-template-columns: repeat(6, 1fr) !important;
     }
 
     /* Limit max width to prevent extreme stretching */
-    .main-content {
+    .tabs-content {
         max-width: 1800px;
         margin: 0 auto;
     }
@@ -441,7 +451,7 @@
     :root {
         --text: #FFFFFF;
         --text-dim: #E0E0E0;
-        --bg-dark: #000000;
+        --bg-dark: #05050a;
         --bg-light: #1A1A1A;
         --border: #FFFFFF;
         --primary: #FF3DB5;
@@ -514,9 +524,49 @@
 /* Android Chrome fixes */
 @media screen and (max-width: 767px) {
     /* Fix Android viewport height */
-    .main-content {
+    .tabs-content {
         min-height: calc(100vh - 60px);
         min-height: calc(100dvh - 60px); /* Dynamic viewport height */
+    }
+}
+
+@media (max-width: 380px) {
+    .control-deck {
+        min-height: 92px;
+        padding: 6px var(--spacing-sm) calc(6px + env(safe-area-inset-bottom));
+    }
+
+    .cast-container {
+        width: 82px;
+        height: 82px;
+    }
+
+    .btn-cast {
+        width: 72px;
+        height: 72px;
+        min-width: 72px;
+        min-height: 72px;
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .btn-cast::before {
+        top: -7px;
+        right: -7px;
+        bottom: -7px;
+        left: -7px;
+    }
+
+    .btn-cast::after {
+        top: -13px;
+        right: -13px;
+        bottom: -13px;
+        left: -13px;
+    }
+
+    .cast-glyph {
+        width: 22px;
+        height: 22px;
     }
 }
 
@@ -552,8 +602,7 @@
 .btn,
 .tab-btn,
 .workstation-card,
-.upgrade-card,
-.modal-content {
+.upgrade-card {
     will-change: transform;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
@@ -561,7 +610,7 @@
 
 /* Smooth scrolling with momentum */
 .scrollable,
-.main-content,
+.tabs-content,
 .modal-content {
     -webkit-overflow-scrolling: touch;
     overflow-scrolling: touch;

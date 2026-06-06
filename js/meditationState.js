@@ -1,5 +1,4 @@
 import { MEDITATION_TOWERS, MEDITATION_DISTRACTIONS, MEDITATION_UPGRADES } from './data.js';
-import { handleError, safeFunction } from './errorHandler.js';
 import { mirrorToIndexedDB, idbDelete } from './save/indexedDBBackup.js';
 
 /**
@@ -311,7 +310,7 @@ export class MeditationState {
             }
         }
 
-        console.log(`Calculated distances for ${this.pathDistances.size} path tiles`);
+        console.info(`Calculated distances for ${this.pathDistances.size} path tiles`);
     }
 
     /**
@@ -335,7 +334,7 @@ export class MeditationState {
 
         // Update path with optimized version (keep original for reference)
         this.path = optimizedPath;
-        console.log(`Path optimized: ${this.path.length} segments`);
+        console.info(`Path optimized: ${this.path.length} segments`);
     }
 
     /**
@@ -526,21 +525,21 @@ export class MeditationState {
         // Enable sound effects if at Tier 2+ (required for meditation sound effects)
         if (window.audioSystem) {
             const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-            console.log('Meditation session starting - Current tier:', currentTier);
-            console.log('Music enabled:', window.audioSystem.musicEnabled);
-            console.log('Sound effects enabled:', window.audioSystem.soundEffectsEnabled);
-            console.log('Audio context state:', window.audioSystem.audioContext ? window.audioSystem.audioContext.state : 'no context');
-            console.log('Is muted:', window.audioSystem.isMuted);
+            console.info('Meditation session starting - Current tier:', currentTier);
+            console.info('Music enabled:', window.audioSystem.musicEnabled);
+            console.info('Sound effects enabled:', window.audioSystem.soundEffectsEnabled);
+            console.info('Audio context state:', window.audioSystem.audioContext ? window.audioSystem.audioContext.state : 'no context');
+            console.info('Is muted:', window.audioSystem.isMuted);
 
             // Enable sound effects if at Tier 2+ (required for meditation sound effects)
             if (currentTier >= 2) {
-                console.log('Enabling sound effects for meditation...');
+                console.info('Enabling sound effects for meditation...');
                 // Always call enableSoundEffects to ensure initialization, even if already enabled
                 window.audioSystem.enableSoundEffects().then(() => {
-                    console.log('Sound effects enabled and initialized for meditation');
-                    console.log('Tone.js synths initialized:', window.audioSystem.toneSynths ? window.audioSystem.toneSynths.size : 0);
-                    console.log('SFX Master gain:', window.audioSystem.toneSfxMaster ? window.audioSystem.toneSfxMaster.gain.value : 'not initialized');
-                    console.log('SFX Reverb:', window.audioSystem.toneSfxReverb ? 'initialized' : 'not initialized');
+                    console.info('Sound effects enabled and initialized for meditation');
+                    console.info('Tone.js synths initialized:', window.audioSystem.toneSynths ? window.audioSystem.toneSynths.size : 0);
+                    console.info('SFX Master gain:', window.audioSystem.toneSfxMaster ? window.audioSystem.toneSfxMaster.gain.value : 'not initialized');
+                    console.info('SFX Reverb:', window.audioSystem.toneSfxReverb ? 'initialized' : 'not initialized');
                 }).catch(err => {
                     console.error('Failed to enable sound effects for meditation:', err);
                 });
@@ -551,9 +550,9 @@ export class MeditationState {
             if (currentTier >= 4) {
                 // If music is not enabled, try to enable it
                 if (!window.audioSystem.musicEnabled) {
-                    console.log('Music not enabled, attempting to enable...');
+                    console.info('Music not enabled, attempting to enable...');
                     window.audioSystem.enableMusic().then(() => {
-                        console.log('Music enabled successfully');
+                        console.info('Music enabled successfully');
                         // Wait for startMusic() to complete before updating for meditation mode
                         window.audioSystem.startMusic().then(() => {
                             // Update music for meditation mode after music is fully initialized
@@ -569,7 +568,7 @@ export class MeditationState {
                 } else {
                     // Music is already enabled, just start it (if not already playing)
                     if (window.audioSystem.musicNodes.length === 0) {
-                        console.log('Music already enabled, starting music...');
+                        console.info('Music already enabled, starting music...');
                         // Wait for startMusic() to complete before updating for meditation mode
                         window.audioSystem.startMusic().then(() => {
                             // Update music for meditation mode after music is fully initialized
@@ -587,7 +586,7 @@ export class MeditationState {
                     }
                 }
             } else {
-                console.log('Tier too low for music. Current tier:', currentTier, '(need 4+)');
+                console.info('Tier too low for music. Current tier:', currentTier, '(need 4+)');
             }
         } else {
             console.warn('Audio system not available');
@@ -721,7 +720,7 @@ export class MeditationState {
     /**
      * Update wave spawning
      */
-    updateWave(delta) {
+    updateWave(_delta) {
         const now = this._now();
 
         // Check if wave should stop spawning
@@ -906,10 +905,6 @@ export class MeditationState {
                 dist.stuckCount = 0;
             }
 
-            // Improved movement with smooth interpolation
-            // Use a lerp factor for smoother movement (higher = faster, more responsive)
-            const lerpFactor = Math.min(1.0, dist.speed * delta * 2.0); // Smooth interpolation
-
             // Check if very close to target (snap threshold)
             const snapThreshold = 0.1;
             if (distance < snapThreshold) {
@@ -1016,7 +1011,7 @@ export class MeditationState {
     /**
      * Update towers (attack distractions)
      */
-    updateTowers(delta) {
+    updateTowers(_delta) {
         for (const tower of this.towers) {
             if (!tower || !tower.data) continue;
 
@@ -1580,4 +1575,3 @@ export class MeditationState {
         }
     }
 }
-

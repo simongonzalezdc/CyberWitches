@@ -90,7 +90,7 @@ export class TutorialSystem {
         bootScreen.style.left = '0';
         bootScreen.style.width = '100%';
         bootScreen.style.height = '100%';
-        bootScreen.style.zIndex = '99999';
+        bootScreen.style.zIndex = '140';
 
         const lines = [
             '> KERNEL_INIT...',
@@ -201,7 +201,7 @@ export class TutorialSystem {
         overlay.style.left = '0';
         overlay.style.width = '100%';
         overlay.style.height = '100%';
-        overlay.style.zIndex = '10000';
+        overlay.style.zIndex = '120';
         overlay.style.pointerEvents = 'none'; // Let clicks pass through to game
 
         // Highlight target

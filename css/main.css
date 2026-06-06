@@ -1,7 +1,4 @@
-/* Main CSS - Imports all modules */
-
-/* Import Google Fonts - using display=swap for better performance */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+/* Main CSS - Imports all runtime modules */
 
 /* Core modules - loaded in order of importance */
 @import 'base.css';
@@ -63,7 +60,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 9999;
+    z-index: var(--z-effects);
 }
 
 /* Virtual scroll viewport */
@@ -304,9 +301,9 @@ body {
 }
 
 .main-game {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 16px
+    max-width: none;
+    margin: 0;
+    padding: 0
 }
 
 .sr-only {

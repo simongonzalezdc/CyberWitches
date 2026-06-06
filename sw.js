@@ -39,13 +39,6 @@ const OPTIONAL_CACHE_URLS = [
     '/vendor/tone-15.1.22.js'
 ];
 
-// Cache strategies
-const CACHE_STRATEGIES = {
-    static: 'cache-first',      // HTML, CSS, JS bundles
-    images: 'cache-first',       // Images
-    api: 'network-first'         // API calls
-};
-
 /**
  * Determine cache strategy for a request
  */
@@ -183,12 +176,12 @@ async function enforceCacheSizeLimit() {
 
 // Install event
 self.addEventListener('install', (event) => {
-    console.log('Service Worker installing...');
+    console.info('Service Worker installing...');
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                console.log('Service Worker installed, cache opened');
+                console.info('Service Worker installed, cache opened');
                 // CORE shell is atomic: if ANY required asset fails, the whole
                 // install REJECTS so this worker does not activate and the previous
                 // worker + its complete cache are preserved. Activating with a
@@ -205,7 +198,7 @@ self.addEventListener('install', (event) => {
                 return Promise.all([core, ...optional]);
             })
             .then(() => {
-                console.log('Service Worker installed, files cached');
+                console.info('Service Worker installed, files cached');
                 self.skipWaiting();
             })
             .catch((error) => {
@@ -219,7 +212,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - Clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('Service Worker activating...');
+    console.info('Service Worker activating...');
     event.waitUntil(
         Promise.all([
             // Clean up old caches
@@ -227,7 +220,7 @@ self.addEventListener('activate', (event) => {
                 return Promise.all(
                     cacheNames.map((cacheName) => {
                         if (cacheName !== CACHE_NAME) {
-                            console.log('Deleting old cache:', cacheName);
+                            console.info('Deleting old cache:', cacheName);
                             return caches.delete(cacheName);
                         }
                     })
@@ -236,7 +229,7 @@ self.addEventListener('activate', (event) => {
             // Enforce cache size limit
             enforceCacheSizeLimit()
         ]).then(() => {
-            console.log('Service Worker activated, old caches cleaned');
+            console.info('Service Worker activated, old caches cleaned');
             return self.clients.claim();
         }).then(() => {
             return self.clients.matchAll();

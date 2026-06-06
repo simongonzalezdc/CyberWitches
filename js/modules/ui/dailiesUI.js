@@ -99,11 +99,11 @@ export class DailiesUI {
 
                         // Check if we can actually claim
                         if (progress < target || claimed || button.disabled) {
-                            console.log('Claim button disabled:', { progress, target, claimed, disabled: button.disabled });
+                            console.info('Claim button disabled:', { progress, target, claimed, disabled: button.disabled });
                             return;
                         }
 
-                        console.log('Claim task button clicked:', { taskId: task.id });
+                        console.info('Claim task button clicked:', { taskId: task.id });
 
                         if (dailyRituals && typeof dailyRituals.claimTask === 'function') {
                             dailyRituals.claimTask(task.id);

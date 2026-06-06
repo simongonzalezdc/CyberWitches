@@ -16,7 +16,7 @@ import { BoonsUI } from './boonsUI.js';
 import { FloatingTextUI } from './floatingTextUI.js';
 import { HUDUI } from './hudUI.js';
 import { showNotification } from './notifications.js';
-import { accessibilityManager, announceToScreenReader } from '../../accessibility.js';
+import { announceToScreenReader } from '../../accessibility.js';
 import { showLoadingState, hideLoadingState } from '../../loadingState.js';
 import { batchDOMUpdate } from '../../utils/DOMBatcher.js'; // Week 3: DOM batching
 import { uiStore } from '../../state/uiStore.js'; // Week 4: Reactive UI store (optional)
@@ -97,14 +97,35 @@ export class UIManager {
         }
 
         // Attach event listeners to tab buttons
-        this.tabButtons.forEach(btn => {
+        this.tabButtons.forEach((btn, index) => {
+            const tabName = btn.dataset.tab;
+            if (tabName) {
+                const panelId = `${tabName}-tab`;
+                btn.id = btn.id || `tab-${tabName}`;
+                btn.setAttribute('role', 'tab');
+                btn.setAttribute('aria-controls', panelId);
+                btn.setAttribute('aria-selected', btn.classList.contains('active') ? 'true' : 'false');
+                btn.setAttribute('tabindex', btn.classList.contains('active') || index === 0 ? '0' : '-1');
+                btn.setAttribute('aria-disabled', btn.classList.contains('locked') ? 'true' : 'false');
+                if (btn.classList.contains('locked')) {
+                    const unlockCondition = btn.getAttribute('data-unlock-condition') || 'Prestige 1';
+                    btn.setAttribute('title', `Unlocks at: ${unlockCondition}`);
+                }
+            }
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const tabName = btn.dataset.tab;
-                if (tabName) {
+                if (btn.dataset.tab) {
                     this.switchTab(tabName);
                 }
             });
+            btn.addEventListener('keydown', (e) => this.handleTabKeydown(e, index));
+        });
+
+        this.tabPanes.forEach(pane => {
+            const tabName = pane.id.replace(/-tab$/, '');
+            pane.setAttribute('role', 'tabpanel');
+            pane.setAttribute('aria-labelledby', `tab-${tabName}`);
+            pane.setAttribute('tabindex', '-1');
         });
 
         // Set initial active tab if any is marked active in HTML
@@ -115,6 +136,32 @@ export class UIManager {
             // Default to the first tab if no active tab is found
             this.activeTab = this.tabButtons[0].dataset.tab;
             this.switchTab(this.activeTab); // Ensure UI reflects this
+        }
+    }
+
+    handleTabKeydown(e, index) {
+        const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End', 'Enter', ' '];
+        if (!keys.includes(e.key)) return;
+
+        const current = this.tabButtons[index];
+        if ((e.key === 'Enter' || e.key === ' ') && current?.dataset.tab) {
+            e.preventDefault();
+            this.switchTab(current.dataset.tab);
+            return;
+        }
+
+        e.preventDefault();
+        let nextIndex = index;
+        if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = this.tabButtons.length - 1;
+        else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % this.tabButtons.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + this.tabButtons.length) % this.tabButtons.length;
+
+        const next = this.tabButtons[nextIndex];
+        if (next) {
+            this.tabButtons.forEach(btn => btn.setAttribute('tabindex', '-1'));
+            next.setAttribute('tabindex', '0');
+            next.focus();
         }
     }
 
@@ -134,14 +181,13 @@ export class UIManager {
     }
 
     switchTab(tabName) {
-        console.log('switchTab called with:', tabName);
-
         // Check if tab is locked
         const tabButton = Array.from(this.tabButtons || []).find(btn => btn.dataset.tab === tabName);
         if (tabButton && tabButton.classList.contains('locked')) {
             // Show notification that tab is locked
             const unlockCondition = tabButton.getAttribute('data-unlock-condition') || 'Prestige 1';
             showNotification(`This tab is locked. Unlocks at: ${unlockCondition}`, 'info');
+            announceToScreenReader(`Locked tab. Unlocks at ${unlockCondition}.`, 'polite');
             return;
         }
 
@@ -189,6 +235,7 @@ export class UIManager {
             const isActive = btn.dataset.tab === tabName;
             btn.classList.toggle('active', isActive);
             btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            btn.setAttribute('tabindex', isActive ? '0' : '-1');
         });
 
         // Check if we're switching away from meditation tab
@@ -200,7 +247,7 @@ export class UIManager {
         const meditationTowers = this.systems.meditationTowers;
 
         if (wasMeditationActive && !isMeditationActive && meditationState) {
-            console.log('Leaving meditation tab - cleaning up meditation state');
+            console.info('Leaving meditation tab - cleaning up meditation state');
 
             // Clear distractions array to free memory
             if (meditationState.distractions && meditationState.distractions.length > 0) {
@@ -242,7 +289,7 @@ export class UIManager {
                 // hidden in the markup (stats/dailies/boons/meditation) never showed.
                 pane.classList.toggle('hidden', !isActive);
                 pane.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-                pane.setAttribute('tabindex', isActive ? '0' : '-1');
+                pane.setAttribute('tabindex', '-1');
 
                 // Force visibility for active tab
                 if (isActive) {

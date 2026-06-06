@@ -275,7 +275,7 @@ class BalanceTestingFramework {
         resultsDiv.appendChild(resultElement);
 
         // Log to console
-        console.log('Balance Test Results:', results);
+        console.info('Balance Test Results:', results);
     }
 
     /**

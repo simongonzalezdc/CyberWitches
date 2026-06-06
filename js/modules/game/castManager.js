@@ -43,8 +43,6 @@ export class CastManager {
 
         try {
             // Process cast immediately (synchronous)
-            const oldAb = this.gameState.ab;
-
             // Apply combo multiplier if active
             const comboMult = this.comboSystem ? this.comboSystem.getComboMultiplier() : 1.0;
             if (this.comboSystem) {

@@ -269,7 +269,7 @@ class TutorialSystem {
                 // Highlight target
                 target.style.outline = '3px solid var(--primary)';
                 target.style.outlineOffset = '5px';
-                target.style.zIndex = '10000';
+                target.style.zIndex = '120';
             }
         }
         
@@ -319,11 +319,34 @@ class TutorialSystem {
      * Skip tutorial
      */
     skipTutorial() {
-        if (confirm('Are you sure you want to skip the tutorial?')) {
-            // Mark as skipped so it doesn't auto-start again
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'skip-tutorial-title');
+        overlay.innerHTML = `
+            <div class="destructive-confirmation-modal">
+                <h2 class="destructive-title" id="skip-tutorial-title">Skip Tutorial?</h2>
+                <p class="destructive-text">You can restart it later from the tutorial controls.</p>
+                <div class="destructive-actions">
+                    <button type="button" class="btn-secondary" data-skip-cancel>Keep Tutorial</button>
+                    <button type="button" class="btn-primary" data-skip-confirm>Skip Tutorial</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        const cleanup = () => overlay.remove();
+        overlay.querySelector('[data-skip-cancel]')?.addEventListener('click', cleanup);
+        overlay.querySelector('[data-skip-confirm]')?.addEventListener('click', () => {
             localStorage.setItem('tutorialSkipped', 'true');
+            cleanup();
             this.completeTutorial();
-        }
+        });
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay) cleanup();
+        });
+        overlay.querySelector('button')?.focus();
     }
     
     /**
@@ -354,4 +377,3 @@ window.resetTutorial = () => {
 };
 
 export default TutorialSystem;
-

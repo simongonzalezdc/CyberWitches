@@ -45,13 +45,13 @@ export class InscriptionsManager {
         const now = Date.now();
         const lastClick = this.clickHandlers.lastClickTime.get(buttonKey) || 0;
         if (now - lastClick < this.clickHandlers.debounceDelay) {
-            console.log('Inscribe click debounced - too soon after last click');
+            console.info('Inscribe click debounced - too soon after last click');
             return;
         }
 
         // Check if already processing
         if (this.clickHandlers.processing.has(buttonKey)) {
-            console.log('Already processing inscribe for:', upgId);
+            console.info('Already processing inscribe for:', upgId);
             return;
         }
 

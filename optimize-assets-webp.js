@@ -62,7 +62,7 @@ async function convertToWebP(inputPath) {
 
     // Check if WebP already exists
     if (CONFIG.skipExisting && fs.existsSync(outputPath)) {
-        console.log(`⏭️  Skipping ${inputPath} (WebP exists)`);
+        console.info(`⏭️  Skipping ${inputPath} (WebP exists)`);
         stats.skipped++;
         return;
     }
@@ -86,8 +86,8 @@ async function convertToWebP(inputPath) {
         const originalMB = (originalStat.size / 1024 / 1024).toFixed(2);
         const newMB = (newStat.size / 1024 / 1024).toFixed(2);
 
-        console.log(`✅ ${path.basename(inputPath)} → ${path.basename(outputPath)}`);
-        console.log(`   ${originalMB}MB → ${newMB}MB (${savings}% reduction)`);
+        console.info(`✅ ${path.basename(inputPath)} → ${path.basename(outputPath)}`);
+        console.info(`   ${originalMB}MB → ${newMB}MB (${savings}% reduction)`);
 
         stats.converted++;
     } catch (error) {
@@ -105,14 +105,14 @@ function createBackup() {
     const backupDir = 'images-backup';
 
     if (!fs.existsSync(backupDir)) {
-        console.log('📦 Creating backup directory...');
+        console.info('📦 Creating backup directory...');
 
         // Copy entire images directory
         fs.cpSync('images', backupDir, { recursive: true });
 
-        console.log(`✅ Backup created at /${backupDir}`);
+        console.info(`✅ Backup created at /${backupDir}`);
     } else {
-        console.log('⏭️  Backup already exists, skipping');
+        console.info('⏭️  Backup already exists, skipping');
     }
 }
 
@@ -201,20 +201,20 @@ Fallback PNG ensures 100% compatibility.
 `;
 
     fs.writeFileSync('WEBP_USAGE_GUIDE.md', guide);
-    console.log('\n📄 Created WEBP_USAGE_GUIDE.md');
+    console.info('\n📄 Created WEBP_USAGE_GUIDE.md');
 }
 
 /**
  * Main execution
  */
 async function main() {
-    console.log('🎨 Asset Optimization Script - PNG to WebP Conversion\n');
+    console.info('🎨 Asset Optimization Script - PNG to WebP Conversion\n');
 
     // Create backup
     createBackup();
 
     // Get all image files
-    console.log('\n🔍 Scanning for images...');
+    console.info('\n🔍 Scanning for images...');
     const imageFiles = [];
     CONFIG.imageDirs.forEach(dir => {
         if (fs.existsSync(dir)) {
@@ -224,43 +224,43 @@ async function main() {
     });
 
     stats.totalFiles = imageFiles.length;
-    console.log(`Found ${stats.totalFiles} images\n`);
+    console.info(`Found ${stats.totalFiles} images\n`);
 
     if (stats.totalFiles === 0) {
-        console.log('❌ No images found to process');
+        console.info('❌ No images found to process');
         return;
     }
 
     // Convert images
-    console.log('🔄 Converting to WebP...\n');
+    console.info('🔄 Converting to WebP...\n');
     for (const file of imageFiles) {
         await convertToWebP(file);
     }
 
     // Print summary
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 CONVERSION SUMMARY');
-    console.log('='.repeat(60));
-    console.log(`Total files processed: ${stats.totalFiles}`);
-    console.log(`Successfully converted: ${stats.converted}`);
-    console.log(`Skipped: ${stats.skipped}`);
-    console.log(`Failed: ${stats.failed}`);
-    console.log('');
-    console.log(`Original total size: ${(stats.originalSize / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`New total size: ${(stats.newSize / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`Total savings: ${((stats.originalSize - stats.newSize) / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`Reduction: ${((1 - stats.newSize / stats.originalSize) * 100).toFixed(1)}%`);
-    console.log('='.repeat(60));
+    console.info('\n' + '='.repeat(60));
+    console.info('📊 CONVERSION SUMMARY');
+    console.info('='.repeat(60));
+    console.info(`Total files processed: ${stats.totalFiles}`);
+    console.info(`Successfully converted: ${stats.converted}`);
+    console.info(`Skipped: ${stats.skipped}`);
+    console.info(`Failed: ${stats.failed}`);
+    console.info('');
+    console.info(`Original total size: ${(stats.originalSize / 1024 / 1024).toFixed(2)} MB`);
+    console.info(`New total size: ${(stats.newSize / 1024 / 1024).toFixed(2)} MB`);
+    console.info(`Total savings: ${((stats.originalSize - stats.newSize) / 1024 / 1024).toFixed(2)} MB`);
+    console.info(`Reduction: ${((1 - stats.newSize / stats.originalSize) * 100).toFixed(1)}%`);
+    console.info('='.repeat(60));
 
     // Generate usage guide
     generatePictureGuide();
 
-    console.log('\n✅ Asset optimization complete!');
-    console.log('📝 Next steps:');
-    console.log('   1. Review converted images');
-    console.log('   2. Update HTML/CSS to use WebP with fallbacks (see WEBP_USAGE_GUIDE.md)');
-    console.log('   3. Test in multiple browsers');
-    console.log('   4. Delete original PNGs once verified (backup in /images-backup)');
+    console.info('\n✅ Asset optimization complete!');
+    console.info('📝 Next steps:');
+    console.info('   1. Review converted images');
+    console.info('   2. Update HTML/CSS to use WebP with fallbacks (see WEBP_USAGE_GUIDE.md)');
+    console.info('   3. Test in multiple browsers');
+    console.info('   4. Delete original PNGs once verified (backup in /images-backup)');
 }
 
 // Run

@@ -9,6 +9,8 @@ export class NotificationManager {
             this.container.className = 'notification-container';
             document.body.appendChild(this.container);
         }
+        this.container.setAttribute('aria-live', 'polite');
+        this.container.setAttribute('aria-relevant', 'additions removals');
 
         // State
         this.queue = [];
@@ -87,15 +89,18 @@ export class NotificationManager {
     createNotificationElement(message, type, duration) {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
+        notification.setAttribute('role', type === 'error' ? 'alert' : 'status');
         notification.innerHTML = message;
 
         // Add close button
-        const closeBtn = document.createElement('span');
+        const closeBtn = document.createElement('button');
         closeBtn.className = 'notification-close';
-        closeBtn.innerHTML = '&times;';
-        closeBtn.onclick = () => {
+        closeBtn.type = 'button';
+        closeBtn.setAttribute('aria-label', 'Dismiss notification');
+        closeBtn.textContent = 'x';
+        closeBtn.addEventListener('click', () => {
             this.removeNotification(notification);
-        };
+        });
         notification.appendChild(closeBtn);
 
         this.container.appendChild(notification);

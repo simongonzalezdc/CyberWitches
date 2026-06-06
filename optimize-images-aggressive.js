@@ -150,11 +150,11 @@ async function optimizeDirectory(dirPath, category) {
 }
 
 async function optimizeAll() {
-    console.log('🚀 Starting aggressive image optimization...\n');
-    console.log('This will:');
-    console.log('  • Resize large images to optimal dimensions');
-    console.log('  • Compress PNG files');
-    console.log('  • Create WebP versions (70-80% smaller)\n');
+    console.info('🚀 Starting aggressive image optimization...\n');
+    console.info('This will:');
+    console.info('  • Resize large images to optimal dimensions');
+    console.info('  • Compress PNG files');
+    console.info('  • Create WebP versions (70-80% smaller)\n');
 
     const categories = [
         { name: 'backgrounds', path: path.join(imagesDir, 'backgrounds') },
@@ -170,7 +170,7 @@ async function optimizeAll() {
     let fileCount = 0;
 
     for (const category of categories) {
-        console.log(`\n📁 Processing ${category.name}...`);
+        console.info(`\n📁 Processing ${category.name}...`);
         const results = await optimizeDirectory(category.path, category.name);
 
         for (const result of results) {
@@ -179,29 +179,29 @@ async function optimizeAll() {
             totalWebp += result.webp;
             fileCount++;
 
-            console.log(`  ✅ ${result.file}:`);
-            console.log(`     ${result.dimensions} | PNG: -${result.pngSavings}% | WebP: -${result.webpSavings}%`);
+            console.info(`  ✅ ${result.file}:`);
+            console.info(`     ${result.dimensions} | PNG: -${result.pngSavings}% | WebP: -${result.webpSavings}%`);
         }
     }
 
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 OPTIMIZATION SUMMARY\n');
-    console.log(`Files processed: ${fileCount}`);
-    console.log(`Original total:  ${(totalOriginal / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`PNG total:       ${(totalPng / 1024 / 1024).toFixed(2)} MB (-${((totalOriginal - totalPng) / totalOriginal * 100).toFixed(1)}%)`);
-    console.log(`WebP total:      ${(totalWebp / 1024 / 1024).toFixed(2)} MB (-${((totalOriginal - totalWebp) / totalOriginal * 100).toFixed(1)}%)`);
-    console.log(`\nTotal savings (PNG):  ${((totalOriginal - totalPng) / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`Total savings (WebP): ${((totalOriginal - totalWebp) / 1024 / 1024).toFixed(2)} MB`);
-    console.log('=' + '='.repeat(59));
+    console.info('\n' + '='.repeat(60));
+    console.info('📊 OPTIMIZATION SUMMARY\n');
+    console.info(`Files processed: ${fileCount}`);
+    console.info(`Original total:  ${(totalOriginal / 1024 / 1024).toFixed(2)} MB`);
+    console.info(`PNG total:       ${(totalPng / 1024 / 1024).toFixed(2)} MB (-${((totalOriginal - totalPng) / totalOriginal * 100).toFixed(1)}%)`);
+    console.info(`WebP total:      ${(totalWebp / 1024 / 1024).toFixed(2)} MB (-${((totalOriginal - totalWebp) / totalOriginal * 100).toFixed(1)}%)`);
+    console.info(`\nTotal savings (PNG):  ${((totalOriginal - totalPng) / 1024 / 1024).toFixed(2)} MB`);
+    console.info(`Total savings (WebP): ${((totalOriginal - totalWebp) / 1024 / 1024).toFixed(2)} MB`);
+    console.info('=' + '='.repeat(59));
 
-    console.log('\n💡 NEXT STEPS:');
-    console.log('  1. Update HTML/CSS to use <picture> element with WebP:');
-    console.log('     <picture>');
-    console.log('       <source srcset="image.webp" type="image/webp">');
-    console.log('       <img src="image.png" alt="">');
-    console.log('     </picture>');
-    console.log('  2. Test all images load correctly');
-    console.log('  3. Delete .backup.png files if happy with results\n');
+    console.info('\n💡 NEXT STEPS:');
+    console.info('  1. Update HTML/CSS to use <picture> element with WebP:');
+    console.info('     <picture>');
+    console.info('       <source srcset="image.webp" type="image/webp">');
+    console.info('       <img src="image.png" alt="">');
+    console.info('     </picture>');
+    console.info('  2. Test all images load correctly');
+    console.info('  3. Delete .backup.png files if happy with results\n');
 }
 
 optimizeAll().catch(console.error);

@@ -305,7 +305,7 @@ export const mockSpecializations = {
 /**
  * Generate random game state for stress testing
  */
-export function generateRandomGameState(seed = Date.now()) {
+export function generateRandomGameState(_seed = Date.now()) {
     const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
     return {

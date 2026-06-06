@@ -30,7 +30,7 @@ describe('Debug Utilities', () => {
         timeCalls = [];
         timeEndCalls = [];
 
-        originalLog = console.log;
+        originalLog = console.info;
         originalWarn = console.warn;
         originalError = console.error;
         originalGroup = console.group;
@@ -38,7 +38,7 @@ describe('Debug Utilities', () => {
         originalTime = console.time;
         originalTimeEnd = console.timeEnd;
 
-        console.log = (...args) => { logCalls.push(args); };
+        console.info = (...args) => { logCalls.push(args); };
         console.warn = (...args) => { warnCalls.push(args); };
         console.error = (...args) => { errorCalls.push(args); };
         console.group = (label) => { groupCalls.push(label); };
@@ -48,7 +48,7 @@ describe('Debug Utilities', () => {
     });
 
     afterEach(() => {
-        console.log = originalLog;
+        console.info = originalLog;
         console.warn = originalWarn;
         console.error = originalError;
         console.group = originalGroup;
@@ -62,12 +62,12 @@ describe('Debug Utilities', () => {
             expect(typeof debugLog).toBe('function');
         });
 
-        test('should call console.log in debug mode', () => {
+        test('should call console.info in debug mode', () => {
             debugLog('test message');
             expect(logCalls.length).toBeGreaterThan(0);
         });
 
-        test('should pass arguments to console.log', () => {
+        test('should pass arguments to console.info', () => {
             debugLog('message', 123, { key: 'value' });
             expect(logCalls[logCalls.length - 1]).toEqual(['message', 123, { key: 'value' }]);
         });

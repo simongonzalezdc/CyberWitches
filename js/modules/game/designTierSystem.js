@@ -24,8 +24,6 @@ export class DesignTierSystem {
 
         const ab = this.gameState.ab || 0;
         const unlockedCount = this.uiManager?.systems?.achievementSystem?.getUnlockedCount() || 0;
-        const playtimeSeconds = (Date.now() - this.gameStartTime) / 1000;
-
         // Tier 1: BASIC - 500 AB + 3 Achievements
         if (!this.unlockedTiers.has(1)) {
             if (unlockedCount >= 3 && ab >= 500) {

@@ -43,7 +43,7 @@ export class MeditationManager {
      * Initialize the meditation system
      */
     initialize() {
-        console.log('Initializing Meditation System...');
+        console.info('Initializing Meditation System...');
 
         // Create state
         this.state = new MeditationState(this.gameState);

@@ -22,7 +22,7 @@ function makeSim(opts = {}) {
     };
     const sim = new MeditationState(gameState, {
         now: () => clock.t,
-        random: opts.random || (() => 0), // always pick index 0 -> deterministic spawns
+        random: opts.random || (() => 0) // always pick index 0 -> deterministic spawns
     });
     sim.lastTickTime = 0;
     return { sim, clock, gameState };

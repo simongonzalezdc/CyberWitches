@@ -169,7 +169,7 @@ class MemoryLeakPreventionManager {
      * Force aggressive cleanup
      */
     forceCleanup() {
-        console.log('Forcing memory cleanup...');
+        console.info('Forcing memory cleanup...');
         this.cleanup();
         
         // Optional: clear caches if critical

@@ -109,5 +109,5 @@ const iconHTML = `
 import { writeFileSync } from 'fs';
 writeFileSync('icons/icon-preview.html', iconHTML);
 
-console.log('Icon preview created at icons/icon-preview.html');
-console.log('In a real project, you would generate actual PNG files for each size.');
+console.info('Icon preview created at icons/icon-preview.html');
+console.info('In a real project, you would generate actual PNG files for each size.');

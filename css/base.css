@@ -8,7 +8,7 @@
     top: 0;
     left: 0;
     transform: translateY(-120%);
-    z-index: 10000;
+    z-index: var(--z-skip-link);
     padding: 0.6rem 1rem;
     background: var(--primary, #00F0FF);
     color: #050508;
@@ -51,8 +51,8 @@
     --color-corruption: #FF2A6D; /* Glitch Red - Fading/Error */
     --color-corruption-dim: #821638;
     
-    --color-system: #b8b8d0;     /* Silver - System Text */
-    --color-dim: #5a5a70;        /* Dimmed Text */
+    --color-system: #d7dcf4;     /* Silver - System Text */
+    --color-dim: #a8afcf;        /* Secondary Text */
 
     /* Functional Variables (Mapped to Semantic) */
     --primary: var(--color-code);
@@ -60,10 +60,21 @@
     --accent: var(--color-magic);
     --accent-glow: var(--color-magic);
     --error: var(--color-corruption);
+    --success: #3CE3C5;
+    --warning: #FFB84C;
+    --text: var(--color-system);
+    --text-primary: #f7f8ff;
+    --text-secondary: var(--color-dim);
+    --text-dim: #a8afcf;
+    --bg-primary: var(--bg-terminal);
+    --bg-secondary: #151723;
+    --bg-card: var(--bg-panel);
+    --bg-dark: #06060d;
+    --border: rgba(168, 175, 207, 0.28);
     
     /* Terminal Specifics */
-    --font-main: 'Orbitron', sans-serif;
-    --font-mono: 'Fira Code', 'Courier New', monospace;
+    --font-main: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
     
     --scanline-color: rgba(0, 240, 255, 0.03);
     --border-light: rgba(0, 240, 255, 0.2);
@@ -80,6 +91,18 @@
     /* Animations */
     --anim-flash: 0.1s ease-out;
     --anim-boot: 1s cubic-bezier(0.1, 0.9, 0.2, 1);
+
+    /* Layer scale */
+    --z-tabs: 40;
+    --z-control-deck: 60;
+    --z-atmosphere: 70;
+    --z-crt-overlay: 80;
+    --z-effects: 90;
+    --z-modal: 100;
+    --z-devtools: 110;
+    --z-guidance: 120;
+    --z-critical: 140;
+    --z-skip-link: 150;
 }
 
 /* Reset & Base Styles */
@@ -92,6 +115,7 @@
 html {
     height: 100%;
     overflow: hidden; /* Prevent page scroll, we use internal scrolling */
+    color-scheme: dark;
 }
 
 body {
@@ -110,23 +134,23 @@ body {
 body::after {
     content: " ";
     display: block;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
     right: 0;
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 9999;
+    z-index: var(--z-crt-overlay);
     background-size: 100% 2px, 3px 100%;
     pointer-events: none;
-    opacity: 0.6;
+    opacity: 0.16;
 }
 
 /* Typography Override */
 h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 0;
     color: var(--color-code);
 }
 

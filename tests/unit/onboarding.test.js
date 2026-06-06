@@ -196,7 +196,7 @@ describe('Onboarding System', () => {
         });
 
         test('startTutorial should call onboarding.start', () => {
-            const originalActive = onboarding.isActive;
+            const _originalActive = onboarding.isActive;
 
             expect(() => {
                 startTutorial();

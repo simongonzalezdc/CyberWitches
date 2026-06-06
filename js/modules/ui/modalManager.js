@@ -3,7 +3,6 @@
  * Manages all modal dialogs and overlays in the game.
  */
 
-import { stripEmojisIfLowTier } from './uiHelpers.js';
 import { idbDelete } from '../../save/indexedDBBackup.js';
 
 export class ModalManager {
@@ -90,16 +89,18 @@ export class ModalManager {
 
         // Wipe save (with confirmation).
         document.getElementById('clear-save-button')?.addEventListener('click', async () => {
-            const ok = (typeof window !== 'undefined' && window.confirm)
-                ? window.confirm('Wipe ALL save data? This cannot be undone.')
-                : true;
+            const ok = await this.showDestructiveConfirmation(
+                'Wipe save',
+                'This removes all local progress, backups, meditation state, and critical error logs from this browser. Type WIPE SAVE to continue.',
+                'WIPE SAVE'
+            );
             if (!ok) return;
             // Remove EVERY persisted progression key, not just the main save.
             // MeditationState.saveState() writes to its own `meditationState`
             // key, so wiping only `cyberWitchesSave` left meditation focus /
             // towers / stats behind — they resurrected on reload, contradicting
             // the "Wipe ALL save data" promise.
-            const keys = ['cyberWitchesSave', 'meditationState'];
+            const keys = ['cyberWitchesSave', 'meditationState', 'cyberWitchesCriticalErrors'];
             try {
                 keys.forEach((key) => localStorage.removeItem(key));
             } catch (e) {
@@ -369,14 +370,16 @@ export class ModalManager {
 
         const modal = document.createElement('div');
         modal.className = 'story-intro-modal';
-        // Styles moved to CSS
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'story-intro-title');
 
         const content = document.createElement('div');
         content.className = 'story-intro-content';
-        // Styles moved to CSS
+        content.tabIndex = -1;
 
         content.innerHTML = `
-            <h1 class="story-title">Hex Compiler</h1>
+            <h1 class="story-title" id="story-intro-title">Hex Compiler</h1>
             <p class="story-text-secondary">The Story of The Fading</p>
             <p class="story-text">
                 Magic is dying. The world's spell energy is fading, and once it's gone, it won't return.
@@ -385,19 +388,7 @@ export class ModalManager {
                 You are a <strong class="text-success">Hex Compiler</strong>—one of the last who knows how to preserve magic by crystallizing it into permanent structures.
             </p>
             <p class="story-text">
-                As magic fades, the chaos and despair create <strong class="text-error">Distractions</strong>—mental intrusions that break your focus.
-            </p>
-            <p class="story-text">
-                You've learned to defend your mind. <strong class="text-success">Meditation</strong> is your mental fortress—a space where you use preserved materials to build towers of focus.
-            </p>
-            <p class="story-text">
-                These towers defend your <strong class="text-success">Tranquility</strong> against waves of Distractions. The more focused you are, the better you can preserve magic.
-            </p>
-            <p class="story-text-secondary">
-                Every spell you cast pulls energy from a dwindling pool. If you don't act, magic will be gone forever.
-            </p>
-            <p class="story-text-secondary">
-                Your workstations are preservation chambers—structures that capture and hold spell energy before it fades.
+                Cast to gather essence. Build workstations to preserve it. Ascend when this plane runs dry and carry stronger preservation strategies forward.
             </p>
             <button class="btn-primary story-button" id="close-story-intro">Begin Preservation</button>
         `;
@@ -405,29 +396,37 @@ export class ModalManager {
         modal.appendChild(content);
         document.body.appendChild(modal);
 
-        // Add event listener
+        const closeStory = () => {
+            localStorage.setItem('hasSeenStoryIntroduction', 'true');
+            modal.remove();
+            document.removeEventListener('keydown', closeOnEscape);
+            document.getElementById('cast-button')?.focus();
+        };
+        const closeOnEscape = (e) => {
+            if (e.key === 'Escape') closeStory();
+        };
+
         const closeBtn = modal.querySelector('#close-story-intro');
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                modal.remove();
-            });
+            closeBtn.addEventListener('click', closeStory);
         }
-
-        // Mark as seen
-        localStorage.setItem('hasSeenStoryIntroduction', 'true');
+        document.addEventListener('keydown', closeOnEscape);
+        content.focus();
     }
 
     showMeditationStoryIntroduction() {
         const modal = document.createElement('div');
         modal.className = 'meditation-story-modal';
-        // Styles moved to CSS
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'meditation-story-title');
 
         const content = document.createElement('div');
         content.className = 'meditation-story-content';
-        // Styles moved to CSS
+        content.tabIndex = -1;
 
         content.innerHTML = `
-            <h1 class="story-title">The Mental Defense</h1>
+            <h1 class="story-title" id="meditation-story-title">The Mental Defense</h1>
             <p class="story-text">
                 As magic fades, the chaos and despair create <strong class="text-error">Distractions</strong>—mental intrusions that break your focus.
             </p>
@@ -452,20 +451,23 @@ export class ModalManager {
                 modal.remove();
             });
         }
+        content.focus();
     }
 
     showFullStoryModal() {
         const modal = document.createElement('div');
         modal.className = 'full-story-modal';
-        // Styles moved to CSS
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'full-story-title');
 
         const content = document.createElement('div');
         content.className = 'full-story-content';
-        // Styles moved to CSS
+        content.tabIndex = -1;
 
         content.innerHTML = `
             <div class="full-story-header">
-                <h1 class="story-title mb-10">Hex Compiler</h1>
+                <h1 class="story-title mb-10" id="full-story-title">Hex Compiler</h1>
                 <p class="story-text-secondary mb-0">The Story of The Fading</p>
             </div>
             
@@ -510,10 +512,10 @@ export class ModalManager {
                     This plane is too far gone. You've learned all you can here. As you prepare to Ascend to other realms where magic still exists, you must choose how you'll approach preservation in the next realm. Each element offers a different strategy for fighting the fading:
                 </p>
                 <ul class="full-story-list">
-                    <li class="full-story-list-item"><strong class="text-primary">🔥 Fire Path:</strong> Preserve through intensity. Build aggressive preservation structures that burn bright and fast.</li>
-                    <li class="full-story-list-item"><strong class="text-secondary">💧 Water Path:</strong> Preserve through efficiency. Build balanced structures that flow smoothly.</li>
-                    <li class="full-story-list-item"><strong class="text-accent">💨 Air Path:</strong> Preserve through speed. Unlock preservation techniques faster—time is running out.</li>
-                    <li class="full-story-list-item"><strong class="text-success">💎 Crystal Path:</strong> Preserve through stability. Build universal foundations that support all elements.</li>
+                    <li class="full-story-list-item"><strong class="text-primary">Fire Path:</strong> Preserve through intensity. Build aggressive preservation structures that burn bright and fast.</li>
+                    <li class="full-story-list-item"><strong class="text-secondary">Water Path:</strong> Preserve through efficiency. Build balanced structures that flow smoothly.</li>
+                    <li class="full-story-list-item"><strong class="text-accent">Air Path:</strong> Preserve through speed. Unlock preservation techniques faster—time is running out.</li>
+                    <li class="full-story-list-item"><strong class="text-success">Crystal Path:</strong> Preserve through stability. Build universal foundations that support all elements.</li>
                 </ul>
                 <p class="mb-15">
                     You carry your chosen preservation technique forward. Each realm teaches you more, but the fading follows you—you must work faster, build better, preserve more.
@@ -534,6 +536,7 @@ export class ModalManager {
                 modal.remove();
             });
         }
+        content.focus();
     }
 
     showElementSpecializationChoice(ELEMENT_SPECIALIZATIONS, updateAllUI) {
@@ -610,21 +613,26 @@ export class ModalManager {
 
     showDestructiveConfirmation(title, message, confirmText = 'RESET') {
         return new Promise((resolve) => {
+            const previousFocus = document.activeElement;
+
             // Create modal overlay
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
-            // Styles moved to CSS
+            overlay.setAttribute('role', 'dialog');
+            overlay.setAttribute('aria-modal', 'true');
+            overlay.setAttribute('aria-labelledby', 'destructive-confirmation-title');
+            overlay.setAttribute('aria-describedby', 'destructive-confirmation-text');
 
             // Create modal content
             const modal = document.createElement('div');
             modal.className = 'destructive-confirmation-modal';
-            // Styles moved to CSS
+            modal.tabIndex = -1;
 
             modal.innerHTML = `
-                <h2 class="destructive-title">${title}</h2>
-                <p class="destructive-text">${message}</p>
+                <h2 class="destructive-title" id="destructive-confirmation-title">${title}</h2>
+                <p class="destructive-text" id="destructive-confirmation-text">${message}</p>
                 <div class="destructive-input-container">
-                    <label class="destructive-input-label">
+                    <label class="destructive-input-label" for="destructive-confirm-input">
                         Type "${confirmText}" to confirm:
                     </label>
                     <input type="text" id="destructive-confirm-input" 
@@ -644,6 +652,14 @@ export class ModalManager {
             const cancelBtn = /** @type {HTMLButtonElement} */ (modal.querySelector('#destructive-confirm-cancel'));
             const okBtn = /** @type {HTMLButtonElement} */ (modal.querySelector('#destructive-confirm-ok'));
 
+            const cleanup = (value) => {
+                if (overlay.parentNode) document.body.removeChild(overlay);
+                document.removeEventListener('keydown', escapeHandler);
+                const focusTarget = /** @type {any} */ (previousFocus);
+                if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+                resolve(value);
+            };
+
             // Enable OK button when text matches
             input.addEventListener('input', (e) => {
                 okBtn.disabled = /** @type {HTMLInputElement} */ (e.target).value !== confirmText;
@@ -661,32 +677,27 @@ export class ModalManager {
 
             // Cancel handler
             cancelBtn.addEventListener('click', () => {
-                document.body.removeChild(overlay);
-                resolve(false);
+                cleanup(false);
             });
 
             // Confirm handler
             okBtn.addEventListener('click', () => {
                 if (input.value === confirmText) {
-                    document.body.removeChild(overlay);
-                    resolve(true);
+                    cleanup(true);
                 }
             });
 
             // Close on overlay click
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) {
-                    document.body.removeChild(overlay);
-                    resolve(false);
+                    cleanup(false);
                 }
             });
 
             // Close on Escape
             const escapeHandler = (e) => {
                 if (e.key === 'Escape') {
-                    document.body.removeChild(overlay);
-                    document.removeEventListener('keydown', escapeHandler);
-                    resolve(false);
+                    cleanup(false);
                 }
             };
             document.addEventListener('keydown', escapeHandler);

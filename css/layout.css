@@ -12,7 +12,9 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 100vw;
+    height: 100dvh;
+    min-height: 100svh;
+    width: 100%;
     max-width: none;
     margin: 0;
     padding: 0;
@@ -37,8 +39,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 var(--spacing-xl);
+    min-height: 64px;
+    padding: var(--spacing-sm) var(--spacing-xl);
     z-index: 50;
+    flex: 0 0 auto;
 }
 
 /* 2. Sidebar - Resource Monitor */
@@ -75,9 +79,11 @@
     flex: 1 1 0%;
     min-width: 0;
     position: relative;
-    overflow-y: auto;
-    padding: var(--spacing-xl);
+    overflow: hidden;
+    padding: 0;
     background: radial-gradient(circle at center, #1a1a24 0%, var(--bg-void) 100%);
+    display: flex;
+    flex-direction: column;
 }
 
 /* 4. Bottom Control Deck - The Interaction Zone */
@@ -90,7 +96,15 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    z-index: 60;
+    z-index: var(--z-control-deck);
+    flex: 0 0 auto;
+    min-height: 132px;
+    padding: var(--spacing-md);
+}
+
+.combo-display {
+    right: var(--spacing-xl);
+    bottom: var(--spacing-xl);
 }
 
 /* Tab Navigation - File Directory Style */
@@ -106,8 +120,11 @@
     background: var(--bg-terminal);
     position: sticky;
     top: 0;
-    z-index: 40;
+    z-index: var(--z-tabs);
     margin: 0; /* Reset margin */
+    flex: 0 0 auto;
+    overflow-x: auto;
+    scrollbar-width: thin;
 }
 
 .content-list {
@@ -118,35 +135,56 @@
     max-height: none; /* Let grid handle height */
 }
 
+.tab-panels-container {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--spacing-xl);
+    -webkit-overflow-scrolling: touch;
+}
+
+.tab-panel {
+    min-height: 100%;
+}
+
+#workstation-list,
+#upgrade-list,
+#boon-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: var(--spacing-lg);
+}
+
+#inventory-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+    gap: var(--spacing-md);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .main-game {
-        grid-template-columns: 1fr;
-        grid-template-rows: 50px 50px 1fr 120px; /* HUD | Tabs | Content | Controls */
+        height: 100dvh;
+        min-height: 100svh;
     }
 
     .hud {
-        grid-column: 1;
-        grid-row: 1;
+        min-height: 56px;
+        padding: var(--spacing-sm) var(--spacing-md);
+        gap: var(--spacing-sm);
+    }
+
+    .hud-center {
+        display: none;
     }
 
     .tabs-nav {
-        grid-column: 1;
-        grid-row: 2;
-        overflow-x: auto;
         white-space: nowrap;
+        display: flex;
     }
 
     .sidebar {
-        display: none; /* Hide sidebar on mobile by default */
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 250px;
-        z-index: 200;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
+        display: none;
     }
 
     .sidebar.active {
@@ -155,12 +193,44 @@
     }
 
     .tabs-content {
-        grid-column: 1;
-        grid-row: 3;
+        flex: 1 1 auto;
+        min-height: 0;
     }
 
     .control-deck {
-        grid-column: 1;
-        grid-row: 4;
+        min-height: 104px;
+        padding: var(--spacing-sm) var(--spacing-md) calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+    }
+
+    .tab-panels-container {
+        padding: var(--spacing-md);
+        padding-bottom: calc(var(--spacing-xl) + env(safe-area-inset-bottom));
+    }
+
+    .cast-container {
+        width: 96px;
+        height: 96px;
+    }
+
+    @media (max-width: 380px) {
+        .control-deck {
+            min-height: 88px;
+            padding: 6px var(--spacing-sm) calc(6px + env(safe-area-inset-bottom));
+        }
+
+        .cast-container {
+            width: 82px;
+            height: 82px;
+        }
+    }
+
+    .combo-display {
+        right: var(--spacing-md);
+        bottom: calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+    }
+
+    .auto-toggle {
+        left: var(--spacing-md);
+        bottom: calc(var(--spacing-sm) + env(safe-area-inset-bottom));
     }
 }

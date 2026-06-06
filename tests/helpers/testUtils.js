@@ -103,19 +103,19 @@ export async function measureTimeAsync(fn) {
  */
 export function suppressConsole() {
     const original = {
-        log: console.log,
+        log: console.info,
         warn: console.warn,
         error: console.error,
         info: console.info
     };
 
-    console.log = jest.fn();
+    console.info = jest.fn();
     console.warn = jest.fn();
     console.error = jest.fn();
     console.info = jest.fn();
 
     return () => {
-        console.log = original.log;
+        console.info = original.log;
         console.warn = original.warn;
         console.error = original.error;
         console.info = original.info;

@@ -23,10 +23,10 @@ export default defineConfig({
     timeout: 60_000,
     use: {
         baseURL: 'http://localhost:8080',
-        trace: 'on-first-retry',
+        trace: 'on-first-retry'
     },
     projects: [
-        { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+        { name: 'chromium', use: { ...devices['Desktop Chrome'] } }
     ],
     // Serve the dev tree (unbundled ES modules from the repo root, exactly what
     // index.html references) so the smoke test exercises the real source, not a
@@ -35,6 +35,6 @@ export default defineConfig({
         command: 'npx http-server . -p 8080 -c-1 --silent',
         url: 'http://localhost:8080',
         reuseExistingServer: !process.env.CI,
-        timeout: 60_000,
-    },
+        timeout: 60_000
+    }
 });

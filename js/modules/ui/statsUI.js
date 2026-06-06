@@ -59,7 +59,7 @@ export class StatsUI {
             const meditationBonus = window.meditationState.getMeditationProductionBonus();
             const bonusPercent = ((meditationBonus - 1.0) * 100).toFixed(1);
             rightColumnStats.push({
-                label: stripEmojisIfLowTier('🧘 Meditation Production Bonus'),
+                label: stripEmojisIfLowTier('Meditation Production Bonus'),
                 value: `+${bonusPercent}%`,
                 className: 'text-success font-bold'
             });

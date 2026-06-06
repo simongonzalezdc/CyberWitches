@@ -373,7 +373,7 @@ describe('GameState - Save File Validation', () => {
             expect(parsedSave.abTotal).toBe(10000);
 
             // Clear state
-            const originalAb = gameState.ab;
+            const _originalAb = gameState.ab;
             gameState.ab = 0;
             gameState.abTotalEarned = 0;
 
