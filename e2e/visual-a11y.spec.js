@@ -10,25 +10,47 @@ const waitForBoot = async (page) => {
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 };
 
-const expectNonBlackViewport = async (page, label) => {
+const waitForRenderedShell = async (page) => {
+    await page.waitForFunction(() => {
+        const visible = (selector) => {
+            const el = document.querySelector(selector);
+            if (!el) return false;
+            const rect = el.getBoundingClientRect();
+            const style = window.getComputedStyle(el);
+            return rect.width > 20 && rect.height > 20 && style.visibility !== 'hidden' && style.opacity !== '0';
+        };
+        return visible('#cast-button') && visible('.tab-btn') && visible('.tabs-content');
+    }, null, { timeout: 10_000 });
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+};
+
+const expectNonBlankViewport = async (page, label) => {
     const image = await page.screenshot({ fullPage: false });
     const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
-    let brightPixels = 0;
+    const base = [data[0], data[1], data[2]];
+    let nonUniformPixels = 0;
+    let visiblePixels = 0;
     for (let i = 0; i < data.length; i += info.channels) {
-        const luminance = data[i] + data[i + 1] + data[i + 2];
-        if (luminance > 48) brightPixels++;
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const delta = Math.abs(r - base[0]) + Math.abs(g - base[1]) + Math.abs(b - base[2]);
+        if (delta > 12) nonUniformPixels++;
+        if (r + g + b > 8) visiblePixels++;
     }
-    expect(brightPixels, `${label} should not be a blank/black viewport`).toBeGreaterThan(1000);
+    expect(visiblePixels, `${label} should not be a pure black viewport`).toBeGreaterThan(1000);
+    expect(nonUniformPixels, `${label} should not be a uniform blank viewport`).toBeGreaterThan(1000);
 };
 
 test('desktop shell has centered modals and semantic tabs', async ({ page }) => {
     await waitForBoot(page);
     await page.locator('#close-story-intro').dispatchEvent('click').catch(() => {});
     await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 });
+    await waitForRenderedShell(page);
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, 'desktop should not have horizontal page overflow').toBeLessThanOrEqual(2);
-    await expectNonBlackViewport(page, 'desktop shell');
+    await expectNonBlankViewport(page, 'desktop shell');
 
     const tabs = page.locator('.tab-btn');
     await expect(tabs.first()).toHaveAttribute('role', 'tab');
@@ -82,10 +104,11 @@ test('mobile shell keeps cast deck visible and content scrollable', async ({ pag
     await waitForBoot(page);
     await page.locator('#close-story-intro').dispatchEvent('click').catch(() => {});
     await page.waitForFunction(() => !document.querySelector('.story-intro-modal'), null, { timeout: 5_000 });
+    await waitForRenderedShell(page);
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, 'mobile should not have horizontal page overflow').toBeLessThanOrEqual(2);
-    await expectNonBlackViewport(page, 'mobile shell');
+    await expectNonBlankViewport(page, 'mobile shell');
 
     const castBox = await page.locator('#cast-button').boundingBox();
     expect(castBox, 'cast button should render on mobile').toBeTruthy();
