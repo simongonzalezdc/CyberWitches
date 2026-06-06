@@ -9,6 +9,11 @@ export class ExperimentUI {
     constructor(gameState, uiManager) {
         this.gameState = gameState;
         this.uiManager = uiManager;
+        this.boundExperimentClick = this.handleExperimentClick.bind(this);
+
+        if (typeof document !== 'undefined') {
+            document.addEventListener('click', this.boundExperimentClick);
+        }
     }
 
     /**
@@ -26,81 +31,6 @@ export class ExperimentUI {
             // Explicitly set button text to ensure no emoji (prevents caching issues)
             expButton.textContent = 'Try Experiment';
             expButton.title = 'Discover new preservation techniques through experimentation';
-
-            // Remove any existing handlers to prevent duplicates
-            expButton.replaceWith(expButton.cloneNode(true));
-            const newExpButton = document.getElementById('experiment-button');
-
-            newExpButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Mark as handled to prevent fallback handler from firing
-                newExpButton.dataset.handled = 'true';
-                setTimeout(() => {
-                    delete newExpButton.dataset.handled;
-                }, 100);
-
-                try {
-                    console.info('Experiment button clicked');
-                    // tryExperiment lives on CraftingManager. The old call used a
-                    // never-set `window.craftingManager` global, so every "Try
-                    // Experiment" click threw (recipe discovery was unreachable here).
-                    const result = this.uiManager.systems.craftingManager.tryExperiment();
-                    const resultLabel = document.getElementById('experiment-result');
-
-                    // Ensure result label is visible
-                    if (resultLabel) {
-                        resultLabel.classList.add('experiment-result-visible');
-                    }
-
-                    if (result.success) {
-                        console.info('Experiment succeeded:', result.recipe.name);
-                        resultLabel.innerHTML = `
-                            <picture>
-                                <source srcset="images/ui/experiment-result.webp" type="image/webp">
-                                <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration">
-                            </picture>
-                            <span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}
-                        `;
-                        resultLabel.className = 'result-label success experiment-result-visible';
-
-                        // Celebration!
-                        if (typeof window.pulseElement === 'function') {
-                            window.pulseElement(newExpButton, 1.2, 400);
-                        }
-                        showNotification(`<span class="css-icon-celebration"></span> Discovered: ${result.recipe.name}!`, 'success');
-
-                        // Check achievements
-                        if (window.achievements) {
-                            window.achievements.checkAchievements();
-                            // Achievement notifications are handled by checkAchievements or global listener
-                        }
-                    } else {
-                        console.info('Experiment failed:', result.message);
-                        resultLabel.innerHTML = `<div class="result-label error experiment-error-message">${result.message}</div>`;
-                        resultLabel.className = 'result-box experiment-result-visible';
-
-                        // Shake on failure
-                        if (typeof window.shakeElement === 'function') {
-                            window.shakeElement(newExpButton, 3, 200);
-                        }
-
-                        // Show notification for feedback
-                        showNotification(result.message, 'error');
-                    }
-
-                    this.update();
-                } catch (error) {
-                    console.error('Error in experiment:', error);
-                    const resultLabel = document.getElementById('experiment-result');
-                    if (resultLabel) {
-                        resultLabel.innerHTML = '<div class="result-label error experiment-error-message">Experiment failed. Try again.</div>';
-                        resultLabel.className = 'result-box experiment-result-visible';
-                    }
-                    showNotification('Experiment failed. Try again.', 'error');
-                }
-            });
         }
 
         // Show discovered recipes with batched DOM updates
@@ -171,5 +101,75 @@ export class ExperimentUI {
         }
 
         container.appendChild(fragment);
+    }
+
+    handleExperimentClick(e) {
+        const target = /** @type {HTMLElement | null} */ (e.target);
+        const newExpButton = /** @type {HTMLElement | null} */ (target?.closest?.('#experiment-button') || null);
+        if (!newExpButton) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Mark as handled to prevent fallback handler from firing.
+        newExpButton.dataset.handled = 'true';
+        setTimeout(() => {
+            delete newExpButton.dataset.handled;
+        }, 100);
+
+        try {
+            console.info('Experiment button clicked');
+            // tryExperiment lives on CraftingManager. The old call used a
+            // never-set `window.craftingManager` global, so every "Try
+            // Experiment" click threw (recipe discovery was unreachable here).
+            const result = this.uiManager.systems.craftingManager.tryExperiment();
+            const resultLabel = document.getElementById('experiment-result');
+
+            // Ensure result label is visible.
+            if (resultLabel) {
+                resultLabel.classList.add('experiment-result-visible');
+            }
+
+            if (result.success) {
+                console.info('Experiment succeeded:', result.recipe.name);
+                resultLabel.innerHTML = `
+                    <picture>
+                        <source srcset="images/ui/experiment-result.webp" type="image/webp">
+                        <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration">
+                    </picture>
+                    <span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}
+                `;
+                resultLabel.className = 'result-label success experiment-result-visible';
+
+                if (typeof window.pulseElement === 'function') {
+                    window.pulseElement(newExpButton, 1.2, 400);
+                }
+                showNotification(`<span class="css-icon-celebration"></span> Discovered: ${result.recipe.name}!`, 'success');
+
+                if (window.achievements) {
+                    window.achievements.checkAchievements();
+                }
+            } else {
+                console.info('Experiment failed:', result.message);
+                resultLabel.innerHTML = `<div class="result-label error experiment-error-message">${result.message}</div>`;
+                resultLabel.className = 'result-box experiment-result-visible';
+
+                if (typeof window.shakeElement === 'function') {
+                    window.shakeElement(newExpButton, 3, 200);
+                }
+
+                showNotification(result.message, 'error');
+            }
+
+            this.update();
+        } catch (error) {
+            console.error('Error in experiment:', error);
+            const resultLabel = document.getElementById('experiment-result');
+            if (resultLabel) {
+                resultLabel.innerHTML = '<div class="result-label error experiment-error-message">Experiment failed. Try again.</div>';
+                resultLabel.className = 'result-box experiment-result-visible';
+            }
+            showNotification('Experiment failed. Try again.', 'error');
+        }
     }
 }

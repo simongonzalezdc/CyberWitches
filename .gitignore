@@ -63,6 +63,9 @@ id_ed25519
 .omx/
 .omc/
 
+# Local proof/audit outputs
+artifacts/
+
 # Playwright MCP test artifacts
 .playwright-mcp/
 

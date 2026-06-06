@@ -128,4 +128,33 @@ test('mobile shell keeps cast deck visible and content scrollable', async ({ pag
     const tabListBox = await page.locator('.tabs-nav').boundingBox();
     expect(tabListBox, 'mobile tabs should remain visible').toBeTruthy();
     expect(tabListBox?.height || 0, 'mobile tabs should have visible height').toBeGreaterThan(20);
+
+    const bottomClearance = await page.evaluate(async () => {
+        const scroller = document.querySelector('.tab-panels-container');
+        const deck = document.querySelector('.control-deck');
+        if (!scroller || !deck) return null;
+
+        scroller.scrollTop = scroller.scrollHeight;
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+        const finalActions = document.querySelector('#workstation-list .workstation-card:last-child .card-actions');
+        const scrollerRect = scroller.getBoundingClientRect();
+        const deckRect = deck.getBoundingClientRect();
+        const actionsRect = finalActions?.getBoundingClientRect();
+
+        return {
+            scrollerBottom: scrollerRect.bottom,
+            deckTop: deckRect.top,
+            finalActionsBottom: actionsRect?.bottom ?? null
+        };
+    });
+
+    expect(bottomClearance, 'mobile scroll clearance metrics should exist').toBeTruthy();
+    if (bottomClearance) {
+        expect(bottomClearance.deckTop, 'control deck should sit below the scroll viewport').toBeGreaterThanOrEqual(bottomClearance.scrollerBottom - 1);
+        expect(bottomClearance.finalActionsBottom, 'last workstation controls should scroll above the deck').not.toBeNull();
+        if (bottomClearance.finalActionsBottom !== null) {
+            expect(bottomClearance.finalActionsBottom).toBeLessThanOrEqual(bottomClearance.scrollerBottom);
+        }
+    }
 });

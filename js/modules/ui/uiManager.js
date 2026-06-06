@@ -112,13 +112,19 @@ export class UIManager {
                     btn.setAttribute('title', `Unlocks at: ${unlockCondition}`);
                 }
             }
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (btn.dataset.tab) {
-                    this.switchTab(tabName);
-                }
-            });
             btn.addEventListener('keydown', (e) => this.handleTabKeydown(e, index));
+        });
+
+        const tabClickRoot = document.querySelector('.tabs-nav') || document;
+        tabClickRoot.addEventListener('click', (e) => {
+            const target = /** @type {HTMLElement | null} */ (e.target);
+            const tabButton = /** @type {HTMLElement | null} */ (target?.closest?.('.tab-btn, .tab-button') || null);
+            if (!tabButton || !this.tabButtons.includes(tabButton)) return;
+
+            e.preventDefault();
+            if (tabButton.dataset.tab) {
+                this.switchTab(tabButton.dataset.tab);
+            }
         });
 
         this.tabPanes.forEach(pane => {
@@ -307,18 +313,10 @@ export class UIManager {
             });
         };
 
-        // Use the View Transitions API for a smooth crossfade between tabs when
-        // it's supported and the user hasn't asked for reduced motion. Pure
-        // progressive enhancement: everywhere else the swap is instant, exactly
-        // as before. Cast avoids coupling to a specific TS DOM lib version.
-        const prefersReducedMotion = typeof window.matchMedia === 'function'
-            && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const startViewTransition = /** @type {any} */ (document).startViewTransition;
-        if (typeof startViewTransition === 'function' && !prefersReducedMotion) {
-            startViewTransition.call(document, applyPaneVisibility);
-        } else {
-            applyPaneVisibility();
-        }
+        // Keep tab changes synchronous. The View Transitions API created a short
+        // top-layer hit-test window where fast user clicks landed on <html>
+        // instead of visible controls, so reliability wins over crossfade polish.
+        applyPaneVisibility();
 
         // Scroll to top of new tab
         window.scrollTo(0, 0);

@@ -523,10 +523,9 @@
 
 /* Android Chrome fixes */
 @media screen and (max-width: 767px) {
-    /* Fix Android viewport height */
+    /* Let the parent flex layout reserve space for the bottom control deck. */
     .tabs-content {
-        min-height: calc(100vh - 60px);
-        min-height: calc(100dvh - 60px); /* Dynamic viewport height */
+        min-height: 0;
     }
 }
 
