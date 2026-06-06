@@ -73,12 +73,12 @@ async function optimizeImage(config) {
     
     try {
         // Create backup
-        console.log(`📦 Backing up ${config.name}...`);
+        console.info(`📦 Backing up ${config.name}...`);
         fs.copyFileSync(inputPath, backupPath);
         
         // Get image metadata
         const metadata = await sharp(inputPath).metadata();
-        console.log(`📐 Original size: ${metadata.width}x${metadata.height} (${(originalSize / 1024 / 1024).toFixed(2)} MB)`);
+        console.info(`📐 Original size: ${metadata.width}x${metadata.height} (${(originalSize / 1024 / 1024).toFixed(2)} MB)`);
         
         // Calculate new dimensions (maintain aspect ratio)
         let newWidth = metadata.width;
@@ -91,7 +91,7 @@ async function optimizeImage(config) {
         }
         
         // Optimize image
-        console.log(`🔧 Optimizing ${config.name} to ${newWidth}x${newHeight}...`);
+        console.info(`🔧 Optimizing ${config.name} to ${newWidth}x${newHeight}...`);
         
         await sharp(inputPath)
             .resize(newWidth, newHeight, {
@@ -114,21 +114,21 @@ async function optimizeImage(config) {
         const newSize = newStats.size;
         const savings = ((originalSize - newSize) / originalSize * 100).toFixed(1);
         
-        console.log(`✅ Optimized ${config.name}: ${(newSize / 1024 / 1024).toFixed(2)} MB (${savings}% reduction)`);
-        console.log(`   Backup saved as: ${path.basename(backupPath)}\n`);
+        console.info(`✅ Optimized ${config.name}: ${(newSize / 1024 / 1024).toFixed(2)} MB (${savings}% reduction)`);
+        console.info(`   Backup saved as: ${path.basename(backupPath)}\n`);
         
     } catch (error) {
         console.error(`❌ Error optimizing ${config.name}:`, error.message);
         // Restore from backup if optimization failed
         if (fs.existsSync(backupPath)) {
             fs.copyFileSync(backupPath, inputPath);
-            console.log('   Restored from backup\n');
+            console.info('   Restored from backup\n');
         }
     }
 }
 
 async function optimizeAll() {
-    console.log('🚀 Starting image optimization...\n');
+    console.info('🚀 Starting image optimization...\n');
     
     // Create backups directory if it doesn't exist
     if (!fs.existsSync(backgroundsDir)) {
@@ -141,9 +141,9 @@ async function optimizeAll() {
         await optimizeImage(config);
     }
     
-    console.log('✨ Optimization complete!');
-    console.log('\n📝 Note: Original files are backed up with .backup.png extension');
-    console.log('   You can delete backups once you verify the optimized images look good.\n');
+    console.info('✨ Optimization complete!');
+    console.info('\n📝 Note: Original files are backed up with .backup.png extension');
+    console.info('   You can delete backups once you verify the optimized images look good.\n');
 }
 
 optimizeAll().catch(console.error);

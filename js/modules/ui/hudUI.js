@@ -95,7 +95,7 @@ export class HUDUI {
             const castManager = this.uiManager.systems.castManager;
             const autoMaintaining = castManager && castManager.getAutoCastEnabled && castManager.getAutoCastEnabled();
 
-            this.comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)${autoMaintaining ? ' <span class="auto-indicator">⚡</span>' : ''}`;
+            this.comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)${autoMaintaining ? ' <span class="auto-indicator">AUTO</span>' : ''}`;
             this.comboDisplay.style.display = 'block';
 
             // Update auto-combo visual feedback

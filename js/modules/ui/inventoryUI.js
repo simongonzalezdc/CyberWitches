@@ -3,7 +3,7 @@
  * Manages the rendering and updates of the Inventory tab.
  */
 
-import { getTierSymbol, getTierAppropriateStyle } from './uiHelpers.js';
+import { getTierAppropriateStyle } from './uiHelpers.js';
 
 export class InventoryUI {
     constructor(gameState, uiManager) {
@@ -224,7 +224,7 @@ export class InventoryUI {
                 itemCard.dataset.id = item.id;
 
                 // Compact card style
-                itemCard.style.background = isTier0 ? '#000000' : 'rgba(20, 20, 30, 0.6)';
+                itemCard.style.background = isTier0 ? '#05050a' : 'rgba(20, 20, 30, 0.6)';
                 itemCard.style.border = `1px solid ${tierStyle.borderGlow}`;
                 itemCard.style.borderRadius = '4px';
                 itemCard.style.padding = '8px';

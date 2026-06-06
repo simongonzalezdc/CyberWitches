@@ -118,7 +118,7 @@ export default [
             'eqeqeq': ['warn', 'smart'],      // Encourage === over ==
             'no-var': 'error',                // Ban 'var', use let/const
             'prefer-const': 'warn',           // Suggest const if not reassigned
-            'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug'] }], // Allow logs for now
+            'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug', 'group', 'groupEnd', 'time', 'timeEnd'] }],
             'no-debugger': 'warn',
 
             // Style

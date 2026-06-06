@@ -111,7 +111,7 @@ export function createParticle(x, y, text, color = '#FF2DAA') {
         fontSize: '24px',
         fontWeight: 'bold',
         pointerEvents: 'none',
-        zIndex: '10000',
+        zIndex: '90',
         transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
         textShadow: `0 0 10px ${color}, 0 0 20px ${color}, 0 0 30px ${color}`,
         filter: `drop-shadow(0 0 5px ${color})`,

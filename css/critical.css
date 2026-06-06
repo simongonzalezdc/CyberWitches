@@ -61,9 +61,9 @@ body {
 
 /* Main game container */
 .main-game {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 16px;
+    max-width: none;
+    margin: 0;
+    padding: 0;
 }
 
 /* Screen reader only */

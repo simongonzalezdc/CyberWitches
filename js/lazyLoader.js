@@ -30,7 +30,7 @@ export class LazyLoader {
         // Start loading
         const loadPromise = (async () => {
             try {
-                console.log(`[LazyLoader] Loading module: ${modulePath}`);
+                console.info(`[LazyLoader] Loading module: ${modulePath}`);
                 const module = await import(modulePath);
 
                 // Cache the module
@@ -39,7 +39,7 @@ export class LazyLoader {
                 // Remove from loading promises
                 this.loadingPromises.delete(modulePath);
 
-                console.log(`[LazyLoader] Loaded module: ${modulePath}`);
+                console.info(`[LazyLoader] Loaded module: ${modulePath}`);
                 return exportName === 'default' ? module.default : module[exportName];
             } catch (error) {
                 console.error(`[LazyLoader] Failed to load ${modulePath}:`, error);

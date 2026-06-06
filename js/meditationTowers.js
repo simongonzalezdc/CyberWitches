@@ -1,4 +1,4 @@
-import { MEDITATION_TOWERS, MEDITATION_DISTRACTIONS } from './data.js';
+import { MEDITATION_TOWERS } from './data.js';
 
 /**
  * Meditation Tower Defense Renderer - Handles canvas rendering for tower defense gameplay
@@ -57,8 +57,8 @@ export class MeditationTowers {
             // Force a render to ensure path is visible
             this.render();
             
-            console.log('Meditation towers initialized, canvas size:', this.canvas.width, this.canvas.height, 'cell size:', this.cellSize);
-            console.log('Path tiles count:', this.meditationState?.pathTiles?.size || 0);
+            console.info('Meditation towers initialized, canvas size:', this.canvas.width, this.canvas.height, 'cell size:', this.cellSize);
+            console.info('Path tiles count:', this.meditationState?.pathTiles?.size || 0);
         }, 100);
     }
     
@@ -98,7 +98,7 @@ export class MeditationTowers {
         // Calculate cell size based on display size (not internal resolution)
         this.cellSize = size / this.meditationState.gridSize;
         
-        console.log('Canvas resized:', size, 'cell size:', this.cellSize, 'dpr:', dpr, 'container:', containerWidth, 'x', containerHeight);
+        console.info('Canvas resized:', size, 'cell size:', this.cellSize, 'dpr:', dpr, 'container:', containerWidth, 'x', containerHeight);
     }
     
     /**
@@ -140,21 +140,21 @@ export class MeditationTowers {
             if (existingTower) {
                 // Clicked on existing tower - try to upgrade it
                 if (this.meditationState && this.meditationState.upgradeTower(existingTower)) {
-                    console.log('Tower upgraded successfully');
+                    console.info('Tower upgraded successfully');
                     // Update UI
                     if (window.meditationUI) {
                         window.meditationUI.updateTowerList();
                         window.meditationUI.updateMeditationInventory();
                     }
                 } else {
-                    console.log('Cannot upgrade tower - cannot afford or max level');
+                    console.info('Cannot upgrade tower - cannot afford or max level');
                 }
             } else if (this.selectedTowerId) {
                 // No tower at position, try to place selected tower
-                console.log('Canvas clicked at grid position:', gridX, gridY, 'Tower:', this.selectedTowerId);
+                console.info('Canvas clicked at grid position:', gridX, gridY, 'Tower:', this.selectedTowerId);
                 
                 if (this.meditationState && this.meditationState.placeTower(this.selectedTowerId, gridX, gridY)) {
-                    console.log('Tower placed successfully');
+                    console.info('Tower placed successfully');
                     this.selectedTowerId = null; // Clear selection after placement
                     
                     // Clear selected button state
@@ -169,7 +169,7 @@ export class MeditationTowers {
                         window.meditationUI.updateTowerList();
                     }
                 } else {
-                    console.log('Failed to place tower - invalid position or cannot afford');
+                    console.info('Failed to place tower - invalid position or cannot afford');
                 }
             }
         });
@@ -1056,10 +1056,7 @@ export class MeditationTowers {
             
             if (isEnhanced) {
                 // Enhanced attack visuals with trail and glow
-                const time = Date.now() * 0.001;
-                
                 // Draw trail
-                const trailLength = 15;
                 const trailGradient = this.ctx.createLinearGradient(
                     x - (attack.toX - attack.fromX) * 0.1,
                     y - (attack.toY - attack.fromY) * 0.1,
@@ -1088,6 +1085,7 @@ export class MeditationTowers {
                 this.ctx.shadowBlur = 0;
                 
                 // Draw enhanced projectile with pulsing glow
+                const time = Date.now() * 0.001;
                 const pulse = 0.8 + Math.sin(time * 8 + attack.progress * 10) * 0.2;
                 const projectileSize = 4 + pulse;
                 
@@ -1155,8 +1153,6 @@ export class MeditationTowers {
             
             if (isEnhanced) {
                 // Enhanced impact effect with expanding rings and particles
-                const time = Date.now() * 0.001;
-                
                 // Draw expanding rings
                 const ringCount = 3;
                 for (let ring = 0; ring < ringCount; ring++) {
@@ -1302,4 +1298,3 @@ export class MeditationTowers {
         return colors[towerId] || colors['peace_circle'];
     }
 }
-

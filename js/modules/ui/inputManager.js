@@ -95,7 +95,7 @@ export class InputManager {
         if (handled) {
             e.preventDefault();
             e.stopPropagation();
-            // console.log('InputManager handled action:', action);
+            // console.info('InputManager handled action:', action);
         }
     }
 

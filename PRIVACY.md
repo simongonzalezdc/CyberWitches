@@ -76,15 +76,15 @@ A random device ID is generated and stored locally to differentiate between mult
 ## Data We DO NOT Collect
 
 We explicitly DO NOT collect:
-- ❌ Name, email, or contact information
-- ❌ Payment information (game is free)
-- ❌ Social media accounts
-- ❌ Photos or camera access
-- ❌ Microphone or audio recordings
-- ❌ Location data
-- ❌ Contacts or address book
-- ❌ Browser history
-- ❌ Data from other apps
+- Name, email, or contact information
+- Payment information (game is free)
+- Social media accounts
+- Photos or camera access
+- Microphone or audio recordings
+- Location data
+- Contacts or address book
+- Browser history
+- Data from other apps
 
 ## How We Use Data
 
@@ -105,14 +105,13 @@ We do NOT:
 
 ### Tone.js (Audio Library)
 
-We load the Tone.js library from a CDN (Content Delivery Network) to provide audio functionality.
+Tone.js is vendored in this repository at `vendor/tone-15.1.22.js` and served from the same origin as the game. No third-party CDN request is made for audio.
 
-- **Provider**: Cloudflare CDN
+- **Provider**: Same-origin static asset
 - **Purpose**: Audio synthesis
-- **Data collected by CDN**: Standard web server logs (IP address, user agent, timestamp)
-- **Privacy Policy**: https://www.cloudflare.com/privacypolicy/
+- **Third-party data transfer**: None for the default static build
 
-**Note**: This is a standard practice for loading libraries and cannot be used to track you individually.
+**Note**: If a future hosted build reintroduces a remote audio dependency, this policy must be updated before release.
 
 ### Hosting Provider
 
@@ -195,7 +194,7 @@ However, please note:
 
 - **Local Data**: Never leaves your device
 - **Cloud Save** (if implemented): May be stored on servers in different countries
-- **CDN (Tone.js)**: May serve content from servers worldwide
+- **Audio library**: Served with the app from the same host
 
 All data transmission uses encryption (HTTPS) and complies with GDPR standards.
 

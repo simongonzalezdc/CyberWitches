@@ -3,7 +3,6 @@
  * Manages the rendering and updates of the Experiment tab.
  */
 
-import { stripEmojisIfLowTier } from './uiHelpers.js';
 import { showNotification } from './notifications.js';
 
 export class ExperimentUI {
@@ -43,7 +42,7 @@ export class ExperimentUI {
                 }, 100);
 
                 try {
-                    console.log('Experiment button clicked');
+                    console.info('Experiment button clicked');
                     // tryExperiment lives on CraftingManager. The old call used a
                     // never-set `window.craftingManager` global, so every "Try
                     // Experiment" click threw (recipe discovery was unreachable here).
@@ -56,7 +55,7 @@ export class ExperimentUI {
                     }
 
                     if (result.success) {
-                        console.log('Experiment succeeded:', result.recipe.name);
+                        console.info('Experiment succeeded:', result.recipe.name);
                         resultLabel.innerHTML = `
                             <picture>
                                 <source srcset="images/ui/experiment-result.webp" type="image/webp">
@@ -74,11 +73,11 @@ export class ExperimentUI {
 
                         // Check achievements
                         if (window.achievements) {
-                            const newAchievements = window.achievements.checkAchievements();
+                            window.achievements.checkAchievements();
                             // Achievement notifications are handled by checkAchievements or global listener
                         }
                     } else {
-                        console.log('Experiment failed:', result.message);
+                        console.info('Experiment failed:', result.message);
                         resultLabel.innerHTML = `<div class="result-label error experiment-error-message">${result.message}</div>`;
                         resultLabel.className = 'result-box experiment-result-visible';
 
@@ -120,12 +119,12 @@ export class ExperimentUI {
             // Validate recipe has required fields
             const recipeInputs = recipe.inputs || {};
             const recipeOutputs = recipe.outputs || {};
-            
+
             // Debug logging
-            console.log('📋 Rendering recipe:', recipeId, { 
+            console.info('📋 Rendering recipe:', recipeId, {
                 name: recipe.name,
-                inputs: recipeInputs, 
-                outputs: recipeOutputs 
+                inputs: recipeInputs,
+                outputs: recipeOutputs
             });
             
             card.innerHTML = `

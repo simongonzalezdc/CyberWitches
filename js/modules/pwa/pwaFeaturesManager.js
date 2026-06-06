@@ -45,7 +45,7 @@ export class PWAFeaturesManager {
             try {
                 const registration = await navigator.serviceWorker.register('/sw.js');
                 this.serviceWorker = registration;
-                console.log('Service Worker registered:', registration);
+                console.info('Service Worker registered:', registration);
             } catch (error) {
                 console.error('Service Worker registration failed:', error);
             }
@@ -202,13 +202,13 @@ export class PWAFeaturesManager {
                 this.showInstallWelcomeModal();
                 localStorage.setItem('installPromptShown', 'true');
             } else if (this.uiManager && this.uiManager.showNotification) {
-                this.uiManager.showNotification('📱 Install Cyber Witches for offline play!', 'info', 5000);
+                this.uiManager.showNotification('Install Cyber Witches for offline play.', 'info', 5000);
             }
         });
 
         window.addEventListener('appinstalled', () => {
             this.deferredPrompt = null;
-            console.log('PWA was installed');
+            console.info('PWA was installed');
             if (this.uiManager && this.uiManager.showNotification) {
                 this.uiManager.showNotification('App installed successfully!', 'success');
             }
@@ -227,7 +227,7 @@ export class PWAFeaturesManager {
                 const { outcome } = await deferredPrompt.userChoice;
 
                 if (outcome === 'accepted') {
-                    console.log('User accepted install prompt');
+                    console.info('User accepted install prompt');
                     if (this.uiManager && this.uiManager.showNotification) {
                         this.uiManager.showNotification('<span class="css-icon-celebration"></span> Installing Cyber Witches...', 'success');
                     }
@@ -237,7 +237,7 @@ export class PWAFeaturesManager {
                         installButton.style.display = 'none';
                     }
                 } else {
-                    console.log('User dismissed install prompt');
+                    console.info('User dismissed install prompt');
                 }
 
                 this.deferredPrompt = null;
@@ -259,23 +259,26 @@ export class PWAFeaturesManager {
         const modal = document.createElement('div');
         modal.id = 'install-welcome-modal';
         modal.className = 'install-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'install-welcome-title');
         modal.innerHTML = `
             <div class="install-modal-content">
                 <div class="install-modal-header">
-                    <h2>${stripEmojisIfLowTier('✨ Welcome to Cyber Witches!')}</h2>
+                    <h2 id="install-welcome-title">${stripEmojisIfLowTier('Welcome to Cyber Witches')}</h2>
                     <button class="install-modal-close" aria-label="Close">&times;</button>
                 </div>
                 <div class="install-modal-body">
                     <p><strong>Install the app for the best experience:</strong></p>
                     <ul class="install-benefits">
-                        <li>${stripEmojisIfLowTier('📱 Play offline - No internet required')}</li>
-                        <li>${stripEmojisIfLowTier('💾 Auto-save - Your progress is always safe')}</li>
-                        <li>${stripEmojisIfLowTier('🚀 Faster startup - Launch like a desktop app')}</li>
-                        <li>${stripEmojisIfLowTier('🎮 Full screen - Immersive gameplay')}</li>
+                        <li>${stripEmojisIfLowTier('Play offline - no internet required')}</li>
+                        <li>${stripEmojisIfLowTier('Auto-save - your progress is always safe')}</li>
+                        <li>${stripEmojisIfLowTier('Faster startup - launch like a desktop app')}</li>
+                        <li>${stripEmojisIfLowTier('Full screen - immersive gameplay')}</li>
                     </ul>
                     <div class="install-modal-actions">
                         <button id="install-welcome-button" class="btn-primary btn-install-large">
-                            <span class="install-icon">${stripEmojisIfLowTier('📱')}</span> Install Now
+                            Install Now
                         </button>
                         <button class="btn-secondary install-modal-skip">Maybe Later</button>
                     </div>
@@ -339,9 +342,9 @@ export class PWAFeaturesManager {
 
         if (isIOS) {
             instructions = `
-                <h3>${stripEmojisIfLowTier('📱 Install on iOS (Safari)')}</h3>
+                <h3>${stripEmojisIfLowTier('Install on iOS Safari')}</h3>
                 <ol>
-                    <li>Tap the <strong>Share</strong> button ${stripEmojisIfLowTier('<span class="pwa-icon">📤</span>')} at the bottom</li>
+                    <li>Tap the <strong>Share</strong> button at the bottom</li>
                     <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
                     <li>Tap <strong>"Add"</strong> to confirm</li>
                     <li>Launch from your home screen!</li>
@@ -349,9 +352,9 @@ export class PWAFeaturesManager {
             `;
         } else if (isAndroid) {
             instructions = `
-                <h3>${stripEmojisIfLowTier('📱 Install on Android')}</h3>
+                <h3>${stripEmojisIfLowTier('Install on Android')}</h3>
                 <ol>
-                    <li>Tap the <strong>Menu</strong> button ${stripEmojisIfLowTier('<span class="pwa-icon">⋮</span>')} (three dots)</li>
+                    <li>Tap the <strong>Menu</strong> button (three dots)</li>
                     <li>Select <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></li>
                     <li>Tap <strong>"Install"</strong> to confirm</li>
                     <li>Launch from your home screen!</li>
@@ -359,9 +362,9 @@ export class PWAFeaturesManager {
             `;
         } else if (isChrome || isEdge) {
             instructions = `
-                <h3>${stripEmojisIfLowTier('💻 Install on Desktop (Chrome/Edge)')}</h3>
+                <h3>${stripEmojisIfLowTier('Install on Desktop Chrome/Edge')}</h3>
                 <ol>
-                    <li>Look for the <strong>Install</strong> icon ${stripEmojisIfLowTier('<span class="pwa-icon">➕</span>')} in the address bar</li>
+                    <li>Look for the <strong>Install</strong> icon in the address bar</li>
                     <li>Click it and select <strong>"Install"</strong></li>
                     <li>Or use the <strong>"Install"</strong> button in the top bar</li>
                     <li>Launch from your desktop or app menu!</li>
@@ -369,7 +372,7 @@ export class PWAFeaturesManager {
             `;
         } else {
             instructions = `
-                <h3>${stripEmojisIfLowTier('📱 Install Instructions')}</h3>
+                <h3>${stripEmojisIfLowTier('Install Instructions')}</h3>
                 <p>Look for an <strong>"Install"</strong> or <strong>"Add to Home Screen"</strong> option in your browser menu.</p>
                 <p>On desktop: Check the address bar for an install icon.</p>
                 <p>On mobile: Use the browser's share menu to add to home screen.</p>
@@ -378,10 +381,13 @@ export class PWAFeaturesManager {
 
         const modal = document.createElement('div');
         modal.className = 'install-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'install-instructions-title');
         modal.innerHTML = `
             <div class="install-modal-content">
                 <div class="install-modal-header">
-                    <h2>${stripEmojisIfLowTier('📱 How to Install')}</h2>
+                    <h2 id="install-instructions-title">${stripEmojisIfLowTier('How to Install')}</h2>
                     <button class="install-modal-close" aria-label="Close">&times;</button>
                 </div>
                 <div class="install-modal-body">
@@ -404,4 +410,3 @@ export class PWAFeaturesManager {
         });
     }
 }
-

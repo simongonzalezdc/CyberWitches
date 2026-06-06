@@ -34,7 +34,7 @@ const staticFiles = [
 const staticDirs = ['icons', 'docs', 'images', 'css', 'styles', 'vendor'];
 
 async function copyStaticFiles() {
-    console.log('📁 Copying static files...');
+    console.info('📁 Copying static files...');
   
     // Create dist directory
     if (!existsSync(distDir)) {
@@ -47,7 +47,7 @@ async function copyStaticFiles() {
         const dst = join(distDir, file);
         if (existsSync(src)) {
             await copyFile(src, dst);
-            console.log(`  ✓ Copied ${file}`);
+            console.info(`  ✓ Copied ${file}`);
         }
     }
   
@@ -75,15 +75,14 @@ async function copyStaticFiles() {
         const dst = join(distDir, dir);
         if (existsSync(src)) {
             await copyDir(src, dst);
-            console.log(`  ✓ Copied directory ${dir}`);
+            console.info(`  ✓ Copied directory ${dir}`);
         }
     }
 }
 
 async function buildJavaScript() {
-    console.log('🔨 Building JavaScript bundles...');
+    console.info('🔨 Building JavaScript bundles...');
   
-    const jsDir = join(__dirname, 'js');
     const distJsDir = join(distDir, 'js');
   
     if (!existsSync(distJsDir)) {
@@ -100,15 +99,15 @@ async function buildJavaScript() {
         treeShaking: true,
         platform: 'browser',
         charset: 'utf8',
-        drop: isProduction ? ['console'] : [], // Remove console.log in production
+        drop: isProduction ? ['console'] : [], // Remove console.info in production
         legalComments: 'none', // Remove comments in production
         external: ['https://cdn.jsdelivr.net/npm/tone@15.1.22/build/Tone.js'] // Keep Tone.js external
     };
   
     try {
     // Build main game bundle - bundles everything into one file
-        console.log('  📦 Building main game bundle...');
-        const result = await esbuild.build({
+        console.info('  📦 Building main game bundle...');
+        await esbuild.build({
             ...buildOptions,
             bundle: true,
             entryPoints: ['js/game.js'],
@@ -116,7 +115,7 @@ async function buildJavaScript() {
             splitting: false
         });
     
-        console.log('    ✓ Main game bundle built');
+        console.info('    ✓ Main game bundle built');
     
         // Get bundle size
         const bundlePath = join(distJsDir, 'game.bundle.js');
@@ -124,7 +123,7 @@ async function buildJavaScript() {
             const stats = await stat(bundlePath);
             const sizeKB = (stats.size / 1024).toFixed(2);
             const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-            console.log(`    📊 Bundle size: ${sizeKB} KB (${sizeMB} MB)`);
+            console.info(`    📊 Bundle size: ${sizeKB} KB (${sizeMB} MB)`);
         }
     
         // Special handling for debug.js in production
@@ -132,7 +131,7 @@ async function buildJavaScript() {
             let content = readFileSync(bundlePath, 'utf8');
             content = content.replace(/const DEBUG = true;/g, 'const DEBUG = false;');
             writeFileSync(bundlePath, content, 'utf8');
-            console.log('    ✓ DEBUG disabled in production');
+            console.info('    ✓ DEBUG disabled in production');
         }
     
         // Update index.html to use bundled file
@@ -148,11 +147,11 @@ async function buildJavaScript() {
 }
 
 async function updateIndexHtml() {
-    console.log('📝 Updating index.html for production bundles...');
+    console.info('📝 Updating index.html for production bundles...');
     const indexPath = join(distDir, 'index.html');
   
     if (!existsSync(indexPath)) {
-        console.log('  ⚠ index.html not found in dist, skipping update');
+        console.info('  ⚠ index.html not found in dist, skipping update');
         return;
     }
   
@@ -173,20 +172,20 @@ async function updateIndexHtml() {
     html = html.replace('</body>', bundledScript + '\n</body>');
   
     writeFileSync(indexPath, html, 'utf8');
-    console.log('  ✓ Updated index.html with bundled script');
+    console.info('  ✓ Updated index.html with bundled script');
 }
 
 async function build() {
-    console.log(isProduction ? '🚀 Building for production...' : '🔧 Building for development...');
-    console.log('');
+    console.info(isProduction ? '🚀 Building for production...' : '🔧 Building for development...');
+    console.info('');
   
     try {
         await copyStaticFiles();
-        console.log('');
+        console.info('');
         await buildJavaScript();
-        console.log('');
-        console.log('✅ Build complete!');
-        console.log(`📦 Output directory: ${distDir}`);
+        console.info('');
+        console.info('✅ Build complete!');
+        console.info(`📦 Output directory: ${distDir}`);
     } catch (error) {
         console.error('❌ Build failed:', error);
         process.exit(1);
@@ -194,4 +193,3 @@ async function build() {
 }
 
 build();
-

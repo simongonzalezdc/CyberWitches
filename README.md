@@ -37,7 +37,7 @@ Core systems: manual & automatic spell casting, preservation-chamber automation,
 
 ## Why / how it works
 
-The hook is that the **UI is diegetic**. Hex Compiler uses a five-tier design system (Tier 0–4) that maps your progress onto the interface: Tier 0 is monochrome with maximum glitch (screen tearing, chromatic aberration, scanlines, text corruption, jitter), and each tier you reach adds color, sound effects (Tier 2+), full graphics, and finally procedural ambient music (Tier 4+) as the glitches resolve to nothing. The "fading magic" theme is literally rendered as visual instability that you fix by playing. Audio is driven by [Tone.js](https://tonejs.github.io/) (loaded via CDN), styling is plain CSS with custom properties, and offline play comes from a service worker + web app manifest.
+The hook is that the **UI is diegetic**. Hex Compiler uses a five-tier design system (Tier 0-4) that maps your progress onto the interface: Tier 0 is monochrome with maximum glitch (screen tearing, chromatic aberration, scanlines, text corruption, jitter), and each tier you reach adds color, sound effects (Tier 2+), full graphics, and finally procedural ambient music (Tier 4+) as the glitches resolve to nothing. The "fading magic" theme is literally rendered as visual instability that you fix by playing. Audio is driven by self-hosted [Tone.js](https://tonejs.github.io/) from `vendor/tone-15.1.22.js`, styling is plain CSS with custom properties, and offline play comes from a service worker + web app manifest.
 
 ## Best-fit searches
 

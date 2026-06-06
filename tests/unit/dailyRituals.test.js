@@ -89,7 +89,7 @@ describe('Daily Rituals', () => {
 
         test('should not reset on same day', () => {
             dailyRituals.checkDailyRefresh();
-            const tasksBefore = dailyRituals.activeTasks.length;
+            const _tasksBefore = dailyRituals.activeTasks.length;
             dailyRituals.taskProgress = { task1: 50 };
 
             dailyRituals.checkDailyRefresh();

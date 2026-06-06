@@ -23,7 +23,7 @@ const TUTORIAL_STEPS = [
     {
         id: 'cast_intro',
         title: 'Cast Your First Spell',
-        message: 'Click the ✨ CAST button to gather magical elements. Each cast produces elemental essences needed for preservation.',
+        message: 'Click the CAST button to gather magical elements. Each cast produces elemental essences needed for preservation.',
         target: '.btn-cast',
         position: 'bottom',
         action: 'cast', // Wait for cast action
@@ -264,7 +264,7 @@ class OnboardingSystem {
 
         // Make target element clickable
         targetElement.style.position = 'relative';
-        targetElement.style.zIndex = '9999';
+        targetElement.style.zIndex = '120';
     }
 
     /**
@@ -359,7 +359,7 @@ class OnboardingSystem {
     /**
      * Handle action from game (called externally)
      */
-    handleAction(actionType, data = {}) {
+    handleAction(actionType, _data = {}) {
         if (!this.isActive) return;
 
         const currentStep = TUTORIAL_STEPS[this.currentStep];
@@ -436,7 +436,7 @@ class OnboardingSystem {
             this.tutorialTooltip.innerHTML = `
                 <div class="tutorial-tooltip-content">
                     <h3 class="success-title">
-                        ✨ Tutorial Complete!
+                        Tutorial Complete!
                     </h3>
                     <p>
                         You're now a certified Hex Compiler! Keep exploring, and may your magic never fade.
@@ -490,7 +490,7 @@ class OnboardingSystem {
         }
 
         // Reset z-index of any highlighted elements
-        /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[style*="z-index: 9999"]')).forEach(el => {
+        /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('[style*="z-index: 120"]')).forEach(el => {
             el.style.zIndex = '';
         });
     }

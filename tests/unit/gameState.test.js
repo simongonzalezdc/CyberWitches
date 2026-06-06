@@ -532,7 +532,7 @@ describe('GameState - Core Functionality', () => {
         test('should scale production with delta time', () => {
             gameState.workstations['ws_fire_forge'] = 1;
 
-            const production1 = gameState.calculateTotalProduction(1.0);
+            const _production1 = gameState.calculateTotalProduction(1.0);
             const production2 = gameState.calculateTotalProduction(2.0);
 
             // Production with 2 seconds should be roughly 2x production with 1 second
@@ -606,7 +606,7 @@ describe('GameState - Core Functionality', () => {
 
         test('should update buffs over time', () => {
             gameState.addBuff('production', 1.5, 10);
-            const initialLength = gameState.activeBuffs.length;
+            const _initialLength = gameState.activeBuffs.length;
 
             // Update buffs with large delta to expire them
             gameState.updateBuffs(20);
@@ -686,7 +686,7 @@ describe('GameState - Core Functionality', () => {
 
         test('should handle prestige bonus purchases', () => {
             gameState.prestigePoints = 100;
-            const initialPoints = gameState.prestigePoints;
+            const _initialPoints = gameState.prestigePoints;
 
             // Try to purchase a prestige bonus (may or may not succeed)
             const cost = 10;
@@ -781,7 +781,7 @@ describe('GameState - Core Functionality', () => {
         });
 
         test('should grant ingredients from casting', () => {
-            const initialFire = gameState.inventory['fire_essence'] || 0;
+            const _initialFire = gameState.inventory['fire_essence'] || 0;
             gameState.cast();
             // Cast should grant some base ingredients
             expect(gameState.totalTaps).toBeGreaterThan(0);

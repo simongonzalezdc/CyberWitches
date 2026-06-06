@@ -26,7 +26,6 @@ import { PWAFeaturesManager } from './modules/pwa/pwaFeaturesManager.js';
 import { initUIHelpers } from './modules/ui/uiHelpers.js';
 import accessibilityManager from './accessibility.js';
 import featureIndicatorManager from './featureIndicators.js';
-import memoryLeakPreventionManager from './memoryLeakFix.js';
 import { handleError } from './errorHandler.js';
 import { UnifiedGameLoop } from './core/UnifiedGameLoop.js';
 import { createErrorBoundary } from './core/ErrorBoundary.js';
@@ -37,7 +36,7 @@ import { pulseElement, shakeElement, slideIn } from './animations.js';
 import { ELEMENT_SPECIALIZATIONS } from './elementSpecialization.js';
 
 export async function initGame() {
-    console.log('Initializing Hex Compiler...');
+    console.info('Initializing Hex Compiler...');
 
     try {
         // 0. Expose the static data tables as globals. Several modules (inventoryUI,
@@ -164,7 +163,7 @@ export async function initGame() {
         
         // Register visual updates (60 FPS) - particle systems, animations
         // Particle system will be updated via UnifiedGameLoop if initialized
-        gameLoop.registerVisualUpdate((delta) => {
+        gameLoop.registerVisualUpdate((_delta) => {
             // Update particle system if initialized and active
             if (particleSystem && particleSystem.initialized && !particleSystem.isPaused) {
                 const currentTime = performance.now();
@@ -173,7 +172,7 @@ export async function initGame() {
         });
         
         // Register render callbacks (60 FPS with interpolation)
-        gameLoop.registerRender((alpha) => {
+        gameLoop.registerRender((_alpha) => {
             // Update UI at 60 FPS for smooth updates
             uiManager.updateAllUI();
             uiManager.hudUI.updateABPS();
@@ -251,7 +250,7 @@ export async function initGame() {
             featureIndicatorManager.updateIndicators();
         }
 
-        console.log('Hex Compiler initialization complete.');
+        console.info('Hex Compiler initialization complete.');
         
         return { gameState, uiManager, gameLoop };
 
@@ -263,7 +262,7 @@ export async function initGame() {
 }
 
 function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager) {
-    gameState.onAbChanged = (newValue) => {
+    gameState.onAbChanged = (_newValue) => {
         uiManager.hudUI.updateABDisplay(); // Use the new method
         
         if (dailyRituals) {
@@ -283,7 +282,7 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
         uiManager.debouncedUIUpdate('inscriptionsTab', () => uiManager.inscriptionsUI.update());
     };
 
-    gameState.onPrestigeCompleted = (ekGained) => {
+    gameState.onPrestigeCompleted = (_ekGained) => {
         // Pass BOTH args: the method is showElementSpecializationChoice(ELEMENT_SPECIALIZATIONS,
         // updateAllUI). Previously only updateAllUI was passed, landing in the data
         // slot, so post-ascension the choice rendered with zero element options.
@@ -305,7 +304,7 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
         uiManager.updateAllUI();
     };
 
-    gameState.onRecipeDiscovered = (recipeId) => {
+    gameState.onRecipeDiscovered = (_recipeId) => {
         if (dailyRituals) {
             dailyRituals.updateTaskProgress('discover_recipe', '', gameState.discoveredRecipes.length);
         }
@@ -329,7 +328,7 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
         }
     };
 
-    gameState.onIngredientChanged = (ingId, newValue) => {
+    gameState.onIngredientChanged = (_ingId, _newValue) => {
         uiManager.hudUI.updateElementCounters();
         
         // Targeted updates based on active tab
@@ -343,14 +342,6 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
     dailyRituals.onTaskProgressUpdated = () => uiManager.dailiesUI.update();
     dailyRituals.onTaskCompleted = () => uiManager.dailiesUI.update();
     dailyRituals.onTasksRefreshed = () => uiManager.dailiesUI.update();
-}
-
-// DEPRECATED: setupPeriodicChecks - Replaced by UnifiedGameLoop periodic checks
-// This function is kept for reference but is no longer called.
-// All periodic checks are now integrated into UnifiedGameLoop (see gameInit.js lines 99-160)
-function setupPeriodicChecks(gameState, designTierSystem, achievements, eventSystem, uiManager) {
-    console.warn('setupPeriodicChecks is deprecated. Use UnifiedGameLoop.registerPeriodicCheck() instead.');
-    // This function is no longer used - periodic checks are handled by UnifiedGameLoop
 }
 
 function setupAudioUnlock(audioSystem, designTierSystem) {

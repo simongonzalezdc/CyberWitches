@@ -1,32 +1,50 @@
 name: Deploy
 
-# Manual-only until a real deploy target is configured. Previously this ran on
-# every push to main and just echoed "Deployment would happen here", reporting a
-# green "Deploy to Production" with no deploy actually occurring. Wire a real
-# provider in the step below (GitHub Pages / Netlify / Vercel), then re-enable
-# the push/tag triggers.
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
-  # push:
-  #   branches: [ main ]
-  #   tags:
-  #     - 'v*'
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to deploy. Leave blank for the current branch."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Build & Deploy
+  build:
+    name: Build Pages Artifact
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
       - run: npm run build:prod
-      - name: Deploy to hosting service
-        run: |
-          echo "::error::No deploy target configured. Wire GitHub Pages / Netlify /"
-          echo "::error::Vercel here and re-enable the push triggers in this workflow."
-          exit 1
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: dist
 
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

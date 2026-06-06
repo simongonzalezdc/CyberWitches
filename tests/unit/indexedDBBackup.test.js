@@ -14,7 +14,7 @@ import {
     idbGet,
     idbDelete,
     mirrorToIndexedDB,
-    restoreMissingFromIndexedDB,
+    restoreMissingFromIndexedDB
 } from '../../js/save/indexedDBBackup.js';
 
 // jsdom defines its own `indexedDB` (a getter that throws "Not implemented"),
@@ -25,7 +25,7 @@ beforeEach(() => {
     Object.defineProperty(globalThis, 'indexedDB', {
         value: new IDBFactory(),
         writable: true,
-        configurable: true,
+        configurable: true
     });
 });
 

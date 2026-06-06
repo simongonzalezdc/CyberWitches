@@ -119,7 +119,7 @@ export class AudioSystem {
                 this.masterGainNode.connect(this.audioContext.destination);
                 this.isInitialized = true;
                 this.audioInitialized = true;
-                console.log('Audio system initialized (lazy loaded)');
+                console.info('Audio system initialized (lazy loaded)');
             }
         } catch (error) {
             handleError(error, 'audioInitialize');
@@ -149,7 +149,7 @@ export class AudioSystem {
         // Load default sounds (now using Tone.js)
         await this.loadDefaultSounds();
         this.soundsLoaded = true;
-        console.log('Sound effects loaded (lazy loaded for Tier 2+)');
+        console.info('Sound effects loaded (lazy loaded for Tier 2+)');
     }
     
     /**
@@ -233,7 +233,7 @@ export class AudioSystem {
             
             // Generate reverb (async)
             this.toneSfxReverb.generate().then(() => {
-                console.log('SFX effects chain generated (meditation mode): chorus -> delay -> reverb -> master');
+                console.info('SFX effects chain generated (meditation mode): chorus -> delay -> reverb -> master');
             }).catch(err => {
                 console.error('Failed to generate SFX reverb:', err);
             });
@@ -250,7 +250,7 @@ export class AudioSystem {
             
             // Generate reverb (async)
             this.toneSfxReverb.generate().then(() => {
-                console.log('SFX reverb generated (normal mode - 65% reverb)');
+                console.info('SFX reverb generated (normal mode - 65% reverb)');
             }).catch(err => {
                 console.error('Failed to generate SFX reverb:', err);
             });
@@ -370,7 +370,7 @@ export class AudioSystem {
             Q: 2
         }).connect(sfxOutput)));
         
-        console.log('Tone.js sound effect synths initialized');
+        console.info('Tone.js sound effect synths initialized');
     }
     
     /**
@@ -1612,17 +1612,17 @@ export class AudioSystem {
         
         // Also check the soundEffectsEnabled flag
         if (!this.soundEffectsEnabled) {
-            console.log('playSound: Sound effects not enabled');
+            console.info('playSound: Sound effects not enabled');
             return false;
         }
         
         if (!this.isAudioSupported) {
-            console.log('playSound: Audio not supported');
+            console.info('playSound: Audio not supported');
             return false;
         }
         
         if (this.isMuted) {
-            console.log('playSound: Audio is muted');
+            console.info('playSound: Audio is muted');
             return false;
         }
         
@@ -1647,7 +1647,7 @@ export class AudioSystem {
         if (this.audioContext.state === 'suspended') {
             // Try to resume (may require user interaction)
             this.audioContext.resume().then(() => {
-                console.log('Audio context resumed in playSound');
+                console.info('Audio context resumed in playSound');
                 // Retry playing the sound after resume
                 setTimeout(() => {
                     this.playSound(soundId, options);
@@ -1665,7 +1665,7 @@ export class AudioSystem {
                 return false;
             }
             
-            console.log(`playSound: Playing sound ${soundId}`, {
+            console.info(`playSound: Playing sound ${soundId}`, {
                 soundFound: !!sound,
                 soundType: sound.synthType,
                 tier: currentTier,
@@ -1854,7 +1854,7 @@ export class AudioSystem {
         if (Tone.context.state !== 'running') {
             console.warn(`playToneSound: Tone.js context not running (${Tone.context.state}), attempting to start...`);
             Tone.start().then(() => {
-                console.log('Tone.js context started, retrying sound...');
+                console.info('Tone.js context started, retrying sound...');
                 // Retry playing the sound after context starts
                 setTimeout(() => {
                     this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode, skipQuantization);
@@ -1869,7 +1869,7 @@ export class AudioSystem {
             console.warn(`playToneSound: Tone.js synths not initialized for sound ${soundId}, initializing now...`);
             // Try to initialize synths on the fly
             this.initializeToneSynths().then(() => {
-                console.log('Tone.js synths initialized, retrying sound...');
+                console.info('Tone.js synths initialized, retrying sound...');
                 // Retry playing the sound after synths are initialized
                 setTimeout(() => {
                     this.playToneSound(sound, soundId, options, baseVolume, musicIsPlaying, autoTightMode, skipQuantization);
@@ -1893,16 +1893,16 @@ export class AudioSystem {
             const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6;
             this.toneSfxMaster = new Tone.Gain().toDestination();
             this.toneSfxMaster.gain.value = Tone.dbToGain(sfxVolumeDb);
-            console.log('SFX master gain created with value:', this.toneSfxMaster.gain.value);
+            console.info('SFX master gain created with value:', this.toneSfxMaster.gain.value);
             
             // If synths exist but aren't connected, reconnect them
             if (this.toneSynths && this.toneSynths.size > 0) {
-                console.log('Reconnecting synths to new master gain...');
+                console.info('Reconnecting synths to new master gain...');
                 for (const [synthType, synth] of this.toneSynths) {
                     // Disconnect from old output and reconnect to new master
                     synth.disconnect();
                     synth.connect(this.toneSfxMaster);
-                    console.log(`Reconnected ${synthType} synth to master gain`);
+                    console.info(`Reconnected ${synthType} synth to master gain`);
                 }
             }
         }
@@ -1960,7 +1960,7 @@ export class AudioSystem {
                 return true;
             } else {
                 // Play immediately (no music playing or skipQuantization is true)
-                console.log(`playToneSound: Playing sound ${soundId} immediately at Tone.now():`, Tone.now());
+                console.info(`playToneSound: Playing sound ${soundId} immediately at Tone.now():`, Tone.now());
                 // Use Tone.now() for immediate playback
                 const playTime = Tone.now();
                 this.triggerToneSound(synth, sound, playTime);
@@ -1996,7 +1996,7 @@ export class AudioSystem {
                     }
                     
                     synth.connect(output);
-                    console.log('Synth reconnected to', isMeditationMode ? 'effects chain' : 'normal mode chain');
+                    console.info('Synth reconnected to', isMeditationMode ? 'effects chain' : 'normal mode chain');
                 } else {
                     console.warn('triggerToneSound: Cannot reconnect synth - no master gain');
                     return;
@@ -2039,7 +2039,7 @@ export class AudioSystem {
                 }
             }
             
-            console.log(`triggerToneSound: Triggering sound at time ${time}, synthType: ${sound.synthType}`, {
+            console.info(`triggerToneSound: Triggering sound at time ${time}, synthType: ${sound.synthType}`, {
                 hasNote: !!sound.note,
                 hasNotes: !!(sound.notes && Array.isArray(sound.notes)),
                 duration: sound.duration,
@@ -2050,7 +2050,7 @@ export class AudioSystem {
             
             if (sound.synthType === 'noise') {
                 // Noise-based sounds
-                console.log(`triggerToneSound: Starting noise sound, will stop at +${sound.duration || '16n'}`);
+                console.info(`triggerToneSound: Starting noise sound, will stop at +${sound.duration || '16n'}`);
                 synth.start(time);
                 synth.stop(`+${sound.duration || '16n'}`);
             } else if (sound.notes && Array.isArray(sound.notes)) {
@@ -2234,7 +2234,7 @@ export class AudioSystem {
             // Convert to dB: linear * 20 - 20, but reduce by 6 dB to balance with music
             const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6; // -6 dB reduction for balance
             this.toneSfxMaster.gain.value = Tone.dbToGain(sfxVolumeDb); // Convert dB to linear gain
-            console.log('SFX volume updated:', sfxVolumeDb, 'dB (linear:', sfxVolumeLinear, 'sfxVolume:', this.sfxVolume, 'masterVolume:', this.masterVolume, ')');
+            console.info('SFX volume updated:', sfxVolumeDb, 'dB (linear:', sfxVolumeLinear, 'sfxVolume:', this.sfxVolume, 'masterVolume:', this.masterVolume, ')');
         }
         
         // Apply volume to all active sounds (fallback for old system)
@@ -2267,7 +2267,7 @@ export class AudioSystem {
             // Convert to dB: linear * 20 - 20, but reduce by 6 dB to balance with music
             const sfxVolumeDb = sfxVolumeLinear * 20 - 20 - 6; // -6 dB reduction for balance
             this.toneSfxMaster.gain.value = Tone.dbToGain(sfxVolumeDb); // Convert dB to linear gain
-            console.log('SFX volume updated:', sfxVolumeDb, 'dB (linear:', sfxVolumeLinear, 'sfxVolume:', this.sfxVolume, 'masterVolume:', this.masterVolume, ')');
+            console.info('SFX volume updated:', sfxVolumeDb, 'dB (linear:', sfxVolumeLinear, 'sfxVolume:', this.sfxVolume, 'masterVolume:', this.masterVolume, ')');
         }
         
         // Apply volume to all active sounds (fallback for old system)
@@ -2438,7 +2438,7 @@ export class AudioSystem {
      */
     async enableSoundEffects() {
         this.soundEffectsEnabled = true;
-        console.log('enableSoundEffects called - enabling sound effects (lazy loading)');
+        console.info('enableSoundEffects called - enabling sound effects (lazy loading)');
         
         // Lazy load sounds if not already loaded
         if (!this.soundsLoaded) {
@@ -2447,16 +2447,16 @@ export class AudioSystem {
         
         // Ensure Tone.js synths are initialized (they should be initialized in lazyLoadSounds, but double-check)
         if (typeof Tone !== 'undefined' && (!this.toneSynths || this.toneSynths.size === 0)) {
-            console.log('enableSoundEffects: Tone.js synths not initialized, initializing now...');
+            console.info('enableSoundEffects: Tone.js synths not initialized, initializing now...');
             await this.initializeToneSynths();
-            console.log('enableSoundEffects: Tone.js synths initialized, size:', this.toneSynths ? this.toneSynths.size : 0);
+            console.info('enableSoundEffects: Tone.js synths initialized, size:', this.toneSynths ? this.toneSynths.size : 0);
         }
         
         // Ensure audio context is resumed (required by browsers)
         if (this.audioContext && this.audioContext.state === 'suspended') {
             try {
                 await this.audioContext.resume();
-                console.log('Audio context resumed for sound effects');
+                console.info('Audio context resumed for sound effects');
             } catch (error) {
                 console.error('Failed to resume audio context:', error);
                 handleError(error, 'resumeAudioContextForSFX');
@@ -2472,24 +2472,24 @@ export class AudioSystem {
         if (this.isMuted) {
             this.isMuted = false;
             this.saveMutedStatus();
-            console.log('Unmuted audio for sound effects');
+            console.info('Unmuted audio for sound effects');
         }
         
         // Ensure SFX volume is set
         if (this.sfxVolume === 0) {
             this.sfxVolume = 0.5;
             this.saveSfxVolume();
-            console.log('SFX volume set to 0.5');
+            console.info('SFX volume set to 0.5');
         }
         
         // Ensure master volume is set
         if (this.masterVolume === 0) {
             this.masterVolume = 0.5;
             this.saveMasterVolume();
-            console.log('Master volume set to 0.5');
+            console.info('Master volume set to 0.5');
         }
         
-        console.log('Sound effects enabled - state:', {
+        console.info('Sound effects enabled - state:', {
             soundEffectsEnabled: this.soundEffectsEnabled,
             isMuted: this.isMuted,
             sfxVolume: this.sfxVolume,
@@ -2506,7 +2506,7 @@ export class AudioSystem {
      */
     disableSoundEffects() {
         this.soundEffectsEnabled = false;
-        console.log('Sound effects disabled');
+        console.info('Sound effects disabled');
     }
     
     /**
@@ -2526,7 +2526,7 @@ export class AudioSystem {
         }
         
         this.musicEnabled = true;
-        console.log('enableMusic called - unlocking audio and starting music (lazy loading)');
+        console.info('enableMusic called - unlocking audio and starting music (lazy loading)');
         
         // Lazy load sounds if not already loaded (needed for music system)
         if (!this.soundsLoaded) {
@@ -2542,7 +2542,7 @@ export class AudioSystem {
         if (this.audioContext && this.audioContext.state === 'suspended') {
             try {
                 await this.audioContext.resume();
-                console.log('Audio context resumed in enableMusic');
+                console.info('Audio context resumed in enableMusic');
             } catch (error) {
                 console.error('Failed to resume audio context in enableMusic:', error);
             }
@@ -2565,7 +2565,7 @@ export class AudioSystem {
             this.saveMasterVolume();
         }
         
-        console.log('Music volume settings:', {
+        console.info('Music volume settings:', {
             musicVolume: this.musicVolume,
             masterVolume: this.masterVolume,
             finalVolume: this.musicVolume * this.masterVolume
@@ -2573,7 +2573,7 @@ export class AudioSystem {
         
         // Start playing ambient music
         await this.startMusic();
-        console.log('Music enabled and startMusic called');
+        console.info('Music enabled and startMusic called');
     }
     
     /**
@@ -2581,10 +2581,10 @@ export class AudioSystem {
      * This disables music when Tier 0-3 is active
      */
     disableMusic() {
-        console.log('disableMusic called - disabling music');
+        console.info('disableMusic called - disabling music');
         this.musicEnabled = false;
         this.stopMusic();
-        console.log('Music disabled');
+        console.info('Music disabled');
     }
     
     /**
@@ -2593,34 +2593,34 @@ export class AudioSystem {
      * STRICT: Only works at Tier 4 - tiers 0-3 must NEVER have music
      */
     async startMusic() {
-        console.log('🎵 startMusic called');
-        console.log('🎵 Current tier:', window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0);
-        console.log('🎵 Music enabled:', this.musicEnabled);
-        console.log('🎵 Music nodes length:', this.musicNodes.length);
-        console.log('🎵 Is initialized:', this.isInitialized);
-        console.log('🎵 Audio context:', !!this.audioContext);
-        console.log('🎵 Audio context state:', this.audioContext ? this.audioContext.state : 'no context');
-        console.log('🎵 Is muted:', this.isMuted);
-        console.log('🎵 Current music mode:', this.currentMusicMode);
-        console.log('🎵 Music volume:', this.musicVolume);
-        console.log('🎵 Master volume:', this.masterVolume);
+        console.info('🎵 startMusic called');
+        console.info('🎵 Current tier:', window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0);
+        console.info('🎵 Music enabled:', this.musicEnabled);
+        console.info('🎵 Music nodes length:', this.musicNodes.length);
+        console.info('🎵 Is initialized:', this.isInitialized);
+        console.info('🎵 Audio context:', !!this.audioContext);
+        console.info('🎵 Audio context state:', this.audioContext ? this.audioContext.state : 'no context');
+        console.info('🎵 Is muted:', this.isMuted);
+        console.info('🎵 Current music mode:', this.currentMusicMode);
+        console.info('🎵 Music volume:', this.musicVolume);
+        console.info('🎵 Master volume:', this.masterVolume);
         
         // STRICT CHECK: Only allow music at Tier 4
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
         if (currentTier < 4) {
-            console.log('❌ Music not starting - tier:', currentTier, '(music only available at Tier 4)');
+            console.info('❌ Music not starting - tier:', currentTier, '(music only available at Tier 4)');
             this.musicEnabled = false; // Force disable if tier < 4
             this.stopMusic(); // Ensure any playing music is stopped
             return;
         }
         
         if (!this.musicEnabled) {
-            console.log('Music not starting - music disabled. Attempting to enable...');
+            console.info('Music not starting - music disabled. Attempting to enable...');
             // Try to enable music if at Tier 4
             if (currentTier >= 4) {
                 await this.enableMusic();
                 if (!this.musicEnabled) {
-                    console.log('Failed to enable music');
+                    console.info('Failed to enable music');
                     return;
                 }
             } else {
@@ -2631,12 +2631,12 @@ export class AudioSystem {
         
         // Don't start if already playing
         if (this.musicNodes.length > 0) {
-            console.log('Music already playing');
+            console.info('Music already playing');
             return;
         }
         
         if (!this.isInitialized || !this.audioContext || this.isMuted) {
-            console.log('Music not starting - initialized:', this.isInitialized, 'context:', !!this.audioContext, 'muted:', this.isMuted);
+            console.info('Music not starting - initialized:', this.isInitialized, 'context:', !!this.audioContext, 'muted:', this.isMuted);
             return;
         }
         
@@ -2644,7 +2644,7 @@ export class AudioSystem {
         if (this.audioContext.state === 'suspended') {
             try {
                 await this.audioContext.resume();
-                console.log('Audio context resumed for music');
+                console.info('Audio context resumed for music');
             } catch (error) {
                 console.error('Failed to resume audio context:', error);
                 handleError(error, 'resumeAudioContext');
@@ -2655,7 +2655,7 @@ export class AudioSystem {
             // Always use normal tier 4 music
             this.currentMusicMode = 'normal';
             await this.createAmbientMusic();
-            console.log('Music started successfully');
+            console.info('Music started successfully');
         } catch (error) {
             console.error('Error starting music:', error);
             handleError(error, 'startMusic');
@@ -2673,7 +2673,7 @@ export class AudioSystem {
             this.musicEnabled = false; // Force disable
         }
         
-        console.log('stopMusic called - stopping all music nodes');
+        console.info('stopMusic called - stopping all music nodes');
         
         // Cancel any pending stop timeout
         if (this.stopMusicTimeout) {
@@ -2834,7 +2834,7 @@ export class AudioSystem {
                 }
                 
                 this.toneMusic = null;
-                console.log('Tone.js music stopped');
+                console.info('Tone.js music stopped');
             } catch (error) {
                 console.error('Error stopping Tone.js music:', error);
             }
@@ -2842,7 +2842,7 @@ export class AudioSystem {
         
         // Only fade out if we have nodes to fade out
         if (this.musicNodes.length === 0 || this.musicGainNodes.length === 0) {
-            console.log('No music nodes to stop');
+            console.info('No music nodes to stop');
             return;
         }
         
@@ -2855,7 +2855,7 @@ export class AudioSystem {
                     const currentValue = gainNode.gain.value;
                     gainNode.gain.setValueAtTime(currentValue, now);
                     gainNode.gain.linearRampToValueAtTime(0, now + 2); // Fade out over 2 seconds
-                    console.log('Fading out gain node from', currentValue, 'to 0');
+                    console.info('Fading out gain node from', currentValue, 'to 0');
                 }
             } catch (error) {
                 console.error('Error fading out gain node:', error);
@@ -2864,7 +2864,7 @@ export class AudioSystem {
         
         // Stop all music nodes after fade out
         const stopTimeout = setTimeout(() => {
-            console.log('Stopping all music nodes after fade out...');
+            console.info('Stopping all music nodes after fade out...');
             this.musicNodes.forEach(node => {
                 try {
                     if (node && node.stop) {
@@ -2891,7 +2891,7 @@ export class AudioSystem {
             // Clear arrays
             this.musicNodes = [];
             this.musicGainNodes = [];
-            console.log('Music nodes cleared');
+            console.info('Music nodes cleared');
         }, 2000); // Wait for fade out to complete
         
         // Store timeout for potential cancellation
@@ -2928,7 +2928,7 @@ export class AudioSystem {
         // Double-check tier before creating music (Tier 4 only)
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
         if (currentTier < 4 || !this.musicEnabled) {
-            console.log('createAmbientMusic: tier check failed', currentTier, this.musicEnabled);
+            console.info('createAmbientMusic: tier check failed', currentTier, this.musicEnabled);
             return;
         }
         
@@ -2944,7 +2944,7 @@ export class AudioSystem {
         
         const musicVolume = this.musicVolume * this.masterVolume;
         
-        console.log('Creating ambient music with Tone.js, volume:', musicVolume);
+        console.info('Creating ambient music with Tone.js, volume:', musicVolume);
         
         // Final check - if still zero, something is wrong
         if (musicVolume === 0) {
@@ -2956,7 +2956,7 @@ export class AudioSystem {
         if (Tone.context.state !== 'running') {
             try {
                 await Tone.start();
-                console.log('Tone.js context started');
+                console.info('Tone.js context started');
             } catch (err) {
                 console.warn('Tone.start() failed, audio may not work:', err);
             }
@@ -2968,7 +2968,7 @@ export class AudioSystem {
         // For better balance with SFX, we'll use a similar range
         const volumeDb = musicVolume * 20 - 20; // Convert 0-1 to dB (-20 to 0 dB)
         const masterVol = new Tone.Volume(volumeDb).toDestination();
-        console.log('Music master volume created:', volumeDb, 'dB (from musicVolume:', musicVolume, 'masterVolume:', this.masterVolume, ')');
+        console.info('Music master volume created:', volumeDb, 'dB (from musicVolume:', musicVolume, 'masterVolume:', this.masterVolume, ')');
         
         // Check meditation mode for reverb settings (will be redeclared later, but needed here for reverb)
         const isMeditationModeForReverb = window.meditationState && window.meditationState.activeSession;
@@ -2986,7 +2986,7 @@ export class AudioSystem {
         // Note: reverb will be stored in this.toneMusic object later when it's created
         reverb.generate()
             .then(() => {
-                console.log('Reverb generated', isMeditationModeForReverb ? '(meditation mode - 100% reverb)' : '(normal mode - 70% reverb)');
+                console.info('Reverb generated', isMeditationModeForReverb ? '(meditation mode - 100% reverb)' : '(normal mode - 70% reverb)');
             })
             .catch(err => {
                 console.error('Failed to generate reverb for music:', err);
@@ -3192,7 +3192,7 @@ export class AudioSystem {
             if (loopIteration % 2 === 0) {
                 const chord = currentProgression[chordIndex % currentProgression.length];
                 try {
-                    console.log('Bass loop playing chord:', chord, 'from progression', currentProgressionIndex, 'at time:', time);
+                    console.info('Bass loop playing chord:', chord, 'from progression', currentProgressionIndex, 'at time:', time);
                     bassPad.triggerAttackRelease(chord, '4n', time); // Longer duration: quarter note for sustained bass
                 } catch (error) {
                     console.warn('Error triggering bass pad:', error);
@@ -3207,7 +3207,7 @@ export class AudioSystem {
                     if (progressionChangeCounter >= progressionsPerChange) {
                         progressionChangeCounter = 0;
                         currentProgressionIndex = (currentProgressionIndex + 1) % chordProgressions.length;
-                        console.log('Switching to progression', currentProgressionIndex);
+                        console.info('Switching to progression', currentProgressionIndex);
                     }
                 }
             }
@@ -3242,7 +3242,7 @@ export class AudioSystem {
                     return note;
                 });
                 try {
-                    console.log('Mid loop playing chord:', higherChord, 'from progression', midProgressionIndex, 'at time:', time);
+                    console.info('Mid loop playing chord:', higherChord, 'from progression', midProgressionIndex, 'at time:', time);
                     midPad.triggerAttackRelease(higherChord, '16n', time); // Very short duration: 16th note to reduce overlap
                 } catch (error) {
                     console.warn('Error triggering mid pad:', error);
@@ -3257,7 +3257,7 @@ export class AudioSystem {
                     if (midProgressionChangeCounter >= progressionsPerChange + 4) {
                         midProgressionChangeCounter = 0;
                         midProgressionIndex = (midProgressionIndex + 1) % chordProgressions.length;
-                        console.log('Mid pad switching to progression', midProgressionIndex);
+                        console.info('Mid pad switching to progression', midProgressionIndex);
                     }
                 }
             }
@@ -3312,7 +3312,7 @@ export class AudioSystem {
             
             if (note !== null) {
                 try {
-                    console.log('Sparkle playing note:', note, 'from pattern', sparkleMelodyIndex, 'at time:', time);
+                    console.info('Sparkle playing note:', note, 'from pattern', sparkleMelodyIndex, 'at time:', time);
                     sparkle.triggerAttackRelease(note, '32n', time); // Shorter duration: 32nd note for crisper sparkle
                 } catch (error) {
                     console.warn('Error triggering sparkle:', error);
@@ -3327,7 +3327,7 @@ export class AudioSystem {
                 if (sparkleCycleCount >= 4) {
                     sparkleCycleCount = 0;
                     sparkleMelodyIndex = (sparkleMelodyIndex + 1) % shuffledSparkleMelodies.length;
-                    console.log('Sparkle switching to pattern', sparkleMelodyIndex);
+                    console.info('Sparkle switching to pattern', sparkleMelodyIndex);
                 }
             }
         }, '16n'); // Finer granularity: 16th note (1/16 beat) for more precise quantization
@@ -3365,7 +3365,7 @@ export class AudioSystem {
             const note = currentPattern[typingIndex % currentPattern.length];
             if (note !== null) {
                 try {
-                    console.log('Typing beat playing note:', note, 'from pattern', typingPatternIndex, 'at time:', time);
+                    console.info('Typing beat playing note:', note, 'from pattern', typingPatternIndex, 'at time:', time);
                     typingBeat.triggerAttackRelease(note, '64n', time); // Even shorter click for more percussive sound
                 } catch (error) {
                     console.warn('Error triggering typing beat:', error);
@@ -3378,7 +3378,7 @@ export class AudioSystem {
                 typingCycleCount = 0;
                 typingPatternIndex = (typingPatternIndex + 1) % typingPatterns.length;
                 typingIndex = 0; // Reset index when changing patterns
-                console.log('Typing beat switching to pattern', typingPatternIndex);
+                console.info('Typing beat switching to pattern', typingPatternIndex);
             }
         }, '8n'); // Every 8th note
         // Don't start yet - will be scheduled after Transport starts
@@ -3434,7 +3434,7 @@ export class AudioSystem {
             typingBeat.volume.setValueAtTime(-60, now);
         }
         
-        console.log('Volume fade-ins scheduled:', {
+        console.info('Volume fade-ins scheduled:', {
             bassPad: '0s → 3s',
             midPad: '1s → 4s',
             sparkle: '2s → 5s',
@@ -3453,20 +3453,20 @@ export class AudioSystem {
         // Delay LFO start until after fade-in completes
         setTimeout(() => {
             bassLFO.start();
-            console.log('Bass LFO started after fade-in');
+            console.info('Bass LFO started after fade-in');
         }, 3000); // Start after 3 seconds (when fade-in completes)
         
         // Set tempo based on mode: 90 BPM for meditation (20 BPM slower), 110 BPM for normal
         // isMeditationMode already defined above
         const baseBPM = isMeditationMode ? 90 : 110;
         Tone.Transport.bpm.value = baseBPM;
-        console.log('Tone Transport BPM set to:', Tone.Transport.bpm.value, isMeditationMode ? '(meditation mode)' : '(normal mode)');
+        console.info('Tone Transport BPM set to:', Tone.Transport.bpm.value, isMeditationMode ? '(meditation mode)' : '(normal mode)');
         
         // Stop and reset Transport to ensure clean start timing
         if (Tone.Transport.state === 'started') {
             Tone.Transport.stop();
             Tone.Transport.cancel();
-            console.log('Transport stopped and cancelled');
+            console.info('Transport stopped and cancelled');
         }
         
         // Reset Transport position to 0 for clean start
@@ -3475,30 +3475,30 @@ export class AudioSystem {
         // Start Transport to play sequences (REQUIRED for Tone.Sequence to work!)
         if (Tone.Transport.state !== 'started') {
             Tone.Transport.start();
-            console.log('Tone Transport started at position 0');
+            console.info('Tone Transport started at position 0');
         } else {
-            console.log('Tone Transport already started');
+            console.info('Tone Transport already started');
         }
         
         // Verify Transport is actually running
-        console.log('Transport state after start:', Tone.Transport.state);
-        console.log('Transport BPM:', Tone.Transport.bpm.value);
-        console.log('Transport position:', Tone.Transport.position);
+        console.info('Transport state after start:', Tone.Transport.state);
+        console.info('Transport BPM:', Tone.Transport.bpm.value);
+        console.info('Transport position:', Tone.Transport.position);
         
         // Schedule all loops to start at their staggered times
         // Using time strings makes them relative to Transport position
         // Since Transport position is reset to 0, these will be relative to beat 0
         bassLoop.start('0'); // Start immediately at beat 0
-        console.log('Bass loop scheduled to start at beat 0');
+        console.info('Bass loop scheduled to start at beat 0');
         
         midLoop.start('4n'); // Start at beat 4 (4 beats after bass)
-        console.log('Mid loop scheduled to start at beat 4');
+        console.info('Mid loop scheduled to start at beat 4');
         
         typingLoop.start('8n'); // Start at beat 8 (4 beats after mid, 8 beats after bass)
-        console.log('Typing loop scheduled to start at beat 8');
+        console.info('Typing loop scheduled to start at beat 8');
         
         sparkleLoop.start('12n'); // Start at beat 12 (4 beats after typing, 12 beats after bass)
-        console.log('Sparkle loop scheduled to start at beat 12');
+        console.info('Sparkle loop scheduled to start at beat 12');
         
         // Note: Loops will start playing at their scheduled times but volumes are set to -60 dB
         // and will fade in gradually over 3-5 seconds, creating a smooth entrance
@@ -3524,10 +3524,10 @@ export class AudioSystem {
         this.musicNodes = [bassPad, midPad, sparkle, typingBeat, bassLFO];
         this.musicGainNodes = [masterVol];
         
-        console.log('Ambient music created with Tone.js - chord progression and melodies');
-        console.log('Music volume:', musicVolume, 'Master volume dB:', musicVolume * 20 - 20);
-        console.log('Tone context state:', Tone.context.state);
-        console.log('Transport state:', Tone.Transport.state);
+        console.info('Ambient music created with Tone.js - chord progression and melodies');
+        console.info('Music volume:', musicVolume, 'Master volume dB:', musicVolume * 20 - 20);
+        console.info('Tone context state:', Tone.context.state);
+        console.info('Transport state:', Tone.Transport.state);
     }
     /**
      * Fallback: Create basic ambient music using Web Audio API
@@ -3650,7 +3650,7 @@ export class AudioSystem {
         // Update tempo: 90 BPM for meditation (20 BPM slower), 110 BPM for normal
         const targetBPM = isMeditationMode ? 90 : 110;
         Tone.Transport.bpm.rampTo(targetBPM, 1); // Smooth transition over 1 second
-        console.log('Music tempo updated to:', targetBPM, isMeditationMode ? '(meditation mode)' : '(normal mode)');
+        console.info('Music tempo updated to:', targetBPM, isMeditationMode ? '(meditation mode)' : '(normal mode)');
         
         // Update reverb intensity for meditation mode (100% wet) vs normal (65%).
         // Tone.Reverb's roomSize/dampening (decay character) can't change after
@@ -3671,7 +3671,7 @@ export class AudioSystem {
             if (this.toneMusic.sparkleLoop) {
                 try {
                     this.toneMusic.sparkleLoop.stop();
-                    console.log('Sparkle loop stopped (meditation mode)');
+                    console.info('Sparkle loop stopped (meditation mode)');
                 } catch (e) {
                     console.warn('Error stopping sparkle loop:', e);
                 }
@@ -3679,7 +3679,7 @@ export class AudioSystem {
             if (this.toneMusic.typingLoop) {
                 try {
                     this.toneMusic.typingLoop.stop();
-                    console.log('Typing loop stopped (meditation mode)');
+                    console.info('Typing loop stopped (meditation mode)');
                 } catch (e) {
                     console.warn('Error stopping typing loop:', e);
                 }
@@ -3702,7 +3702,7 @@ export class AudioSystem {
             if (this.toneMusic.sparkleLoop) {
                 try {
                     this.toneMusic.sparkleLoop.start('12n'); // Restart at original position
-                    console.log('Sparkle loop restarted (normal mode)');
+                    console.info('Sparkle loop restarted (normal mode)');
                 } catch (e) {
                     console.warn('Error restarting sparkle loop:', e);
                 }
@@ -3710,7 +3710,7 @@ export class AudioSystem {
             if (this.toneMusic.typingLoop) {
                 try {
                     this.toneMusic.typingLoop.start('8n'); // Restart at original position
-                    console.log('Typing loop restarted (normal mode)');
+                    console.info('Typing loop restarted (normal mode)');
                 } catch (e) {
                     console.warn('Error restarting typing loop:', e);
                 }
@@ -3815,7 +3815,7 @@ export class AudioSystem {
             
             // Generate reverb (async)
             this.toneSfxReverb.generate().then(() => {
-                console.log('SFX effects chain updated (meditation mode): chorus -> delay -> reverb -> master');
+                console.info('SFX effects chain updated (meditation mode): chorus -> delay -> reverb -> master');
             }).catch(err => {
                 console.error('Failed to generate SFX reverb:', err);
             });
@@ -3830,7 +3830,7 @@ export class AudioSystem {
             
             // Generate reverb (async)
             this.toneSfxReverb.generate().then(() => {
-                console.log('SFX reverb updated (normal mode - 65% reverb)');
+                console.info('SFX reverb updated (normal mode - 65% reverb)');
             }).catch(err => {
                 console.error('Failed to generate SFX reverb:', err);
             });
@@ -3840,7 +3840,7 @@ export class AudioSystem {
         for (const [synthType, synth] of this.toneSynths) {
             try {
                 synth.connect(sfxOutput);
-                console.log(`Reconnected ${synthType} synth to ${isMeditationMode ? 'effects chain' : 'reverb'}`);
+                console.info(`Reconnected ${synthType} synth to ${isMeditationMode ? 'effects chain' : 'reverb'}`);
             } catch (err) {
                 console.warn(`Error reconnecting ${synthType} synth:`, err);
             }

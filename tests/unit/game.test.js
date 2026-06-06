@@ -5,7 +5,6 @@
 
 import {
     getTierSymbol,
-    getTierAppropriateStyle,
     getWorkstationTier,
     getUpgradeTier
 } from '../../js/modules/ui/uiHelpers.js';

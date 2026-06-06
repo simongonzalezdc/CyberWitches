@@ -36,12 +36,12 @@ export function createMockElement(tagName = 'div', options = {}) {
             return child;
         }),
 
-        querySelector: jest.fn(function(selector) {
+        querySelector: jest.fn(function(_selector) {
             // Simple mock - returns first child or null
             return this.children[0] || null;
         }),
 
-        querySelectorAll: jest.fn(function(selector) {
+        querySelectorAll: jest.fn(function(_selector) {
             // Simple mock - returns all children
             return this.children;
         }),
@@ -209,11 +209,11 @@ export function createMockDocument() {
             return createMockElement('div', { id });
         }),
 
-        querySelector: jest.fn((selector) => {
+        querySelector: jest.fn((_selector) => {
             return createMockElement('div');
         }),
 
-        querySelectorAll: jest.fn((selector) => {
+        querySelectorAll: jest.fn((_selector) => {
             return [createMockElement('div')];
         }),
 

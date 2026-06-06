@@ -3,7 +3,7 @@
  * Manages the rendering and updates of the Workstations tab.
  */
 
-import { formatTimeDuration, formatShort, formatNumber } from '../../utils.js';
+import { formatNumber } from '../../utils.js';
 import { getTierSymbol, getTierAppropriateStyle, getWorkstationTier } from './uiHelpers.js';
 import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
 import { Balance } from '../../utils.js';
@@ -19,7 +19,7 @@ export class WorkstationUI {
      * Update workstations tab with virtual scrolling for performance
      */
     update() {
-        // console.log('updateWorkstationsTab called, gameState exists:', !!this.gameState);
+        // console.info('updateWorkstationsTab called, gameState exists:', !!this.gameState);
         if (!this.gameState) {
             console.error('gameState not initialized in WorkstationUI');
             return;
@@ -30,7 +30,7 @@ export class WorkstationUI {
             // console.error('workstation-list container not found!');
             return;
         }
-        // console.log('workstation-list container found, updating content...');
+        // console.info('workstation-list container found, updating content...');
 
         // Ensure container is visible
         container.classList.add('workstation-list-container');
@@ -68,11 +68,8 @@ export class WorkstationUI {
         if (unlockedWorkstations.length === 0) {
             container.innerHTML = `
                 <div class="empty-state-container">
-                    <picture>
-                        <source srcset="images/ui/empty-state.webp" type="image/webp">
-                        <img src="images/ui/empty-state.png" alt="Empty State" class="empty-state-illustration">
-                    </picture>
-                    <p class="empty-state-message">No workstations yet. Cast spells to unlock them!</p>
+                    <div class="empty-state-sigil" aria-hidden="true"></div>
+                    <p class="empty-state-message">No workstations yet. Cast to gather essence and unlock the first preservation chamber.</p>
                 </div>
             `;
             return;
@@ -144,14 +141,14 @@ export class WorkstationUI {
                 
                 // Validate recipe exists and has valid structure
                 if (!prodData.recipe || typeof prodData.recipe !== 'object') {
-                    console.warn(`🔴 Invalid recipe for workstation ${prodData.id}:`, prodData.recipe);
+                    console.warn(`Invalid recipe for workstation ${prodData.id}:`, prodData.recipe);
                     continue; // Skip this workstation
                 }
                 
                 // Validate growth is a valid number
                 const growth = Number(prodData.growth);
                 if (isNaN(growth) || growth <= 0) {
-                    console.warn(`🔴 Invalid growth for workstation ${prodData.id}:`, prodData.growth);
+                    console.warn(`Invalid growth for workstation ${prodData.id}:`, prodData.growth);
                     continue; // Skip this workstation
                 }
                 
@@ -160,19 +157,16 @@ export class WorkstationUI {
 
                 // Calculate production
                 const production = {};
-                let totalProduction = 0;
-
                 // Base production - validate outputs exist
                 if (prodData.outputs && typeof prodData.outputs === 'object') {
                     for (const [outputId, amount] of Object.entries(prodData.outputs)) {
                         // Validate amount is a valid number
                         const validAmount = Number(amount);
                         if (isNaN(validAmount) || !isFinite(validAmount)) {
-                            console.warn(`🔴 Invalid output amount for ${prodData.id} -> ${outputId}:`, amount);
+                            console.warn(`Invalid output amount for ${prodData.id} -> ${outputId}:`, amount);
                             continue; // Skip this output
                         }
                         production[outputId] = (production[outputId] || 0) + (validAmount * owned);
-                        totalProduction += validAmount * owned;
                     }
                 }
 
@@ -191,7 +185,7 @@ export class WorkstationUI {
                     // Validate amount is a valid number
                     const validAmount = Number(amount);
                     if (isNaN(validAmount) || !isFinite(validAmount) || validAmount < 0) {
-                        console.warn(`🔴 Invalid cost amount for ${prodData.id} -> ${ingId}:`, amount);
+                        console.warn(`Invalid cost amount for ${prodData.id} -> ${ingId}:`, amount);
                         continue; // Skip this cost item
                     }
                     
@@ -214,7 +208,7 @@ export class WorkstationUI {
                         // Validate amount is a valid number
                         const validAmount = Number(amount);
                         if (isNaN(validAmount) || !isFinite(validAmount) || validAmount <= 0) {
-                            console.warn(`🔴 Invalid production amount for ${prodData.id} -> ${outputId}:`, amount);
+                            console.warn(`Invalid production amount for ${prodData.id} -> ${outputId}:`, amount);
                             continue; // Skip this production item
                         }
                         
@@ -255,10 +249,10 @@ export class WorkstationUI {
                             ${costHtml}
                         </div>
                         <div class="button-group">
-                            <button class="btn-craft" data-action="craft" data-ws-id="${prodData.id}" data-amount="1" ${!canAfford ? 'disabled' : ''}>
+                            <button class="btn-craft" data-action="craft" data-ws-id="${prodData.id}" data-amount="1" ${!canAfford ? 'disabled aria-disabled="true" title="Insufficient essence for this workstation."' : ''}>
                                 Craft
                             </button>
-                            <button class="btn-craft-max" data-action="craft-max" data-ws-id="${prodData.id}" ${!canAfford ? 'disabled' : ''}>
+                            <button class="btn-craft-max" data-action="craft-max" data-ws-id="${prodData.id}" ${!canAfford ? 'disabled aria-disabled="true" title="Insufficient essence for this workstation."' : ''}>
                                 Max
                             </button>
                         </div>

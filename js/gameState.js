@@ -1,7 +1,7 @@
 import { showLoadingState, hideLoadingState } from './loadingState.js';
-import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES, HIDDEN_RECIPES } from './data.js';
+import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES } from './data.js';
 import { Balance } from './utils.js';
-import { handleError, safeFunction, safeAsyncFunction, validateParams, retryWithBackoff } from './errorHandler.js';
+import { handleError } from './errorHandler.js';
 import { GAME_CONSTANTS } from './codeOrganization.js';
 import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
 import { debounce } from './commonUtils.js';
@@ -1086,7 +1086,7 @@ export class GameState {
                 // If they have prestige points or bonuses but no count, they must have ascended at least once
                 this.prestigeCount = 1;
                 prestigeCountInferred = true;
-                console.log('Prestige count missing from save, inferred from prestige points/bonuses. Setting to 1.');
+                console.info('Prestige count missing from save, inferred from prestige points/bonuses. Setting to 1.');
             } else {
                 this.prestigeCount = 0;
             }
@@ -1275,7 +1275,7 @@ export class GameState {
                 const amount = this.inventory[depIng];
                 delete this.inventory[depIng];
                 removedCount++;
-                console.log(`Removed deprecated ingredient: ${depIng} (had ${amount})`);
+                console.info(`Removed deprecated ingredient: ${depIng} (had ${amount})`);
             }
         }
 
@@ -1295,7 +1295,7 @@ export class GameState {
                 if (!ingredient || !ingredient.meditationOnly) {
                     const amount = this.inventory[ingId];
                     itemsToRemove.push(ingId);
-                    console.log(`Removed invalid ingredient: ${ingId} (had ${amount})`);
+                    console.info(`Removed invalid ingredient: ${ingId} (had ${amount})`);
                 }
             }
         }
@@ -1307,7 +1307,7 @@ export class GameState {
         }
 
         if (removedCount > 0) {
-            console.log(`Cleaned up ${removedCount} deprecated/invalid ingredients from inventory`);
+            console.info(`Cleaned up ${removedCount} deprecated/invalid ingredients from inventory`);
             // Save after cleanup - debounced is fine for cleanup
             this.saveGameState();
         }
@@ -1371,7 +1371,7 @@ export class GameState {
             // Attempt to merge saves
             const merged = this.mergeSaveData(primarySave.data, saves[1].data);
             if (merged) {
-                console.log('Successfully merged save data.');
+                console.info('Successfully merged save data.');
                 const mergedData = {
                     ...primarySave.data,
                     ...merged,
@@ -1515,4 +1515,3 @@ export class GameState {
         }
     }
 }
-

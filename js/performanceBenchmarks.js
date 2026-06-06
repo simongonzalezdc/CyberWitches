@@ -44,7 +44,7 @@ export class PerformanceBenchmarks {
             this.monitorMemory();
         }
 
-        console.log('[Performance] Monitoring started');
+        console.info('[Performance] Monitoring started');
     }
 
     /**
@@ -52,7 +52,7 @@ export class PerformanceBenchmarks {
      */
     stop() {
         this.isMonitoring = false;
-        console.log('[Performance] Monitoring stopped');
+        console.info('[Performance] Monitoring stopped');
     }
 
     /**
@@ -269,17 +269,17 @@ export class PerformanceBenchmarks {
     printReport() {
         const report = this.getReport();
 
-        console.log('='.repeat(60));
-        console.log('PERFORMANCE BENCHMARK REPORT');
-        console.log('='.repeat(60));
-        console.log(`Uptime: ${report.uptime}`);
-        console.log('');
-        console.log(`FPS: ${report.fps.average} (threshold: ${report.fps.threshold}) [${report.fps.status}]`);
-        console.log(`Memory: ${report.memory.current}, Growth: ${report.memory.growthRate} [${report.memory.status}]`);
-        console.log(`Production Calc: ${report.productionCalc.average} (threshold: ${report.productionCalc.threshold}) [${report.productionCalc.status}]`);
-        console.log(`Save Time: ${report.saveTime.average} (threshold: ${report.saveTime.threshold}) [${report.saveTime.status}]`);
-        console.log(`Render Time: ${report.renderTime.average} (threshold: ${report.renderTime.threshold}) [${report.renderTime.status}]`);
-        console.log('='.repeat(60));
+        console.info('='.repeat(60));
+        console.info('PERFORMANCE BENCHMARK REPORT');
+        console.info('='.repeat(60));
+        console.info(`Uptime: ${report.uptime}`);
+        console.info('');
+        console.info(`FPS: ${report.fps.average} (threshold: ${report.fps.threshold}) [${report.fps.status}]`);
+        console.info(`Memory: ${report.memory.current}, Growth: ${report.memory.growthRate} [${report.memory.status}]`);
+        console.info(`Production Calc: ${report.productionCalc.average} (threshold: ${report.productionCalc.threshold}) [${report.productionCalc.status}]`);
+        console.info(`Save Time: ${report.saveTime.average} (threshold: ${report.saveTime.threshold}) [${report.saveTime.status}]`);
+        console.info(`Render Time: ${report.renderTime.average} (threshold: ${report.renderTime.threshold}) [${report.renderTime.status}]`);
+        console.info('='.repeat(60));
 
         return report;
     }
@@ -303,8 +303,8 @@ if (typeof window !== 'undefined') {
     // Auto-start in development
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         performanceBenchmarks.start();
-        console.log('[Performance] Auto-started benchmarks (localhost detected)');
-        console.log('[Performance] Run performanceBenchmarks.printReport() to see results');
+        console.info('[Performance] Auto-started benchmarks (localhost detected)');
+        console.info('[Performance] Run performanceBenchmarks.printReport() to see results');
     }
 }
 

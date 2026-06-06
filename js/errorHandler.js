@@ -105,10 +105,10 @@ function logError(errorEntry) {
             console.error(logMessage, errorEntry);
             break;
         case ErrorSeverity.CRITICAL:
-            console.error('🚨 CRITICAL ERROR 🚨', logMessage, errorEntry);
+            console.error('CRITICAL ERROR', logMessage, errorEntry);
             break;
         default:
-            console.log(logMessage, errorEntry);
+            console.info(logMessage, errorEntry);
     }
     
     // Log stack trace if available
@@ -191,7 +191,7 @@ function reportCriticalError(errorEntry) {
         sessionId: getSessionId()
     };
 
-    console.error('🚨 CRITICAL ERROR REPORTED 🚨', payload);
+    console.error('CRITICAL ERROR REPORTED', payload);
 
     // Remote sink is opt-in: only beacons when the host app configures an
     // endpoint (e.g. `window.CYBERWITCHES_ERROR_ENDPOINT = 'https://…'`). No URL
@@ -384,7 +384,7 @@ export function getErrorStats() {
  */
 export function clearErrorLog() {
     errorLog = [];
-    console.log('Error log cleared');
+    console.info('Error log cleared');
 }
 
 /**
@@ -435,4 +435,12 @@ export function monitorPerformance(operation, fn) {
         
         throw error;
     }
+}
+
+if (typeof window !== 'undefined') {
+    /** @type {any} */ (window).cyberWitchesErrors = {
+        getStats: getErrorStats,
+        export: exportErrorLog,
+        clear: clearErrorLog
+    };
 }

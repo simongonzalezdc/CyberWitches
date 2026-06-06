@@ -441,7 +441,7 @@ describe('Analytics System', () => {
 
         test('should handle null event values gracefully', () => {
             // trackEvent with null value should still work due to anonymizeData handling
-            const initialLength = analytics.events.length;
+            const _initialLength = analytics.events.length;
 
             try {
                 analytics.trackEvent('test', 'action', null);
@@ -454,7 +454,7 @@ describe('Analytics System', () => {
         });
 
         test('should handle undefined event metadata gracefully', () => {
-            const initialLength = analytics.events.length;
+            const _initialLength = analytics.events.length;
 
             try {
                 analytics.trackEvent('test', 'action', {}, undefined);

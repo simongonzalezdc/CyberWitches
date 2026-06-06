@@ -7,7 +7,7 @@ export const ELEMENT_SPECIALIZATIONS = {
     fire: {
         id: 'fire',
         name: 'Fire Path: Forge Master',
-        icon: '🔥',
+        icon: 'F',
         description: 'Preserve through intensity. Build aggressive preservation structures that burn bright and fast. Rush to automation, maximize what you can save before it\'s gone.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Fire production
@@ -27,7 +27,7 @@ export const ELEMENT_SPECIALIZATIONS = {
     water: {
         id: 'water',
         name: 'Water Path: Flow Master',
-        icon: '💧',
+        icon: 'W',
         description: 'Preserve through efficiency. Build balanced structures that flow smoothly. Reduce waste—every bit of magic matters. Sustainable growth means more magic preserved overall.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Water production
@@ -47,7 +47,7 @@ export const ELEMENT_SPECIALIZATIONS = {
     air: {
         id: 'air',
         name: 'Air Path: Speed Master',
-        icon: '💨',
+        icon: 'A',
         description: 'Preserve through speed. Unlock preservation techniques faster—time is running out. Your structures work faster, unlocking new tiers before the fading catches up.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Air production
@@ -67,7 +67,7 @@ export const ELEMENT_SPECIALIZATIONS = {
     crystal: {
         id: 'crystal',
         name: 'Crystal Path: Foundation Master',
-        icon: '💎',
+        icon: 'C',
         description: 'Preserve through stability. Build universal foundations that support all elements. Crystal structures are the most stable—they resist the fading better than others.',
         bonuses: {
             baseProductionMult: 1.5,      // +50% Crystal production
@@ -150,4 +150,3 @@ export function isUniversalIngredient(ingredientId) {
 export function isABProducer(workstationId) {
     return workstationId.includes('bit_reactor') || workstationId.includes('bit_forge');
 }
-

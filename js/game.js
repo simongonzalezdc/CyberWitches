@@ -46,15 +46,15 @@ async function start() {
         if (perfDebug) {
             const savedBaseline = PerformanceBaseline.load();
             if (!savedBaseline) {
-                console.log('📊 Measuring performance baseline...');
+                console.info('📊 Measuring performance baseline...');
                 const baseline = new PerformanceBaseline();
                 await baseline.measure();
                 baseline.save();
                 window.performanceBaseline = baseline.getMetrics();
-                console.log('✅ Baseline saved:', window.performanceBaseline);
+                console.info('✅ Baseline saved:', window.performanceBaseline);
             } else {
                 window.performanceBaseline = savedBaseline;
-                console.log('📊 Using saved baseline:', savedBaseline);
+                console.info('📊 Using saved baseline:', savedBaseline);
             }
         }
 
@@ -78,8 +78,8 @@ async function start() {
         // window.gameState isn't assigned until here.)
         if (window.updateFeatureIndicators) window.updateFeatureIndicators();
 
-        console.log('✅ Game started successfully.');
-        console.log('🎮 Unified game loop active (10 TPS logic, 30 FPS visuals)');
+        console.info('✅ Game started successfully.');
+        console.info('🎮 Unified game loop active (10 TPS logic, 30 FPS visuals)');
         
         // Measure performance after initialization (developer tooling, opt-in).
         // Previously this always ran 6s after load and printed a scary
@@ -96,7 +96,7 @@ async function start() {
             // Compare and validate
             const comparison = performanceValidator.compare();
             if (comparison) {
-                console.log('📈 Performance comparison:', comparison);
+                console.info('📈 Performance comparison:', comparison);
             }
             
             // Validate improvements
@@ -107,7 +107,7 @@ async function start() {
                 // Create migration baseline for Tailwind CSS
                 if (validation.valid) {
                     performanceValidator.createMigrationBaseline();
-                    console.log('✅ Performance validation passed. Ready for Tailwind CSS migration.');
+                    console.info('✅ Performance validation passed. Ready for Tailwind CSS migration.');
                 } else {
                     console.warn('⚠️ Performance validation failed. Review regressions before proceeding.');
                 }
@@ -126,7 +126,7 @@ async function start() {
         errorDiv.style.color = '#ff0000';
         errorDiv.style.padding = '20px';
         errorDiv.style.border = '2px solid #ff0000';
-        errorDiv.style.zIndex = '9999';
+        errorDiv.style.zIndex = '140';
         // Build with static markup + textContent for the dynamic message so an
         // error string can never inject markup into the page.
         const heading = document.createElement('h2');

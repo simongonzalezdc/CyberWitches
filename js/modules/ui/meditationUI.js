@@ -358,7 +358,7 @@ export class MeditationUI {
 
         if (towersSystem) {
             towersSystem.setSelectedTower(towerId);
-            console.log('Tower selected for placement:', towerId);
+            console.info('Tower selected for placement:', towerId);
 
             // Add visual feedback
             const buttons = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.tower-place-button'));
@@ -386,7 +386,7 @@ export class MeditationUI {
 
         const inventory = this.meditationState.meditationInventory || {};
         const items = Object.entries(inventory)
-            .filter(([id, amount]) => amount > 0)
+            .filter(([_id, amount]) => amount > 0)
             .sort((a, b) => b[1] - a[1]);
 
         if (items.length === 0) {
@@ -511,7 +511,7 @@ export class MeditationUI {
 
         // Update display - compact format
         bonusDisplay.innerHTML = `
-            <div class="meditation-bonus-label">🧘 Bonus</div>
+            <div class="meditation-bonus-label">Focus Bonus</div>
             <div class="meditation-bonus-value">+${bonusPercent}%</div>
         `;
     }

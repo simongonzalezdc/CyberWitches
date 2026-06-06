@@ -5,7 +5,7 @@
 
 import { showNotification } from './notifications.js';
 import { PRESTIGE_BONUSES } from '../data/index.js';
-import { formatTimeDuration, formatShort } from '../../utils.js';
+import { formatShort } from '../../utils.js';
 
 export class BoonsUI {
     constructor(gameState, uiManager) {
@@ -97,11 +97,11 @@ export class BoonsUI {
 
                         // Check if we can actually purchase
                         if (this.gameState.prestigePoints < cost || button.disabled) {
-                            console.log('Purchase boon button disabled:', { prestigePoints: this.gameState.prestigePoints, cost, disabled: button.disabled });
+                            console.info('Purchase boon button disabled:', { prestigePoints: this.gameState.prestigePoints, cost, disabled: button.disabled });
                             return;
                         }
 
-                        console.log('Purchase boon button clicked:', { boonId: boonData.id });
+                        console.info('Purchase boon button clicked:', { boonId: boonData.id });
                         prestigeManager.purchaseBoon(boonData.id);
 
                         // Update UI after purchase
