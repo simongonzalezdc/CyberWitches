@@ -4,28 +4,33 @@
 // handler deletes any cache whose name !== CACHE_NAME, so changing this string
 // purges stale assets and forces one fresh fetch for returning players. The
 // prefix was renamed from the legacy "spellwright-cache" to match the product.
-const CACHE_VERSION = 'v22';
+const CACHE_VERSION = 'v23';
 const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
+const scopeUrl = new URL(self.registration.scope);
+const scopePath = scopeUrl.pathname.endsWith('/') ? scopeUrl.pathname : `${scopeUrl.pathname}/`;
+const toScopeUrl = (assetPath) => new URL(assetPath, scopeUrl).toString();
+const OFFLINE_URL = toScopeUrl('offline.html');
 
 // Core app shell — same-origin assets required for the PWA to work offline.
 // This list is precached ATOMICALLY (any failure rejects the install), so it must
 // contain ONLY assets we control and that must always be present.
-// NOTE: the service worker must NOT precache itself ('/sw.js') — doing so can
-// serve a stale worker and wedge updates.
+// NOTE: the service worker must NOT precache itself ('sw.js') — doing so can
+// serve a stale worker and wedge updates. URLs are resolved against the active
+// scope so the app works both at / and under GitHub Pages project paths.
 const CORE_CACHE_URLS = [
-    '/',
-    '/index.html',
-    '/css/main.css',
-    '/css/base.css',
-    '/css/layout.css',
-    '/css/components.css',
-    '/css/animations.css',
-    '/css/responsive.css',
-    '/css/utilities.css',
-    '/manifest.json',
-    '/offline.html'
-];
+    './',
+    'index.html',
+    'css/main.css',
+    'css/base.css',
+    'css/layout.css',
+    'css/components.css',
+    'css/animations.css',
+    'css/responsive.css',
+    'css/utilities.css',
+    'manifest.json',
+    'offline.html'
+].map(toScopeUrl);
 
 // Best-effort precache: a miss here only warns and must NEVER fail the install.
 //  - The production JS bundle is absent on the dev server (ES modules are fetched
@@ -35,28 +40,31 @@ const CORE_CACHE_URLS = [
 //    (graceful no-music fallback), so a precache hiccup must never break install.
 //    Being same-origin, it's also runtime-cached on first load -> true offline.
 const OPTIONAL_CACHE_URLS = [
-    '/js/game.bundle.js',
-    '/vendor/tone-15.1.22.js'
-];
+    'js/game.bundle.js',
+    'vendor/tone-15.1.22.js'
+].map(toScopeUrl);
 
 /**
  * Determine cache strategy for a request
  */
 function getCacheStrategy(request) {
     const url = new URL(request.url);
+    const relativePath = url.pathname.startsWith(scopePath)
+        ? url.pathname.slice(scopePath.length)
+        : url.pathname.replace(/^\/+/, '');
     
     // Static assets - cache first
-    if (url.pathname.match(/\.(html|css|js|json)$/)) {
+    if (relativePath.match(/\.(html|css|js|json)$/)) {
         return 'cache-first';
     }
     
     // Images - cache first
-    if (url.pathname.match(/\.(png|jpg|jpeg|webp|svg|gif)$/)) {
+    if (relativePath.match(/\.(png|jpg|jpeg|webp|svg|gif)$/)) {
         return 'cache-first';
     }
     
     // API - network first
-    if (url.pathname.startsWith('/api/')) {
+    if (relativePath.startsWith('api/')) {
         return 'network-first';
     }
     
@@ -88,7 +96,8 @@ async function cacheFirst(request) {
     } catch (error) {
         // If network fails and no cache, return offline page
         if (request.mode === 'navigate') {
-            return cache.match('/offline.html') || new Response('Offline', { status: 503 });
+            const offlineResponse = await cache.match(OFFLINE_URL);
+            return offlineResponse || new Response('Offline', { status: 503 });
         }
         throw error;
     }
@@ -280,10 +289,12 @@ self.addEventListener('fetch', (event) => {
             console.error('Fetch failed:', error);
             // Final fallback: offline page for navigation requests
             if (event.request.mode === 'navigate') {
-                return caches.match('/offline.html') || new Response('Offline', {
-                    status: 503,
-                    statusText: 'Service Unavailable',
-                    headers: { 'Content-Type': 'text/html' }
+                return caches.match(OFFLINE_URL).then((offlineResponse) => {
+                    return offlineResponse || new Response('Offline', {
+                        status: 503,
+                        statusText: 'Service Unavailable',
+                        headers: { 'Content-Type': 'text/html' }
+                    });
                 });
             }
             return new Response('Network error', {

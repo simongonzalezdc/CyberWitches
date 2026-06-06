@@ -21,6 +21,7 @@ const distDir = join(__dirname, 'dist');
 const staticFiles = [
     'index.html',
     'manifest.json',
+    'offline.html',
     'sw.js',
     'start-server.sh',
     'start-server.bat'
@@ -31,7 +32,8 @@ const staticFiles = [
 // omitting it 404s the design-token stylesheet in the production build.
 // 'vendor' holds the self-hosted Tone.js, loaded via <script src="vendor/...">;
 // without copying it the production audio engine 404s.
-const staticDirs = ['icons', 'docs', 'images', 'css', 'styles', 'vendor'];
+// 'screenshots' is referenced by the web manifest for install surfaces.
+const staticDirs = ['icons', 'docs', 'images', 'css', 'styles', 'vendor', 'screenshots'];
 
 async function copyStaticFiles() {
     console.info('📁 Copying static files...');

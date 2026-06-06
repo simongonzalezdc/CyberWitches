@@ -43,7 +43,7 @@ export class PWAFeaturesManager {
     async registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register('/sw.js');
+                const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
                 this.serviceWorker = registration;
                 console.info('Service Worker registered:', registration);
             } catch (error) {

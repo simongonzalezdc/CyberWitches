@@ -11,6 +11,7 @@ export default [
             'dist/**',
             'coverage/**',
             'docs/**',
+            'artifacts/**',
             'vendor/**', // third-party vendored libs (e.g. self-hosted Tone.js)
             '**/*.min.js'
         ]
