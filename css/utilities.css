@@ -362,7 +362,7 @@
     width: 100%;
     height: 8px;
     background: var(--bg-dark);
-    border-radius: 4px;
+    border-radius: 8px;
     overflow: hidden;
     border: 1px solid var(--border);
 }
@@ -463,7 +463,7 @@
     max-height: min(88dvh, 740px);
     overflow-y: auto;
     background: var(--bg-card);
-    border: 1px solid rgba(0, 240, 255, 0.34);
+    border: 1px solid var(--ky-line);
     border-radius: 8px;
     padding: clamp(20px, 4vw, 32px);
     color: var(--text-primary);
@@ -645,7 +645,7 @@
     width: 400px;
     height: 200px;
     background: rgba(0, 0, 0, 0.9);
-    color: #00ff00;
+    color: var(--ky-green);
     font-family: 'Courier New', monospace;
     font-size: 12px;
     padding: 10px;
@@ -688,7 +688,7 @@
 .debug-console-input {
     flex: 1;
     background: rgba(0, 255, 0, 0.1);
-    color: #00ff00;
+    color: var(--ky-green);
     border: 1px solid #00ff00;
     padding: 2px 5px;
     border-radius: 3px;
@@ -709,7 +709,7 @@
 
 /* Debug Log Colors */
 .debug-log-command {
-    color: #00ff00;
+    color: var(--ky-green);
 }
 
 .debug-log-error {
@@ -721,7 +721,7 @@
 }
 
 .debug-log-info {
-    color: #00ff00;
+    color: var(--ky-green);
 }
 
 /* Suggestion Colors */
@@ -847,7 +847,7 @@
     background: rgba(0, 0, 0, 0.9);
     border: 2px solid #00ff00;
     border-radius: 5px;
-    color: #00ff00;
+    color: var(--ky-green);
     font-family: 'Courier New', monospace;
     font-size: 12px;
     padding: 10px;
@@ -856,7 +856,7 @@
 }
 
 .dev-console-title {
-    color: #00ff00;
+    color: var(--ky-green);
     font-weight: bold;
     margin-bottom: 10px;
 }
@@ -869,7 +869,7 @@
     align-items: center;
     justify-content: center;
     padding: clamp(12px, 4vw, 32px);
-    background: rgba(0, 0, 0, 0.82);
+    background: color-mix(in srgb, var(--ky-void) 84%, transparent);
     z-index: 1000;
     backdrop-filter: blur(10px);
     overflow-y: auto;

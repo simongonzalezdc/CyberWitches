@@ -50,7 +50,7 @@
     --font-main: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
 
-    --scanline-color: rgba(0, 240, 255, 0.03);
+    --scanline-color: color-mix(in srgb, var(--ky-cyan) 4%, transparent);
 
     /* Spacing Scale */
     --spacing-xs: 4px;
@@ -104,7 +104,7 @@ body::after {
     left: 0;
     bottom: 0;
     right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background: linear-gradient(color-mix(in srgb, var(--ky-void) 0%, transparent) 50%, color-mix(in srgb, var(--ky-void) 25%, transparent) 50%), linear-gradient(90deg, color-mix(in srgb, var(--ky-red) 8%, transparent), color-mix(in srgb, var(--ky-green) 4%, transparent), color-mix(in srgb, var(--ky-cyan) 8%, transparent));
     z-index: var(--z-crt-overlay);
     background-size: 100% 2px, 3px 100%;
     pointer-events: none;
