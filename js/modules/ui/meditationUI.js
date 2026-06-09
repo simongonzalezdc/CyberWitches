@@ -4,7 +4,7 @@
  */
 
 import { MEDITATION_TOWERS, MEDITATION_UPGRADES, INGREDIENTS } from '../data/index.js';
-import { formatShort, formatPrecise } from '../../utils.js';
+import { formatShort, formatPrecise, escapeHtml } from '../../utils.js';
 
 /**
  * Meditation UI Manager - Handles rendering of meditation mode UI
@@ -200,19 +200,19 @@ export class MeditationUI {
                 const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
                 const displayName = ingredient ? ingredient.displayName : ingId;
                 return `<span class="recipe-item-inline ${canAffordIng ? 'can-afford' : 'cannot-afford'}">
-                    ${displayName}: ${formatShort(have)}/${formatShort(amount)}
+                    ${escapeHtml(displayName)}: ${formatShort(have)}/${formatShort(amount)}
                 </span>`;
             }).join('');
 
             towerCard.innerHTML = `
-                <div class="card-title">${towerData.displayName}</div>
+                <div class="card-title">${escapeHtml(towerData.displayName)}</div>
                 <div class="card-description">
-                    ${towerData.baseDamage} dmg | ${towerData.baseRange} range | ${towerData.baseAttackSpeed.toFixed(2)}/s
+                    ${escapeHtml(String(towerData.baseDamage))} dmg | ${escapeHtml(String(towerData.baseRange))} range | ${escapeHtml(towerData.baseAttackSpeed.toFixed(2))}/s
                 </div>
                 <div class="card-section">
                     ${recipeItems}
                 </div>
-                <button class="btn-primary tower-place-button" data-tower-id="${towerData.id}" ${canAfford ? '' : 'disabled'}>
+                <button class="btn-primary tower-place-button" data-tower-id="${escapeHtml(towerData.id)}" ${canAfford ? '' : 'disabled'}>
                     Place Tower
                 </button>
             `;
@@ -304,21 +304,21 @@ export class MeditationUI {
 
                 const upgradeCostItems = upgradeCosts.map(({ displayName, required, have, canAfford }) => {
                     return `<span class="recipe-item-inline ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                        ${displayName}: ${formatShort(have)}/${formatShort(required)}
+                        ${escapeHtml(displayName)}: ${formatShort(have)}/${formatShort(required)}
                     </span>`;
                 }).join('');
 
                 towerCard.innerHTML = `
-                    <div class="card-title">${tower.data.displayName} (Lv${level})</div>
+                    <div class="card-title">${escapeHtml(tower.data.displayName)} (Lv${escapeHtml(level)})</div>
                     <div class="card-description">
-                        ${stats.damage.toFixed(1)} dmg | ${stats.range.toFixed(1)} range | ${stats.attackSpeed.toFixed(2)}/s
+                        ${escapeHtml(stats.damage.toFixed(1))} dmg | ${escapeHtml(stats.range.toFixed(1))} range | ${escapeHtml(stats.attackSpeed.toFixed(2))}/s
                     </div>
                     <div class="card-section">
-                        <div class="tower-upgrade-label">Upgrade to Lv${level + 1}:</div>
+                        <div class="tower-upgrade-label">Upgrade to Lv${escapeHtml(level + 1)}:</div>
                         ${upgradeCostItems}
                     </div>
-                    <button class="btn-primary tower-upgrade-button" data-tower-gridx="${tower.gridX}" data-tower-gridy="${tower.gridY}" ${canUpgrade ? '' : 'disabled'}>
-                        Upgrade to Level ${level + 1}
+                    <button class="btn-primary tower-upgrade-button" data-tower-gridx="${escapeHtml(tower.gridX)}" data-tower-gridy="${escapeHtml(tower.gridY)}" ${canUpgrade ? '' : 'disabled'}>
+                        Upgrade to Level ${escapeHtml(level + 1)}
                     </button>
                 `;
 
@@ -402,7 +402,7 @@ export class MeditationUI {
             itemCard.className = 'card inventory-item-card';
 
             itemCard.innerHTML = `
-                <div class="card-title">${displayName}</div>
+                <div class="card-title">${escapeHtml(displayName)}</div>
                 <div class="card-value">${formatShort(amount)}</div>
             `;
 
@@ -437,18 +437,18 @@ export class MeditationUI {
                 const have = this.meditationState.meditationInventory[ingId] || 0;
                 const canAffordIng = have >= amount;
                 return `<span class="recipe-item-inline ${canAffordIng ? 'can-afford' : 'cannot-afford'}">
-                    ${ingId}: ${formatShort(have)}/${formatShort(amount)}
+                    ${escapeHtml(ingId)}: ${formatShort(have)}/${formatShort(amount)}
                 </span>`;
             }).join('');
 
             upgCard.innerHTML = `
-                <div class="card-title">${upgData.displayName} ${owned ? '✓' : ''}</div>
-                <div class="card-description">${upgData.description}</div>
+                <div class="card-title">${escapeHtml(upgData.displayName)} ${owned ? '✓' : ''}</div>
+                <div class="card-description">${escapeHtml(upgData.description)}</div>
                 <div class="card-section">
                     ${upgradeRecipeItems}
                 </div>
-                <button class="btn-primary upgrade-purchase-button" data-upgrade-id="${upgData.id}" ${owned || !canAfford ? 'disabled' : ''}>
-                    ${owned ? 'Owned' : 'Purchase'}
+                <button class="btn-primary upgrade-purchase-button" data-upgrade-id="${escapeHtml(upgData.id)}" ${owned || !canAfford ? 'disabled' : ''}>
+                    ${escapeHtml(owned ? 'Owned' : 'Purchase')}
                 </button>
             `;
 
@@ -512,7 +512,7 @@ export class MeditationUI {
         // Update display - compact format
         bonusDisplay.innerHTML = `
             <div class="meditation-bonus-label">Focus Bonus</div>
-            <div class="meditation-bonus-value">+${bonusPercent}%</div>
+            <div class="meditation-bonus-value">+${escapeHtml(bonusPercent)}%</div>
         `;
     }
 }

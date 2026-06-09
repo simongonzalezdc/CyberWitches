@@ -5,7 +5,7 @@
 
 import { showNotification } from './notifications.js';
 import { PRESTIGE_BONUSES } from '../data/index.js';
-import { formatShort } from '../../utils.js';
+import { formatShort, escapeHtml } from '../../utils.js';
 
 export class BoonsUI {
     constructor(gameState, uiManager) {
@@ -64,15 +64,15 @@ export class BoonsUI {
                 card.className = 'card';
 
                 card.innerHTML = `
-                    <div class="card-title">${boonData.displayName} (Lv. ${currentLevel})</div>
-                    <div class="card-description">${boonData.description}</div>
+                    <div class="card-title">${escapeHtml(boonData.displayName)} (Lv. ${escapeHtml(currentLevel)})</div>
+                    <div class="card-description">${escapeHtml(boonData.description)}</div>
                     <div class="card-section">
-                        <div class="card-label">${effectText}</div>
+                        <div class="card-label">${escapeHtml(effectText)}</div>
                     </div>
                     <div class="card-section">
                         <div class="card-label">${Math.floor(cost)} EK</div>
                     </div>
-                    <button class="btn-primary" data-action="purchase-boon" data-boon-id="${boonData.id}" ${this.gameState.prestigePoints >= cost ? '' : 'disabled'}>
+                    <button class="btn-primary" data-action="purchase-boon" data-boon-id="${escapeHtml(boonData.id)}" ${this.gameState.prestigePoints >= cost ? '' : 'disabled'}>
                         Purchase
                     </button>
                 `;

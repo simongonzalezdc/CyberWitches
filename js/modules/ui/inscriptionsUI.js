@@ -1,7 +1,7 @@
 import { getTierSymbol, getTierAppropriateStyle, stripEmojisIfLowTier, getUpgradeTier } from './uiHelpers.js';
 import { UPGRADES } from '../data/upgrades.js';
 import { INGREDIENTS } from '../data/ingredients.js';
-import { formatShort } from '../../utils.js';
+import { formatShort, escapeHtml } from '../../utils.js';
 
 export class InscriptionsUI {
     constructor(gameState, uiManager) {
@@ -54,7 +54,7 @@ export class InscriptionsUI {
             container.innerHTML = this.renderEmptyState({
                 totalItems: UPGRADES.length,
                 unlockedItems: 0,
-                firstActionHint: 'INSCRIBE RUNES TO ENHANCE OUTPUT'
+                firstActionHint: escapeHtml('INSCRIBE RUNES TO ENHANCE OUTPUT')
             });
             return;
         }

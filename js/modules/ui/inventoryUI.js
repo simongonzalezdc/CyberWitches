@@ -4,6 +4,7 @@
  */
 
 import { getTierAppropriateStyle } from './uiHelpers.js';
+import { escapeHtml } from '../../utils.js';
 
 export class InventoryUI {
     constructor(gameState, uiManager) {
@@ -54,7 +55,7 @@ export class InventoryUI {
             container.innerHTML = this.renderEmptyState({
                 totalItems: window.INGREDIENTS ? window.INGREDIENTS.length : 0,
                 unlockedItems: 0,
-                firstActionHint: 'ARTIFACTS WILL APPEAR AFTER CRAFTING'
+                firstActionHint: escapeHtml('ARTIFACTS WILL APPEAR AFTER CRAFTING')
             });
             return;
         }
@@ -278,7 +279,7 @@ export class InventoryUI {
             return `
                 <div class="empty-state-container" style="grid-column: 1 / -1;">
                     <div class="empty-state-sigil" aria-hidden="true">◈</div>
-                    <p class="empty-state-message">> ${unlockedItems}/${totalItems} ARTIFACTS_COLLECTED</p>
+                    <p class="empty-state-message">> ${escapeHtml(unlockedItems)}/${escapeHtml(totalItems)} ARTIFACTS_COLLECTED</p>
                     <p class="empty-state-hint">> Continue gathering to expand collection</p>
                 </div>
             `;
@@ -288,7 +289,7 @@ export class InventoryUI {
         return `
             <div class="empty-state-container" style="grid-column: 1 / -1;">
                 <div class="empty-state-sigil" aria-hidden="true">◈</div>
-                <p class="empty-state-message">> ${firstActionHint || 'NO_DATA_FOUND'}</p>
+                <p class="empty-state-message">> ${escapeHtml(firstActionHint || 'NO_DATA_FOUND')}</p>
                 <button class="btn-primary btn-sm" onclick="document.getElementById('cast-button')?.focus()">> BEGIN_COMPILATION</button>
             </div>
         `;

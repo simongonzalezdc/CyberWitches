@@ -1,4 +1,5 @@
 import { stripEmojisIfLowTier } from './uiHelpers.js';
+import { escapeHtml } from '../../utils.js';
 
 export class NotificationManager {
     constructor() {
