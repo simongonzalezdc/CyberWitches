@@ -92,6 +92,16 @@ export class TutorialSystem {
         bootScreen.style.height = '100%';
         bootScreen.style.zIndex = '140';
 
+        // Safety: ensure boot screen never permanently blocks interaction.
+        // If the line animation hangs (JS error, missed timeout), force-hide
+        // after 12 seconds. The normal animation takes ~4s, worst case ~8s
+        // (7 lines × 700ms + 3s of transition delays), so 12s gives headroom.
+        const BOOT_MAX_LIFETIME_MS = 12000;
+        const safetyTimer = setTimeout(() => {
+            console.warn('Boot screen safety timeout triggered — forcing hide.');
+            this.forceHideBootScreen(bootScreen);
+        }, BOOT_MAX_LIFETIME_MS);
+
         const lines = [
             '> KERNEL_INIT...',
             '> LOADING_MAGIC_DRIVERS... [OK]',
@@ -108,6 +118,7 @@ export class TutorialSystem {
         const addLine = () => {
             if (lineIndex >= lines.length) {
                 setTimeout(() => {
+                    clearTimeout(safetyTimer);
                     this.endBootSequence(bootScreen);
                 }, 1000);
                 return;
@@ -118,14 +129,14 @@ export class TutorialSystem {
             p.style.margin = '5px 0';
             p.style.opacity = '0';
             p.style.animation = 'fadeIn 0.1s forwards';
-            
+
             if (lines[lineIndex].includes('ERROR')) {
                 p.style.color = '#FF2A6D'; // Red error
             }
 
             bootScreen.appendChild(p);
             lineIndex++;
-            
+
             // Random typing delay
             setTimeout(addLine, Math.random() * 500 + 200);
         };
@@ -133,9 +144,23 @@ export class TutorialSystem {
         addLine();
     }
 
+    /**
+     * Force-hide the boot screen immediately (safety fallback).
+     * Clears the safety timer and makes the boot screen non-interactive.
+     * @param {HTMLElement} bootScreen
+     */
+    forceHideBootScreen(bootScreen) {
+        if (!bootScreen || bootScreen.style.display === 'none') return;
+        bootScreen.style.display = 'none';
+        bootScreen.style.pointerEvents = 'none';
+        bootScreen.style.opacity = '0';
+        this.startTutorialSteps();
+    }
+
     endBootSequence(bootScreen) {
         // Fade out boot screen
         bootScreen.style.transition = 'opacity 1s ease-out';
+        bootScreen.style.pointerEvents = 'none';
         bootScreen.style.opacity = '0';
         
         setTimeout(() => {

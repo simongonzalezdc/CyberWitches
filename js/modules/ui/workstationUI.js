@@ -13,6 +13,7 @@ export class WorkstationUI {
         this.gameState = gameState;
         this.uiManager = uiManager;
         this.virtualWorkstationList = null;
+        this.lastRenderSignature = '';
     }
 
     /**
@@ -45,6 +46,11 @@ export class WorkstationUI {
             return this.gameState.ab >= unlockRequirement;
         });
 
+        const renderSignature = this.createRenderSignature(unlockedWorkstations);
+        if (renderSignature === this.lastRenderSignature && container.childElementCount > 0) {
+            return;
+        }
+
         // Destroy existing virtual list if it exists
         if (this.virtualWorkstationList) {
             try {
@@ -57,6 +63,24 @@ export class WorkstationUI {
 
         // Use traditional rendering
         this.updateTraditional(container, unlockedWorkstations);
+        this.lastRenderSignature = renderSignature;
+    }
+
+    createRenderSignature(unlockedWorkstations) {
+        return unlockedWorkstations.map((prodData) => {
+            const owned = this.gameState.workstations[prodData.id] || 0;
+            const growth = Number(prodData.growth);
+            const cost = prodData.recipe && !isNaN(growth) && growth > 0
+                ? (Balance ? Balance.scaledRecipe(prodData.recipe, owned, growth) : {})
+                : {};
+            const costSignature = Object.entries(cost)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([ingId, amount]) => `${ingId}:${amount}`)
+                .join(',');
+            const canAfford = this.gameState.canAfford(cost) ? '1' : '0';
+            const inscriptionMult = this.getInscriptionBonuses(prodData.id).multiplier;
+            return `${prodData.id}:${owned}:${canAfford}:${costSignature}:${inscriptionMult}`;
+        }).join('|');
     }
 
     // Traditional rendering function (used for small lists or as fallback)

@@ -29,11 +29,9 @@
     <link rel="stylesheet" href="styles/theme.css">
     <link rel="stylesheet" href="css/main.css">
     
-    <!-- Audio Engine. SELF-HOSTED (vendor/tone-15.1.22.js) — the exact bytes of
-         tone@15.1.22 from jsdelivr, integrity-verified at vendoring time against
-         the published SRI hash. Self-hosting removes the runtime CDN/supply-chain
-         dependency and makes the PWA work fully offline. -->
-    <script src="vendor/tone-15.1.22.js" defer></script>
+    <!-- Audio Engine is self-hosted at vendor/tone-15.1.22.js and lazy-loaded
+         after a user gesture when Tier 2+ audio is active. Loading it at boot
+         creates an AudioContext before gesture and triggers autoplay warnings. -->
 </head>
 
 <body class="bg-void-950 text-white overflow-hidden font-sans antialiased">

@@ -400,6 +400,7 @@ export class ModalManager {
             localStorage.setItem('hasSeenStoryIntroduction', 'true');
             modal.remove();
             document.removeEventListener('keydown', closeOnEscape);
+            clearTimeout(autoCloseTimer);
             document.getElementById('cast-button')?.focus();
         };
         const closeOnEscape = (e) => {
@@ -410,8 +411,23 @@ export class ModalManager {
         if (closeBtn) {
             closeBtn.addEventListener('click', closeStory);
         }
+
+        // Click-on-overlay-to-dismiss (clicks on the dark backdrop, not the content card)
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeStory();
+        });
+
         document.addEventListener('keydown', closeOnEscape);
         content.focus();
+
+        // Safety: auto-dismiss after 30 seconds so the game is never permanently
+        // blocked if the user misses the close button or the button fails.
+        // 30s gives screen reader users and users with motor impairments
+        // adequate time (WCAG 2.2.1 Timing Adjustable).
+        const autoCloseTimer = setTimeout(() => {
+            console.warn('Story intro auto-dismissed after 30s timeout.');
+            closeStory();
+        }, 30_000);
     }
 
     showMeditationStoryIntroduction() {
