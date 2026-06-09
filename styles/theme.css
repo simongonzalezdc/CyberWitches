@@ -3,67 +3,67 @@
    SINGLE SOURCE OF TRUTH for all color tokens - reference these everywhere */
 
 :root {
-  /* Core Void Palette */
-  --color-void-950: #050508;
-  --color-void-900: #0a0a12;
-  --color-void-800: #11111a;
-  --color-void-700: #151723;
+  /* Core Void Palette (Kyanite live map) */
+  --color-void-950: var(--ky-void);
+  --color-void-900: var(--ky-void-depth);
+  --color-void-800: var(--ky-midnight);
+  --color-void-700: var(--ky-basalt);
 
   /* Magic/Witch Theme */
-  --color-witch-500: #d93ff0;
-  --color-witch-600: #ad24c8;
+  --color-witch-500: var(--ky-magenta);
+  --color-witch-600: var(--ky-violet);
 
   /* Success/Soul */
-  --color-soul-400: #3ce3c5;
+  --color-soul-400: var(--ky-green);
 
   /* Gold/Magic */
-  --color-gold-400: #ffcf65;
-  --color-magic: #ffb84c;
+  --color-gold-400: var(--ky-amber);
+  --color-magic: var(--ky-amber);
 
   /* Error/Glitch */
-  --color-glitch-500: #ff2a6d;
-  --color-corruption: #ff2a6d;
+  --color-glitch-500: var(--ky-red);
+  --color-corruption: var(--ky-red);
 
   /* Code/System */
-  --color-code: #00f0ff;
-  --color-code-dim: #007a82;
-  --color-system: #d7dcf4;
-  --color-dim: #a8afcf;
+  --color-code: var(--ky-cyan);
+  --color-code-dim: var(--ky-electric);
+  --color-system: var(--ky-mist);
+  --color-dim: var(--ky-steel);
 
   /* Retro Terminal */
   --color-retro-green: #39ff14;
   --color-retro-red: #ff0000;
 
   /* Functional Colors */
-  --primary: #00f0ff;
-  --accent: #ffb84c;
-  --error: #ff2a6d;
-  --success: #3ce3c5;
-  --warning: #ffb84c;
+  --primary: var(--ky-cyan);
+  --accent: var(--ky-cyan);
+  --error: var(--ky-red);
+  --success: var(--ky-green);
+  --warning: var(--ky-amber);
 
   /* Text Colors */
-  --text-primary: #f7f8ff;
-  --text-secondary: #a8afcf;
-  --text-dim: #a8afcf;
-  --text-muted: #a8afcf;
+  --text-primary: var(--ky-crystal);
+  --text-secondary: var(--ky-mist);
+  --text-dim: var(--ky-steel);
+  --text-muted: var(--ky-steel);
 
   /* Background Colors */
-  --bg-void: #050508;
-  --bg-terminal: #0a0a12;
-  --bg-panel: #11111a;
-  --bg-card: #1f1f3a;
-  --bg-dark: #06060d;
-  --bg-dark-alt: #0a0a0f;
-  --bg-panel-trans: rgba(17, 17, 26, 0.85);
+  --bg-void: var(--ky-void);
+  --bg-terminal: var(--ky-void-depth);
+  --bg-panel: var(--ky-basalt);
+  --bg-card: var(--ky-basalt-elevated);
+  --bg-dark: var(--ky-void-depth);
+  --bg-dark-alt: var(--ky-midnight);
+  --bg-panel-trans: rgba(11, 19, 29, 0.85);
 
   /* Border & UI Elements */
-  --border: #333366;
-  --border-light: rgba(0, 240, 255, 0.2);
-  --border-focus: rgba(0, 240, 255, 0.6);
+  --border: var(--ky-basalt-ridge);
+  --border-light: var(--ky-line);
+  --border-focus: rgba(38, 230, 255, 0.6);
   --border-ui: rgba(168, 175, 207, 0.28);
 
   /* Effects */
-  --shadow-glow: 0 0 20px rgba(217, 63, 240, 0.3);
+  --shadow-glow: 0 0 20px rgba(38, 230, 255, 0.24);
   --ease-witch: cubic-bezier(0.2, 0, 0, 1);
 
   /* Meditation-specific colors (for canvas rendering and UI) */
@@ -88,7 +88,7 @@
   --z-control-deck: 60;
   --z-tabs: 40;
 
-  /* Kyanite Labs Design System Tokens (Branch A: spec-only, do not use in live UI yet) */
+  /* Kyanite Labs Design System Tokens */
   --ky-void: #05070b;
   --ky-void-depth: #070a10;
   --ky-midnight: #080d14;
@@ -109,7 +109,7 @@
   --ky-line: rgba(38, 230, 255, 0.18);
   --ky-logo-gradient: linear-gradient(135deg, #26e6ff 0%, #ff2f6d 100%);
 
-  /* Kyanite preview aliases — do not use in live UI until Branch B */
+  /* Kyanite compatibility aliases */
   --color-void-950-kyanite: var(--ky-void);
   --color-void-900-kyanite: var(--ky-void-depth);
   --color-void-800-kyanite: var(--ky-midnight);
@@ -123,8 +123,8 @@
   --color-dim-kyanite: var(--ky-steel);
   --color-system-kyanite: var(--ky-mist);
 
-  /* Kyanite font tokens (Branch A: keep current live font stacks unchanged) */
-  --font-display: 'Orbitron', sans-serif;
+  /* Kyanite font tokens */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-main: 'Space Grotesk', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }

@@ -1,34 +1,19 @@
 /* Landing-page-only tokens — isolated so they do not leak into play.html */
 
 :root {
-    --bg-void: #05070b;
-    --bg-surface: #0b131d;
-    --bg-elevated: #0e1b29;
-    --bg-ridge: #122335;
-    --accent: #26e6ff;
-    --accent-dim: #087dcc;
-    --accent-magenta: #ff2f6d;
+    --bg-void: var(--ky-void);
+    --bg-surface: var(--ky-basalt);
+    --bg-elevated: var(--ky-basalt-elevated);
+    --accent: var(--ky-cyan);
+    --accent-dim: var(--ky-electric);
     --accent-glow: rgba(38, 230, 255, 0.12);
-    --accent-glow-faint: rgba(38, 230, 255, 0.08);
-    --accent-grid: rgba(38, 230, 255, 0.045);
-    --accent-glow-strong: rgba(38, 230, 255, 0.22);
-    --magenta-glow: rgba(255, 47, 109, 0.10);
-    --text-primary: #f3f8ff;
-    --text-secondary: #c3d4e2;
-    --text-muted: #8297aa;
-    --border-subtle: rgba(243, 248, 255, 0.06);
-    --border-highlight: rgba(38, 230, 255, 0.18);
-    --border-highlight-strong: rgba(38, 230, 255, 0.35);
-    --surface-glass: rgba(11, 19, 29, 0.78);
-    --surface-glass-strong: rgba(14, 27, 41, 0.84);
-    --surface-highlight: rgba(243, 248, 255, 0.08);
-    --surface-highlight-strong: rgba(243, 248, 255, 0.24);
-    --surface-highlight-soft: rgba(243, 248, 255, 0.18);
-    --scanline: rgba(243, 248, 255, 0.018);
-    --shadow-void-soft: rgba(0, 0, 0, 0.26);
-    --shadow-void: rgba(0, 0, 0, 0.36);
-    --shadow-sm: 0 1px 0 var(--surface-highlight) inset, 0 10px 28px var(--shadow-void-soft);
-    --shadow-md: 0 1px 0 var(--surface-highlight) inset, 0 18px 52px var(--shadow-void);
+    --text-primary: var(--ky-crystal);
+    --text-secondary: var(--ky-mist);
+    --text-muted: var(--ky-steel);
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-highlight: rgba(0, 240, 255, 0.18);
+    --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.24);
+    --shadow-md: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 16px 40px rgba(0, 0, 0, 0.32);
     --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
     --transition-base: 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }

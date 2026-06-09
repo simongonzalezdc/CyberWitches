@@ -5,6 +5,9 @@
  */
 
 export class DesignTierSystem {
+    static DESIGN_SYSTEM_VERSION = 'kyanite-1';
+    static DESIGN_SYSTEM_STORAGE_KEY = 'hexcompiler-design-system-version';
+
     constructor(gameState, uiManager, audioSystem) {
         this.gameState = gameState;
         this.uiManager = uiManager;
@@ -14,6 +17,7 @@ export class DesignTierSystem {
         this.loadUnlockedTiers();
         this.gameStartTime = Date.now(); // Track when game started for time-based requirements
         this.tierUnlockTimes = {}; // Track when each tier was unlocked
+        void this.reconcileDesignSystemVersion();
     }
 
     /**
@@ -91,22 +95,22 @@ export class DesignTierSystem {
                 this.toggleAudio(false, false);
                 break;
             case 1: // Basic Color (16-bit colors)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
                 this.toggleAnimations(false);
                 this.toggleAudio(false, false);
                 break;
             case 2: // Enhanced (Sound Effects + Color)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
                 this.toggleAnimations(true); // Minimal animations
                 this.toggleAudio(true, false); // SFX only
                 break;
             case 3: // Terminal (Glassmorphism + Full Animations)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
                 this.toggleAnimations(true);
                 this.toggleAudio(true, false);
                 break;
             case 4: // Full (Music + Parallax)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
                 this.toggleAnimations(true);
                 this.toggleAudio(true, true); // SFX + Music
                 break;
@@ -116,7 +120,24 @@ export class DesignTierSystem {
     setTheme(colors) {
         document.documentElement.style.setProperty('--color-code', colors.secondary);
         document.documentElement.style.setProperty('--color-magic', colors.accent);
-        document.documentElement.style.setProperty('--color-corruption', '#FF2A6D');
+        document.documentElement.style.setProperty('--color-corruption', colors.primary);
+    }
+
+    async reconcileDesignSystemVersion() {
+        if (typeof localStorage === 'undefined') return;
+
+        const key = DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY;
+        const version = DesignTierSystem.DESIGN_SYSTEM_VERSION;
+        const storedVersion = localStorage.getItem(key);
+
+        if (typeof document !== 'undefined' && document.documentElement) {
+            document.documentElement.dataset.designSystemVersion = version;
+        }
+
+        if (storedVersion !== version) {
+            localStorage.setItem(key, version);
+            await this.applyTier(this.currentTier);
+        }
     }
 
     toggleAnimations(enabled) {

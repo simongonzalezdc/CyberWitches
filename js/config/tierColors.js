@@ -1,7 +1,7 @@
 /**
  * Tier Color Constants
  * Single source of truth for tier styling used by UI helpers and design tier system.
- * Branch A keeps legacy values; Branch B will repoint to Kyanite hex constants.
+ * Branch B maps progression colors onto the Kyanite token palette.
  */
 
 export const TIER_STYLES = {
@@ -14,37 +14,37 @@ export const TIER_STYLES = {
     },
     1: {
         symbol: '◆',
-        color: '#FF10F0',
-        glow: 'rgba(255, 16, 240, 0.4)',
-        gradient: 'linear-gradient(135deg, #FF10F0 0%, #FF2DAA 100%)',
-        borderGlow: 'rgba(255, 16, 240, 0.8)'
+        color: '#FF2F6D',
+        glow: 'rgba(255, 47, 109, 0.4)',
+        gradient: 'linear-gradient(135deg, #FF2F6D 0%, #B314FF 100%)',
+        borderGlow: 'rgba(255, 47, 109, 0.8)'
     },
     2: {
         symbol: '◈',
-        color: '#FFFF00',
-        glow: 'rgba(255, 255, 0, 0.4)',
-        gradient: 'linear-gradient(135deg, #FFFF00 0%, #FFD700 100%)',
-        borderGlow: 'rgba(255, 255, 0, 0.9)'
+        color: '#F5D35C',
+        glow: 'rgba(245, 211, 92, 0.4)',
+        gradient: 'linear-gradient(135deg, #F5D35C 0%, #26E6FF 100%)',
+        borderGlow: 'rgba(245, 211, 92, 0.9)'
     },
     3: {
         symbol: '✧',
-        color: '#39FF14',
-        glow: 'rgba(57, 255, 20, 0.4)',
-        gradient: 'linear-gradient(135deg, #39FF14 0%, #00FF00 100%)',
-        borderGlow: 'rgba(57, 255, 20, 0.6)'
+        color: '#33FF99',
+        glow: 'rgba(51, 255, 153, 0.4)',
+        gradient: 'linear-gradient(135deg, #33FF99 0%, #26E6FF 100%)',
+        borderGlow: 'rgba(51, 255, 153, 0.6)'
     },
     4: {
         symbol: '✦',
-        color: '#00FFFF',
-        glow: 'rgba(0, 255, 255, 0.4)',
-        gradient: 'linear-gradient(135deg, #00FFFF 0%, #00CED1 100%)',
-        borderGlow: 'rgba(0, 255, 255, 0.7)'
+        color: '#26E6FF',
+        glow: 'rgba(38, 230, 255, 0.4)',
+        gradient: 'linear-gradient(135deg, #26E6FF 0%, #087DCC 100%)',
+        borderGlow: 'rgba(38, 230, 255, 0.7)'
     },
     5: {
         symbol: '✪',
-        color: '#FF6B00',
-        glow: 'rgba(255, 107, 0, 0.6)',
-        gradient: 'linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%)',
-        borderGlow: 'rgba(255, 107, 0, 0.9)'
+        color: '#087DCC',
+        glow: 'rgba(8, 125, 204, 0.6)',
+        gradient: 'linear-gradient(135deg, #087DCC 0%, #26E6FF 100%)',
+        borderGlow: 'rgba(8, 125, 204, 0.9)'
     }
 };
