@@ -87,6 +87,46 @@
   --z-atmosphere: 70;
   --z-control-deck: 60;
   --z-tabs: 40;
+
+  /* Kyanite Labs Design System Tokens (Branch A: spec-only, do not use in live UI yet) */
+  --ky-void: #05070b;
+  --ky-void-depth: #070a10;
+  --ky-midnight: #080d14;
+  --ky-basalt: #0b131d;
+  --ky-basalt-elevated: #0e1b29;
+  --ky-basalt-ridge: #122335;
+  --ky-crystal: #f3f8ff;
+  --ky-mist: #c3d4e2;
+  --ky-steel: #8297aa;
+  --ky-cyan: #26e6ff;
+  --ky-electric: #087dcc;
+  --ky-ocean: #00a7dc;
+  --ky-magenta: #ff2f6d;
+  --ky-violet: #b314ff;
+  --ky-amber: #f5d35c;
+  --ky-green: #33ff99;
+  --ky-red: #ff1a3d;
+  --ky-line: rgba(38, 230, 255, 0.18);
+  --ky-logo-gradient: linear-gradient(135deg, #26e6ff 0%, #ff2f6d 100%);
+
+  /* Kyanite preview aliases — do not use in live UI until Branch B */
+  --color-void-950-kyanite: var(--ky-void);
+  --color-void-900-kyanite: var(--ky-void-depth);
+  --color-void-800-kyanite: var(--ky-midnight);
+  --color-witch-500-kyanite: var(--ky-magenta);
+  --color-code-kyanite: var(--ky-cyan);
+  --color-magic-kyanite: var(--ky-amber);
+  --color-glitch-500-kyanite: var(--ky-red);
+  --color-corruption-kyanite: var(--ky-red);
+  --color-soul-400-kyanite: var(--ky-green);
+  --color-gold-400-kyanite: var(--ky-amber);
+  --color-dim-kyanite: var(--ky-steel);
+  --color-system-kyanite: var(--ky-mist);
+
+  /* Kyanite font tokens (Branch A: keep current live font stacks unchanged) */
+  --font-display: 'Orbitron', sans-serif;
+  --font-main: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 .glass-panel {
