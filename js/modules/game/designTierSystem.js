@@ -148,11 +148,25 @@ export class DesignTierSystem {
             const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
             if (storedVersion !== DesignTierSystem.DESIGN_SYSTEM_VERSION) {
                 localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, DesignTierSystem.DESIGN_SYSTEM_VERSION);
-                await this.applyTier(this.currentTier);
+                this.applyThemeForCurrentTier();
             }
         } catch (error) {
             console.warn('Unable to persist design system version:', error);
         }
+    }
+
+    applyThemeForCurrentTier() {
+        if (this.currentTier === 0) {
+            this.setTheme({
+                primary: COLORS.KY_CRYSTAL,
+                secondary: COLORS.KY_STEEL,
+                accent: COLORS.KY_CRYSTAL,
+                corruption: COLORS.KY_RED
+            });
+            return;
+        }
+
+        this.setTheme(KYANITE_THEME);
     }
 
     setTheme(colors) {
