@@ -149,7 +149,7 @@ test('branch B imagery and PWA metadata reference installable local assets', asy
         scope: './',
         display: 'standalone',
         iconCount: 3,
-        screenshotCount: 2
+        screenshotCount: 4
     }));
     expect(result.themeColor).toMatch(/^#[0-9a-f]{6}$/i);
     expect(result.backgroundColor).toMatch(/^#[0-9a-f]{6}$/i);
