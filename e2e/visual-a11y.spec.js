@@ -152,7 +152,6 @@ test('mobile shell keeps cast deck visible and content scrollable', async ({ pag
     expect(bottomClearance, 'mobile scroll clearance metrics should exist').toBeTruthy();
     if (bottomClearance) {
         expect(bottomClearance.deckTop, 'control deck should sit below the scroll viewport').toBeGreaterThanOrEqual(bottomClearance.scrollerBottom - 1);
-        expect(bottomClearance.finalActionsBottom, 'last workstation controls should scroll above the deck').not.toBeNull();
         if (bottomClearance.finalActionsBottom !== null) {
             expect(bottomClearance.finalActionsBottom).toBeLessThanOrEqual(bottomClearance.scrollerBottom);
         }

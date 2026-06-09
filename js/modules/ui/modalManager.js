@@ -139,6 +139,9 @@ export class ModalManager {
         if (typeof window !== 'undefined' && !('showSaveFilePicker' in window)) {
             this.initSaveIOFallback();
         }
+
+        // Initialize paste import validation
+        this.initPasteImportValidation();
     }
 
     initSaveIOFallback() {
@@ -797,5 +800,102 @@ export class ModalManager {
             };
             document.addEventListener('keydown', escapeHandler);
         });
+    }
+
+    initPasteImportValidation() {
+        const importData = /** @type {HTMLTextAreaElement} */ (document.getElementById('import-data'));
+        const importError = document.getElementById('import-error');
+        const pasteImportButton = document.getElementById('paste-import-button');
+
+        if (!importData || !importError) return;
+
+        const validate = () => {
+            const val = importData.value.trim();
+            if (!val) {
+                importData.setAttribute('aria-invalid', 'true');
+                importError.textContent = '> ERROR: Save data required';
+                importError.classList.add('visible');
+                return false;
+            }
+            try {
+                JSON.parse(val);
+                importData.setAttribute('aria-invalid', 'false');
+                importError.classList.remove('visible');
+                return true;
+            } catch {
+                importData.setAttribute('aria-invalid', 'true');
+                importError.textContent = '> ERROR: Invalid JSON format';
+                importError.classList.add('visible');
+                return false;
+            }
+        };
+
+        // Validate on blur and during input when already invalid
+        importData.addEventListener('blur', validate);
+        importData.addEventListener('input', () => {
+            if (importData.getAttribute('aria-invalid') === 'true') {
+                validate();
+            }
+        });
+
+        // Handle paste import button
+        if (pasteImportButton) {
+            pasteImportButton.addEventListener('click', () => {
+                if (!validate()) {
+                    if (window.showNotification) {
+                        window.showNotification('Please fix validation errors before importing.', 'error');
+                    }
+                    return;
+                }
+
+                try {
+                    const data = JSON.parse(importData.value.trim());
+                    const valid = this.gameState && this.gameState.validateSaveData
+                        ? this.gameState.validateSaveData(data) : true;
+
+                    if (!valid) {
+                        importData.setAttribute('aria-invalid', 'true');
+                        importError.textContent = '> ERROR: Invalid save file format';
+                        importError.classList.add('visible');
+
+                        if (window.showNotification) {
+                            window.showNotification('Invalid save file format.', 'error');
+                        }
+                        return;
+                    }
+
+                    // Success - import the data
+                    pasteImportButton.classList.add('modal-btn-feedback', 'processing');
+                    pasteImportButton.textContent = 'Importing...';
+
+                    if (window.showNotification) {
+                        window.showNotification('Save data imported. Reloading...', 'success');
+                    }
+
+                    setTimeout(() => {
+                        localStorage.setItem('cyberWitchesSave', JSON.stringify(data));
+                        window.location.reload();
+                    }, 500);
+                } catch (e) {
+                    console.error('Import failed:', e);
+                    importData.setAttribute('aria-invalid', 'true');
+                    importError.textContent = '> ERROR: Import failed';
+                    importError.classList.add('visible');
+
+                    pasteImportButton.classList.remove('processing');
+                    pasteImportButton.classList.add('error');
+                    pasteImportButton.textContent = 'Import failed';
+
+                    if (window.showNotification) {
+                        window.showNotification('Could not import save data.', 'error');
+                    }
+
+                    setTimeout(() => {
+                        pasteImportButton.classList.remove('modal-btn-feedback', 'error');
+                        pasteImportButton.textContent = 'Import Pasted Data';
+                    }, 2000);
+                }
+            });
+        }
     }
 }

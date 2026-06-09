@@ -9,6 +9,7 @@ export class InventoryUI {
     constructor(gameState, uiManager) {
         this.gameState = gameState;
         this.uiManager = uiManager;
+        this.hasLoaded = false;
     }
 
     /**
@@ -34,6 +35,12 @@ export class InventoryUI {
         container.style.opacity = '1';
         container.innerHTML = '';
 
+        // Show skeleton if data hasn't loaded yet
+        if (!this.hasLoaded) {
+            container.innerHTML = this.renderSkeleton();
+            return;
+        }
+
         // Clean up zero-amount items from inventory before rendering (no empty boxes)
         if (this.gameState.inventory) {
             for (const ingId in this.gameState.inventory) {
@@ -44,12 +51,11 @@ export class InventoryUI {
         }
 
         if (!this.gameState.inventory || Object.keys(this.gameState.inventory).length === 0) {
-            container.innerHTML = `
-                <div class="empty-state-container" style="grid-column: 1 / -1;">
-                    <div class="empty-state-sigil" aria-hidden="true"></div>
-                    <p class="empty-state-message">> INVENTORY_EMPTY. Execute protocols to gather elemental data.</p>
-                </div>
-            `;
+            container.innerHTML = this.renderEmptyState({
+                totalItems: window.INGREDIENTS ? window.INGREDIENTS.length : 0,
+                unlockedItems: 0,
+                firstActionHint: 'ARTIFACTS WILL APPEAR AFTER CRAFTING'
+            });
             return;
         }
 
@@ -232,6 +238,60 @@ export class InventoryUI {
         }
 
         container.appendChild(fragment);
+        this.hasLoaded = true;
+    }
+
+    /**
+     * Render skeleton loading state for inventory items
+     */
+    renderSkeleton() {
+        return Array.from({length: 4}, () =>
+            '<div class="inventory-item skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line-short"></div></div>'
+        ).join('');
+    }
+
+    /**
+     * Render error state for inventory tab
+     */
+    renderError(message = 'Failed to load inventory', onRetry) {
+        const retryHtml = onRetry
+            ? '<button class="error-state__retry" data-action="retry-inventory">RETRY</button>'
+            : '';
+
+        return `
+            <div class="error-state">
+                <div class="error-state__icon">⚠</div>
+                <div class="error-state__message">${message}</div>
+                ${retryHtml}
+            </div>
+        `;
+    }
+
+    /**
+     * Render progressive empty state based on player progress
+     */
+    renderEmptyState(context = {}) {
+        const { totalItems, unlockedItems, firstActionHint } = context;
+
+        // Progress-aware message
+        if (unlockedItems > 0 && unlockedItems < totalItems) {
+            return `
+                <div class="empty-state-container" style="grid-column: 1 / -1;">
+                    <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                    <p class="empty-state-message">> ${unlockedItems}/${totalItems} ARTIFACTS_COLLECTED</p>
+                    <p class="empty-state-hint">> Continue gathering to expand collection</p>
+                </div>
+            `;
+        }
+
+        // First-time empty with CTA
+        return `
+            <div class="empty-state-container" style="grid-column: 1 / -1;">
+                <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                <p class="empty-state-message">> ${firstActionHint || 'NO_DATA_FOUND'}</p>
+                <button class="btn-primary btn-sm" onclick="document.getElementById('cast-button')?.focus()">> BEGIN_COMPILATION</button>
+            </div>
+        `;
     }
 
 }
