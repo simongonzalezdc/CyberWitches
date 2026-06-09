@@ -23,6 +23,8 @@ const staticFiles = [
     'manifest.json',
     'offline.html',
     'sw.js',
+    'robots.txt',
+    'sitemap.xml',
     'start-server.sh',
     'start-server.bat'
 ];
