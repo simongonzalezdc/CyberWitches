@@ -1,6 +1,6 @@
-# Cyber Witches: Idle Coven - Deployment Guide
+# Hex Compiler — Deployment Guide
 
-This guide provides comprehensive instructions for deploying Cyber Witches: Idle Coven to various environments.
+This guide provides comprehensive instructions for deploying Hex Compiler to various environments.
 
 ## Table of Contents
 
@@ -22,8 +22,8 @@ This guide provides comprehensive instructions for deploying Cyber Witches: Idle
 
 ### System Requirements
 
-- **Node.js**: Version 16.0 or higher
-- **npm**: Version 8.0 or higher
+- **Node.js**: Version 18.14.0 or higher (matches `package.json` engines)
+- **npm**: Version 9.0 or higher
 - **Git**: For version control
 - **Docker**: (Optional) Version 20.10 or higher
 
@@ -63,8 +63,7 @@ npm install
 npm test
 
 # Run specific test suites
-npm run test:unit
-npm run test:integration
+npm run test:coverage
 npm run test:e2e
 ```
 
@@ -72,21 +71,17 @@ npm run test:e2e
 
 ```bash
 # Build for production
-npm run build
+npm run build:prod
 
-# Build with specific environment
-npm run build:production
-npm run build:staging
+# Verify bundle size budget
+npm run size-check
 ```
 
 ### 5. Optimize Build
 
 ```bash
-# Analyze bundle size
-npm run analyze
-
-# Optimize images and assets
-npm run optimize
+# Optimize background images
+npm run optimize:images
 ```
 
 ---

@@ -1,4 +1,4 @@
-# Cyber Witches: Idle Coven - User Guide
+# Hex Compiler — User Guide
 
 **Last Updated:** November 2025  
 **Version:** 2.1

@@ -65,8 +65,8 @@ export class PWAFeaturesManager {
                 shareBtn.addEventListener('click', async () => {
                     try {
                         await navigator.share({
-                            title: 'Cyber Witches: Idle Coven',
-                            text: 'Check out this amazing idle game!',
+                            title: 'Hex Compiler — Browser Idle Game',
+                            text: 'Magic is fading. Play as a Hex Compiler preserving spells in code.',
                             url: window.location.href
                         });
                     } catch (error) {

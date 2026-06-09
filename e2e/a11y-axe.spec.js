@@ -17,7 +17,7 @@ const boot = async (page, { skipStory = true } = {}) => {
         else localStorage.removeItem('hasSeenStoryIntroduction');
     }, { skipStory });
 
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!window.gameState, null, { timeout: 30_000 });
 
     if (skipStory) {
@@ -31,7 +31,7 @@ const loadStaticShell = async (page) => {
         localStorage.setItem('tutorialSkipped', 'true');
         localStorage.setItem('hasSeenStoryIntroduction', 'true');
     });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.tab-panels-container', { timeout: 10_000 });
 };
 
