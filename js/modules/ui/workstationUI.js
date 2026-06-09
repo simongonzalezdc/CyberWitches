@@ -75,6 +75,57 @@ export class WorkstationUI {
         this.updateTraditional(container, unlockedWorkstations);
         this.lastRenderSignature = renderSignature;
         this.hasLoaded = true;
+
+        // Apply background images to all existing cards (covers cached DOM from prior sessions)
+        this.applyWorkstationBackgrounds(container);
+    }
+
+    /**
+     * Apply background images to all workstation cards in the container.
+     * Called after every update to ensure backgrounds are set even when
+     * cards are not re-created (render signature unchanged).
+     */
+    applyWorkstationBackgrounds(container) {
+        const wsBgImages = {
+            'ws_fire_forge': 'images/backgrounds/fire-forge.jpg',
+            'ws_digcandle_forge': 'images/backgrounds/fire-forge.jpg',
+            'ws_enhanced_candle_forge': 'images/backgrounds/fire-forge.jpg',
+            'ws_quantum_candle_forge': 'images/backgrounds/fire-forge.jpg',
+            'ws_arcane_candle_forge': 'images/backgrounds/fire-forge.jpg',
+            'ws_aqua_well': 'images/backgrounds/aqua-well.jpg',
+            'ws_aqua_well_t1': 'images/backgrounds/aqua-well.jpg',
+            'ws_flowing_current_well': 'images/backgrounds/aqua-well.jpg',
+            'ws_quantum_water_well': 'images/backgrounds/aqua-well.jpg',
+            'ws_void_liquid_well': 'images/backgrounds/aqua-well.jpg',
+            'ws_zephyr_generator': 'images/backgrounds/zephyr-generator.jpg',
+            'ws_zephyr_generator_t1': 'images/backgrounds/zephyr-generator.jpg',
+            'ws_wind_spiral_generator': 'images/backgrounds/zephyr-generator.jpg',
+            'ws_quantum_air_generator': 'images/backgrounds/zephyr-generator.jpg',
+            'ws_void_breath_generator': 'images/backgrounds/zephyr-generator.jpg',
+            'ws_crystal_chamber': 'images/backgrounds/crystal-chamber.jpg',
+            'ws_crystal_chamber_t1': 'images/backgrounds/crystal-chamber.jpg',
+            'ws_crystal_core_chamber': 'images/backgrounds/crystal-chamber.jpg',
+            'ws_quantum_crystal_chamber': 'images/backgrounds/crystal-chamber.jpg',
+            'ws_void_crystal_chamber': 'images/backgrounds/crystal-chamber.jpg',
+            'ws_resonance_crystallizer': 'images/backgrounds/crystal-chamber.jpg',
+            'ws_aether_synthesizer': 'images/backgrounds/aether-synthesizer.jpg',
+            'ws_aether_reactor_t1': 'images/backgrounds/aether-synthesizer.jpg',
+            'ws_aether_fusion_chamber': 'images/backgrounds/aether-synthesizer.jpg',
+            'ws_harmonic_stabilizer': 'images/backgrounds/aether-synthesizer.jpg',
+            'ws_arcane_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
+            'ws_etheric_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
+            'ws_infinity_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
+        };
+        const cards = container.querySelectorAll('.workstation-card');
+        for (const card of cards) {
+            const id = card.dataset.id;
+            const bgUrl = wsBgImages[id];
+            if (bgUrl && !card.style.backgroundImage) {
+                card.style.backgroundImage = `linear-gradient(to right, rgba(16,18,32,0.92) 0%, rgba(16,18,32,0.75) 50%, rgba(16,18,32,0.55) 100%), url('${bgUrl}')`;
+                card.style.backgroundSize = 'cover';
+                card.style.backgroundPosition = 'center right';
+            }
+        }
     }
 
     createRenderSignature(unlockedWorkstations) {
