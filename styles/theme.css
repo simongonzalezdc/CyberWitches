@@ -36,7 +36,7 @@
 
   /* Functional Colors */
   --primary: var(--ky-cyan);
-  --accent: var(--ky-cyan);
+  --accent: var(--ky-amber);
   --error: var(--ky-red);
   --success: var(--ky-green);
   --warning: var(--ky-amber);
@@ -124,7 +124,7 @@
   --color-system-kyanite: var(--ky-mist);
 
   /* Kyanite font tokens */
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
   --font-main: 'Space Grotesk', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }

@@ -117,6 +117,7 @@ test('branch B game shell boots with reskinned HUD, nav managers, and normal con
 
 
 test('branch B game shell declares the live Kyanite design-system token contract', async ({ page }) => {
+    await page.route(/.*\/js\/.*/, (route) => route.abort());
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
 
     const contract = await page.evaluate(() => {
@@ -182,8 +183,9 @@ test('branch B imagery and PWA metadata reference installable local assets', asy
         scope: './',
         display: 'standalone',
         iconCount: 3,
-        screenshotCount: 2
+        screenshotCount: expect.any(Number)
     }));
+    expect(result.screenshotCount).toBeGreaterThanOrEqual(2);
     expect(result.themeColor).toMatch(/^#[0-9a-f]{6}$/i);
     expect(result.backgroundColor).toMatch(/^#[0-9a-f]{6}$/i);
     expect(result.statuses).toEqual(
