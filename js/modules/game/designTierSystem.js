@@ -26,7 +26,16 @@ export class DesignTierSystem {
         this.loadUnlockedTiers();
         this.gameStartTime = Date.now(); // Track when game started for time-based requirements
         this.tierUnlockTimes = {}; // Track when each tier was unlocked
-        void this.reconcileDesignSystemVersion();
+    }
+
+    async reconcileDesignSystemVersion() {
+        const stored = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
+        const current = DesignTierSystem.DESIGN_SYSTEM_VERSION;
+        document.documentElement.dataset.designSystemVersion = current;
+        if (stored !== current) {
+            localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, current);
+            await this.applyTier(this.currentTier);
+        }
     }
 
     /**

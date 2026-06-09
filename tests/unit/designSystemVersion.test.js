@@ -56,7 +56,7 @@ describe('design-system version storage', () => {
 
         expect(localStorage.getItem(DESIGN_KEY)).toBe(DesignTierSystem.DESIGN_SYSTEM_VERSION);
         expect(document.documentElement.dataset.designSystemVersion).toBe('kyanite-1');
-        expect(document.documentElement.style.getPropertyValue('--color-code')).toBe('#26E6FF');
-        expect(document.documentElement.style.getPropertyValue('--color-magic')).toBe('#F5D35C');
+        expect(document.documentElement.style.getPropertyValue('--color-code').toLowerCase()).toBe('#26e6ff');
+        expect(document.documentElement.style.getPropertyValue('--color-magic').toLowerCase()).toBe('#f5d35c');
     });
 });

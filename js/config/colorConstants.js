@@ -110,7 +110,6 @@ export function getCSSColor(variableName) {
         return COLORS[variableName] || '#000000';
     }
 
-    // eslint-disable-next-line no-undef
     const style = getComputedStyle(document.documentElement);
     const cssVar = variableName.startsWith('--') ? variableName : `--color-${variableName.toLowerCase()}`;
     return style.getPropertyValue(cssVar).trim() || COLORS[variableName] || '#000000';

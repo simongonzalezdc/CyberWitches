@@ -122,6 +122,7 @@ export async function initGame() {
         
         // Design Tier System depends on AudioSystem
         const designTierSystem = new DesignTierSystem(gameState, uiManager, audioSystem);
+        await designTierSystem.reconcileDesignSystemVersion();
         initUIHelpers(designTierSystem);
 
         const fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
