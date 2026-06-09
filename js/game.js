@@ -122,10 +122,10 @@ async function start() {
         errorDiv.style.top = '50%';
         errorDiv.style.left = '50%';
         errorDiv.style.transform = 'translate(-50%, -50%)';
-        errorDiv.style.background = '#330000';
-        errorDiv.style.color = '#ff0000';
+        errorDiv.style.background = 'var(--color-glitch-500)';
+        errorDiv.style.color = 'var(--color-retro-red)';
         errorDiv.style.padding = '20px';
-        errorDiv.style.border = '2px solid #ff0000';
+        errorDiv.style.border = '2px solid var(--color-retro-red)';
         errorDiv.style.zIndex = '140';
         // Build with static markup + textContent for the dynamic message so an
         // error string can never inject markup into the page.

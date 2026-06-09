@@ -29,10 +29,22 @@ export class DailiesUI {
                 dailyRituals.checkDailyRefresh();
             }
 
+            const activeTasks = dailyRituals ? dailyRituals.activeTasks : [];
+
+            // Show empty state if no active tasks
+            if (!activeTasks || activeTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state-container">
+                        <div class="empty-state-sigil" aria-hidden="true"></div>
+                        <p class="empty-state-message">> NO_ACTIVE_RITUALS. New rituals generate at midnight.</p>
+                    </div>
+                `;
+                return;
+            }
+
             // Batch DOM updates for better performance
             const fragment = document.createDocumentFragment();
 
-            const activeTasks = dailyRituals ? dailyRituals.activeTasks : [];
             const taskProgress = dailyRituals ? dailyRituals.taskProgress : {};
             const claimedTasks = dailyRituals ? dailyRituals.claimedTasks : [];
 

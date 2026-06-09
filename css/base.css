@@ -35,51 +35,23 @@
 }
 
 :root {
-    /* Core Palette - Void & Data */
-    --bg-void: #050508;
-    --bg-terminal: #0a0a12;
-    --bg-panel: #11111a;
-    --bg-panel-trans: rgba(17, 17, 26, 0.85);
-    
-    /* Semantic Colors */
-    --color-magic: #FFB84C;      /* Amber/Gold - Raw Magic */
-    --color-magic-dim: #8a6220;
-    
-    --color-code: #00F0FF;       /* Neon Cyan - Compiled Data */
-    --color-code-dim: #007a82;
-    
-    --color-corruption: #FF2A6D; /* Glitch Red - Fading/Error */
-    --color-corruption-dim: #821638;
-    
-    --color-system: #d7dcf4;     /* Silver - System Text */
-    --color-dim: #a8afcf;        /* Secondary Text */
+    /* Note: Core color variables are defined in styles/theme.css */
+    /* This file contains functional mappings and spacing/typography tokens */
 
-    /* Functional Variables (Mapped to Semantic) */
-    --primary: var(--color-code);
+    /* Functional Variables (Mapped to theme.css colors) */
     --primary-glow: var(--color-code);
-    --accent: var(--color-magic);
     --accent-glow: var(--color-magic);
-    --error: var(--color-corruption);
-    --success: #3CE3C5;
-    --warning: #FFB84C;
     --text: var(--color-system);
-    --text-primary: #f7f8ff;
-    --text-secondary: var(--color-dim);
-    --text-dim: #a8afcf;
     --bg-primary: var(--bg-terminal);
-    --bg-secondary: #151723;
-    --bg-card: var(--bg-panel);
-    --bg-dark: #06060d;
-    --border: rgba(168, 175, 207, 0.28);
-    
+    --bg-secondary: var(--color-void-700);
+    --border: var(--border-ui);
+
     /* Terminal Specifics */
     --font-main: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
-    
+
     --scanline-color: rgba(0, 240, 255, 0.03);
-    --border-light: rgba(0, 240, 255, 0.2);
-    --border-focus: rgba(0, 240, 255, 0.6);
-    
+
     /* Spacing Scale */
     --spacing-xs: 4px;
     --spacing-sm: 8px;
@@ -87,22 +59,15 @@
     --spacing-lg: 16px;
     --spacing-xl: 24px;
     --spacing-2xl: 32px;
-    
+
     /* Animations */
     --anim-flash: 0.1s ease-out;
     --anim-boot: 1s cubic-bezier(0.1, 0.9, 0.2, 1);
 
-    /* Layer scale */
-    --z-tabs: 40;
-    --z-control-deck: 60;
-    --z-atmosphere: 70;
-    --z-crt-overlay: 80;
-    --z-effects: 90;
-    --z-modal: 100;
+    /* Additional z-index values */
     --z-devtools: 110;
     --z-guidance: 120;
     --z-critical: 140;
-    --z-skip-link: 150;
 }
 
 /* Reset & Base Styles */

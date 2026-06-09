@@ -1,16 +1,92 @@
 /* Runtime-safe design tokens and theme utilities.
-   This project ships plain CSS, so every rule here must be browser-valid. */
+   This project ships plain CSS, so every rule here must be browser-valid.
+   SINGLE SOURCE OF TRUTH for all color tokens - reference these everywhere */
 
 :root {
+  /* Core Void Palette */
   --color-void-950: #050508;
   --color-void-900: #0a0a12;
+  --color-void-800: #11111a;
+  --color-void-700: #151723;
+
+  /* Magic/Witch Theme */
   --color-witch-500: #d93ff0;
   --color-witch-600: #ad24c8;
+
+  /* Success/Soul */
   --color-soul-400: #3ce3c5;
+
+  /* Gold/Magic */
   --color-gold-400: #ffcf65;
+  --color-magic: #ffb84c;
+
+  /* Error/Glitch */
   --color-glitch-500: #ff2a6d;
+  --color-corruption: #ff2a6d;
+
+  /* Code/System */
+  --color-code: #00f0ff;
+  --color-code-dim: #007a82;
+  --color-system: #d7dcf4;
+  --color-dim: #a8afcf;
+
+  /* Retro Terminal */
+  --color-retro-green: #39ff14;
+  --color-retro-red: #ff0000;
+
+  /* Functional Colors */
+  --primary: #00f0ff;
+  --accent: #ffb84c;
+  --error: #ff2a6d;
+  --success: #3ce3c5;
+  --warning: #ffb84c;
+
+  /* Text Colors */
+  --text-primary: #f7f8ff;
+  --text-secondary: #a8afcf;
+  --text-dim: #a8afcf;
+  --text-muted: #a8afcf;
+
+  /* Background Colors */
+  --bg-void: #050508;
+  --bg-terminal: #0a0a12;
+  --bg-panel: #11111a;
+  --bg-card: #1f1f3a;
+  --bg-dark: #06060d;
+  --bg-dark-alt: #0a0a0f;
+  --bg-panel-trans: rgba(17, 17, 26, 0.85);
+
+  /* Border & UI Elements */
+  --border: #333366;
+  --border-light: rgba(0, 240, 255, 0.2);
+  --border-focus: rgba(0, 240, 255, 0.6);
+  --border-ui: rgba(168, 175, 207, 0.28);
+
+  /* Effects */
   --shadow-glow: 0 0 20px rgba(217, 63, 240, 0.3);
   --ease-witch: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Meditation-specific colors (for canvas rendering and UI) */
+  --meditation-grid-line: rgba(255, 255, 255, 0.1);
+  --meditation-success-fill: rgba(60, 227, 197, 0.25);
+  --meditation-success-stroke: rgba(60, 227, 197, 0.5);
+  --meditation-magic-fill: rgba(255, 45, 170, 0.3);
+  --meditation-magic-stroke: rgba(255, 45, 170, 0.8);
+  --meditation-code-start: rgba(0, 255, 255, 0.15);
+  --meditation-code-mid: rgba(0, 255, 255, 0.08);
+  --meditation-highlight: rgba(255, 255, 0, 0.9);
+  --meditation-text: rgba(255, 255, 255, 0.9);
+  --meditation-shadow: rgba(0, 0, 0, 0.3);
+  --meditation-glow: rgba(60, 227, 197, 0.3);
+
+  /* Z-index scale */
+  --z-skip-link: 150;
+  --z-modal: 100;
+  --z-effects: 90;
+  --z-crt-overlay: 80;
+  --z-atmosphere: 70;
+  --z-control-deck: 60;
+  --z-tabs: 40;
 }
 
 .glass-panel {

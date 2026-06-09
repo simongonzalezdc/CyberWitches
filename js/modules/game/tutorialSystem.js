@@ -82,8 +82,8 @@ export class TutorialSystem {
         bootScreen.style.justifyContent = 'center';
         bootScreen.style.alignItems = 'flex-start';
         bootScreen.style.padding = '40px';
-        bootScreen.style.background = '#000';
-        bootScreen.style.color = '#39FF14'; // Retro green
+        bootScreen.style.background = 'var(--bg-void)';
+        bootScreen.style.color = 'var(--color-retro-green)'; // Retro green
         bootScreen.style.fontFamily = 'monospace';
         bootScreen.style.position = 'fixed';
         bootScreen.style.top = '0';
@@ -131,7 +131,7 @@ export class TutorialSystem {
             p.style.animation = 'fadeIn 0.1s forwards';
 
             if (lines[lineIndex].includes('ERROR')) {
-                p.style.color = '#FF2A6D'; // Red error
+                p.style.color = 'var(--color-glitch-500)'; // Red error
             }
 
             bootScreen.appendChild(p);

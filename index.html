@@ -277,9 +277,12 @@
             </div>
             <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Save Data</h3>
             <div class="flex flex-col gap-3 mb-6">
-                <button id="export-save-button" class="btn-primary py-3 bg-code/80 hover:bg-code text-black rounded font-bold tracking-wider transition-colors">Export save</button>
-                <button id="import-save-button" class="btn-secondary py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">Import save</button>
-                <button id="clear-save-button" class="btn-danger py-3 bg-corruption/80 hover:bg-corruption text-white rounded font-bold tracking-wider transition-colors">Wipe save</button>
+                <button id="export-save-button" class="btn-primary py-3 bg-code/80 hover:bg-code text-black rounded font-bold tracking-wider transition-colors" aria-describedby="export-save-desc">Export save</button>
+                <span id="export-save-desc" class="sr-only">Download your save data as a JSON file to your device</span>
+                <button id="import-save-button" class="btn-secondary py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors" aria-describedby="import-save-desc">Import save</button>
+                <span id="import-save-desc" class="sr-only">Load save data from a previously exported JSON file</span>
+                <button id="clear-save-button" class="btn-danger py-3 bg-corruption/80 hover:bg-corruption text-white rounded font-bold tracking-wider transition-colors" aria-describedby="clear-save-desc">Wipe save</button>
+                <span id="clear-save-desc" class="sr-only">Permanently delete all save data and reset the game</span>
             </div>
             <button id="install-pwa-button" class="btn-primary w-full py-3 mb-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors" style="display:none">Install app</button>
             <button id="close-settings-button" class="btn-secondary w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">Close</button>

@@ -93,7 +93,7 @@ export function animateNumber(element, startValue, endValue, duration = 500) {
  * @param {string} text - Text to display
  * @param {string} color - Color of particle
  */
-export function createParticle(x, y, text, color = '#FF2DAA') {
+export function createParticle(x, y, text, color = 'var(--color-glitch-500)') {
     // Check if we're on Tier 0 (no animations allowed)
     if (window.designTierSystem && window.designTierSystem.getCurrentTier() === 0) {
         return; // Don't create particles on Tier 0
@@ -171,7 +171,7 @@ export function pulseElement(element, scale = 1.1, duration = 200) {
  * @param {string} color - Highlight color
  * @param {number} duration - Animation duration in milliseconds
  */
-export function highlightElement(element, color = '#22E3FF', duration = 300) {
+export function highlightElement(element, color = 'var(--color-code)', duration = 300) {
     if (!element) return;
     
     const originalBg = element.style.backgroundColor;
