@@ -6,7 +6,7 @@ const waitForBoot = async (page) => {
     await page.addInitScript(() => {
         localStorage.setItem('tutorialSkipped', 'true');
     });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 };
 

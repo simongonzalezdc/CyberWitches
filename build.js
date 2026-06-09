@@ -20,6 +20,7 @@ const distDir = join(__dirname, 'dist');
 // Files to copy as-is
 const staticFiles = [
     'index.html',
+    'play.html',
     'manifest.json',
     'offline.html',
     'sw.js',
@@ -138,9 +139,9 @@ async function buildJavaScript() {
             console.info('    ✓ DEBUG disabled in production');
         }
     
-        // Update index.html to use bundled file
+        // Update play.html to use bundled file (the game page, not the landing page)
         if (isProduction) {
-            await updateIndexHtml();
+            await updatePlayHtml();
         }
     
     } catch (error) {
@@ -150,16 +151,16 @@ async function buildJavaScript() {
     }
 }
 
-async function updateIndexHtml() {
-    console.info('📝 Updating index.html for production bundles...');
-    const indexPath = join(distDir, 'index.html');
+async function updatePlayHtml() {
+    console.info('📝 Updating play.html for production bundles...');
+    const playPath = join(distDir, 'play.html');
   
-    if (!existsSync(indexPath)) {
-        console.info('  ⚠ index.html not found in dist, skipping update');
+    if (!existsSync(playPath)) {
+        console.info('  ⚠ play.html not found in dist, skipping update');
         return;
     }
   
-    let html = readFileSync(indexPath, 'utf8');
+    let html = readFileSync(playPath, 'utf8');
   
     // Remove all individual script tags (keep Tone.js CDN and any other external scripts)
     // Match script tags with type="module" and src starting with "js/"
@@ -175,8 +176,8 @@ async function updateIndexHtml() {
     // Insert before closing body tag
     html = html.replace('</body>', bundledScript + '\n</body>');
   
-    writeFileSync(indexPath, html, 'utf8');
-    console.info('  ✓ Updated index.html with bundled script');
+    writeFileSync(playPath, html, 'utf8');
+    console.info('  ✓ Updated play.html with bundled script');
 }
 
 async function build() {

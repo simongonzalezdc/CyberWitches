@@ -21,6 +21,7 @@ const OFFLINE_URL = toScopeUrl('offline.html');
 const CORE_CACHE_URLS = [
     './',
     'index.html',
+    'play.html',
     'css/main.css',
     'css/base.css',
     'css/layout.css',

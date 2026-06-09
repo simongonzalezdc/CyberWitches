@@ -39,7 +39,7 @@ test('app boots and core flows raise no uncaught errors', async ({ page }) => {
     });
 
     // 1. Boot — the game sets window.gameState once initGame resolves.
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 
     // The game runs a perpetual requestAnimationFrame loop, so elements never go
@@ -105,7 +105,7 @@ test('app boots and core flows raise no uncaught errors', async ({ page }) => {
 });
 
 test('saves are mirrored into IndexedDB (durable backup)', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 
     // Force an immediate save, which writes localStorage AND fire-and-forget
@@ -164,7 +164,7 @@ test('self-hosted Tone.js lazy-loads after gesture without boot autoplay warning
         localStorage.setItem('cw.designTier', '2');
         localStorage.setItem('cw.unlockedTiers', JSON.stringify([0, 2]));
     });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 
     const toneBeforeGesture = await page.evaluate(() => typeof (/** @type {any} */ (window).Tone));
@@ -189,7 +189,7 @@ test('casting unlocks real workstation crafting through normal clicks', async ({
         localStorage.setItem('tutorialSkipped', 'true');
         localStorage.setItem('hasSeenStoryIntroduction', 'true');
     });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 
     for (let i = 0; i < 20; i++) {
@@ -211,7 +211,7 @@ test('first-run boot fade does not intercept visible controls', async ({ page })
     await page.addInitScript(() => {
         localStorage.clear();
     });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
     await page.locator('#close-story-intro').dispatchEvent('click');
     await page.waitForFunction(() => {
@@ -233,7 +233,7 @@ test('first-run boot fade does not intercept visible controls', async ({ page })
 });
 
 test('modals close on Escape and trap focus (dialog-like a11y)', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
 
     // Clear the first-run overlay so it doesn't intercept. (dispatchEvent may

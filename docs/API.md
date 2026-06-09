@@ -1,4 +1,4 @@
-# Cyber Witches: Idle Coven - API Documentation
+# Hex Compiler — API Documentation
 
 This document provides comprehensive API documentation for all systems and modules in the Cyber Witches: Idle Coven game.
 

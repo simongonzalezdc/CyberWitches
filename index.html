@@ -1,322 +1,921 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <!-- Allow zoom up to 5x (WCAG 1.4.4): never disable user scaling. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 
-    <!-- Content Security Policy — permissive for game; tighten in production -->
+    <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 
     <!-- Primary Meta Tags -->
-    <title>VOID WITCH PROTOCOL // HEX COMPILER</title>
-    <meta name="title" content="Hex Compiler - Arcane Terminal">
-    <meta name="description"
-        content="Initialize... Loading Spell Protocols... Compile Magic into Code. The Void is here.">
-    
+    <title>Hex Compiler — Browser Idle Game | Preserve Magic Before It Fades</title>
+    <meta name="title" content="Hex Compiler — Browser Idle Game | Preserve Magic Before It Fades">
+    <meta name="description" content="Hex Compiler is a free browser idle/incremental game. Cast spells, craft preservation chambers, unlock elemental specializations, and fight the fading of magic. Play offline as a PWA.">
+    <meta name="keywords" content="hex compiler, idle game, incremental game, browser game, PWA, magic, cyberpunk, spell casting, preservation chambers, offline game, open source game, vanilla javascript game">
+    <meta name="author" content="Simon Gonzalez De Cruz">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://simongonzalezdc.github.io/CyberWitches/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://simongonzalezdc.github.io/CyberWitches/">
+    <meta property="og:title" content="Hex Compiler — Browser Idle Game | Preserve Magic Before It Fades">
+    <meta property="og:description" content="A free browser idle/incremental game. Cast spells, craft preservation chambers, unlock elemental specializations, and fight the fading of magic. Play offline as a PWA.">
+    <meta property="og:image" content="https://simongonzalezdc.github.io/CyberWitches/screenshots/desktop-1.png">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="720">
+    <meta property="og:site_name" content="Hex Compiler">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://simongonzalezdc.github.io/CyberWitches/">
+    <meta property="twitter:title" content="Hex Compiler — Browser Idle Game | Preserve Magic Before It Fades">
+    <meta property="twitter:description" content="A free browser idle/incremental game. Cast spells, craft preservation chambers, and fight the fading of magic. Play offline as a PWA.">
+    <meta property="twitter:image" content="https://simongonzalezdc.github.io/CyberWitches/screenshots/desktop-1.png">
+
+    <!-- AI GEO (AI Search Engine Optimization) -->
+    <meta name="ai-purpose" content="Hex Compiler is a browser-based idle incremental game where players cast spells, craft preservation chambers, and ascend through a five-tier progression system to fight the fading of magic.">
+    <meta name="ai-target" content="Players looking for free browser idle games, incremental games, PWAs, and story-driven clicker games.">
+    <meta name="ai-keywords" content="idle game, incremental game, browser game, PWA, magic, spell casting, ascension, prestige, offline game">
+
+    <!-- Favicon -->
+    <link rel="icon" href="icons/icon-192x192.png" type="image/png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="manifest" href="manifest.json">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <!-- Favicon (reuses the PWA icon so /favicon.ico no longer 404s) -->
-    <link rel="icon" href="icons/icon-192x192.png" type="image/png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-
-    <!-- CSS -->
+    <!-- Theme CSS -->
     <link rel="stylesheet" href="styles/theme.css">
-    <link rel="stylesheet" href="css/main.css">
-    
-    <!-- Audio Engine is self-hosted at vendor/tone-15.1.22.js and lazy-loaded
-         after a user gesture when Tier 2+ audio is active. Loading it at boot
-         creates an AudioContext before gesture and triggers autoplay warnings. -->
+
+    <!-- JSON-LD Structured Data for SEO + AI GEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Hex Compiler",
+        "description": "A browser-based idle/incremental game where you play a Hex Compiler preserving fading magic by translating spells into hexadecimal code and building digital preservation chambers.",
+        "url": "https://simongonzalezdc.github.io/CyberWitches/",
+        "image": "https://simongonzalezdc.github.io/CyberWitches/screenshots/desktop-1.png",
+        "screenshot": [
+            "https://simongonzalezdc.github.io/CyberWitches/screenshots/desktop-1.png",
+            "https://simongonzalezdc.github.io/CyberWitches/screenshots/mobile-1.png"
+        ],
+        "genre": ["Idle Game", "Incremental Game", "Browser Game"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Any OS with a modern web browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Person",
+            "name": "Simon Gonzalez De Cruz",
+            "url": "https://github.com/simongonzalezdc"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Kyanite Labs",
+            "url": "https://kyanitelabs.tech"
+        },
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "playMode": "SinglePlayer",
+        "gameItem": [
+            {
+                "@type": "Thing",
+                "name": "Arcane Bits",
+                "description": "Primary currency earned by casting and crafting workstations."
+            },
+            {
+                "@type": "Thing",
+                "name": "Eldritch Keys",
+                "description": "Prestige currency earned through ascension to unlock permanent boons."
+            }
+        ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Hex Compiler",
+        "description": "Offline-capable progressive web app idle game.",
+        "url": "https://simongonzalezdc.github.io/CyberWitches/play.html",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is Hex Compiler?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Hex Compiler is a free browser idle/incremental game where you play one of the last Hex Compilers preserving fading magic. Cast spells, craft preservation chambers, discover recipes, and ascend to unlock permanent powers."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I play Hex Compiler offline?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. Hex Compiler is a Progressive Web App (PWA). After your first visit, you can install it to your device and play offline."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is Hex Compiler open source?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. Hex Compiler is open source under the MIT license and built with vanilla JavaScript, esbuild, and Tone.js."
+                }
+            }
+        ]
+    }
+    </script>
+
+    <style>
+        :root {
+            --void-950: #050508;
+            --void-900: #0a0a12;
+            --void-800: #11111a;
+            --void-700: #151723;
+            --witch-500: #d93ff0;
+            --witch-600: #ad24c8;
+            --soul-400: #3ce3c5;
+            --gold-400: #ffcf65;
+            --code: #00f0ff;
+            --code-dim: #007a82;
+            --system: #d7dcf4;
+            --dim: #a8afcf;
+            --glitch-500: #ff2a6d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            background: var(--void-950);
+            color: var(--system);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Background grid effect */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .hero-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(217, 63, 240, 0.15) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--code);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff 0%, var(--soul-400) 50%, var(--witch-500) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-title .glitch-char {
+            display: inline-block;
+        }
+
+        .hero-tagline {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            color: var(--dim);
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--witch-600) 0%, var(--witch-500) 100%);
+            color: white;
+            box-shadow: 0 0 30px rgba(217, 63, 240, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(217, 63, 240, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--code);
+            border: 1px solid var(--code);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: var(--dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hero-meta span::before {
+            content: '> ';
+            color: var(--soul-400);
+        }
+
+        /* Sections */
+        section {
+            position: relative;
+            z-index: 1;
+            padding: 5rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            color: var(--code);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .section-desc {
+            color: var(--dim);
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        /* Features */
+        .features {
+            background: linear-gradient(180deg, var(--void-950) 0%, var(--void-900) 100%);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: rgba(17, 17, 26, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 240, 255, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .feature-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .feature-text {
+            color: var(--dim);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* How to Play */
+        .how-to-play {
+            background: var(--void-900);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            counter-reset: step;
+        }
+
+        .step {
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--witch-600) 0%, var(--witch-500) 100%);
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 0 30px rgba(217, 63, 240, 0.3);
+        }
+
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .step-desc {
+            color: var(--dim);
+            font-size: 0.95rem;
+        }
+
+        /* Screenshots */
+        .screenshots {
+            background: linear-gradient(180deg, var(--void-900) 0%, var(--void-950) 100%);
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .screenshot-card {
+            background: rgba(17, 17, 26, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .screenshot-card:hover {
+            border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        .screenshot-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .screenshot-caption {
+            padding: 1.25rem;
+            font-size: 0.95rem;
+            color: var(--dim);
+        }
+
+        .screenshot-caption strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Tech highlights */
+        .tech {
+            background: var(--void-950);
+        }
+
+        .tech-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            background: rgba(17, 17, 26, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--dim);
+        }
+
+        .tech-item::before {
+            content: '◆';
+            color: var(--soul-400);
+            font-size: 0.6rem;
+        }
+
+        /* CTA section */
+        .cta-section {
+            background: linear-gradient(180deg, var(--void-950) 0%, var(--void-900) 100%);
+            text-align: center;
+        }
+
+        .cta-box {
+            background: rgba(17, 17, 26, 0.7);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 1.5rem;
+            padding: 3rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: clamp(1.5rem, 4vw, 2.25rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .cta-desc {
+            color: var(--dim);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--void-900);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 3rem 1.5rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+        }
+
+        .footer-col h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-col a {
+            color: var(--dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-col a:hover {
+            color: var(--code);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--dim);
+            font-size: 0.85rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Skip link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--code);
+            color: var(--void-950);
+            padding: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            z-index: 100;
+            border-radius: 0 0 4px 0;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Install prompt */
+        #install-banner {
+            display: none;
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(17, 17, 26, 0.95);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 1rem;
+            padding: 1rem 1.5rem;
+            z-index: 50;
+            max-width: 320px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #install-banner.show {
+            display: block;
+        }
+
+        @media (max-width: 640px) {
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+
+            .hero-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
 </head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="bg-grid" aria-hidden="true"></div>
 
-<body class="bg-void-950 text-white overflow-hidden font-sans antialiased">
-    <!-- Skip to main content (must be the first focusable element) -->
-    <a href="#main-content" class="skip-link">Skip to game</a>
+    <main id="main-content">
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-glow" aria-hidden="true"></div>
+            <div class="hero-content">
+                <span class="hero-badge">Free Browser Idle Game</span>
+                <h1 id="hero-title" class="hero-title">Hex Compiler</h1>
+                <p class="hero-tagline">
+                    Magic is fading. You're a Hex Compiler — one of the last who knows how to preserve magic by crystallizing it into permanent structures. Cast, craft, ascend, and fight the fading.
+                </p>
+                <div class="hero-actions">
+                    <a href="play.html" class="btn btn-primary" role="button">
+                        <span>▶</span> Play Now
+                    </a>
+                    <a href="https://github.com/simongonzalezdc/CyberWitches/blob/main/GAME_MANUAL.md" class="btn btn-secondary" target="_blank" rel="noopener">Read the Manual</a>
+                </div>
+                <div class="hero-meta">
+                    <span>No download required</span>
+                    <span>Works offline</span>
+                    <span>Open source</span>
+                </div>
+            </div>
+        </section>
 
-    <!-- Boot Sequence Overlay -->
-    <div id="boot-screen" class="boot-screen" style="display: none;"></div>
+        <section class="features" aria-labelledby="features-title">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-label">// Features</p>
+                    <h2 id="features-title" class="section-title">What Makes Hex Compiler Different</h2>
+                    <p class="section-desc">A story-driven idle experience where the interface itself is part of the narrative. The more magic you preserve, the more the world stabilizes.</p>
+                </div>
+                <div class="features-grid">
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">✦</div>
+                        <h3 class="feature-title">Progressive UI Stabilization</h3>
+                        <p class="feature-text">Start in a broken, glitched interface at Tier 0. As you advance through five design tiers, colors return, animations unlock, sound effects emerge, and procedural music restores the world.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">⚔</div>
+                        <h3 class="feature-title">Cast, Craft, Ascend</h3>
+                        <p class="feature-text">Cast spells to generate Arcane Bits. Craft preservation chambers to automate production. Prestige to earn Eldritch Keys and unlock permanent Boons and elemental specializations.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🔬</div>
+                        <h3 class="feature-title">Experimentation & Discovery</h3>
+                        <p class="feature-text">Run protocols in the Lab to discover hidden recipes. Combine elements in new ways to unlock powerful ingredients and advance your preservation strategy.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🧘</div>
+                        <h3 class="feature-title">Meditation Tower Defense</h3>
+                        <p class="feature-text">Unlock a tower-defense meditation mini-game after your first ascension. Build focus, defend tranquility, and earn production bonuses that persist across sessions.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">🏆</div>
+                        <h3 class="feature-title">Achievements & Daily Rituals</h3>
+                        <p class="feature-text">Earn achievements for milestones and complete daily rituals for bonus rewards. The coven keeps you coming back with fresh objectives every day.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="feature-icon" aria-hidden="true">📱</div>
+                        <h3 class="feature-title">Offline PWA Support</h3>
+                        <p class="feature-text">Install Hex Compiler to your home screen and play offline. Your progress auto-saves locally with an IndexedDB backup mirror for extra durability.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
 
-    <!-- Main Dashboard Container -->
-    <main id="main-content" tabindex="-1" class="main-game relative w-full flex flex-col">
-        
-        <!-- 1. Top HUD (System Status) - Holo-Glass Panel -->
-        <header class="hud hud-panel glass-panel z-50 flex items-center justify-between px-4 py-2">
-            <div class="hud-left flex items-center gap-4">
-                <div class="currency-display flex flex-col">
-                    <span class="text-xs text-soul-400 font-mono tracking-wider">ESSENCE_BUFFER</span>
-                    <div class="flex items-baseline gap-2">
-                        <span id="ab-display" class="text-2xl font-bold text-witch-500 glow-text">INIT...</span>
-                        <span id="abps-display" class="text-xs text-gray-400 font-mono">--/s</span>
+        <section class="how-to-play" aria-labelledby="how-to-play-title">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-label">// Quickstart</p>
+                    <h2 id="how-to-play-title" class="section-title">How to Play</h2>
+                    <p class="section-desc">Three simple steps to begin preserving magic.</p>
+                </div>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number" aria-hidden="true">01</div>
+                        <h3 class="step-title">Cast</h3>
+                        <p class="step-desc">Click the EXEC button to execute protocols and generate Arcane Bits and elemental essence.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number" aria-hidden="true">02</div>
+                        <h3 class="step-title">Craft</h3>
+                        <p class="step-desc">Visit /MNT/WORKSTATIONS to craft preservation chambers that generate resources automatically.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number" aria-hidden="true">03</div>
+                        <h3 class="step-title">Ascend</h3>
+                        <p class="step-desc">When your progress stalls, perform SYSTEM_ASCENSION to convert lifetime gains into permanent Eldritch Keys.</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="hud-center flex-1 flex justify-center">
-                <div id="active-events" class="active-events flex gap-2"></div>
-            </div>
+        </section>
 
-            <div class="hud-right">
-                <div class="system-controls flex gap-2">
-                    <button id="help-button" class="btn-icon glass-panel p-2 rounded-md hover:bg-white/10 transition-colors" aria-label="Help">
-                        <span class="text-soul-400">?</span>
-                    </button>
-                    <button id="settings-button" class="btn-icon glass-panel p-2 rounded-md hover:bg-white/10 transition-colors" aria-label="Settings">
-                        <span class="css-icon-gear text-soul-400" aria-hidden="true"></span>
-                    </button>
+        <section class="screenshots" aria-labelledby="screenshots-title">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-label">// Gallery</p>
+                    <h2 id="screenshots-title" class="section-title">Screenshots</h2>
+                    <p class="section-desc">See the interface that evolves as you preserve more magic.</p>
+                </div>
+                <div class="screenshots-grid">
+                    <figure class="screenshot-card">
+                        <img src="screenshots/desktop-1.png" alt="Desktop screenshot of Hex Compiler showing the full game interface with workstations tab active" width="1280" height="720" loading="lazy">
+                        <figcaption class="screenshot-caption">
+                            <strong>Desktop Interface</strong>
+                            The full arcane terminal experience on larger screens.
+                        </figcaption>
+                    </figure>
+                    <figure class="screenshot-card">
+                        <img src="screenshots/mobile-1.png" alt="Mobile screenshot of Hex Compiler showing the responsive game layout" width="390" height="844" loading="lazy">
+                        <figcaption class="screenshot-caption">
+                            <strong>Mobile Experience</strong>
+                            Fully responsive design that works on phones and tablets.
+                        </figcaption>
+                    </figure>
                 </div>
             </div>
-        </header>
+        </section>
 
-        <!-- Game Area Layout: Sidebar + Main Content -->
-        <div class="game-area flex-1 flex overflow-hidden">
-            <!-- 2. Sidebar (Resource Monitor) - Glass Panel -->
-            <aside class="sidebar glass-panel w-64 border-r border-white/10 flex flex-col z-40" id="sidebar">
-                <div class="sidebar-header p-4 border-b border-white/10 bg-void-900/50">
-                    <h3 class="text-xs font-mono text-soul-400 tracking-widest">RESOURCE_MONITOR</h3>
+        <section class="tech" aria-labelledby="tech-title">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-label">// Built With</p>
+                    <h2 id="tech-title" class="section-title">Open & Lightweight</h2>
+                    <p class="section-desc">No heavy frameworks. No tracking. Just modern web standards and a focused codebase.</p>
                 </div>
-                <div class="element-counters flex-1 overflow-y-auto p-4 space-y-3" id="element-counters">
-                    <!-- Elements injected by JS -->
-                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-fire">
-                        <span class="element-label text-xs text-red-400">FIRE</span>
-                        <span class="element-amount font-mono text-sm">0</span>
+                <div class="tech-list">
+                    <span class="tech-item">Vanilla JavaScript (ES2023 modules)</span>
+                    <span class="tech-item">esbuild bundler</span>
+                    <span class="tech-item">Self-hosted Tone.js audio</span>
+                    <span class="tech-item">CSS Custom Properties</span>
+                    <span class="tech-item">Service Worker + Web App Manifest</span>
+                    <span class="tech-item">IndexedDB durable backup</span>
+                    <span class="tech-item">Jest + Playwright testing</span>
+                    <span class="tech-item">MIT License</span>
                 </div>
-                    <!-- ... other elements ... -->
-                </div>
-                
-                <div class="sidebar-footer p-4 border-t border-white/10 bg-void-900/50">
-                    <h3 class="text-xs font-mono text-soul-400 tracking-widest mb-2">SYSTEM_LOG</h3>
-                    <div class="craft-notifications text-xs font-mono text-gray-400 h-32 overflow-y-auto scrollbar-thin" id="craft-notifications"></div>
-                </div>
-        </aside>
-
-            <!-- 3. Main Content Area (The Viewport) - 3D Perspective -->
-            <section class="tabs-content flex-1 flex flex-col relative z-30 bg-void-950">
-                <!-- Tab Navigation -->
-                <nav class="tabs-nav flex overflow-x-auto border-b border-white/10 bg-void-900/80 backdrop-blur-md" role="tablist">
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group active" data-tab="workstations">
-                        /MNT/WORKSTATIONS
-                        <span class="absolute bottom-0 left-0 w-full h-0.5 bg-witch-500 transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
-                    </button>
-                    <!-- Other tabs... -->
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="inscriptions">/SYS/UPGRADES</button>
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="inventory">/USR/DATA</button>
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="experiment">/BIN/LAB</button>
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="stats">/LOG/STATS</button>
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group" data-tab="dailies">/ETC/RITUALS</button>
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group locked" data-tab="boons" data-unlock-condition="Prestige 1">/OPT/BOONS</button>
-                    <button class="tab-btn px-6 py-3 text-sm font-mono text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative group locked" data-tab="meditation" data-unlock-condition="Prestige 1">/PROC/MEDITATION</button>
-            </nav>
-
-                <!-- Tab Panels Container with 3D Depth -->
-                <div class="tab-panels-container flex-1 overflow-y-auto p-6 game-board-3d relative" tabindex="0" aria-label="Active game panel">
-                    <div class="game-layer-3d absolute inset-0 pointer-events-none bg-grid-pattern opacity-10"></div>
-                    
-                    <!-- Content Panels -->
-                    <div id="workstations-tab" class="tab-panel active relative z-10">
-                        <div id="workstation-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-                    </div>
-                    <!-- Other panels... -->
-                    <div id="inscriptions-tab" class="tab-panel hidden relative z-10">
-                        <div id="upgrade-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-                    </div>
-                    <div id="inventory-tab" class="tab-panel hidden relative z-10">
-                        <div id="inventory-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-                    </div>
-                    <div id="experiment-tab" class="tab-panel hidden relative z-10">
-                        <div class="experiment-interface glass-panel p-6 rounded-lg max-w-2xl mx-auto mt-8">
-                            <button id="experiment-button" class="btn-primary w-full py-4 text-lg font-bold glitch-hover">RUN_PROTOCOL</button>
-                            <div id="experiment-result" class="result-box mt-4 p-4 bg-black/30 rounded font-mono min-h-[100px]"></div>
-                            <div id="recipe-list" class="content-list mt-6"></div>
             </div>
-                    </div>
-                    <!-- Stats panel (StatsUI renders into #stats-tab directly). Was missing,
-                         so the visible /LOG/STATS tab showed nothing. -->
-                    <div id="stats-tab" class="tab-panel hidden relative z-10"></div>
+        </section>
 
-                    <!-- Daily rituals (DailiesUI renders into #task-list). -->
-                    <div id="dailies-tab" class="tab-panel hidden relative z-10">
-                        <h2 class="text-xl font-bold text-witch-500 mb-4 font-orbitron">DAILY_RITUALS</h2>
-                        <div id="task-list" class="flex flex-col gap-3"></div>
-                    </div>
-
-                    <!-- Boons (BoonsUI renders into #boon-list; #ek-display shows Keys).
-                         Locked until Prestige 1 (FeatureIndicators marks the tab). -->
-                    <div id="boons-tab" class="tab-panel hidden relative z-10">
-                        <div class="mb-4 font-mono text-sm text-gray-300">ELDRITCH_KEYS: <span id="ek-display" class="text-gold-400 font-bold">0</span></div>
-                        <div id="boon-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-                    </div>
-
-                    <!-- Meditation: tower-defense minigame. Logic lives in the headless,
-                         deterministic MeditationState sim; MeditationTowers renders the
-                         #meditation-canvas; MeditationUI fills the HUD + lists. -->
-                    <div id="meditation-tab" class="tab-panel hidden relative z-10">
-                        <!-- HUD -->
-                        <div class="flex flex-wrap items-center gap-4 mb-4 font-mono text-sm">
-                            <div class="glass-panel px-3 py-2 rounded">FOCUS: <span id="focus-display" class="text-code font-bold">0</span> <span class="text-gray-500">(<span id="focusps-display">0</span>/s)</span></div>
-                            <div class="glass-panel px-3 py-2 rounded">WAVE: <span id="wave-display" class="text-gold-400 font-bold">0</span></div>
-                            <div class="glass-panel px-3 py-2 rounded flex items-center gap-2">
-                                TRANQUILITY:
-                                <span id="tranquility-display" class="text-witch-500 font-bold">100</span>/<span id="tranquility-max-display">100</span>
-                            </div>
-                            <div class="glass-panel px-3 py-2 rounded">BONUS: <span id="meditation-production-bonus" class="text-gold-400 font-bold">+0%</span></div>
-                            <div class="flex gap-2 ml-auto">
-                                <button id="start-meditation-button" class="btn-primary px-4 py-2 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">START</button>
-                                <button id="end-meditation-button" class="btn-secondary px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">END</button>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            <!-- Play field (square canvas container so resizeCanvas can size it) -->
-                            <div class="lg:col-span-2">
-                                <div class="meditation-canvas-wrap relative w-full aspect-square max-h-[70vh] bg-void-900/60 rounded-lg overflow-hidden border border-witch-500/20">
-                                    <canvas id="meditation-canvas" role="img" aria-label="Meditation tower-defense grid" class="w-full h-full block"></canvas>
-                                </div>
-                            </div>
-                            <!-- Side panels -->
-                            <div class="flex flex-col gap-4 min-w-0">
-                                <div>
-                                    <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2 font-orbitron">Towers</h3>
-                                    <div id="tower-list" class="flex flex-col gap-2"></div>
-                                </div>
-                                <div>
-                                    <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2 font-orbitron">Upgrades</h3>
-                                    <div id="meditation-upgrade-list" class="flex flex-col gap-2"></div>
-                                </div>
-                                <div>
-                                    <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2 font-orbitron">Resources</h3>
-                                    <div id="meditation-inventory-list" class="flex flex-col gap-2"></div>
-                                </div>
-                            </div>
-                        </div>
+        <section class="cta-section" aria-labelledby="cta-title">
+            <div class="container">
+                <div class="cta-box">
+                    <h2 id="cta-title" class="cta-title">Ready to Preserve Magic?</h2>
+                    <p class="cta-desc">No account required. No download. Just open the game and start compiling fading magic into permanent structure.</p>
+                    <div class="hero-actions">
+                        <a href="play.html" class="btn btn-primary" role="button">
+                            <span>▶</span> Launch Hex Compiler
+                        </a>
+                        <a href="https://github.com/simongonzalezdc/CyberWitches" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
                     </div>
                 </div>
-            </section>
             </div>
-
-        <!-- 4. Bottom Control Deck (The Cast Interface) - Glass Panel -->
-        <footer class="control-deck glass-panel border-t border-white/10">
-            <div class="cast-container">
-                <!-- Glowing orb effect behind button -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-witch-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
-                
-                <button id="cast-button" class="btn-cast group">
-                    <div class="absolute inset-0 bg-witch-500/10 group-hover:bg-witch-500/20 transition-colors"></div>
-                    <span class="cast-icon cast-glyph text-4xl mb-1 block group-hover:animate-bounce" aria-hidden="true"></span>
-                    <span class="cast-label text-xs font-mono text-soul-400 tracking-widest">EXEC</span>
-                </button>
-            </div>
-            
-            <!-- Combo Display floating near cast button -->
-            <div id="combo-display" class="combo-display absolute text-right">
-                <div class="text-2xl font-bold text-gold-400 font-mono">x1.0</div>
-                <div class="text-xs text-gray-500 uppercase tracking-wider">COMBO</div>
-            </div>
-            
-            <!-- Auto Cast Toggle -->
-            <button id="auto-cast-toggle" class="auto-toggle hidden absolute left-8 bottom-8 glass-panel px-4 py-2 rounded text-xs font-mono text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
-                AUTO_SEQ: <span id="auto-status" class="text-red-400">OFF</span>
-            </button>
-        </footer>
-
+        </section>
     </main>
 
-    <!-- Modals -->
-    <div id="prestige-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="prestige-modal-title">
-        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
-            <h2 id="prestige-modal-title" class="text-2xl font-bold text-witch-500 mb-4 font-orbitron">SYSTEM_ASCENSION</h2>
-            <p class="mb-4 text-gray-300">REBOOTING SYSTEM WITH NEW KERNEL...</p>
-            <p class="mb-2 text-lg">KEYS_HELD: <span id="prestige-ek" class="text-gold-400 font-mono font-bold">0</span></p>
-            <p class="mb-6 text-lg">KEYS_ACQUIRED: <span id="prestige-gain" class="text-gold-400 font-mono font-bold">0</span></p>
-            <div class="modal-buttons flex gap-4">
-                <button id="ascend-button" class="btn-primary flex-1 py-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">CONFIRM_REBOOT</button>
-                <button id="close-prestige-button" class="btn-secondary flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">CANCEL</button>
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Game</h4>
+                <ul>
+                    <li><a href="play.html">Play Now</a></li>
+                    <li><a href="https://github.com/simongonzalezdc/CyberWitches/blob/main/GAME_MANUAL.md" target="_blank" rel="noopener">Game Manual</a></li>
+                    <li><a href="docs/API.md">API Docs</a></li>
+                </ul>
             </div>
+            <div class="footer-col">
+                <h4>Project</h4>
+                <ul>
+                    <li><a href="https://github.com/simongonzalezdc/CyberWitches" target="_blank" rel="noopener">GitHub Repository</a></li>
+                    <li><a href="CHANGELOG.md">Changelog</a></li>
+                    <li><a href="docs/deployment/DEPLOYMENT.md">Deployment Guide</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="PRIVACY.md">Privacy Policy</a></li>
+                    <li><a href="TERMS.md">Terms of Use</a></li>
+                    <li><a href="LICENSE">License (MIT)</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="https://kyanitelabs.tech" target="_blank" rel="noopener">Kyanite Labs</a></li>
+                    <li><a href="https://github.com/simongonzalezdc" target="_blank" rel="noopener">GitHub Profile</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Simon Gonzalez De Cruz. Hex Compiler is open source under the MIT License.</p>
+        </div>
+    </footer>
+
+    <div id="install-banner" role="dialog" aria-labelledby="install-title" aria-live="polite">
+        <h4 id="install-title" style="margin: 0 0 0.5rem; color: #fff; font-size: 1rem;">Install Hex Compiler</h4>
+        <p style="margin: 0 0 1rem; color: var(--dim); font-size: 0.9rem;">Add to your home screen for offline play.</p>
+        <div style="display: flex; gap: 0.5rem;">
+            <button id="install-button" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Install</button>
+            <button id="dismiss-install" class="btn btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Dismiss</button>
         </div>
     </div>
 
-    <!-- Help modal (opened by #help-button). Markup was missing, leaving Help dead. -->
-    <div id="help-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
-        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-                <h2 id="help-modal-title" class="text-2xl font-bold text-witch-500 font-orbitron">FIELD_MANUAL</h2>
-                <button class="modal-close text-gray-400 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>
-            </div>
-            <ul class="space-y-3 text-gray-300 text-sm">
-                <li><strong class="text-code">RUN_PROTOCOL</strong> — execute to compile raw essence into Arcane Bits (AB).</li>
-                <li><strong class="text-code">/MNT/WORKSTATIONS</strong> — craft producers that generate essence automatically over time.</li>
-                <li><strong class="text-code">/SYS/UPGRADES</strong> — inscribe upgrades to multiply production.</li>
-                <li><strong class="text-code">/BIN/LAB</strong> — run experiments to discover hidden recipes and potions.</li>
-                <li><strong class="text-code">SYSTEM_ASCENSION</strong> — reboot to convert lifetime progress into permanent Keys.</li>
-                <li>Your progress auto-saves and is flushed when you leave the tab. Back it up from <strong class="text-code">Settings</strong>.</li>
-            </ul>
-            <button id="close-help-button" class="btn-primary w-full mt-6 py-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">GOT_IT</button>
-        </div>
-    </div>
+    <script>
+        // PWA install prompt
+        let deferredPrompt = null;
+        const installBanner = document.getElementById('install-banner');
+        const installButton = document.getElementById('install-button');
+        const dismissInstall = document.getElementById('dismiss-install');
 
-    <!-- Welcome-back modal (offline progress; populated by ModalManager.showWelcomeBack). -->
-    <div id="welcome-back-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="welcome-modal-title">
-        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
-            <h2 id="welcome-modal-title" class="text-2xl font-bold text-witch-500 mb-4 font-orbitron">WELCOME_BACK</h2>
-            <p id="welcome-time" class="mb-2 text-gray-300"></p>
-            <p id="welcome-ab" class="mb-6 text-lg text-gold-400 font-mono"></p>
-            <button id="close-welcome-button" class="modal-close btn-primary w-full py-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors">CONTINUE</button>
-        </div>
-    </div>
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('hexCompilerInstallDismissed')) {
+                installBanner.classList.add('show');
+            }
+        });
 
-    <!-- Settings modal (opened by #settings-button). Hosts save management + install. -->
-    <div id="settings-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
-        <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-witch-500/30 shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
-            <div class="flex items-center justify-between mb-4">
-                <h2 id="settings-modal-title" class="text-2xl font-bold text-witch-500 font-orbitron">SETTINGS</h2>
-                <button class="modal-close text-gray-400 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>
-            </div>
-            <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Save Data</h3>
-            <div class="flex flex-col gap-3 mb-6">
-                <button id="export-save-button" class="btn-primary py-3 bg-code/80 hover:bg-code text-black rounded font-bold tracking-wider transition-colors" aria-describedby="export-save-desc">Export save</button>
-                <span id="export-save-desc" class="sr-only">Download your save data as a JSON file to your device</span>
-                <button id="import-save-button" class="btn-secondary py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors" aria-describedby="import-save-desc">Import save</button>
-                <span id="import-save-desc" class="sr-only">Load save data from a previously exported JSON file</span>
-                <button id="clear-save-button" class="btn-danger py-3 bg-corruption/80 hover:bg-corruption text-white rounded font-bold tracking-wider transition-colors" aria-describedby="clear-save-desc">Wipe save</button>
-                <span id="clear-save-desc" class="sr-only">Permanently delete all save data and reset the game</span>
-            </div>
+        installButton?.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                installBanner.classList.remove('show');
+            }
+            deferredPrompt = null;
+        });
 
-            <!-- Import Data Textarea for direct paste import -->
-            <div class="mt-4">
-                <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Import via Paste</h3>
-                <div class="flex flex-col gap-2">
-                    <label for="import-data" class="sr-only">Paste save data</label>
-                    <textarea
-                        id="import-data"
-                        class="w-full p-3 bg-void-900 border border-white/20 rounded text-white font-mono text-sm min-h-[120px] focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 outline-none transition-all"
-                        placeholder="Paste your exported save data here..."
-                        required
-                        aria-required="true"
-                        aria-describedby="import-help import-error"
-                        aria-invalid="false"
-                        minlength="2"
-                    ></textarea>
-                    <span id="import-help" class="sr-only">Paste your exported save data in JSON format. Must be valid JSON with at least 2 characters.</span>
-                    <span id="import-error" class="field-error" role="alert" aria-live="polite"></span>
-                    <button id="paste-import-button" class="btn-primary py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded font-bold tracking-wider transition-colors text-sm">
-                        Import Pasted Data
-                    </button>
-                </div>
-            </div>
-            <button id="install-pwa-button" class="btn-primary w-full py-3 mb-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors" style="display:none">Install app</button>
-            <button id="close-settings-button" class="btn-secondary w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">Close</button>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <!-- Entry point: game.js bootstraps the app (DOMContentLoaded -> initGame()).
-         gameInit.js only *exports* initGame and never self-invokes, so loading it
-         directly leaves the game uninitialised. esbuild bundles js/game.js too,
-         and build.js swaps this tag for js/game.bundle.js in the production dist. -->
-    <script type="module" src="js/game.js"></script>
+        dismissInstall?.addEventListener('click', () => {
+            installBanner.classList.remove('show');
+            localStorage.setItem('hexCompilerInstallDismissed', 'true');
+        });
+    </script>
 </body>
 </html>

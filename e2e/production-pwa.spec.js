@@ -99,7 +99,8 @@ const bootProductionApp = async (page, url) => {
         localStorage.setItem('tutorialSkipped', 'true');
         localStorage.setItem('hasSeenStoryIntroduction', 'true');
     });
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    const gameUrl = url.endsWith('/') ? `${url}play.html` : `${url}/play.html`;
+    await page.goto(gameUrl, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!window.gameState, null, { timeout: 30_000 });
 };
 
@@ -155,7 +156,7 @@ test('production build ships the offline shell and manifest screenshots', async 
         };
     }, { manifestScreenshots });
 
-    expect(result.manifestStartUrl).toBe('./');
+    expect(result.manifestStartUrl).toBe('./play.html');
     expect(result.manifestScope).toBe('./');
     expect(result.assetStatuses).toEqual(expect.arrayContaining(
         ['offline.html', 'sw.js', ...manifestScreenshots].map((asset) => expect.objectContaining({ asset, status: 200 }))
@@ -192,8 +193,8 @@ test('production build boots cleanly under the GitHub Pages project path', async
         };
     }, { manifestScreenshots });
 
-    expect(result.pathname).toBe('/CyberWitches/');
-    expect(result.manifestStartUrl).toBe('./');
+    expect(result.pathname).toBe('/CyberWitches/play.html');
+    expect(result.manifestStartUrl).toBe('./play.html');
     expect(result.manifestScope).toBe('./');
     for (const assetStatus of result.assetStatuses) {
         expect(assetStatus.status).toBe(200);
@@ -243,7 +244,7 @@ test('service worker controls the Pages-path app and offline reload still boots 
         expect(offlineBoot).toEqual({
             booted: true,
             controlled: true,
-            pathname: '/CyberWitches/',
+            pathname: '/CyberWitches/play.html',
             offlineFallbackVisible: false
         });
     } finally {

@@ -53,7 +53,7 @@ const expectHumanClickable = async (page, selector, label) => {
 };
 
 const waitForGame = async (page) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!window.gameState, null, { timeout: 30_000 });
 };
 

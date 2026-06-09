@@ -1,4 +1,4 @@
-# Cyber Witches: Idle Coven - Game Manual
+# Hex Compiler — Game Manual
 
 ## 📖 Table of Contents
 
@@ -18,7 +18,7 @@
 
 ## 🎮 Game Overview
 
-**Cyber Witches: Idle Coven** is an incremental idle game where you play as a cyber witch crafting magical ingredients and automating production. The game features:
+**Hex Compiler** is an incremental idle game where you play as a Hex Compiler translating magical hexes into hexadecimal code and building preservation chambers. The game features:
 
 - **Manual Casting**: Click the Cast button to manually generate ingredients
 - **Automated Production**: Craft workstations that automatically produce ingredients

@@ -21,7 +21,9 @@ Production build:
 npm run build:prod   # outputs static files to dist/
 ```
 
-Serve the contents of `dist/` from any static web host (configure it to serve `index.html` for all routes). See [DEPLOYMENT_README.md](DEPLOYMENT_README.md) for full deployment steps.
+Serve the contents of `dist/` from any static web host (configure it to serve `index.html` for all routes, with `play.html` available for direct game access). See [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) for full deployment steps.
+
+**Play the game:** [https://simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
 
 ## Usage
 
@@ -46,7 +48,8 @@ browser idle game · incremental clicker game open source · vanilla JavaScript 
 ## Links
 
 - **Game manual:** [GAME_MANUAL.md](GAME_MANUAL.md)
-- **Deployment guide:** [DEPLOYMENT_README.md](DEPLOYMENT_README.md)
+- **Deployment guide:** [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md)
+- **Play the game:** [simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
 - **API docs:** [docs/API.md](docs/API.md)
 - **License:** [MIT](LICENSE)
 - **KyaniteLabs:** [kyanitelabs.tech](https://kyanitelabs.tech)
