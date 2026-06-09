@@ -4,6 +4,15 @@
  * REDESIGNED: Terminal Progression Style
  */
 
+import { COLORS } from '../../config/colorConstants.js';
+
+const KYANITE_THEME = {
+    primary: COLORS.KY_MAGENTA,
+    secondary: COLORS.KY_CYAN,
+    accent: COLORS.KY_AMBER,
+    corruption: COLORS.KY_RED
+};
+
 export class DesignTierSystem {
     static DESIGN_SYSTEM_VERSION = 'kyanite-1';
     static DESIGN_SYSTEM_STORAGE_KEY = 'hexcompiler-design-system-version';
@@ -90,27 +99,32 @@ export class DesignTierSystem {
         // Apply tier-specific settings
         switch (tier) {
             case 0: // DOS Mode (Monochrome, No Effects)
-                this.setTheme({ primary: '#FFFFFF', secondary: '#AAAAAA', accent: '#FFFFFF' });
+                this.setTheme({
+                    primary: COLORS.KY_CRYSTAL,
+                    secondary: COLORS.KY_STEEL,
+                    accent: COLORS.KY_CRYSTAL,
+                    corruption: COLORS.KY_RED
+                });
                 this.toggleAnimations(false);
                 this.toggleAudio(false, false);
                 break;
             case 1: // Basic Color (16-bit colors)
-                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(false);
                 this.toggleAudio(false, false);
                 break;
             case 2: // Enhanced (Sound Effects + Color)
-                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(true); // Minimal animations
                 this.toggleAudio(true, false); // SFX only
                 break;
             case 3: // Terminal (Glassmorphism + Full Animations)
-                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(true);
                 this.toggleAudio(true, false);
                 break;
             case 4: // Full (Music + Parallax)
-                this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(true);
                 this.toggleAudio(true, true); // SFX + Music
                 break;
@@ -120,24 +134,7 @@ export class DesignTierSystem {
     setTheme(colors) {
         document.documentElement.style.setProperty('--color-code', colors.secondary);
         document.documentElement.style.setProperty('--color-magic', colors.accent);
-        document.documentElement.style.setProperty('--color-corruption', colors.primary);
-    }
-
-    async reconcileDesignSystemVersion() {
-        if (typeof localStorage === 'undefined') return;
-
-        const key = DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY;
-        const version = DesignTierSystem.DESIGN_SYSTEM_VERSION;
-        const storedVersion = localStorage.getItem(key);
-
-        if (typeof document !== 'undefined' && document.documentElement) {
-            document.documentElement.dataset.designSystemVersion = version;
-        }
-
-        if (storedVersion !== version) {
-            localStorage.setItem(key, version);
-            await this.applyTier(this.currentTier);
-        }
+        document.documentElement.style.setProperty('--color-corruption', colors.corruption || COLORS.KY_RED);
     }
 
     toggleAnimations(enabled) {
