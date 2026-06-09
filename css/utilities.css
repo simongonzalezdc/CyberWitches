@@ -99,10 +99,10 @@
 .text-white { color: var(--text-primary); }
 .text-black { color: var(--bg-void); }
 .text-code { color: var(--color-code); }
-.text-witch-500 { color: var(--color-witch-500); }
-.text-soul-400 { color: var(--color-soul-400); }
+.text-witch-500 { color: var(--ky-magenta); }
+.text-soul-400 { color: var(--ky-green); }
 .text-gold-400,
-.text-gold-400 { color: var(--color-gold-400); }
+.text-gold-400 { color: var(--ky-amber); }
 .text-red-400 { color: #ff6f99; }
 .text-gray-300 { color: var(--color-system); }
 .text-gray-400 { color: var(--color-dim); }
@@ -116,8 +116,8 @@
 .bg-black\/80 { background-color: rgba(0, 0, 0, 0.8); }
 .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05); }
 .bg-white\/10 { background-color: rgba(255, 255, 255, 0.1); }
-.bg-code\/80 { background-color: rgba(0, 240, 255, 0.8); }
-.bg-corruption\/80 { background-color: rgba(255, 42, 109, 0.8); }
+.bg-code\/80 { background-color: rgba(38, 230, 255, 0.8); }
+.bg-corruption\/80 { background-color: rgba(255, 26, 61, 0.8); }
 .bg-witch-500 { background-color: var(--color-witch-500); }
 .bg-gray-700 { background-color: var(--color-void-700); }
 .from-void-900 { --gradient-from: var(--color-void-900); }
@@ -125,9 +125,24 @@
 .bg-gradient-to-b { background-image: linear-gradient(to bottom, var(--gradient-from, var(--color-void-900)), var(--gradient-to, var(--bg-void))); }
 
 .border-white\/10 { border-color: rgba(255, 255, 255, 0.1); }
-.border-witch-500\/20 { border-color: rgba(217, 63, 240, 0.2); }
+.border-witch-500\/20 { border-color: rgba(255, 47, 109, 0.2); }
 .border-witch-500\/30,
-.border-witch-500\/50 { border-color: rgba(217, 63, 240, 0.42); }
+.border-witch-500\/50 { border-color: rgba(255, 47, 109, 0.5); }
+
+/* Kyanite utility aliases */
+.text-ky-cyan { color: var(--ky-cyan); }
+.text-ky-magenta { color: var(--ky-magenta); }
+.text-ky-amber { color: var(--ky-amber); }
+.text-ky-green { color: var(--ky-green); }
+.text-ky-red { color: var(--ky-red); }
+.bg-ky-cyan { background-color: var(--ky-cyan); }
+.bg-ky-magenta { background-color: var(--ky-magenta); }
+.bg-ky-amber { background-color: var(--ky-amber); }
+.bg-ky-green { background-color: var(--ky-green); }
+.bg-ky-red { background-color: var(--ky-red); }
+.border-ky-line { border-color: var(--ky-line); }
+.border-ky-magenta\/20 { border-color: rgba(255, 47, 109, 0.2); }
+.border-ky-magenta\/50 { border-color: rgba(255, 47, 109, 0.5); }
 .backdrop-blur-md,
 .backdrop-blur-sm { backdrop-filter: blur(10px); }
 .shadow-2xl { box-shadow: 0 22px 70px rgba(0, 0, 0, 0.45); }
