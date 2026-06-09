@@ -127,12 +127,6 @@ export class CraftingManager {
             }
 
             if (hasAll) {
-                // Cap discovered recipes array to prevent unbounded memory growth
-                const MAX_DISCOVERED_RECIPES = 100;
-                if (this.gameState.discoveredRecipes.length >= MAX_DISCOVERED_RECIPES) {
-                    // Remove oldest recipe (FIFO)
-                    this.gameState.discoveredRecipes.shift();
-                }
                 this.gameState.discoveredRecipes.push(recipe.id);
                 if (this.gameState.onRecipeDiscovered) this.gameState.onRecipeDiscovered(recipe.id);
                 return {
@@ -195,8 +189,11 @@ export class CraftingManager {
      */
     scaledRecipe(baseRecipe, owned, growth) {
         const scaled = {};
+        const maxCost = Number.MAX_SAFE_INTEGER;
         for (const ingId in baseRecipe) {
-            scaled[ingId] = Math.floor(baseRecipe[ingId] * Math.pow(growth, owned));
+            const growthFactor = Math.pow(growth, owned);
+            const cost = baseRecipe[ingId] * growthFactor;
+            scaled[ingId] = Math.min(Math.floor(cost), maxCost);
         }
         return scaled;
     }

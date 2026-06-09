@@ -49,7 +49,7 @@ export class ComboSystem {
         // Give bonus AB
         const bonus = milestone * 0.1; // 0.1 AB per combo point
         if (window.gameState) {
-            window.gameState.ab += bonus;
+            window.gameState.addAb(bonus);
         }
         
         // Visual feedback

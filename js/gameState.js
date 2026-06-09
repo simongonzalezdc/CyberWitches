@@ -1,6 +1,6 @@
 import { showLoadingState, hideLoadingState } from './loadingState.js';
 import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES } from './data.js';
-import { Balance } from './utils.js';
+import { Balance, formatShort as formatShortUtil } from './utils.js';
 import { handleError } from './errorHandler.js';
 import { GAME_CONSTANTS } from './codeOrganization.js';
 import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
@@ -81,7 +81,7 @@ export class GameState {
         this.onWelcomeBack = null;
 
         // DOM update batching
-        this.pendingUpdates = new Set();
+        this.pendingUpdates = [];
         this.batchTimeout = null;
         this.batchDelay = GAME_CONSTANTS.UI_UPDATE_DELAY; // ~60fps
 
@@ -92,16 +92,21 @@ export class GameState {
             if (typeof requestIdleCallback !== 'undefined') {
                 requestIdleCallback(() => {
                     this.saveGameStateImmediate();
+                    this.hasPendingSave = false; // Clear only after save completes
                 }, { timeout: 2000 }); // Fallback to timeout after 2s
             } else {
                 // Fallback for browsers without requestIdleCallback
                 setTimeout(() => {
                     this.saveGameStateImmediate();
+                    this.hasPendingSave = false; // Clear only after save completes
                 }, 0);
             }
         }, 3000); // Wait 3 seconds of inactivity
 
-        // Pending save flag
+        // Pending save flag — set immediately when a debounced save is
+        // triggered, cleared inside the debounced callback after the actual
+        // save completes. This eliminates the race where the flag was set
+        // but the debounced save hadn't fired yet.
         this.hasPendingSave = false;
 
         // Memoization cache for production multipliers
@@ -256,8 +261,8 @@ export class GameState {
         // Auto-save every 30 seconds using debounced version
         const nowSeconds = Date.now() / 1000;
         if (nowSeconds - this.lastSaveTime > GAME_CONSTANTS.AUTO_SAVE_INTERVAL / 1000) {
-            this.saveGameState(); // Uses debounced version
-            this.hasPendingSave = true;
+            this.hasPendingSave = true; // Mark pending before debounced save fires
+            this.saveGameState(); // Uses debounced version — clears flag on completion
         }
     }
 
@@ -273,7 +278,11 @@ export class GameState {
 
         const totalOutput = {};
 
-        // Apply Air specialization speed bonus to delta
+        // Apply Air specialization speed bonus to delta.
+        // INTENTIONAL DESIGN: Air's productionSpeedMult scales the time delta
+        // rather than the tick rate. This makes each tick simulate more elapsed
+        // time, which is equivalent to running the game faster without changing
+        // the actual tick cadence. All downstream per-second rates remain correct.
         let effectiveDelta = delta;
         if (this.elementSpecialization === 'air' && this.specializationBonuses.productionSpeedMult) {
             effectiveDelta *= this.specializationBonuses.productionSpeedMult;
@@ -291,7 +300,7 @@ export class GameState {
                 const baseRate = prodData.outputs[outputId];
 
                 // Apply multipliers
-                const mult = this.getProductionMultiplier(wsId);
+                let mult = this.getProductionMultiplier(wsId);
 
                 // Apply element specialization bonuses
                 let specializationMult = 1.0;
@@ -329,6 +338,14 @@ export class GameState {
                     if (this.elementSpecialization === 'water' && spec.ingredientProductionMult && outputId !== 'ab') {
                         specializationMult *= spec.ingredientProductionMult;
                     }
+                }
+
+                // Guard against NaN/Infinity from corrupted data
+                if (!isFinite(mult) || isNaN(mult)) {
+                    mult = 1.0;
+                }
+                if (!isFinite(specializationMult) || isNaN(specializationMult)) {
+                    specializationMult = 1.0;
                 }
 
                 // Apply event multiplier
@@ -433,9 +450,12 @@ export class GameState {
         mult *= this.getBuff('ingredient_production');
 
         // Meditation production bonus (only available through meditation)
+        // NOT cached — meditation state can change independently of cache invalidation
         if (window.meditationState && typeof window.meditationState.getMeditationProductionBonus === 'function') {
             const meditationBonus = window.meditationState.getMeditationProductionBonus();
-            mult *= meditationBonus;
+            if (isFinite(meditationBonus) && !isNaN(meditationBonus)) {
+                mult *= meditationBonus;
+            }
         }
 
         // Cache the result
@@ -509,7 +529,7 @@ export class GameState {
                 totalValue += buff.value;
             }
         }
-        return 1.0 + totalValue; // Return as multiplier (1.0 + 0.5 = 1.5x)
+        return Math.max(0.01, 1.0 + totalValue); // Return as multiplier (1.0 + 0.5 = 1.5x), clamped to minimum 0.01
     }
 
     getPotionEffect(potionId) {
@@ -549,15 +569,15 @@ export class GameState {
         const have = this.inventory[potionId] || 0;
         if (have < 1) return false;
 
-        this.spendIngredient(potionId, 1);
-
         const effect = this.getPotionEffect(potionId);
-        if (effect) {
-            this.addBuff(effect.type, effect.value, effect.duration);
-            return true;
+        if (!effect) {
+            console.warn('⚠️ Unknown potion consumed:', potionId);
+            return false;
         }
 
-        return false;
+        this.spendIngredient(potionId, 1);
+        this.addBuff(effect.type, effect.value, effect.duration);
+        return true;
     }
 
     /**
@@ -565,12 +585,16 @@ export class GameState {
      * @param {number} amount - Amount of AB to add
      */
     addAb(amount) {
-        // Validation: prevent NaN corruption
-        if (amount === undefined || amount === null || isNaN(amount)) {
+        // Validation: prevent NaN corruption and negative amounts
+        if (amount === undefined || amount === null || isNaN(amount) || !isFinite(amount)) {
             console.warn('⚠️ Attempted to add invalid AB amount:', amount);
             return;
         }
-        
+        if (amount < 0) {
+            console.warn('⚠️ Attempted to add negative AB:', amount);
+            return;
+        }
+
         this.ab += amount;
         this.abTotalEarned += amount;
         this.prestigeLifetimeEarned += amount;
@@ -628,9 +652,7 @@ export class GameState {
      * Format short number for display
      */
     formatShort(num) {
-        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-        return num.toFixed(1);
+        return formatShortUtil(num);
     }
 
     /**
@@ -651,6 +673,14 @@ export class GameState {
      * @param {number} amount - Amount to add
      */
     addIngredient(ingId, amount) {
+        if (amount === undefined || amount === null || isNaN(amount) || !isFinite(amount)) {
+            console.warn('⚠️ Attempted to add invalid ingredient amount:', ingId, amount);
+            return;
+        }
+        if (amount < 0) {
+            console.warn('⚠️ Attempted to add negative ingredient:', ingId, amount);
+            return;
+        }
         if (!this.inventory[ingId]) {
             this.inventory[ingId] = 0.0;
         }
@@ -772,10 +802,11 @@ export class GameState {
     }
 
     canAfford(recipe) {
+        const EPSILON = 1e-9;
         for (const ingId in recipe) {
             const needed = recipe[ingId];
             const have = this.inventory[ingId] || 0.0;
-            if (have < needed) return false;
+            if (have < needed - EPSILON) return false;
         }
         return true;
     }
@@ -817,6 +848,9 @@ export class GameState {
         this.totalTaps = 0;
         this.totalWorkstationsCrafted = 0;
         this.totalPotionsCrafted = 0;
+        // NOTE: discoveredRecipes intentionally persists across ascension.
+        // Recipes represent player knowledge — standard idle game design keeps
+        // knowledge/unlocks through prestige resets. Same for storyFlags.
 
         // Apply prestige start bonuses
         this.applyPrestigeStartBonuses();
@@ -876,10 +910,11 @@ export class GameState {
 
         const currentLevel = this.prestigeBonuses[bonusId] || 0;
         const cost = bonusData.baseCostPp * Math.pow(bonusData.costGrowth, currentLevel);
+        const roundedCost = Math.ceil(cost);
 
-        if (this.prestigePoints < cost) return false;
+        if (this.prestigePoints < roundedCost) return false;
 
-        this.prestigePoints -= Math.floor(cost);
+        this.prestigePoints -= roundedCost;
         this.prestigeBonuses[bonusId] = (this.prestigeBonuses[bonusId] || 0) + 1;
 
         // Invalidate multiplier cache since bonuses affect production
@@ -938,6 +973,8 @@ export class GameState {
                 // Element Specialization
                 elementSpecialization: this.elementSpecialization,
                 specializationBonuses: { ...this.specializationBonuses },
+                // Story Flags
+                storyFlags: { ...this.storyFlags },
                 // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
                 coven: null, // this.covenSystem ? this.covenSystem.saveCovenData() : null,
                 timestamp: Date.now() / 1000,
@@ -953,6 +990,13 @@ export class GameState {
 
             // Compress + checksum + stringify via the save codec.
             const compressedData = encode(saveData);
+            // Pre-check: estimate if save will fit (typical localStorage limit ~5MB)
+            const saveSizeKB = compressedData.length / 1024;
+            if (saveSizeKB > 4500) { // Leave 500KB headroom
+                console.error(`Save data too large (${saveSizeKB.toFixed(1)} KB). Attempting cleanup...`);
+                // Try to clean up backup saves to free space
+                this.cleanupOldBackups();
+            }
             localStorage.setItem('cyberWitchesSave', compressedData);
             // Mirror to IndexedDB (durable, eviction-resistant) without blocking
             // the save. localStorage remains the source of truth; this is the
@@ -1115,6 +1159,11 @@ export class GameState {
                 this.unlockedMilestones = new Set();
             }
 
+            // Load story flags
+            if (data.storyFlags && typeof data.storyFlags === 'object') {
+                this.storyFlags = { ...this.storyFlags, ...data.storyFlags };
+            }
+
             // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
             // Load coven data
             // if (this.covenSystem && data.coven) this.covenSystem.loadCovenData(data.coven);
@@ -1144,17 +1193,42 @@ export class GameState {
      * @param {number} elapsedSeconds - Time elapsed in seconds
      */
     applyOfflineProgress(elapsedSeconds) {
-        const abps = this.getAbPerSecond();
-        const offlineAb = Balance.calculateOfflineProduction(elapsedSeconds, abps);
+        // Cap offline progress at 12 hours for balance
+        const wasCapped = elapsedSeconds > Balance.offlineCapSeconds;
+        const cappedSeconds = Math.min(elapsedSeconds, Balance.offlineCapSeconds);
 
+        const production = this.calculateTotalProduction(cappedSeconds);
+
+        // Apply offline AB
+        const offlineAb = production.ab || 0;
         if (offlineAb > 0) {
             this.addAb(offlineAb);
-            this.batchUpdate('welcomeBack', elapsedSeconds, offlineAb);
-
-            // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
-            // Update coven progress for offline production
-            // if (this.covenSystem) this.covenSystem.updateCovenProgress('production', offlineAb, 'ab');
         }
+
+        // Apply offline ingredients
+        for (const outputId in production) {
+            if (outputId !== 'ab' && production[outputId] > 0) {
+                this.addIngredient(outputId, production[outputId]);
+            }
+        }
+
+        if (offlineAb > 0) {
+            this.batchUpdate('welcomeBack', elapsedSeconds, offlineAb);
+        }
+
+        // Inform player if offline progress was capped
+        if (wasCapped && window.showNotification) {
+            const capHours = Balance.offlineCapSeconds / 3600;
+            const actualHours = (elapsedSeconds / 3600).toFixed(1);
+            window.showNotification(
+                `Welcome back! You were away ${actualHours}h — offline progress capped at ${capHours}h for balance.`,
+                'info'
+            );
+        }
+
+        // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
+        // Update coven progress for offline production
+        // if (this.covenSystem) this.covenSystem.updateCovenProgress('production', offlineAb, 'ab');
     }
 
     /**
@@ -1164,7 +1238,7 @@ export class GameState {
      */
     batchUpdate(updateType, ...args) {
         // Add to pending updates
-        this.pendingUpdates.add({ type: updateType, args });
+        this.pendingUpdates.push({ type: updateType, args });
 
         // Clear existing timeout
         if (this.batchTimeout) {
@@ -1216,7 +1290,7 @@ export class GameState {
         }
 
         // Clear pending updates
-        this.pendingUpdates.clear();
+        this.pendingUpdates.length = 0;
         this.batchTimeout = null;
     }
 
@@ -1232,6 +1306,29 @@ export class GameState {
             localStorage.setItem(prefix + Date.now(), raw);
         } catch (e) {
             console.error('Failed to create backup:', e);
+        }
+    }
+
+    /**
+     * Clean up old backup saves to free localStorage space
+     */
+    cleanupOldBackups() {
+        try {
+            const backupKeys = Object.keys(localStorage)
+                .filter(key => key.startsWith('cyberWitchesSave_'))
+                .sort()
+                .reverse(); // Newest first
+
+            // Keep only the 3 most recent backups
+            const toRemove = backupKeys.slice(3);
+            for (const key of toRemove) {
+                localStorage.removeItem(key);
+            }
+            if (toRemove.length > 0) {
+                console.info(`Cleaned up ${toRemove.length} old backup(s) to free space`);
+            }
+        } catch (e) {
+            console.error('Failed to cleanup backups:', e);
         }
     }
 
@@ -1290,13 +1387,9 @@ export class GameState {
             }
 
             if (!validIngredients.has(ingId)) {
-                // Check if it's a meditation-only ingredient (keep those)
-                const ingredient = INGREDIENTS.find(ing => ing.id === ingId);
-                if (!ingredient || !ingredient.meditationOnly) {
-                    const amount = this.inventory[ingId];
-                    itemsToRemove.push(ingId);
-                    console.info(`Removed invalid ingredient: ${ingId} (had ${amount})`);
-                }
+                const amount = this.inventory[ingId];
+                itemsToRemove.push(ingId);
+                console.info(`Removed invalid ingredient: ${ingId} (had ${amount})`);
             }
         }
 
@@ -1422,8 +1515,9 @@ export class GameState {
     mergeSaveData(save1, save2) {
         try {
             const merged = {
-                // Use higher values for currency and stats
-                ab: Math.max(save1.ab || 0, save2.ab || 0),
+                // For current AB, prefer the more recent save (already sorted by time)
+                // For lifetime totals, take max since those only increase
+                ab: save1.ab || 0,
                 abTotal: Math.max(save1.abTotal || 0, save2.abTotal || 0),
 
                 // Merge inventories (take maximum)
@@ -1505,8 +1599,8 @@ export class GameState {
                 );
             });
 
-            // Merge upgrades (union)
-            merged.upgrades = { ...save1.upgrades, ...save2.upgrades };
+            // Only include upgrades from the primary (newer) save
+            merged.upgrades = { ...(save1.upgrades || {}) };
 
             return merged;
         } catch (error) {

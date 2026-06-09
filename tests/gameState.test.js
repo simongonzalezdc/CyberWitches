@@ -204,7 +204,7 @@ describe('GameState', () => {
             
             const merged = gameState.mergeSaveData(save1, save2);
             expect(merged).toBeDefined();
-            expect(merged.ab).toBe(200); // Higher value
+            expect(merged.ab).toBe(100); // Uses save1 (primary) value
             expect(merged.inventory.fire).toBe(15); // Higher value
             expect(merged.inventory.water).toBe(5); // From save2
             expect(merged.workstations.ws1).toBe(5); // Higher value

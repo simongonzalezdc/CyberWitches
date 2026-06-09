@@ -150,7 +150,7 @@ export const HIDDEN_RECIPES = [
     },
     {
         id: 'eternal_speed_surge',
-        inputs: { arcane_candle: 2, void_crystal: 3 },
+        inputs: { arcane_candle: 3, void_crystal: 4, void_breath: 2 },
         outputs: { eternal_speed_surge: 1 },
         name: 'Eternal Speed Surge',
         description: 'TEMPORARY: +1000% cast speed for 4 hours'

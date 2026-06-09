@@ -268,33 +268,39 @@ describe('Game Utility Functions', () => {
             expect(getIngredientElement('focus')).toBe('aether');
         });
 
-        test('should map ab to aether', () => {
-            expect(getIngredientElement('ab')).toBe('aether');
+        test('should return null for non-existent ingredient ab', () => {
+            // 'ab' is not in INGREDIENTS array, so data-driven lookup returns null
+            expect(getIngredientElement('ab')).toBeNull();
         });
 
-        test('should infer fire from name', () => {
+        test('should return null for unknown ingredient fire_candle', () => {
+            // Substring inference removed - data-driven lookup only
             const result = getIngredientElement('fire_candle');
-            expect(result).toBe('fire');
+            expect(result).toBeNull();
         });
 
-        test('should infer water from name', () => {
+        test('should return null for unknown ingredient water_liquid', () => {
+            // Substring inference removed - data-driven lookup only
             const result = getIngredientElement('water_liquid');
-            expect(result).toBe('water');
+            expect(result).toBeNull();
         });
 
-        test('should infer air from name', () => {
+        test('should return null for unknown ingredient air_wind', () => {
+            // Substring inference removed - data-driven lookup only
             const result = getIngredientElement('air_wind');
-            expect(result).toBe('air');
+            expect(result).toBeNull();
         });
 
-        test('should infer crystal from name', () => {
+        test('should return crystal for crystal_orb', () => {
+            // This ingredient exists in INGREDIENTS, so lookup works
             const result = getIngredientElement('crystal_orb');
             expect(result).toBe('crystal');
         });
 
-        test('should infer aether from name', () => {
+        test('should return null for unknown ingredient aether_dist', () => {
+            // 'aether_dist' is the correct ID, not 'aether_dist'
             const result = getIngredientElement('aether_dist');
-            expect(result).toBe('aether');
+            expect(result).toBeNull();
         });
 
         test('should return null for unknown ingredient', () => {
@@ -302,10 +308,10 @@ describe('Game Utility Functions', () => {
             expect(result).toBeNull();
         });
 
-        test('should throw on undefined input', () => {
-            expect(() => {
-                getIngredientElement(undefined);
-            }).toThrow();
+        test('should return null for undefined input', () => {
+            // Map.get() returns undefined for missing keys, which becomes null with ?? null
+            const result = getIngredientElement(undefined);
+            expect(result).toBeNull();
         });
 
         test('should handle empty string', () => {

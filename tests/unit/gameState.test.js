@@ -86,12 +86,12 @@ describe('GameState - Core Functionality', () => {
             expect(gameState.abTotalEarned).toBe(125);
         });
 
-        test('should add AB even if amount is negative', () => {
-            // addAb allows negative amounts (can go below 0)
+        test('should reject negative AB amounts', () => {
+            // addAb now guards against negative values
             gameState.addAb(-10);
-            // Implementation allows negative balances
-            expect(gameState.ab).toBe(-10);
-            expect(gameState.abTotalEarned).toBe(-10);
+            // Negative amounts are rejected — AB stays at 0
+            expect(gameState.ab).toBe(0);
+            expect(gameState.abTotalEarned).toBe(0);
         });
 
         test('should spend AB correctly', () => {
