@@ -28,6 +28,7 @@ export const formatNumber = formatShort;
  * @returns {string} The escaped string
  */
 export function escapeHtml(str) {
+    if (str == null) return '';
     if (typeof str !== 'string') return String(str);
     return str.replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')

@@ -4,7 +4,6 @@
  */
 
 import { stripEmojisIfLowTier } from './uiHelpers.js';
-import { escapeHtml } from '../../utils.js';
 
 export class StatsUI {
     constructor(gameState, uiManager) {
