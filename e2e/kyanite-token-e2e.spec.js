@@ -12,15 +12,15 @@ async function getStyleSamples(page) {
         const css = (selector, prop, pseudo) => {
             const el = document.querySelector(selector);
             if (!el) throw new Error(`Missing selector: ${selector}`);
-            return getComputedStyle(el, pseudo).getPropertyValue(prop);
+            return window.getComputedStyle(el, pseudo).getPropertyValue(prop);
         };
 
         return {
             version: document.documentElement.dataset.designSystemVersion,
-            bodyBackground: getComputedStyle(document.body).backgroundColor,
-            rootKyVoid: getComputedStyle(document.documentElement).getPropertyValue('--ky-void').trim(),
-            rootKyCyan: getComputedStyle(document.documentElement).getPropertyValue('--ky-cyan').trim(),
-            rootKyElectric: getComputedStyle(document.documentElement).getPropertyValue('--ky-electric').trim(),
+            bodyBackground: window.getComputedStyle(document.body).backgroundColor,
+            rootKyVoid: window.getComputedStyle(document.documentElement).getPropertyValue('--ky-void').trim(),
+            rootKyCyan: window.getComputedStyle(document.documentElement).getPropertyValue('--ky-cyan').trim(),
+            rootKyElectric: window.getComputedStyle(document.documentElement).getPropertyValue('--ky-electric').trim(),
             landingAccent: document.querySelector('.hero-title .accent-word')
                 ? css('.hero-title .accent-word', 'color')
                 : null,

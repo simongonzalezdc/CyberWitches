@@ -122,7 +122,7 @@ test('branch B game shell declares the live Kyanite design-system token contract
 
     const contract = await page.evaluate(() => {
         const root = document.documentElement;
-        const styles = getComputedStyle(root);
+        const styles = window.getComputedStyle(root);
         return {
             version: root.dataset.designSystemVersion || null,
             witch: styles.getPropertyValue('--color-witch-500').trim(),
