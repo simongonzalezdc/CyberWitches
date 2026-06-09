@@ -150,13 +150,41 @@ export class WorkstationUI {
             }
 
             // Render workstations for this tier
-            // Background image mapping for workstation cards
+            // Background image mapping for workstation cards (all variants → base art)
             const wsBgImages = {
+                // Fire
                 'ws_fire_forge': 'images/backgrounds/fire-forge.jpg',
+                'ws_digcandle_forge': 'images/backgrounds/fire-forge.jpg',
+                'ws_enhanced_candle_forge': 'images/backgrounds/fire-forge.jpg',
+                'ws_quantum_candle_forge': 'images/backgrounds/fire-forge.jpg',
+                'ws_arcane_candle_forge': 'images/backgrounds/fire-forge.jpg',
+                // Water
                 'ws_aqua_well': 'images/backgrounds/aqua-well.jpg',
+                'ws_aqua_well_t1': 'images/backgrounds/aqua-well.jpg',
+                'ws_flowing_current_well': 'images/backgrounds/aqua-well.jpg',
+                'ws_quantum_water_well': 'images/backgrounds/aqua-well.jpg',
+                'ws_void_liquid_well': 'images/backgrounds/aqua-well.jpg',
+                // Air
                 'ws_zephyr_generator': 'images/backgrounds/zephyr-generator.jpg',
+                'ws_zephyr_generator_t1': 'images/backgrounds/zephyr-generator.jpg',
+                'ws_wind_spiral_generator': 'images/backgrounds/zephyr-generator.jpg',
+                'ws_quantum_air_generator': 'images/backgrounds/zephyr-generator.jpg',
+                'ws_void_breath_generator': 'images/backgrounds/zephyr-generator.jpg',
+                // Crystal
                 'ws_crystal_chamber': 'images/backgrounds/crystal-chamber.jpg',
+                'ws_crystal_chamber_t1': 'images/backgrounds/crystal-chamber.jpg',
+                'ws_crystal_core_chamber': 'images/backgrounds/crystal-chamber.jpg',
+                'ws_quantum_crystal_chamber': 'images/backgrounds/crystal-chamber.jpg',
+                'ws_void_crystal_chamber': 'images/backgrounds/crystal-chamber.jpg',
+                'ws_resonance_crystallizer': 'images/backgrounds/crystal-chamber.jpg',
+                // Aether
                 'ws_aether_synthesizer': 'images/backgrounds/aether-synthesizer.jpg',
+                'ws_aether_reactor_t1': 'images/backgrounds/aether-synthesizer.jpg',
+                'ws_aether_fusion_chamber': 'images/backgrounds/aether-synthesizer.jpg',
+                'ws_harmonic_stabilizer': 'images/backgrounds/aether-synthesizer.jpg',
+                'ws_arcane_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
+                'ws_etheric_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
+                'ws_infinity_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
             };
 
             for (const prodData of workstationsByTier[tier]) {
