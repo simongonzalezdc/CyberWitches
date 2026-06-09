@@ -28,42 +28,24 @@ export class DesignTierSystem {
         this.tierUnlockTimes = {}; // Track when each tier was unlocked
     }
 
-    async reconcileDesignSystemVersion() {
-        const stored = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
-        const current = DesignTierSystem.DESIGN_SYSTEM_VERSION;
-        document.documentElement.dataset.designSystemVersion = current;
-        if (stored !== current) {
-            localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, current);
-            await this.applyTier(this.currentTier);
-        }
-    }
-
     /**
-     * Keep the live document on the current design-system version without
-     * routing through applyTier(), which can toggle audio during boot.
+     * Keep the live document on the current design-system version.
+     * If the stored version differs from current, applies the theme for
+     * the current tier and persists the new version.
      */
     async reconcileDesignSystemVersion() {
-        const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
-        document.documentElement.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
+        const root = document.documentElement;
+        root.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
 
-        if (storedVersion === DesignTierSystem.DESIGN_SYSTEM_VERSION) return;
-
-        const tier = Number.isFinite(this.currentTier) ? this.currentTier : 0;
-        if (tier <= 0) {
-            this.setTheme({
-                primary: COLORS.KY_CRYSTAL,
-                secondary: COLORS.KY_STEEL,
-                accent: COLORS.KY_CRYSTAL,
-                corruption: COLORS.KY_RED
-            });
-        } else {
-            this.setTheme(KYANITE_THEME);
+        try {
+            const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
+            if (storedVersion !== DesignTierSystem.DESIGN_SYSTEM_VERSION) {
+                localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, DesignTierSystem.DESIGN_SYSTEM_VERSION);
+                this.applyThemeForCurrentTier();
+            }
+        } catch (error) {
+            console.warn('Unable to persist design system version:', error);
         }
-
-        localStorage.setItem(
-            DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY,
-            DesignTierSystem.DESIGN_SYSTEM_VERSION
-        );
     }
 
     /**
@@ -165,21 +147,6 @@ export class DesignTierSystem {
                 this.toggleAnimations(true);
                 this.toggleAudio(true, true); // SFX + Music
                 break;
-        }
-    }
-
-    async reconcileDesignSystemVersion() {
-        const root = document.documentElement;
-        root.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
-
-        try {
-            const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
-            if (storedVersion !== DesignTierSystem.DESIGN_SYSTEM_VERSION) {
-                localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, DesignTierSystem.DESIGN_SYSTEM_VERSION);
-                this.applyThemeForCurrentTier();
-            }
-        } catch (error) {
-            console.warn('Unable to persist design system version:', error);
         }
     }
 
