@@ -207,6 +207,24 @@ test('casting unlocks real workstation crafting through normal clicks', async ({
     expect(crafted, 'normal pointer click should craft a Fire Forge').toBe(1);
 });
 
+test('cast button remains centered on the baseline viewport', async ({ page }) => {
+    await page.addInitScript(() => {
+        localStorage.setItem('tutorialSkipped', 'true');
+        localStorage.setItem('hasSeenStoryIntroduction', 'true');
+    });
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+
+    const box = await page.locator('#cast-button').boundingBox();
+    const viewport = page.viewportSize();
+    expect(box, 'cast button should render').toBeTruthy();
+    expect(viewport, 'viewport should be available').toBeTruthy();
+    if (box && viewport) {
+        const centerX = box.x + box.width / 2;
+        expect(Math.abs(centerX - viewport.width / 2), 'cast button horizontal center drift').toBeLessThanOrEqual(10);
+    }
+});
+
 test('first-run boot fade does not intercept visible controls', async ({ page }) => {
     await page.addInitScript(() => {
         localStorage.clear();

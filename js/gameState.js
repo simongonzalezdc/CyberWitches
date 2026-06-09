@@ -1,5 +1,8 @@
 import { showLoadingState, hideLoadingState } from './loadingState.js';
-import { INGREDIENTS, PRODUCERS, UPGRADES, PRESTIGE_BONUSES } from './data.js';
+import { INGREDIENTS } from './modules/data/ingredients.js';
+import { PRODUCERS } from './modules/data/producers.js';
+import { UPGRADES } from './modules/data/upgrades.js';
+import { PRESTIGE_BONUSES } from './modules/data/prestige.js';
 import { Balance, formatShort as formatShortUtil } from './utils.js';
 import { handleError } from './errorHandler.js';
 import { GAME_CONSTANTS } from './codeOrganization.js';

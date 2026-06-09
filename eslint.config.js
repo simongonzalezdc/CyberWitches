@@ -9,10 +9,14 @@ export default [
         ignores: [
             'node_modules/**',
             'dist/**',
+            'dist-analysis/**',
             'coverage/**',
             'docs/**',
             'artifacts/**',
             'vendor/**', // third-party vendored libs (e.g. self-hosted Tone.js)
+            '.omx/**',
+            '.omc/**',
+            'test-results/**',
             '**/*.min.js'
         ]
     },
@@ -31,6 +35,7 @@ export default [
                 indexedDB: 'readonly',
                 fetch: 'readonly',
                 navigator: 'readonly',
+                getComputedStyle: 'readonly',
                 performance: 'readonly',
                 requestAnimationFrame: 'readonly',
                 cancelAnimationFrame: 'readonly',

@@ -19,12 +19,13 @@
     "test:visual": "playwright test e2e/visual-a11y.spec.js",
     "optimize:images": "node optimize-backgrounds.js",
     "lint": "eslint .",
+    "lint:color-debt": "node scripts/lint-color-debt.js",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write \"js/**/*.js\" \"*.{html,css,md}\"",
     "docs": "jsdoc js -d docs -c jsdoc.json",
-    "size-check": "node -e \"const s=require('fs').statSync('dist/js/game.bundle.js'); const kb=s.size/1024; console.log('Bundle: '+kb.toFixed(2)+'KB'); if(kb>2500){console.error('FAIL: exceeds 2.5MB budget'); process.exit(1);} else {console.log('PASS: within 2.5MB budget');}\"",
-    "ci": "npm run lint && npm run typecheck && npm run test"
+    "size-check": "node -e \"const fs=require('fs'),p=require('path'),d='dist/js';const crit=fs.statSync(p.join(d,'game.bundle.js')).size;const all=fs.readdirSync(d).filter(f=>f.endsWith('.js')).reduce((s,f)=>s+fs.statSync(p.join(d,f)).size,0);const ck=(crit/1024).toFixed(1),ak=(all/1024).toFixed(1);console.log('Critical bundle: '+ck+'KB | Total (with lazy chunks): '+ak+'KB');if(crit>200*1024){console.error('FAIL: critical bundle exceeds 200KB budget');process.exit(1);}else{console.log('PASS: critical bundle within 200KB budget');}\"",
+    "ci": "npm run lint && npm run lint:color-debt && npm run typecheck && npm run test"
   },
   "keywords": [
     "idle",

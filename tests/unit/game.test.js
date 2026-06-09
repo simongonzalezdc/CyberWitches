@@ -22,37 +22,37 @@ describe('Game Utility Functions', () => {
         test('should return tier 0 symbol', () => {
             const tier0 = getTierSymbol(0);
             expect(tier0.symbol).toBe('◉');
-            expect(tier0.color).toBe('#FFFFFF');
+            expect(tier0.color).toBe('#f3f8ff');
         });
 
         test('should return tier 1 symbol', () => {
             const tier1 = getTierSymbol(1);
             expect(tier1.symbol).toBe('◆');
-            expect(tier1.color).toBe('#FF10F0');
+            expect(tier1.color).toBe('#ff2f6d');
         });
 
         test('should return tier 2 symbol', () => {
             const tier2 = getTierSymbol(2);
             expect(tier2.symbol).toBe('◈');
-            expect(tier2.color).toBe('#FFFF00');
+            expect(tier2.color).toBe('#f5d35c');
         });
 
         test('should return tier 3 symbol', () => {
             const tier3 = getTierSymbol(3);
             expect(tier3.symbol).toBe('✧');
-            expect(tier3.color).toBe('#39FF14');
+            expect(tier3.color).toBe('#33ff99');
         });
 
         test('should return tier 4 symbol', () => {
             const tier4 = getTierSymbol(4);
             expect(tier4.symbol).toBe('✦');
-            expect(tier4.color).toBe('#00FFFF');
+            expect(tier4.color).toBe('#26e6ff');
         });
 
         test('should return tier 5 symbol', () => {
             const tier5 = getTierSymbol(5);
             expect(tier5.symbol).toBe('✪');
-            expect(tier5.color).toBe('#FF6B00');
+            expect(tier5.color).toBe('#ff1a3d');
         });
 
         test('should return tier 0 for invalid tier', () => {

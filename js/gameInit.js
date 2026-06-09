@@ -3,6 +3,7 @@
  * Handles the setup and wiring of all game systems.
  */
 
+// ── Critical-path static imports (needed for boot / first paint) ──────────
 import { UIManager } from './modules/ui/uiManager.js';
 import { showNotification } from './modules/ui/notifications.js';
 import { announceToScreenReader } from './accessibility.js';
@@ -14,15 +15,10 @@ import { AchievementSystem } from './achievements.js';
 import { ComboSystem } from './comboSystem.js';
 import { EventSystem } from './eventSystem.js';
 import { CastManager } from './modules/game/castManager.js';
-import { MeditationManager } from './modules/game/meditationManager.js';
 import { PrestigeManager } from './modules/game/prestigeManager.js';
 import { InscriptionsManager } from './modules/game/inscriptionsManager.js';
 import { DesignTierSystem } from './modules/game/designTierSystem.js';
 import { FadingThemeSystem } from './modules/game/fadingThemeSystem.js';
-import { TutorialSystem } from './modules/game/tutorialSystem.js';
-import { ParticleSystem } from './modules/game/particleSystem.js';
-import { AudioSystem } from './audioSystem.js';
-import { PWAFeaturesManager } from './modules/pwa/pwaFeaturesManager.js';
 import { initUIHelpers } from './modules/ui/uiHelpers.js';
 import accessibilityManager from './accessibility.js';
 import featureIndicatorManager from './featureIndicators.js';
@@ -30,11 +26,27 @@ import { handleError } from './errorHandler.js';
 import { UnifiedGameLoop } from './core/UnifiedGameLoop.js';
 import { createErrorBoundary } from './core/ErrorBoundary.js';
 import { errorReporter } from './modules/core/errorReporter.js';
-import { setAudioSystem } from './audio/audioAccess.js';
-import { PRODUCERS, INGREDIENTS, UPGRADES, HIDDEN_RECIPES, PRESTIGE_BONUSES } from './data.js';
+import { INGREDIENTS } from './modules/data/ingredients.js';
+import { PRODUCERS } from './modules/data/producers.js';
+import { UPGRADES } from './modules/data/upgrades.js';
+import { HIDDEN_RECIPES } from './modules/data/recipes.js';
+import { PRESTIGE_BONUSES } from './modules/data/prestige.js';
 import { formatShort, formatNumber, formatTimeDuration } from './utils.js';
-import { pulseElement, shakeElement, slideIn } from './animations.js';
 import { ELEMENT_SPECIALIZATIONS } from './elementSpecialization.js';
+
+// ── Lazy-loaded modules (dynamic import → separate chunk) ────────────────
+// These are fetched AFTER the critical bundle parses and the game shell renders.
+// Each module is loaded on demand: audio on first user gesture, meditation when
+// the tab unlocks (Prestige 1), PWA/tutorial/particles shortly after boot.
+const lazy = {
+    get AudioSystem() { return import('./audioSystem.js').then(m => m.AudioSystem); },
+    get MeditationManager() { return import('./modules/game/meditationManager.js').then(m => m.MeditationManager); },
+    get PWAFeaturesManager() { return import('./modules/pwa/pwaFeaturesManager.js').then(m => m.PWAFeaturesManager); },
+    get ParticleSystem() { return import('./modules/game/particleSystem.js').then(m => m.ParticleSystem); },
+    get TutorialSystem() { return import('./modules/game/tutorialSystem.js').then(m => m.TutorialSystem); },
+    get animations() { return import('./animations.js'); },
+    get setAudioSystem() { return import('./audio/audioAccess.js').then(m => m.setAudioSystem); }
+};
 
 export async function initGame() {
     console.info('Initializing Hex Compiler...');
@@ -86,42 +98,29 @@ export async function initGame() {
         window.announceToScreenReader = announceToScreenReader;
         window.errorReporter = errorReporter;
 
-        // Formatting + animation helpers are likewise read as globals by several
-        // UI modules (inventoryUI/statsUI/experimentUI use window.formatShort
-        // UNGUARDED — an actual crash; modalManager/experimentUI use
-        // window.slideIn/pulseElement/shakeElement guarded — silent no-ops). None
-        // were ever assigned, so those panels failed to render and celebration
-        // animations never played. Expose them here.
+        // Formatting helpers are read as globals by several UI modules.
+        // Animation helpers are loaded lazily but stubbed here so callers
+        // don't crash before the lazy chunk arrives.
         window.formatShort = formatShort;
         window.formatNumber = formatNumber;
         window.formatTimeDuration = formatTimeDuration;
-        window.pulseElement = pulseElement;
-        window.shakeElement = shakeElement;
-        window.slideIn = slideIn;
+        window.pulseElement = () => {};
+        window.shakeElement = () => {};
+        window.slideIn = () => {};
 
         // 5. Initialize Feature Managers (depend on GameState and often UIManager)
         // Week 2: Wrap critical systems with error boundaries for module isolation
         const inputManagerBoundary = createErrorBoundary('InputManager');
         const inputManager = inputManagerBoundary.wrap(() => new InputManager(gameState, uiManager, craftingManager))();
-        
+
         const castManagerBoundary = createErrorBoundary('CastManager');
         const castManager = castManagerBoundary.wrap(() => new CastManager(gameState, uiManager, comboSystem, eventSystem))();
-        
-        const pwaManager = new PWAFeaturesManager(gameState, uiManager);
-        const tutorialSystem = new TutorialSystem(gameState);
-        const meditationManager = new MeditationManager(gameState, uiManager);
+
         const prestigeManager = new PrestigeManager(gameState, uiManager);
         const inscriptionsManager = new InscriptionsManager(gameState, uiManager);
-        
-        const audioSystemBoundary = createErrorBoundary('AudioSystem');
-        const audioSystem = audioSystemBoundary.wrap(() => new AudioSystem())();
-        setAudioSystem(audioSystem);
-        
-        const particleSystemBoundary = createErrorBoundary('ParticleSystem');
-        const particleSystem = particleSystemBoundary.wrap(() => new ParticleSystem(gameState))();
-        
-        // Design Tier System depends on AudioSystem
-        const designTierSystem = new DesignTierSystem(gameState, uiManager, audioSystem);
+
+        // Design Tier System — audioSystem is null at first; lazy-loaded later.
+        const designTierSystem = new DesignTierSystem(gameState, uiManager, null);
         initUIHelpers(designTierSystem);
 
         const fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
@@ -129,53 +128,43 @@ export async function initGame() {
         // 6. Wire up systems to UIManager
         uiManager.systems.inputManager = inputManager;
         uiManager.systems.castManager = castManager;
-        uiManager.systems.pwaManager = pwaManager;
-        uiManager.systems.tutorialSystem = tutorialSystem;
-        uiManager.systems.meditationManager = meditationManager;
         uiManager.systems.prestigeManager = prestigeManager;
         uiManager.systems.inscriptionsManager = inscriptionsManager;
-        uiManager.systems.audioSystem = audioSystem;
-        uiManager.systems.particleSystem = particleSystem;
         uiManager.systems.designTierSystem = designTierSystem;
         uiManager.systems.fadingThemeSystem = fadingThemeSystem;
         uiManager.systems.accessibilityManager = accessibilityManager;
+        // Lazy systems are wired when their chunks load (see loadLazySystems below)
+
+        // 6b. Load ModalManager (needed before story intro) and non-critical UIs
+        await uiManager.initModalManager();
 
         // 7. Initialize specific systems
-        pwaManager.init();
         dailyRituals.init();
-        
-        // Initialize particles if Tier 3+
-        // Note: Particle system will integrate with UnifiedGameLoop automatically
-        if (designTierSystem.getCurrentTier() >= 3) {
-            particleSystem.init();
-            // Don't call start() - UnifiedGameLoop will handle animation
-        }
 
         // 8. Set up Game State callbacks
         setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager);
 
         // 9. Initialize Unified Game Loop (replaces multiple setInterval calls)
         const gameLoop = new UnifiedGameLoop();
-        
+
         // Assign gameLoop to window BEFORE particle system checks for it
         // This ensures particle system can detect UnifiedGameLoop management
         window.gameLoop = gameLoop;
-        
+
         // Register game state tick for logic updates (10 TPS)
         gameLoop.registerLogicUpdate((delta) => {
             gameState.tick(delta, 1.0); // Pass delta and event multiplier
         });
-        
+
         // Register visual updates (60 FPS) - particle systems, animations
-        // Particle system will be updated via UnifiedGameLoop if initialized
+        // Particle system is loaded lazily; the guard handles the null case.
         gameLoop.registerVisualUpdate((_delta) => {
-            // Update particle system if initialized and active
-            if (particleSystem && particleSystem.initialized && !particleSystem.isPaused) {
-                const currentTime = performance.now();
-                particleSystem.animate(currentTime);
+            const ps = uiManager.systems.particleSystem;
+            if (ps && ps.initialized && !ps.isPaused) {
+                ps.animate(performance.now());
             }
         });
-        
+
         // Register render callbacks (60 FPS with interpolation)
         gameLoop.registerRender((_alpha) => {
             // Update UI at 60 FPS for smooth updates
@@ -183,7 +172,7 @@ export async function initGame() {
             uiManager.hudUI.updateABPS();
             uiManager.hudUI.updateComboDisplay();
         });
-        
+
         // Register periodic checks (integrated into game loop)
         gameLoop.registerPeriodicCheck('tierCheck', () => {
             try {
@@ -192,7 +181,7 @@ export async function initGame() {
                 console.error('Error checking tier unlocks:', error);
             }
         });
-        
+
         const shownAchievementNotifications = new Set();
         gameLoop.registerPeriodicCheck('achievementCheck', () => {
             if (achievements) {
@@ -202,10 +191,6 @@ export async function initGame() {
                         shownAchievementNotifications.add(achievement.name);
                         uiManager.showNotification(`Achievement: ${achievement.name}!`, 'success');
                         designTierSystem.checkTierUnlocks();
-                        // Announce to screen readers via UIManager's own method. The
-                        // previous `uiManager.accessibilityManager` was never assigned
-                        // (UIManager imports the singleton but doesn't store it), so this
-                        // announcement silently never fired.
                         if (typeof uiManager.announceToScreenReader === 'function') {
                             uiManager.announceToScreenReader(`Achievement unlocked: ${achievement.name}`, 'polite');
                         }
@@ -213,7 +198,7 @@ export async function initGame() {
                 }
             }
         });
-        
+
         gameLoop.registerPeriodicCheck('eventCheck', () => {
             if (eventSystem) {
                 eventSystem.checkForEvents();
@@ -221,12 +206,12 @@ export async function initGame() {
                 uiManager.hudUI.updateActiveEvents();
             }
         });
-        
+
         gameLoop.registerPeriodicCheck('hudUpdate', () => {
             uiManager.hudUI.updateABPS();
             uiManager.hudUI.updateComboDisplay();
         });
-        
+
         // Start unified game loop (replaces gameState.start() tick loop)
         // Note: window.gameLoop was already assigned above for particle system detection
         gameState.loadGameState(); // Load state but don't start old tick loop
@@ -238,31 +223,140 @@ export async function initGame() {
 
         // 10. Initial UI Update
         uiManager.updateAllUI();
-        
+
         // Switch to first tab
         uiManager.switchTab('workstations');
 
-        // 12. Unlock Audio on interaction
-        setupAudioUnlock(audioSystem, designTierSystem);
+        // 11. Kick off lazy loading in the background. The game shell is already
+        // interactive at this point — audio/meditation/PWA/particles load async.
+        loadLazySystems(gameState, uiManager, designTierSystem, gameLoop);
 
-        // 13. Show Story Intro if needed
+        // Load non-critical UI modules (stats, dailies, boons, experiment) in background
+        uiManager.initLazyUIs().catch(e => console.warn('Lazy UI init failed:', e));
+
+        // 12. Show Story Intro if needed
         if (!gameState.storyFlags.introShown) {
             uiManager.modalManager.showStoryIntroduction();
         }
 
-        // 14. Check Feature Indicators
+        // 13. Check Feature Indicators
         if (featureIndicatorManager) {
             featureIndicatorManager.updateIndicators();
         }
 
         console.info('Hex Compiler initialization complete.');
-        
+
         return { gameState, uiManager, gameLoop };
 
     } catch (error) {
         console.error('Critical error during game initialization:', error);
         handleError(error, 'initGame', true);
         throw error;
+    }
+}
+
+/**
+ * Load heavy subsystems in the background after the game shell is interactive.
+ * Each module is loaded independently so one failure doesn't block others.
+ */
+async function loadLazySystems(gameState, uiManager, designTierSystem, _gameLoop) {
+    // Load animations first (small, needed for UI feedback)
+    lazy.animations.then(mod => {
+        window.pulseElement = mod.pulseElement;
+        window.shakeElement = mod.shakeElement;
+        window.slideIn = mod.slideIn;
+    }).catch(e => console.warn('Lazy: animations failed to load', e));
+
+    // Load PWA features (service worker registration, install prompt)
+    lazy.PWAFeaturesManager.then(PWAFeaturesManager => {
+        const pwaManager = new PWAFeaturesManager(gameState, uiManager);
+        uiManager.systems.pwaManager = pwaManager;
+        pwaManager.init();
+    }).catch(e => console.warn('Lazy: PWA manager failed to load', e));
+
+    // Load tutorial system
+    lazy.TutorialSystem.then(TutorialSystem => {
+        const tutorialSystem = new TutorialSystem(gameState);
+        uiManager.systems.tutorialSystem = tutorialSystem;
+    }).catch(e => console.warn('Lazy: tutorial system failed to load', e));
+
+    // Load particle system (Tier 3+ only)
+    if (designTierSystem.getCurrentTier() >= 3) {
+        lazy.ParticleSystem.then(ParticleSystem => {
+            const particleSystem = new ParticleSystem(gameState);
+            uiManager.systems.particleSystem = particleSystem;
+            particleSystem.init();
+        }).catch(e => console.warn('Lazy: particle system failed to load', e));
+    }
+
+    // Load audio system on first user gesture (avoids autoplay warnings)
+    loadAudioOnGesture(gameState, uiManager, designTierSystem);
+}
+
+/**
+ * AudioSystem is ~80KB minified. Defer loading until the user actually
+ * interacts with the page (click / touch / keydown). This avoids creating
+ * an AudioContext before a user gesture (which triggers autoplay warnings
+ * in Chrome) and saves bandwidth on slow connections.
+ */
+function loadAudioOnGesture(gameState, uiManager, designTierSystem) {
+    let audioLoaded = false;
+
+    const loadAndUnlock = async () => {
+        if (audioLoaded) return;
+        audioLoaded = true;
+
+        try {
+            const [AudioSystem, setAudioSystem] = await Promise.all([
+                lazy.AudioSystem,
+                lazy.setAudioSystem
+            ]);
+
+            const audioSystem = new AudioSystem();
+            setAudioSystem(audioSystem);
+            uiManager.systems.audioSystem = audioSystem;
+
+            // Wire audio into designTierSystem (was null during boot)
+            designTierSystem.audioSystem = audioSystem;
+
+            // Resume AudioContext if suspended
+            if (audioSystem.audioContext?.state === 'suspended') {
+                try { await audioSystem.audioContext.resume(); } catch (_) { /* ignore */ }
+            }
+
+            // Enable audio based on current tier
+            const tier = designTierSystem.getCurrentTier();
+            if (tier >= 2 && audioSystem.enableSoundEffects) {
+                await audioSystem.enableSoundEffects();
+            }
+            if (tier >= 4 && audioSystem.enableMusic && !audioSystem.musicEnabled) {
+                await audioSystem.enableMusic();
+                await audioSystem.startMusic();
+            }
+        } catch (e) {
+            console.warn('Lazy: audio system failed to load', e);
+        }
+    };
+
+    document.addEventListener('click', loadAndUnlock, { once: false });
+    document.addEventListener('touchstart', loadAndUnlock, { once: false });
+    document.addEventListener('keydown', loadAndUnlock, { once: false });
+}
+
+/**
+ * Load the meditation subsystem on demand. Called when the meditation tab
+ * unlocks (Prestige 1) or when a prestige completes. Returns the manager
+ * instance (or null on failure).
+ */
+export async function loadMeditationSystem(gameState, uiManager) {
+    try {
+        const MeditationManager = await lazy.MeditationManager;
+        const meditationManager = new MeditationManager(gameState, uiManager);
+        uiManager.systems.meditationManager = meditationManager;
+        return meditationManager;
+    } catch (e) {
+        console.warn('Lazy: meditation manager failed to load', e);
+        return null;
     }
 }
 
@@ -287,14 +381,19 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
         uiManager.debouncedUIUpdate('inscriptionsTab', () => uiManager.inscriptionsUI.update());
     };
 
-    gameState.onPrestigeCompleted = (_ekGained) => {
+    gameState.onPrestigeCompleted = async (_ekGained) => {
         // Pass BOTH args: the method is showElementSpecializationChoice(ELEMENT_SPECIALIZATIONS,
         // updateAllUI). Previously only updateAllUI was passed, landing in the data
         // slot, so post-ascension the choice rendered with zero element options.
         uiManager.modalManager.showElementSpecializationChoice(ELEMENT_SPECIALIZATIONS, uiManager.updateAllUI);
-        
-        // Check unlock
-        uiManager.systems.meditationManager.checkUnlock();
+
+        // Load meditation system on demand (lazy-loaded, locked until Prestige 1)
+        if (!uiManager.systems.meditationManager) {
+            await loadMeditationSystem(gameState, uiManager);
+        }
+        if (uiManager.systems.meditationManager?.checkUnlock) {
+            uiManager.systems.meditationManager.checkUnlock();
+        }
 
         // Update auto button
         castManager.updateAutoButtonVisibility();
@@ -349,31 +448,7 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
     dailyRituals.onTasksRefreshed = () => uiManager.dailiesUI.update();
 }
 
-function setupAudioUnlock(audioSystem, designTierSystem) {
-    let audioUnlocked = false;
-    const unlockAudio = async () => {
-        if (audioUnlocked) return;
-        audioUnlocked = true;
-
-        if (audioSystem.audioContext && audioSystem.audioContext.state === 'suspended') {
-            try {
-                await audioSystem.audioContext.resume();
-            } catch (e) {
-                console.warn('Could not resume audio context:', e);
-            }
-        }
-
-        const currentTier = designTierSystem.getCurrentTier();
-        if (currentTier >= 2 && audioSystem.enableSoundEffects) {
-            await audioSystem.enableSoundEffects();
-        }
-        if (currentTier >= 4 && audioSystem.enableMusic && !audioSystem.musicEnabled) {
-            await audioSystem.enableMusic();
-            await audioSystem.startMusic();
-        }
-    };
-
-    document.addEventListener('click', unlockAudio);
-    document.addEventListener('touchstart', unlockAudio);
-    document.addEventListener('keydown', unlockAudio);
-}
+// Audio unlock is now handled by loadAudioOnGesture() inside loadLazySystems.
+// It defers loading the entire AudioSystem module (~80KB minified) until the
+// first user gesture, saving bandwidth on slow connections and avoiding
+// autoplay policy violations.

@@ -4,7 +4,9 @@
  * Extracts logic previously in GameState to improve modularity.
  */
 
-import { PRODUCERS, UPGRADES, HIDDEN_RECIPES } from '../../modules/data/index.js';
+import { PRODUCERS } from '../../modules/data/producers.js';
+import { UPGRADES } from '../../modules/data/upgrades.js';
+import { HIDDEN_RECIPES } from '../../modules/data/recipes.js';
 
 export class CraftingManager {
     constructor(gameState) {

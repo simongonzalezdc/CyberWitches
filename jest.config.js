@@ -80,7 +80,9 @@ export default {
     testPathIgnorePatterns: [
         '/node_modules/',
         '<rootDir>/dist/',
-        '<rootDir>/archive/'
+        '<rootDir>/archive/',
+        '<rootDir>/.omx/',
+        '<rootDir>/.omc/'
     ],
 
     // Coverage report formats

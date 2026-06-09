@@ -4,7 +4,19 @@
  * REDESIGNED: Terminal Progression Style
  */
 
+import { COLORS } from '../../config/colorConstants.js';
+
+const KYANITE_THEME = {
+    primary: COLORS.KY_MAGENTA,
+    secondary: COLORS.KY_CYAN,
+    accent: COLORS.KY_AMBER,
+    corruption: COLORS.KY_RED
+};
+
 export class DesignTierSystem {
+    static DESIGN_SYSTEM_VERSION = 'kyanite-1';
+    static DESIGN_SYSTEM_STORAGE_KEY = 'hexcompiler-design-system-version';
+
     constructor(gameState, uiManager, audioSystem) {
         this.gameState = gameState;
         this.uiManager = uiManager;
@@ -14,6 +26,26 @@ export class DesignTierSystem {
         this.loadUnlockedTiers();
         this.gameStartTime = Date.now(); // Track when game started for time-based requirements
         this.tierUnlockTimes = {}; // Track when each tier was unlocked
+    }
+
+    /**
+     * Keep the live document on the current design-system version.
+     * If the stored version differs from current, applies the theme for
+     * the current tier and persists the new version.
+     */
+    async reconcileDesignSystemVersion() {
+        const root = document.documentElement;
+        root.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
+
+        try {
+            const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
+            if (storedVersion !== DesignTierSystem.DESIGN_SYSTEM_VERSION) {
+                localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, DesignTierSystem.DESIGN_SYSTEM_VERSION);
+                this.applyThemeForCurrentTier();
+            }
+        } catch (error) {
+            console.warn('Unable to persist design system version:', error);
+        }
     }
 
     /**
@@ -86,37 +118,65 @@ export class DesignTierSystem {
         // Apply tier-specific settings
         switch (tier) {
             case 0: // DOS Mode (Monochrome, No Effects)
-                this.setTheme({ primary: '#FFFFFF', secondary: '#AAAAAA', accent: '#FFFFFF' });
+                this.setTheme({
+                    primary: COLORS.KY_CRYSTAL,
+                    secondary: COLORS.KY_STEEL,
+                    accent: COLORS.KY_CRYSTAL,
+                    corruption: COLORS.KY_RED
+                });
                 this.toggleAnimations(false);
                 this.toggleAudio(false, false);
                 break;
             case 1: // Basic Color (16-bit colors)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(false);
                 this.toggleAudio(false, false);
                 break;
             case 2: // Enhanced (Sound Effects + Color)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(true); // Minimal animations
                 this.toggleAudio(true, false); // SFX only
                 break;
             case 3: // Terminal (Glassmorphism + Full Animations)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(true);
                 this.toggleAudio(true, false);
                 break;
             case 4: // Full (Music + Parallax)
-                this.setTheme({ primary: '#FF2DAA', secondary: '#22E3FF', accent: '#FFDB6E' });
+                this.setTheme(KYANITE_THEME);
                 this.toggleAnimations(true);
                 this.toggleAudio(true, true); // SFX + Music
                 break;
         }
     }
 
+    applyThemeForCurrentTier() {
+        if (this.currentTier === 0) {
+            this.setTheme({
+                primary: COLORS.KY_CRYSTAL,
+                secondary: COLORS.KY_STEEL,
+                accent: COLORS.KY_CRYSTAL,
+                corruption: COLORS.KY_RED
+            });
+            return;
+        }
+
+        this.setTheme(KYANITE_THEME);
+    }
+
     setTheme(colors) {
-        document.documentElement.style.setProperty('--color-code', colors.secondary);
-        document.documentElement.style.setProperty('--color-magic', colors.accent);
-        document.documentElement.style.setProperty('--color-corruption', '#FF2A6D');
+        document.documentElement.style.setProperty('--color-code', colors.secondary.toUpperCase());
+        document.documentElement.style.setProperty('--color-magic', colors.accent.toUpperCase());
+        document.documentElement.style.setProperty('--color-corruption', (colors.corruption || COLORS.KY_RED).toUpperCase());
+    }
+
+    reapplyThemeForTier(tier) {
+        if (tier === 0) {
+            this.setTheme({ primary: '#FFFFFF', secondary: '#FFFFFF', accent: '#FFFFFF' });
+            return;
+        }
+
+        this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
     }
 
     toggleAnimations(enabled) {
