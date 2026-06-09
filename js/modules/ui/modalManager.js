@@ -5,6 +5,20 @@
 
 import { idbDelete } from '../../save/indexedDBBackup.js';
 
+/**
+ * Escape HTML entities to prevent XSS attacks
+ * @param {string} str - The string to escape
+ * @returns {string} The escaped string
+ */
+function escapeHtml(str) {
+    if (typeof str !== 'string') return String(str);
+    return str.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 export class ModalManager {
     constructor(gameState, designTierSystem) {
         this.gameState = gameState;
@@ -411,8 +425,8 @@ export class ModalManager {
         const timeEl = document.getElementById('welcome-time');
         const abEl = document.getElementById('welcome-ab');
 
-        if (timeEl) timeEl.innerHTML = `<span class="css-icon-clock"></span> Away for: ${formatTimeDuration(elapsed)}`;
-        if (abEl) abEl.innerHTML = `<span class="css-icon-sparkle"></span> Earned: ${formatShort(abGained)} SE`;
+        if (timeEl) timeEl.innerHTML = `<span class="css-icon-clock"></span> Away for: ${escapeHtml(formatTimeDuration(elapsed))}`;
+        if (abEl) abEl.innerHTML = `<span class="css-icon-sparkle"></span> Earned: ${escapeHtml(formatShort(abGained))} SE`;
 
         this.openModal('welcomeBack');
 
@@ -643,16 +657,16 @@ export class ModalManager {
             </p>
             <div class="element-choices-grid">
                 ${Object.values(ELEMENT_SPECIALIZATIONS).map(spec => `
-                    <div class="element-choice-card" data-element="${spec.id}">
-                        <div class="element-icon-large">${spec.icon}</div>
-                        <h3 class="element-choice-name">${spec.name}</h3>
-                        <p class="element-choice-desc">${spec.description}</p>
+                    <div class="element-choice-card" data-element="${escapeHtml(spec.id)}">
+                        <div class="element-icon-large">${escapeHtml(spec.icon)}</div>
+                        <h3 class="element-choice-name">${escapeHtml(spec.name)}</h3>
+                        <p class="element-choice-desc">${escapeHtml(spec.description)}</p>
                         <div class="element-bonuses-list">
                             ${Object.entries(spec.bonuses).map(([key, value]) => {
         let display = '';
-        if (key === 'baseProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ${spec.id} production`;
-        else if (key === 'abProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% AB from ${spec.id} reactors`;
-        else if (key === 'costReduction') display = `-${(value * 100).toFixed(0)}% ${spec.id} costs`;
+        if (key === 'baseProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ${escapeHtml(spec.id)} production`;
+        else if (key === 'abProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% AB from ${escapeHtml(spec.id)} reactors`;
+        else if (key === 'costReduction') display = `-${(value * 100).toFixed(0)}% ${escapeHtml(spec.id)} costs`;
         else if (key === 'castRewardMult') display = `+${((value - 1) * 100).toFixed(0)}% cast rewards`;
         else if (key === 'globalProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% all production`;
         else if (key === 'ingredientProductionMult') display = `+${((value - 1) * 100).toFixed(0)}% ingredient production`;
@@ -662,7 +676,7 @@ export class ModalManager {
         else if (key === 'universalIngredientMult') display = `+${((value - 1) * 100).toFixed(0)}% universal ingredients`;
         else if (key === 'bottleneckCostReduction') display = `-${(value * 100).toFixed(0)}% bottleneck costs`;
         else if (key === 'crystalBuildingMult') display = `+${((value - 1) * 100).toFixed(0)}% Crystal building production`;
-        return `<div class="element-bonus-item">${display}</div>`;
+        return `<div class="element-bonus-item">${escapeHtml(display)}</div>`;
     }).join('')}
                         </div>
                     </div>
@@ -710,13 +724,13 @@ export class ModalManager {
             modal.tabIndex = -1;
 
             modal.innerHTML = `
-                <h2 class="destructive-title" id="destructive-confirmation-title">${title}</h2>
-                <p class="destructive-text" id="destructive-confirmation-text">${message}</p>
+                <h2 class="destructive-title" id="destructive-confirmation-title">${escapeHtml(title)}</h2>
+                <p class="destructive-text" id="destructive-confirmation-text">${escapeHtml(message)}</p>
                 <div class="destructive-input-container">
                     <label class="destructive-input-label" for="destructive-confirm-input">
-                        Type "${confirmText}" to confirm:
+                        Type "${escapeHtml(confirmText)}" to confirm:
                     </label>
-                    <input type="text" id="destructive-confirm-input" 
+                    <input type="text" id="destructive-confirm-input"
                         class="destructive-input"
                         autocomplete="off" spellcheck="false">
                 </div>

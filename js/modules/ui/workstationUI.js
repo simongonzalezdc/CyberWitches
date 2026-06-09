@@ -9,6 +9,20 @@ import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
 import { Balance } from '../../utils.js';
 import { accessibilityManager } from '../../accessibility.js';
 
+/**
+ * Escape HTML entities to prevent XSS attacks
+ * @param {string} str - The string to escape
+ * @returns {string} The escaped string
+ */
+function escapeHtml(str) {
+    if (typeof str !== 'string') return String(str);
+    return str.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 export class WorkstationUI {
     constructor(gameState, uiManager) {
         this.gameState = gameState;
@@ -222,8 +236,8 @@ export class WorkstationUI {
                     const canAffordIng = userHas >= validAmount;
                     costHtml += `
                         <div class="cost-item ${canAffordIng ? 'affordable' : 'unaffordable'}">
-                            <span class="cost-amount">${formatNumber(validAmount)}</span>
-                            <span class="cost-name">${ing ? ing.displayName : ingId}</span>
+                            <span class="cost-amount">${escapeHtml(formatNumber(validAmount))}</span>
+                            <span class="cost-name">${escapeHtml(ing ? ing.displayName : ingId)}</span>
                         </div>
                     `;
                 }
@@ -243,8 +257,8 @@ export class WorkstationUI {
                         const ing = INGREDIENTS.find(i => i.id === outputId);
                         productionHtml += `
                             <div class="production-item">
-                                <span class="prod-amount">+${formatNumber(validAmount)}/s</span>
-                                <span class="prod-name">${ing ? ing.displayName : outputId}</span>
+                                <span class="prod-amount">+${escapeHtml(formatNumber(validAmount))}/s</span>
+                                <span class="prod-name">${escapeHtml(ing ? ing.displayName : outputId)}</span>
                             </div>
                         `;
                     }
@@ -253,7 +267,7 @@ export class WorkstationUI {
                     if (inscriptionMult > 1.0) {
                         productionHtml += `
                             <div class="inscription-bonus">
-                                <i class="fas fa-bolt"></i> ${formatNumber((inscriptionMult - 1) * 100)}% Bonus
+                                <i class="fas fa-bolt"></i> ${escapeHtml(formatNumber((inscriptionMult - 1) * 100))}% Bonus
                             </div>
                         `;
                     }
@@ -264,26 +278,26 @@ export class WorkstationUI {
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="card-title-row">
-                            <h3 class="card-title">${prodData.displayName}</h3>
-                            <span class="card-owned">Lv. ${formatNumber(owned)}</span>
+                            <h3 class="card-title">${escapeHtml(prodData.displayName)}</h3>
+                            <span class="card-owned">Lv. ${escapeHtml(formatNumber(owned))}</span>
                         </div>
-                        ${prodData.description ? `<p class="card-desc">${prodData.description}</p>` : ''}
+                        ${prodData.description ? `<p class="card-desc">${escapeHtml(prodData.description)}</p>` : ''}
                     </div>
-                    
+
                     ${productionHtml}
-                    
+
                     <div class="card-actions">
                         <div class="cost-display">
                             ${costHtml}
                         </div>
                         <div class="button-group">
-                            <button class="btn-craft" data-action="craft" data-ws-id="${prodData.id}" data-amount="1" ${!canAfford ? `disabled aria-disabled="true" data-disabled-reason="${disabledReason}"` : ''} aria-describedby="${!canAfford ? `craft-disabled-${prodData.id}` : ''}">
+                            <button class="btn-craft" data-action="craft" data-ws-id="${escapeHtml(prodData.id)}" data-amount="1" ${!canAfford ? `disabled aria-disabled="true" data-disabled-reason="${escapeHtml(disabledReason)}"` : ''} aria-describedby="${!canAfford ? `craft-disabled-${escapeHtml(prodData.id)}` : ''}">
                                 Craft
                             </button>
-                            <button class="btn-craft-max" data-action="craft-max" data-ws-id="${prodData.id}" ${!canAfford ? `disabled aria-disabled="true" data-disabled-reason="${disabledReason}"` : ''} aria-describedby="${!canAfford ? `craft-disabled-${prodData.id}` : ''}">
+                            <button class="btn-craft-max" data-action="craft-max" data-ws-id="${escapeHtml(prodData.id)}" ${!canAfford ? `disabled aria-disabled="true" data-disabled-reason="${escapeHtml(disabledReason)}"` : ''} aria-describedby="${!canAfford ? `craft-disabled-${escapeHtml(prodData.id)}` : ''}">
                                 Max
                             </button>
-                            ${!canAfford ? `<span id="craft-disabled-${prodData.id}" class="sr-only">${disabledReason}</span>` : ''}
+                            ${!canAfford ? `<span id="craft-disabled-${escapeHtml(prodData.id)}" class="sr-only">${escapeHtml(disabledReason)}</span>` : ''}
                         </div>
                     </div>
                 `;

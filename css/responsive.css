@@ -449,13 +449,13 @@
 
 @media (prefers-contrast: high) {
     :root {
-        --text: #FFFFFF;
+        --text: var(--text-primary);
         --text-dim: #E0E0E0;
-        --bg-dark: #05050a;
-        --bg-light: #1A1A1A;
-        --border: #FFFFFF;
-        --primary: #FF3DB5;
-        --secondary: #00FFFF;
+        --bg-dark: var(--bg-void);
+        --bg-light: var(--color-void-700);
+        --border: var(--text-primary);
+        --primary: var(--color-witch-500);
+        --secondary: var(--color-code);
     }
 
     /* Stronger borders for high contrast */
