@@ -115,6 +115,42 @@ test('branch B game shell boots with reskinned HUD, nav managers, and normal con
     expect(issues).toEqual([]);
 });
 
+
+test('branch B game shell declares the live Kyanite design-system token contract', async ({ page }) => {
+    await page.route(/.*\/js\/.*/, (route) => route.abort());
+    await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
+
+    const contract = await page.evaluate(() => {
+        const root = document.documentElement;
+        const styles = window.getComputedStyle(root);
+        return {
+            version: root.dataset.designSystemVersion || null,
+            witch: styles.getPropertyValue('--color-witch-500').trim(),
+            code: styles.getPropertyValue('--color-code').trim(),
+            magic: styles.getPropertyValue('--color-magic').trim(),
+            soul: styles.getPropertyValue('--color-soul-400').trim(),
+            primary: styles.getPropertyValue('--primary').trim(),
+            accent: styles.getPropertyValue('--accent').trim(),
+            panelBg: styles.getPropertyValue('--bg-panel').trim(),
+            textPrimary: styles.getPropertyValue('--text-primary').trim(),
+            fontDisplay: styles.getPropertyValue('--font-display').trim()
+        };
+    });
+
+    expect(contract).toEqual({
+        version: 'kyanite-1',
+        witch: '#ff2f6d',
+        code: '#26e6ff',
+        magic: '#f5d35c',
+        soul: '#33ff99',
+        primary: '#26e6ff',
+        accent: '#f5d35c',
+        panelBg: '#0b131d',
+        textPrimary: '#f3f8ff',
+        fontDisplay: "'Space Grotesk', sans-serif"
+    });
+});
+
 test('branch B imagery and PWA metadata reference installable local assets', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
@@ -151,6 +187,7 @@ test('branch B imagery and PWA metadata reference installable local assets', asy
         iconCount: 3,
         screenshotCount: 4
     }));
+    expect(result.screenshotCount).toBeGreaterThanOrEqual(2);
     expect(result.themeColor).toMatch(/^#[0-9a-f]{6}$/i);
     expect(result.backgroundColor).toMatch(/^#[0-9a-f]{6}$/i);
     expect(result.statuses).toEqual(

@@ -140,10 +140,39 @@ export class DesignTierSystem {
         }
     }
 
+    async reconcileDesignSystemVersion() {
+        const root = document.documentElement;
+        root.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
+
+        try {
+            const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
+            if (storedVersion !== DesignTierSystem.DESIGN_SYSTEM_VERSION) {
+                localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, DesignTierSystem.DESIGN_SYSTEM_VERSION);
+                this.applyThemeForCurrentTier();
+            }
+        } catch (error) {
+            console.warn('Unable to persist design system version:', error);
+        }
+    }
+
+    applyThemeForCurrentTier() {
+        if (this.currentTier === 0) {
+            this.setTheme({
+                primary: COLORS.KY_CRYSTAL,
+                secondary: COLORS.KY_STEEL,
+                accent: COLORS.KY_CRYSTAL,
+                corruption: COLORS.KY_RED
+            });
+            return;
+        }
+
+        this.setTheme(KYANITE_THEME);
+    }
+
     setTheme(colors) {
-        document.documentElement.style.setProperty('--color-code', colors.secondary);
-        document.documentElement.style.setProperty('--color-magic', colors.accent);
-        document.documentElement.style.setProperty('--color-corruption', colors.corruption || COLORS.KY_RED);
+        document.documentElement.style.setProperty('--color-code', colors.secondary.toUpperCase());
+        document.documentElement.style.setProperty('--color-magic', colors.accent.toUpperCase());
+        document.documentElement.style.setProperty('--color-corruption', (colors.corruption || COLORS.KY_RED).toUpperCase());
     }
 
     toggleAnimations(enabled) {
