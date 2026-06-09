@@ -55,28 +55,14 @@ export class CastManager {
                 eventMult = this.eventSystem.getProductionMultiplier();
             }
 
-            // Calculate gain
-            let gain = this.gameState.abps * this.gameState.clickMult * comboMult * eventMult;
-
-            // Sanitize gain
-            if (isNaN(gain) || !isFinite(gain) || gain < 0) {
-                gain = 1.0; // Fallback to base 1
+            const initialAb = Number(this.gameState.ab) || 0;
+            if (typeof this.gameState.cast === 'function') {
+                this.gameState.cast(comboMult, eventMult);
+            } else {
+                throw new TypeError('GameState.cast is not available');
             }
 
-            // Add to total
-            this.gameState.ab += gain;
-            this.gameState.lifetimeAb += gain;
-
-            // Track stats
-            if (!this.gameState.stats) {
-                this.gameState.stats = { totalCasts: 0 };
-            }
-            this.gameState.stats.totalCasts++;
-
-            // Check for milestone unlocks (gameState method)
-            if (typeof this.gameState.checkMilestones === 'function') {
-                this.gameState.checkMilestones();
-            }
+            const gain = Math.max(0, (Number(this.gameState.ab) || 0) - initialAb);
             
             // Check for tier unlocks (design tier system)
             const designTierSystem = this.uiManager?.systems?.designTierSystem;

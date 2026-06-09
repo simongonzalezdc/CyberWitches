@@ -61,6 +61,7 @@ export class AudioSystem {
         // Lazy loading flags
         this.soundsLoaded = false;
         this.audioInitialized = false;
+        this.toneLoadPromise = null;
         
         // Tone.js sound design system (unified with Tier 4 music)
         this.toneSynths = new Map(); // Reusable Tone.js synths for sound effects
@@ -142,7 +143,7 @@ export class AudioSystem {
         }
         
         // Initialize Tone.js if available (for unified sound design)
-        if (typeof Tone !== 'undefined') {
+        if (await this.ensureToneLoaded()) {
             await this.initializeToneSynths();
         }
         
@@ -151,13 +152,45 @@ export class AudioSystem {
         this.soundsLoaded = true;
         console.info('Sound effects loaded (lazy loaded for Tier 2+)');
     }
+
+    async ensureToneLoaded() {
+        if (typeof Tone !== 'undefined') {
+            return true;
+        }
+
+        if (this.toneLoadPromise) {
+            return this.toneLoadPromise;
+        }
+
+        this.toneLoadPromise = new Promise((resolve) => {
+            const existingScript = document.querySelector('script[data-tone-loader="true"]');
+            if (existingScript) {
+                existingScript.addEventListener('load', () => resolve(typeof Tone !== 'undefined'), { once: true });
+                existingScript.addEventListener('error', () => resolve(false), { once: true });
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = new URL('vendor/tone-15.1.22.js', document.baseURI).href;
+            script.defer = true;
+            script.dataset.toneLoader = 'true';
+            script.onload = () => resolve(typeof Tone !== 'undefined');
+            script.onerror = () => {
+                console.warn('Tone.js failed to load from self-hosted vendor path.');
+                resolve(false);
+            };
+            document.head.appendChild(script);
+        });
+
+        return this.toneLoadPromise;
+    }
     
     /**
      * Initialize Tone.js synths for sound effects (unified with music system)
      * @private
      */
     async initializeToneSynths() {
-        if (typeof Tone === 'undefined') {
+        if (!(await this.ensureToneLoaded())) {
             return; // Tone.js not available
         }
         
@@ -2446,7 +2479,7 @@ export class AudioSystem {
         }
         
         // Ensure Tone.js synths are initialized (they should be initialized in lazyLoadSounds, but double-check)
-        if (typeof Tone !== 'undefined' && (!this.toneSynths || this.toneSynths.size === 0)) {
+        if ((await this.ensureToneLoaded()) && (!this.toneSynths || this.toneSynths.size === 0)) {
             console.info('enableSoundEffects: Tone.js synths not initialized, initializing now...');
             await this.initializeToneSynths();
             console.info('enableSoundEffects: Tone.js synths initialized, size:', this.toneSynths ? this.toneSynths.size : 0);
@@ -2904,7 +2937,7 @@ export class AudioSystem {
      */
     async createAmbientMusic() {
         // Check if Tone.js is available
-        if (typeof Tone === 'undefined') {
+        if (!(await this.ensureToneLoaded())) {
             console.warn('Tone.js not available, falling back to basic Web Audio API');
             this.createAmbientMusicBasic();
             return;
