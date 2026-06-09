@@ -33,12 +33,6 @@ This document provides comprehensive API documentation for all systems and modul
 
 ---
 
-## Current Reskin/Manager Notes
-
-- Branch B JS manager review: see [BRANCH_B_JS_MANAGER_REVIEW.md](BRANCH_B_JS_MANAGER_REVIEW.md) for the landing/game-shell split, `uiHelpers`/`tierColors` contract, PWA routing contract, and QA checklist.
-- Current game shell entry point: `play.html`.
-- Current landing entry point: `index.html`.
-
 ## Core Systems
 
 ### Game State

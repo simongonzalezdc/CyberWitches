@@ -21,7 +21,7 @@ Production build:
 npm run build:prod   # outputs static files to dist/
 ```
 
-Serve the contents of `dist/` from any static web host (configure it to serve `index.html` for all routes, with `play.html` available for direct game access). See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for full deployment steps.
+Serve the contents of `dist/` from any static web host (configure it to serve `index.html` for all routes, with `play.html` available for direct game access). See [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) for full deployment steps.
 
 **Play the game:** [https://simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
 
@@ -48,10 +48,9 @@ browser idle game · incremental clicker game open source · vanilla JavaScript 
 ## Links
 
 - **Game manual:** [GAME_MANUAL.md](GAME_MANUAL.md)
-- **Deployment guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+- **Deployment guide:** [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md)
 - **Play the game:** [simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
 - **API docs:** [docs/API.md](docs/API.md)
-- **Branch B JS manager review:** [docs/BRANCH_B_JS_MANAGER_REVIEW.md](docs/BRANCH_B_JS_MANAGER_REVIEW.md)
 - **License:** [MIT](LICENSE)
 - **KyaniteLabs:** [kyanitelabs.tech](https://kyanitelabs.tech)
 - **Sibling projects:** [GameStory-Lab](https://github.com/simongonzalezdc/GameStory-Lab) · [voice-to-sculpture-app](https://github.com/simongonzalezdc/voice-to-scultpure-app) · [Print-OS](https://github.com/simongonzalezdc/Print-OS) · [grocery-flywheel](https://github.com/simongonzalezdc/grocery-flywheel) · [HealthAdvocate](https://github.com/simongonzalezdc/healthadvocate)
