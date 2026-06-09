@@ -110,8 +110,8 @@ export const PRESTIGE_BONUSES = [
     },
     {
         id: 'pp_covenaltar_mult',
-        displayName: 'Nexus Star',
-        description: '+5% Etheric Energy Reactor / level',
+        displayName: 'Reactor Nexus Star',
+        description: '+5% Etheric Energy Reactor / level (stacks)',
         type: 'producer_mult',
         param: 'ws_etheric_bit_reactor',
         value: 0.05,

@@ -8,7 +8,8 @@ export const PRODUCERS = [
         unlockAtAb: 0.0,
         recipe: { fire_essence: 10 },
         growth: 1.12,
-        outputs: { dist_fire: 0.20 }
+        outputs: { dist_fire: 0.20 },
+        element: 'fire'
     },
     // Water - Well
     {
@@ -18,7 +19,8 @@ export const PRODUCERS = [
         unlockAtAb: 0.0,
         recipe: { water_essence: 10 },
         growth: 1.12,
-        outputs: { liquid_essence: 0.20 }
+        outputs: { liquid_essence: 0.20 },
+        element: 'water'
     },
     // Air - Generator
     {
@@ -28,7 +30,8 @@ export const PRODUCERS = [
         unlockAtAb: 0.0,
         recipe: { air_essence: 10 },
         growth: 1.12,
-        outputs: { ethereal_gust: 0.20 }
+        outputs: { ethereal_gust: 0.20 },
+        element: 'air'
     },
     // Crystal - Chamber
     {
@@ -38,7 +41,8 @@ export const PRODUCERS = [
         unlockAtAb: 0.0,
         recipe: { crystal_dust: 10 },
         growth: 1.12,
-        outputs: { shaped_crys: 0.20 }
+        outputs: { shaped_crys: 0.20 },
+        element: 'crystal'
     },
     // Aether - Synthesizer (combines all 4 elements to create Aether)
     {
@@ -53,7 +57,8 @@ export const PRODUCERS = [
             crystal_dust: 2
         },
         growth: 1.12,
-        outputs: { dist_aether: 0.20 }
+        outputs: { dist_aether: 0.20 },
+        element: 'aether'
     },
 
     // Tier 1 - Early Game Producers (5 workstations: one per element)
@@ -64,7 +69,8 @@ export const PRODUCERS = [
         unlockAtAb: 75.0,
         recipe: { dist_fire: 3, shaped_crys: 2 },
         growth: 1.14,
-        outputs: { dig_candle: 0.4 }
+        outputs: { dig_candle: 0.4 },
+        element: 'fire'
     },
     // Water - Well
     {
@@ -73,7 +79,8 @@ export const PRODUCERS = [
         unlockAtAb: 100.0,
         recipe: { liquid_essence: 3, shaped_crys: 2 },
         growth: 1.14,
-        outputs: { aqua_well: 0.4 }
+        outputs: { aqua_well: 0.4 },
+        element: 'water'
     },
     // Air - Generator
     {
@@ -82,7 +89,8 @@ export const PRODUCERS = [
         unlockAtAb: 125.0,
         recipe: { ethereal_gust: 3, shaped_crys: 2 },
         growth: 1.14,
-        outputs: { zephyr_totem: 0.4 }
+        outputs: { zephyr_totem: 0.4 },
+        element: 'air'
     },
     // Crystal - Chamber
     {
@@ -91,7 +99,8 @@ export const PRODUCERS = [
         unlockAtAb: 150.0,
         recipe: { shaped_crys: 3, dist_fire: 1, dist_aether: 1 },
         growth: 1.14,
-        outputs: { crystal_orb: 0.4 }
+        outputs: { crystal_orb: 0.4 },
+        element: 'crystal'
     },
     // Aether - Reactor
     {
@@ -100,7 +109,8 @@ export const PRODUCERS = [
         unlockAtAb: 200.0,
         recipe: { dist_aether: 3, shaped_crys: 2 },
         growth: 1.15,
-        outputs: { aether_well: 0.4 }
+        outputs: { aether_well: 0.4 },
+        element: 'aether'
     },
 
     // ===== NEW: Tier 1.5 - Mid-Game Bridge Producers (fills 200-5000 AB gap) =====
@@ -117,7 +127,8 @@ export const PRODUCERS = [
             dig_candle: 2
         },
         growth: 1.145,
-        outputs: { fused_aether: 0.5 }
+        outputs: { fused_aether: 0.5 },
+        element: 'aether'
     },
     // Resonance Crystallizer - Creates resonant crystals
     {
@@ -132,7 +143,8 @@ export const PRODUCERS = [
             fused_aether: 2
         },
         growth: 1.15,
-        outputs: { resonant_crystal: 0.45 }
+        outputs: { resonant_crystal: 0.45 },
+        element: 'crystal'
     },
     // Harmonic Stabilizer - Produces harmonic essence AND AB
     {
@@ -151,7 +163,8 @@ export const PRODUCERS = [
         outputs: {
             harmonic_essence: 0.35,
             ab: 0.5  // Small AB production to help progression
-        }
+        },
+        element: 'aether'
     },
 
     // Tier 2 - Mid Game Producers (5 workstations: one per element + Arcane Bits producer)
@@ -162,7 +175,8 @@ export const PRODUCERS = [
         unlockAtAb: 5000.0,
         recipe: { dig_candle: 2, crystal_orb: 1, aether_well: 1 },
         growth: 1.16,
-        outputs: { enhanced_candle: 0.4 }
+        outputs: { enhanced_candle: 0.4 },
+        element: 'fire'
     },
     // Water - Well
     {
@@ -171,7 +185,8 @@ export const PRODUCERS = [
         unlockAtAb: 6000.0,
         recipe: { aqua_well: 3, crystal_orb: 2, dig_candle: 1 },
         growth: 1.16,
-        outputs: { flowing_current: 0.4 }
+        outputs: { flowing_current: 0.4 },
+        element: 'water'
     },
     // Air - Generator
     {
@@ -180,7 +195,8 @@ export const PRODUCERS = [
         unlockAtAb: 7000.0,
         recipe: { zephyr_totem: 3, crystal_orb: 2, dig_candle: 1 },
         growth: 1.16,
-        outputs: { wind_spiral: 0.4 }
+        outputs: { wind_spiral: 0.4 },
+        element: 'air'
     },
     // Crystal - Chamber
     {
@@ -189,7 +205,8 @@ export const PRODUCERS = [
         unlockAtAb: 8000.0,
         recipe: { crystal_orb: 3, aether_well: 2, dig_candle: 2 },
         growth: 1.17,
-        outputs: { crystal_core: 0.4 }
+        outputs: { crystal_core: 0.4 },
+        element: 'crystal'
     },
     // Aether - Reactor (Arcane Bits Producer - requires all 4 other elements + Aether)
     {
@@ -199,7 +216,8 @@ export const PRODUCERS = [
         unlockAtAb: 10000.0,
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
-        outputs: { ab: 5.0 }
+        outputs: { ab: 5.0 },
+        element: 'aether'
     },
 
     // Tier 3 - Late Game Producers (5 workstations: one per element + Arcane Bits producer)
@@ -210,7 +228,8 @@ export const PRODUCERS = [
         unlockAtAb: 100000.0,
         recipe: { enhanced_candle: 3, crystal_core: 2, flowing_current: 2, wind_spiral: 2 },
         growth: 1.20,
-        outputs: { quantum_candle: 0.3 }
+        outputs: { quantum_candle: 0.3 },
+        element: 'fire'
     },
     // Water - Well
     {
@@ -219,7 +238,8 @@ export const PRODUCERS = [
         unlockAtAb: 120000.0,
         recipe: { flowing_current: 4, crystal_core: 2, enhanced_candle: 2, wind_spiral: 2 },
         growth: 1.20,
-        outputs: { quantum_water: 0.3 }
+        outputs: { quantum_water: 0.3 },
+        element: 'water'
     },
     // Air - Generator
     {
@@ -228,7 +248,8 @@ export const PRODUCERS = [
         unlockAtAb: 140000.0,
         recipe: { wind_spiral: 4, crystal_core: 2, enhanced_candle: 2, flowing_current: 2 },
         growth: 1.20,
-        outputs: { quantum_air: 0.3 }
+        outputs: { quantum_air: 0.3 },
+        element: 'air'
     },
     // Crystal - Chamber
     {
@@ -237,7 +258,8 @@ export const PRODUCERS = [
         unlockAtAb: 160000.0,
         recipe: { crystal_core: 4, enhanced_candle: 2, flowing_current: 2, wind_spiral: 2 },
         growth: 1.21,
-        outputs: { quantum_crystal: 0.3 }
+        outputs: { quantum_crystal: 0.3 },
+        element: 'crystal'
     },
     // Aether - Reactor (Arcane Bits Producer - requires all 4 other elements + Aether)
     {
@@ -246,7 +268,8 @@ export const PRODUCERS = [
         unlockAtAb: 200000.0,
         recipe: { quantum_candle: 3, quantum_water: 3, quantum_air: 3, quantum_crystal: 3, aether_well: 3 },
         growth: 1.22,
-        outputs: { ab: 25.0 }
+        outputs: { ab: 25.0 },
+        element: 'aether'
     },
 
     // Tier 4 - Legendary Producers (5 workstations: one per element + Arcane Bits producer)
@@ -257,7 +280,8 @@ export const PRODUCERS = [
         unlockAtAb: 5000000.0,
         recipe: { quantum_candle: 5, quantum_water: 3, quantum_air: 3, quantum_crystal: 3 },
         growth: 1.25,
-        outputs: { arcane_candle: 0.2 }
+        outputs: { arcane_candle: 0.2 },
+        element: 'fire'
     },
     // Water - Well
     {
@@ -266,7 +290,8 @@ export const PRODUCERS = [
         unlockAtAb: 6500000.0,
         recipe: { quantum_water: 5, quantum_crystal: 3, quantum_candle: 3, quantum_air: 3 },
         growth: 1.26,
-        outputs: { void_liquid: 0.2 }
+        outputs: { void_liquid: 0.2 },
+        element: 'water'
     },
     // Air - Generator
     {
@@ -275,7 +300,8 @@ export const PRODUCERS = [
         unlockAtAb: 8000000.0,
         recipe: { quantum_air: 5, quantum_crystal: 3, quantum_candle: 3, quantum_water: 3 },
         growth: 1.26,
-        outputs: { void_breath: 0.2 }
+        outputs: { void_breath: 0.2 },
+        element: 'air'
     },
     // Crystal - Chamber
     {
@@ -284,7 +310,8 @@ export const PRODUCERS = [
         unlockAtAb: 9000000.0,
         recipe: { quantum_crystal: 5, quantum_candle: 3, quantum_water: 3, quantum_air: 3 },
         growth: 1.26,
-        outputs: { void_crystal: 0.2 }
+        outputs: { void_crystal: 0.2 },
+        element: 'crystal'
     },
     // Aether - Reactor (Arcane Bits Producer - requires all 4 other elements + Aether)
     {
@@ -294,6 +321,7 @@ export const PRODUCERS = [
         unlockAtAb: 20000000.0,
         recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,
-        outputs: { ab: 750.0 }
+        outputs: { ab: 750.0 },
+        element: 'aether'
     }
 ];

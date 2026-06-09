@@ -3,6 +3,13 @@
  * Provides RPG-like element specialization bonuses during ascension
  */
 
+import { INGREDIENTS } from './modules/data/ingredients.js';
+import { PRODUCERS } from './modules/data/producers.js';
+
+// Build lookup maps (computed once at module load)
+const ingredientElementMap = new Map(INGREDIENTS.map(i => [i.id, i.element]));
+const producerElementMap = new Map(PRODUCERS.map(p => [p.id, p.element]));
+
 export const ELEMENT_SPECIALIZATIONS = {
     fire: {
         id: 'fire',
@@ -86,47 +93,17 @@ export const ELEMENT_SPECIALIZATIONS = {
 };
 
 /**
- * Get element for an ingredient ID
+ * Get element for an ingredient ID using data-driven lookup
  */
 export function getIngredientElement(ingredientId) {
-    if (ingredientId.includes('fire') || ingredientId.includes('candle') || ingredientId.includes('flame')) {
-        return 'fire';
-    }
-    if (ingredientId.includes('water') || ingredientId.includes('aqua') || ingredientId.includes('liquid') || ingredientId.includes('current') || ingredientId.includes('flow')) {
-        return 'water';
-    }
-    if (ingredientId.includes('air') || ingredientId.includes('wind') || ingredientId.includes('zephyr') || ingredientId.includes('breath') || ingredientId.includes('gust')) {
-        return 'air';
-    }
-    if (ingredientId.includes('crystal') || ingredientId.includes('orb') || ingredientId.includes('core') || ingredientId.includes('shaped_crys')) {
-        return 'crystal';
-    }
-    if (ingredientId.includes('aether') || ingredientId.includes('dist_aether') || ingredientId.includes('aether_well') || ingredientId === 'focus' || ingredientId === 'ab') {
-        return 'aether';
-    }
-    return null;
+    return ingredientElementMap.get(ingredientId) ?? null;
 }
 
 /**
- * Get element for a workstation ID
+ * Get element for a workstation ID using data-driven lookup
  */
 export function getWorkstationElement(workstationId) {
-    if (workstationId.includes('fire') || workstationId.includes('candle') || workstationId.includes('flame') || workstationId.includes('digcandle') || workstationId.includes('enhanced_candle') || workstationId.includes('quantum_candle') || workstationId.includes('arcane_candle') || workstationId.includes('eternal_flame')) {
-        return 'fire';
-    }
-    if (workstationId.includes('water') || workstationId.includes('aqua') || workstationId.includes('liquid') || workstationId.includes('current') || workstationId.includes('flow')) {
-        return 'water';
-    }
-    if (workstationId.includes('air') || workstationId.includes('wind') || workstationId.includes('zephyr') || workstationId.includes('breath')) {
-        return 'air';
-    }
-    if (workstationId.includes('crystal') || workstationId.includes('orb') || workstationId.includes('core')) {
-        return 'crystal';
-    }
-    if (workstationId.includes('aether') || workstationId.includes('arcane_bit') || workstationId.includes('etheric_bit') || workstationId.includes('infinity_bit') || workstationId.includes('cosmic_bit')) {
-        return 'aether';
-    }
-    return null;
+    return producerElementMap.get(workstationId) ?? null;
 }
 
 /**
