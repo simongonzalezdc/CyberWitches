@@ -1,67 +1,87 @@
 /**
  * Color Constants - Single source of truth for JavaScript color values
- * These match the CSS variables in styles/theme.css
- * Use these instead of hardcoded colors in JavaScript
+ * Kyanite runtime palette for JavaScript-managed UI surfaces.
+ * Keep CSS variables and canvas-safe JS constants aligned during the Branch B reskin.
  */
 
 export const COLORS = {
     // Core Void Palette
-    VOID_950: '#050508',
-    VOID_900: '#0a0a12',
-    VOID_800: '#11111a',
-    VOID_700: '#151723',
+    VOID_950: '#05070b',
+    VOID_900: '#070a10',
+    VOID_800: '#080d14',
+    VOID_700: '#0b131d',
 
     // Magic/Witch Theme
-    WITCH_500: '#d93ff0',
-    WITCH_600: '#ad24c8',
+    WITCH_500: '#ff2f6d',
+    WITCH_600: '#b314ff',
 
     // Success/Soul
-    SOUL_400: '#3ce3c5',
+    SOUL_400: '#33ff99',
 
     // Gold/Magic
-    GOLD_400: '#ffcf65',
-    MAGIC: '#ffb84c',
+    GOLD_400: '#f5d35c',
+    MAGIC: '#f5d35c',
 
     // Error/Glitch
-    GLITCH_500: '#ff2a6d',
-    CORRUPTION: '#ff2a6d',
+    GLITCH_500: '#ff1a3d',
+    CORRUPTION: '#ff1a3d',
 
     // Code/System
-    CODE: '#00f0ff',
-    CODE_DIM: '#007a82',
-    SYSTEM: '#d7dcf4',
-    DIM: '#a8afcf',
+    CODE: '#26e6ff',
+    CODE_DIM: '#087dcc',
+    SYSTEM: '#c3d4e2',
+    DIM: '#8297aa',
+
+
+    // Kyanite Labs canonical tokens
+    KY_VOID: '#05070b',
+    KY_VOID_DEPTH: '#070a10',
+    KY_MIDNIGHT: '#080d14',
+    KY_BASALT: '#0b131d',
+    KY_BASALT_ELEVATED: '#0e1b29',
+    KY_BASALT_RIDGE: '#122335',
+    KY_CRYSTAL: '#f3f8ff',
+    KY_MIST: '#c3d4e2',
+    KY_STEEL: '#8297aa',
+    KY_CYAN: '#26e6ff',
+    KY_ELECTRIC: '#087dcc',
+    KY_OCEAN: '#00a7dc',
+    KY_MAGENTA: '#ff2f6d',
+    KY_VIOLET: '#b314ff',
+    KY_AMBER: '#f5d35c',
+    KY_GREEN: '#33ff99',
+    KY_RED: '#ff1a3d',
 
     // Retro Terminal
     RETRO_GREEN: '#39ff14',
-    RETRO_RED: '#ff0000',
+    RETRO_RED: '#ff1a3d',
 
     // Functional Colors
-    PRIMARY: '#00f0ff',
-    ACCENT: '#ffb84c',
-    ERROR: '#ff2a6d',
-    SUCCESS: '#3ce3c5',
-    WARNING: '#ffb84c',
+    PRIMARY: '#26e6ff',
+    ACCENT: '#f5d35c',
+    ERROR: '#ff1a3d',
+    SUCCESS: '#33ff99',
+    WARNING: '#f5d35c',
 
     // Text Colors
-    TEXT_PRIMARY: '#f7f8ff',
-    TEXT_SECONDARY: '#a8afcf',
-    TEXT_DIM: '#a8afcf',
-    TEXT_MUTED: '#a8afcf',
+    TEXT_PRIMARY: '#f3f8ff',
+    TEXT_SECONDARY: '#c3d4e2',
+    TEXT_DIM: '#8297aa',
+    TEXT_MUTED: '#8297aa',
 
     // Background Colors
-    BG_VOID: '#050508',
-    BG_TERMINAL: '#0a0a12',
-    BG_PANEL: '#11111a',
-    BG_CARD: '#1f1f3a',
-    BG_DARK: '#06060d',
-    BG_DARK_ALT: '#0a0a0f',
+    BG_VOID: '#05070b',
+    BG_TERMINAL: '#070a10',
+    BG_PANEL: '#080d14',
+    BG_CARD: '#0e1b29',
+    BG_DARK: '#05070b',
+    BG_DARK_ALT: '#070a10',
 
     // Border & UI Elements
-    BORDER: '#333366',
-    BORDER_LIGHT: 'rgba(0, 240, 255, 0.2)',
-    BORDER_FOCUS: 'rgba(0, 240, 255, 0.6)',
-    BORDER_UI: 'rgba(168, 175, 207, 0.28)',
+    BORDER: '#122335',
+    BORDER_LIGHT: 'rgba(38, 230, 255, 0.18)',
+    BORDER_FOCUS: 'rgba(38, 230, 255, 0.6)',
+    BORDER_UI: 'rgba(130, 151, 170, 0.28)',
 
     // Opacity Constants
     OPACITY_HIDDEN: 0,
