@@ -9,56 +9,56 @@ const WIDTH = 1672;
 const HEIGHT = 941;
 
 const proofs = [
-  {
-    file: 'branch-b-proof-landing.webp',
-    kicker: 'LANDING PROOF',
-    title: 'Playable. Installable. Clear before first click.',
-    primary: 'CTA → play.html',
-    secondary: 'SEO/GEO + PWA metadata remain visible to humans and crawlers.',
-    panels: ['Hero promise', 'Offline-capable', 'Open source', 'No account gate'],
-  },
-  {
-    file: 'branch-b-proof-game-shell.webp',
-    kicker: 'GAME SHELL PROOF',
-    title: 'Game state first. Decorative chrome second.',
-    primary: 'ESSENCE_BUFFER + EXEC are above the fold',
-    secondary: 'Tabs, sidebar, cast deck, and workstations stay legible at wide viewport.',
-    panels: ['HUD', 'Resource monitor', 'Workstations', 'Control deck'],
-  },
-  {
-    file: 'branch-b-proof-pwa-assets.webp',
-    kicker: 'PWA ASSET PROOF',
-    title: 'Install surfaces now match the Branch B brand.',
-    primary: 'Maskable PNG icons regenerated',
-    secondary: 'Manifest screenshots are wide, proof-first, and exactly 1672×941 WebP.',
-    panels: ['144 PNG', '192 PNG', '512 PNG', '4× WebP shots'],
-  },
-  {
-    file: 'branch-b-proof-offline-cache.webp',
-    kicker: 'OFFLINE PROOF',
-    title: 'Service worker knows the new assets.',
-    primary: 'CACHE_VERSION bumped',
-    secondary: 'New screenshots/icons are best-effort cached without breaking install.',
-    panels: ['Atomic core', 'Optional assets', 'Runtime images', 'Offline fallback'],
-  },
+    {
+        file: 'branch-b-proof-landing.webp',
+        kicker: 'LANDING PROOF',
+        title: 'Playable. Installable. Clear before first click.',
+        primary: 'CTA → play.html',
+        secondary: 'SEO/GEO + PWA metadata remain visible to humans and crawlers.',
+        panels: ['Hero promise', 'Offline-capable', 'Open source', 'No account gate']
+    },
+    {
+        file: 'branch-b-proof-game-shell.webp',
+        kicker: 'GAME SHELL PROOF',
+        title: 'Game state first. Decorative chrome second.',
+        primary: 'ESSENCE_BUFFER + EXEC are above the fold',
+        secondary: 'Tabs, sidebar, cast deck, and workstations stay legible at wide viewport.',
+        panels: ['HUD', 'Resource monitor', 'Workstations', 'Control deck']
+    },
+    {
+        file: 'branch-b-proof-pwa-assets.webp',
+        kicker: 'PWA ASSET PROOF',
+        title: 'Install surfaces now match the Branch B brand.',
+        primary: 'Maskable PNG icons regenerated',
+        secondary: 'Manifest screenshots are wide, proof-first, and exactly 1672×941 WebP.',
+        panels: ['144 PNG', '192 PNG', '512 PNG', '4× WebP shots']
+    },
+    {
+        file: 'branch-b-proof-offline-cache.webp',
+        kicker: 'OFFLINE PROOF',
+        title: 'Service worker knows the new assets.',
+        primary: 'CACHE_VERSION bumped',
+        secondary: 'New screenshots/icons are best-effort cached without breaking install.',
+        panels: ['Atomic core', 'Optional assets', 'Runtime images', 'Offline fallback']
+    }
 ];
 
 function esc(str) {
-  return String(str).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    return String(str).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 }
 
 function proofSvg(proof) {
-  const panelSvg = proof.panels.map((label, index) => {
-    const x = 108 + index * 364;
-    return `
+    const panelSvg = proof.panels.map((label, index) => {
+        const x = 108 + index * 364;
+        return `
       <g transform="translate(${x},708)">
         <rect width="312" height="98" rx="22" fill="rgba(8, 13, 20, .84)" stroke="rgba(38,230,255,.28)"/>
         <path d="M28 68 L88 28 L154 60 L220 22 L284 54" fill="none" stroke="${index % 2 ? '#ff2f6d' : '#26e6ff'}" stroke-width="5" stroke-linecap="round"/>
         <text x="26" y="38" fill="#c3d4e2" font-size="22" font-family="JetBrains Mono, monospace" font-weight="700">${esc(label)}</text>
       </g>`;
-  }).join('');
+    }).join('');
 
-  return `
+    return `
   <svg width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -101,7 +101,7 @@ function proofSvg(proof) {
 }
 
 function iconSvg(size) {
-  return `
+    return `
   <svg width="${size}" height="${size}" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#05070b"/><stop offset="1" stop-color="#141022"/></linearGradient>
@@ -122,15 +122,15 @@ await fs.mkdir(SCREENSHOT_DIR, { recursive: true });
 await fs.mkdir(ICON_DIR, { recursive: true });
 
 for (const proof of proofs) {
-  await sharp(Buffer.from(proofSvg(proof))).webp({ quality: 86, effort: 6 }).toFile(path.join(SCREENSHOT_DIR, proof.file));
-  const meta = await sharp(path.join(SCREENSHOT_DIR, proof.file)).metadata();
-  if (meta.width !== WIDTH || meta.height !== HEIGHT || meta.format !== 'webp') {
-    throw new Error(`${proof.file} expected ${WIDTH}x${HEIGHT} webp, got ${meta.width}x${meta.height} ${meta.format}`);
-  }
+    await sharp(Buffer.from(proofSvg(proof))).webp({ quality: 86, effort: 6 }).toFile(path.join(SCREENSHOT_DIR, proof.file));
+    const meta = await sharp(path.join(SCREENSHOT_DIR, proof.file)).metadata();
+    if (meta.width !== WIDTH || meta.height !== HEIGHT || meta.format !== 'webp') {
+        throw new Error(`${proof.file} expected ${WIDTH}x${HEIGHT} webp, got ${meta.width}x${meta.height} ${meta.format}`);
+    }
 }
 
 for (const size of [144, 192, 512]) {
-  await sharp(Buffer.from(iconSvg(size))).png({ compressionLevel: 9, adaptiveFiltering: true }).toFile(path.join(ICON_DIR, `icon-${size}x${size}.png`));
+    await sharp(Buffer.from(iconSvg(size))).png({ compressionLevel: 9, adaptiveFiltering: true }).toFile(path.join(ICON_DIR, `icon-${size}x${size}.png`));
 }
 
-console.log(`Generated ${proofs.length} proof WebP screenshots at ${WIDTH}x${HEIGHT} and regenerated PWA PNG icons.`);
+console.info(`Generated ${proofs.length} proof WebP screenshots at ${WIDTH}x${HEIGHT} and regenerated PWA PNG icons.`);
