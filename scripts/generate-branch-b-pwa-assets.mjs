@@ -12,7 +12,7 @@ const proofs = [
   {
     file: 'branch-b-proof-landing.webp',
     kicker: 'LANDING PROOF',
-    title: 'Hex Compiler is playable, installable, and clear before first click.',
+    title: 'Playable. Installable. Clear before first click.',
     primary: 'CTA → play.html',
     secondary: 'SEO/GEO + PWA metadata remain visible to humans and crawlers.',
     panels: ['Hero promise', 'Offline-capable', 'Open source', 'No account gate'],
@@ -20,7 +20,7 @@ const proofs = [
   {
     file: 'branch-b-proof-game-shell.webp',
     kicker: 'GAME SHELL PROOF',
-    title: 'The shell foregrounds actual game state, not decorative chrome.',
+    title: 'Game state first. Decorative chrome second.',
     primary: 'ESSENCE_BUFFER + EXEC are above the fold',
     secondary: 'Tabs, sidebar, cast deck, and workstations stay legible at wide viewport.',
     panels: ['HUD', 'Resource monitor', 'Workstations', 'Control deck'],
@@ -28,7 +28,7 @@ const proofs = [
   {
     file: 'branch-b-proof-pwa-assets.webp',
     kicker: 'PWA ASSET PROOF',
-    title: 'Install surfaces now use matching kyanite/corruption artwork.',
+    title: 'Install surfaces now match the Branch B brand.',
     primary: 'Maskable PNG icons regenerated',
     secondary: 'Manifest screenshots are wide, proof-first, and exactly 1672×941 WebP.',
     panels: ['144 PNG', '192 PNG', '512 PNG', '4× WebP shots'],
@@ -36,7 +36,7 @@ const proofs = [
   {
     file: 'branch-b-proof-offline-cache.webp',
     kicker: 'OFFLINE PROOF',
-    title: 'The service worker knows about the new proof and icon assets.',
+    title: 'Service worker knows the new assets.',
     primary: 'CACHE_VERSION bumped',
     secondary: 'New screenshots/icons are best-effort cached without breaking install.',
     panels: ['Atomic core', 'Optional assets', 'Runtime images', 'Offline fallback'],
@@ -83,7 +83,7 @@ function proofSvg(proof) {
     <text x="138" y="153" fill="#33ff99" font-size="26" font-family="JetBrains Mono, monospace" font-weight="800">${esc(proof.kicker)}</text>
     <text x="1430" y="153" fill="#8297aa" font-size="22" font-family="JetBrains Mono, monospace" text-anchor="end">1672×941 WEBP</text>
 
-    <text x="108" y="306" fill="#f3f8ff" font-size="64" font-family="Space Grotesk, Arial, sans-serif" font-weight="800">${esc(proof.title)}</text>
+    <text x="108" y="306" fill="#f3f8ff" font-size="48" font-family="Space Grotesk, Arial, sans-serif" font-weight="800">${esc(proof.title)}</text>
     <rect x="108" y="366" width="1040" height="98" rx="24" fill="rgba(38,230,255,.10)" stroke="rgba(38,230,255,.36)"/>
     <text x="144" y="426" fill="#26e6ff" font-size="32" font-family="JetBrains Mono, monospace" font-weight="800">${esc(proof.primary)}</text>
     <text x="108" y="532" fill="#c3d4e2" font-size="34" font-family="Space Grotesk, Arial, sans-serif" font-weight="600">${esc(proof.secondary)}</text>
