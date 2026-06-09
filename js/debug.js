@@ -4,9 +4,8 @@
  * Error logs are always enabled for critical issues
  */
 
-// Set to true for development, false for production
-// Build script will replace this value in production
-const DEBUG = true;
+// Set to false for production - build process may override this
+const DEBUG = false;
 
 /**
  * Debug log - only logs in development mode

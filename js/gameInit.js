@@ -29,6 +29,7 @@ import featureIndicatorManager from './featureIndicators.js';
 import { handleError } from './errorHandler.js';
 import { UnifiedGameLoop } from './core/UnifiedGameLoop.js';
 import { createErrorBoundary } from './core/ErrorBoundary.js';
+import { errorReporter } from './modules/core/errorReporter.js';
 import { setAudioSystem } from './audio/audioAccess.js';
 import { PRODUCERS, INGREDIENTS, UPGRADES, HIDDEN_RECIPES, PRESTIGE_BONUSES } from './data.js';
 import { formatShort, formatNumber, formatTimeDuration } from './utils.js';
@@ -39,7 +40,10 @@ export async function initGame() {
     console.info('Initializing Hex Compiler...');
 
     try {
-        // 0. Expose the static data tables as globals. Several modules (inventoryUI,
+        // 0. Install error reporter for production monitoring
+        errorReporter.install();
+
+        // 1. Expose the static data tables as globals. Several modules (inventoryUI,
         //    experimentUI, balanceAnalytics, balanceTesting, economyBalancing) read
         //    window.INGREDIENTS / window.HIDDEN_RECIPES / window.PRODUCERS etc., but
         //    nothing ever set them — so e.g. the discovered-recipes list and inventory
@@ -51,17 +55,17 @@ export async function initGame() {
         window.HIDDEN_RECIPES = HIDDEN_RECIPES;
         window.PRESTIGE_BONUSES = PRESTIGE_BONUSES;
 
-        // 1. Initialize Game State
+        // 2. Initialize Game State
         const gameState = new GameState();
 
-        // 2. Initialize Core Systems
+        // 3. Initialize Core Systems
         const dailyRituals = new DailyRituals(gameState);
         const achievements = new AchievementSystem(gameState);
         const comboSystem = new ComboSystem(gameState);
         const eventSystem = new EventSystem(gameState);
         const craftingManager = new CraftingManager(gameState);
-        
-        // 3. Initialize UI Manager (needs core systems for sub-managers)
+
+        // 4. Initialize UI Manager (needs core systems for sub-managers)
         // MeditationState is not yet initialized, so we pass what we have.
         // Managers that depend on UI will be initialized after.
         const uiManager = new UIManager(gameState, {
@@ -80,6 +84,7 @@ export async function initGame() {
         // globals, so every one of those notifications was a silent no-op.
         window.showNotification = showNotification;
         window.announceToScreenReader = announceToScreenReader;
+        window.errorReporter = errorReporter;
 
         // Formatting + animation helpers are likewise read as globals by several
         // UI modules (inventoryUI/statsUI/experimentUI use window.formatShort
@@ -94,7 +99,7 @@ export async function initGame() {
         window.shakeElement = shakeElement;
         window.slideIn = slideIn;
 
-        // 4. Initialize Feature Managers (depend on GameState and often UIManager)
+        // 5. Initialize Feature Managers (depend on GameState and often UIManager)
         // Week 2: Wrap critical systems with error boundaries for module isolation
         const inputManagerBoundary = createErrorBoundary('InputManager');
         const inputManager = inputManagerBoundary.wrap(() => new InputManager(gameState, uiManager, craftingManager))();
@@ -121,7 +126,7 @@ export async function initGame() {
 
         const fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
 
-        // 5. Wire up systems to UIManager
+        // 6. Wire up systems to UIManager
         uiManager.systems.inputManager = inputManager;
         uiManager.systems.castManager = castManager;
         uiManager.systems.pwaManager = pwaManager;
@@ -135,7 +140,7 @@ export async function initGame() {
         uiManager.systems.fadingThemeSystem = fadingThemeSystem;
         uiManager.systems.accessibilityManager = accessibilityManager;
 
-        // 6. Initialize specific systems
+        // 7. Initialize specific systems
         pwaManager.init();
         dailyRituals.init();
         
@@ -146,10 +151,10 @@ export async function initGame() {
             // Don't call start() - UnifiedGameLoop will handle animation
         }
 
-        // 7. Set up Game State callbacks
+        // 8. Set up Game State callbacks
         setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager);
 
-        // 8. Initialize Unified Game Loop (replaces multiple setInterval calls)
+        // 9. Initialize Unified Game Loop (replaces multiple setInterval calls)
         const gameLoop = new UnifiedGameLoop();
         
         // Assign gameLoop to window BEFORE particle system checks for it
@@ -231,21 +236,21 @@ export async function initGame() {
         gameState.registerLifecycleHandlers();
         gameLoop.start();
 
-        // 9. Initial UI Update
+        // 10. Initial UI Update
         uiManager.updateAllUI();
         
         // Switch to first tab
         uiManager.switchTab('workstations');
 
-        // 11. Unlock Audio on interaction
+        // 12. Unlock Audio on interaction
         setupAudioUnlock(audioSystem, designTierSystem);
 
-        // 12. Show Story Intro if needed
+        // 13. Show Story Intro if needed
         if (!gameState.storyFlags.introShown) {
             uiManager.modalManager.showStoryIntroduction();
         }
 
-        // 13. Check Feature Indicators
+        // 14. Check Feature Indicators
         if (featureIndicatorManager) {
             featureIndicatorManager.updateIndicators();
         }

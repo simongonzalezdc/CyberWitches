@@ -101,6 +101,7 @@ declare global {
     // --- Performance tooling (opt-in dev instrumentation) ---
     performanceBaseline: any;
     performanceValidator: any;
+    errorReporter: any;
 
     // --- Error telemetry (opt-in sink) ---
     CYBERWITCHES_ERROR_ENDPOINT: string | undefined;

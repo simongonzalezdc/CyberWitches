@@ -2,11 +2,11 @@
 
 /* Essential variables */
 :root {
-    --primary: #FF2DAA;
-    --bg-dark: #0A0A0F;
-    --bg-card: #1F1F3A;
-    --text: #FFFFFF;
-    --border: #333366;
+    --primary: var(--color-witch-500);
+    --bg-dark: var(--bg-dark-alt);
+    --bg-card: var(--bg-card);
+    --text: var(--text-primary);
+    --border: var(--border);
 }
 
 /* Reset */

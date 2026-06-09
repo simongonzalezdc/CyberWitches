@@ -97,8 +97,8 @@
 .btn-cast:active {
     transform: scale(0.95);
     box-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
-    border-color: #fff;
-    color: #fff;
+    border-color: var(--text-primary);
+    color: var(--text-primary);
 }
 
 .btn-cast:focus-visible {
@@ -278,7 +278,7 @@
 }
 
 .prod-amount {
-    color: var(--success, #3CE3C5);
+    color: var(--success);
     font-weight: bold;
 }
 
@@ -556,7 +556,7 @@
 }
 
 .btn-icon:hover {
-    color: #fff;
+    color: var(--text-primary);
     border-color: var(--color-code);
     background: rgba(0, 240, 255, 0.12);
     box-shadow: 0 0 18px rgba(0, 240, 255, 0.25);
@@ -567,7 +567,7 @@
 }
 
 .btn-icon:focus-visible {
-    color: #fff;
+    color: var(--text-primary);
     border-color: var(--color-code);
     background: rgba(0, 240, 255, 0.12);
     box-shadow: 0 0 18px rgba(0, 240, 255, 0.25), 0 0 0 3px rgba(0, 240, 255, 0.2);
@@ -622,7 +622,7 @@
 .btn-danger {
     border: 1px solid var(--error);
     background: rgba(255, 42, 109, 0.18);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .btn-danger:hover {
@@ -669,7 +669,7 @@
 /* 6. Progress Bars (Terminal Style) */
 .progress-bar {
     height: 4px;
-    background: #333;
+    background: var(--color-dim);
     margin-top: 8px;
     position: relative;
 }

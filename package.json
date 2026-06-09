@@ -23,6 +23,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "format": "prettier --write \"js/**/*.js\" \"*.{html,css,md}\"",
     "docs": "jsdoc js -d docs -c jsdoc.json",
+    "size-check": "node -e \"const s=require('fs').statSync('dist/js/game.bundle.js'); const kb=s.size/1024; console.log('Bundle: '+kb.toFixed(2)+'KB'); if(kb>2500){console.error('FAIL: exceeds 2.5MB budget'); process.exit(1);} else {console.log('PASS: within 2.5MB budget');}\"",
     "ci": "npm run lint && npm run typecheck && npm run test"
   },
   "keywords": [

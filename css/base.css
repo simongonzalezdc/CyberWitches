@@ -10,8 +10,8 @@
     transform: translateY(-120%);
     z-index: var(--z-skip-link);
     padding: 0.6rem 1rem;
-    background: var(--primary, #00F0FF);
-    color: #050508;
+    background: var(--primary, var(--color-code));
+    color: var(--bg-void);
     font-weight: 600;
     text-decoration: none;
     border-radius: 0 0 4px 0;
@@ -19,13 +19,13 @@
 }
 .skip-link:focus {
     transform: translateY(0);
-    outline: 2px solid #fff;
+    outline: 2px solid var(--text-primary);
     outline-offset: 2px;
 }
 
 /* Keyboard focus ring for interactive elements (mouse clicks don't show it). */
 :focus-visible {
-    outline: 2px solid var(--primary, #00F0FF);
+    outline: 2px solid var(--primary, var(--color-code));
     outline-offset: 2px;
 }
 /* The <main> skip target is programmatically focusable but shouldn't show a ring. */
