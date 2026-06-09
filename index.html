@@ -152,19 +152,21 @@
 
     <style>
         :root {
-            --void-950: #050508;
-            --void-900: #0a0a12;
-            --void-800: #11111a;
-            --void-700: #151723;
-            --witch-500: #d93ff0;
-            --witch-600: #ad24c8;
-            --soul-400: #3ce3c5;
-            --gold-400: #ffcf65;
-            --code: #00f0ff;
-            --code-dim: #007a82;
-            --system: #d7dcf4;
-            --dim: #a8afcf;
-            --glitch-500: #ff2a6d;
+            --bg-void: #07080f;
+            --bg-surface: #0d0f18;
+            --bg-elevated: #131624;
+            --accent: #00f0ff;
+            --accent-dim: #007a82;
+            --accent-glow: rgba(0, 240, 255, 0.12);
+            --text-primary: #f0f2fa;
+            --text-secondary: #9ba3b8;
+            --text-muted: #8a94ad;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-highlight: rgba(0, 240, 255, 0.18);
+            --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.24);
+            --shadow-md: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 16px 40px rgba(0, 0, 0, 0.32);
+            --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-base: 300ms cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -178,264 +180,475 @@
         }
 
         body {
-            font-family: 'Space Grotesk', system-ui, sans-serif;
-            background: var(--void-950);
-            color: var(--system);
+            font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+            background: var(--bg-void);
+            color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .font-mono {
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Background grid effect */
+        /* Ambient background */
+        .bg-ambient {
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 30%, rgba(0, 240, 255, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 80%, rgba(0, 240, 255, 0.04) 0%, transparent 55%),
+                var(--bg-void);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .bg-grid {
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
+                linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+            background-size: 80px 80px;
             pointer-events: none;
             z-index: 0;
+            mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 0%, transparent 80%);
+        }
+
+        /* Reveal animation keyframes */
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            opacity: 0;
+            animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .reveal-delay-1 { animation-delay: 0.1s; }
+        .reveal-delay-2 { animation-delay: 0.2s; }
+        .reveal-delay-3 { animation-delay: 0.3s; }
+        .reveal-delay-4 { animation-delay: 0.4s; }
+        .reveal-delay-5 { animation-delay: 0.5s; }
+
+        /* Skip link */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--accent);
+            color: var(--bg-void);
+            padding: 8px 12px;
+            text-decoration: none;
+            font-weight: 600;
+            z-index: 100;
+            border-radius: 0 0 6px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        /* Layout containers */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+
+        section {
+            position: relative;
+            z-index: 1;
+            padding: 6rem 0;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.9rem 1.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .btn:active {
+            transform: scale(0.98) translateY(1px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-void);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 6px 20px rgba(0, 240, 255, 0.15);
+        }
+
+        .btn-primary::before {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 10px 28px rgba(0, 240, 255, 0.22);
+        }
+
+        .btn-primary:hover::before { opacity: 1; }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--border-highlight);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 240, 255, 0.06);
+            border-color: rgba(0, 240, 255, 0.35);
         }
 
         /* Hero */
         .hero {
             position: relative;
-            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem;
+            padding: 6rem 0 4rem;
             overflow: hidden;
         }
 
-        .hero-glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(217, 63, 240, 0.15) 0%, transparent 70%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            animation: pulse-glow 4s ease-in-out infinite;
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+            align-items: center;
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+        @media (min-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1.1fr 0.9fr;
+                gap: 4rem;
+            }
         }
 
         .hero-content {
             position: relative;
             z-index: 1;
-            max-width: 900px;
+            max-width: 680px;
+            text-align: left;
         }
 
         .hero-badge {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 0.15em;
-            color: var(--code);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            padding: 0.4rem 1rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            border: 1px solid var(--border-highlight);
+            padding: 0.35rem 0.85rem;
             border-radius: 999px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
             text-transform: uppercase;
+            background: rgba(0, 240, 255, 0.04);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+        }
+
+        .hero-badge .dot {
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
         }
 
         .hero-title {
-            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-size: clamp(2.75rem, 6.5vw, 5rem);
             font-weight: 700;
-            line-height: 1.1;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #fff 0%, var(--soul-400) 50%, var(--witch-500) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
         }
 
-        .hero-title .glitch-char {
-            display: inline-block;
+        .hero-title .accent-word {
+            color: var(--accent);
         }
 
         .hero-tagline {
-            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
-            color: var(--dim);
+            font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+            color: var(--text-secondary);
             margin-bottom: 2.5rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 560px;
+            line-height: 1.65;
         }
 
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 0.5rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--witch-600) 0%, var(--witch-500) 100%);
-            color: white;
-            box-shadow: 0 0 30px rgba(217, 63, 240, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 40px rgba(217, 63, 240, 0.5);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--code);
-            border: 1px solid var(--code);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(0, 240, 255, 0.1);
+            gap: 0.875rem;
+            margin-bottom: 2.5rem;
         }
 
         .hero-meta {
             display: flex;
             flex-wrap: wrap;
             gap: 1.5rem;
-            justify-content: center;
-            font-size: 0.85rem;
-            color: var(--dim);
+            font-size: 0.8rem;
+            color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .hero-meta span::before {
-            content: '> ';
-            color: var(--soul-400);
+        .hero-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
-        /* Sections */
-        section {
+        .hero-meta .meta-check {
+            width: 14px;
+            height: 14px;
+            color: var(--accent);
+        }
+
+        /* Decorative hex motif */
+        .hero-visual {
             position: relative;
-            z-index: 1;
-            padding: 5rem 1.5rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            min-height: 420px;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        @media (min-width: 1024px) {
+            .hero-visual { display: flex; }
         }
 
+        .hex-stack {
+            position: relative;
+            width: 320px;
+            height: 320px;
+        }
+
+        .hex-ring {
+            position: absolute;
+            inset: 0;
+            border: 1px solid var(--border-highlight);
+            border-radius: 32px;
+            transform: rotate(0deg);
+            opacity: 0.4;
+            animation: hex-pulse 8s ease-in-out infinite;
+        }
+
+        .hex-ring:nth-child(2) {
+            inset: 24px;
+            opacity: 0.25;
+            animation-delay: -2.5s;
+            border-radius: 26px;
+        }
+
+        .hex-ring:nth-child(3) {
+            inset: 48px;
+            opacity: 0.15;
+            animation-delay: -5s;
+            border-radius: 20px;
+        }
+
+        @keyframes hex-pulse {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(2deg) scale(1.02); }
+        }
+
+        .hex-core {
+            position: absolute;
+            inset: 80px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-highlight);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .hex-core svg {
+            width: 80px;
+            height: 80px;
+            color: var(--accent);
+        }
+
+        /* Section headers */
         .section-header {
-            text-align: center;
-            margin-bottom: 3.5rem;
+            margin-bottom: 4rem;
+            max-width: 640px;
         }
 
         .section-label {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 0.2em;
-            color: var(--code);
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            color: var(--accent);
             text-transform: uppercase;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.875rem;
         }
 
         .section-title {
-            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-size: clamp(1.75rem, 3.5vw, 2.5rem);
             font-weight: 700;
+            letter-spacing: -0.02em;
             margin-bottom: 1rem;
-            color: #fff;
+            color: var(--text-primary);
+            line-height: 1.15;
         }
 
         .section-desc {
-            color: var(--dim);
-            max-width: 700px;
-            margin: 0 auto;
+            color: var(--text-secondary);
             font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 600px;
         }
 
-        /* Features */
-        .features {
-            background: linear-gradient(180deg, var(--void-950) 0%, var(--void-900) 100%);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .feature-card {
-            background: rgba(17, 17, 26, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+        /* Liquid glass card */
+        .glass-card {
+            background: rgba(19, 22, 36, 0.6);
+            border: 1px solid var(--border-subtle);
             border-radius: 1rem;
-            padding: 2rem;
-            transition: all 0.2s ease;
+            padding: 1.75rem;
+            transition: all var(--transition-base);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
         }
 
-        .feature-card:hover {
-            border-color: rgba(0, 240, 255, 0.2);
-            transform: translateY(-4px);
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+            pointer-events: none;
         }
 
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 0.75rem;
-            display: flex;
+        .glass-card:hover {
+            border-color: var(--border-highlight);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Features — asymmetric zig-zag */
+        .features { background: transparent; }
+
+        .feature-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1.25rem;
-            background: rgba(0, 240, 255, 0.08);
-            border: 1px solid rgba(0, 240, 255, 0.2);
+            margin-bottom: 5rem;
+        }
+
+        .feature-row:last-child { margin-bottom: 0; }
+
+        @media (min-width: 768px) {
+            .feature-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 4rem;
+            }
+            .feature-row.reverse .feature-text-col { order: 2; }
+            .feature-row.reverse .feature-visual-col { order: 1; }
+        }
+
+        .feature-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
         }
 
         .feature-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.875rem;
+            color: var(--text-primary);
         }
 
         .feature-text {
-            color: var(--dim);
-            font-size: 0.95rem;
-            line-height: 1.6;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.7;
+            max-width: 480px;
         }
 
-        /* How to Play */
-        .how-to-play {
-            background: var(--void-900);
+        .feature-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
         }
+
+        .feature-icon-large {
+            width: 96px;
+            height: 96px;
+            border-radius: 1.25rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-base);
+        }
+
+        .feature-icon-large svg {
+            width: 44px;
+            height: 44px;
+            color: var(--accent);
+            transition: transform var(--transition-base);
+        }
+
+        .feature-row:hover .feature-icon-large {
+            border-color: var(--border-highlight);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 12px 32px rgba(0, 240, 255, 0.08);
+        }
+
+        .feature-row:hover .feature-icon-large svg {
+            transform: scale(1.05);
+        }
+
+        /* How to play */
+        .how-to-play { background: var(--bg-surface); }
 
         .steps {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            counter-reset: step;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
         }
 
         .step {
-            text-align: center;
             padding: 2rem;
             position: relative;
         }
@@ -444,156 +657,179 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--witch-600) 0%, var(--witch-500) 100%);
-            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--bg-elevated);
+            color: var(--accent);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 1.25rem;
+            font-size: 0.9rem;
             font-weight: 700;
             margin-bottom: 1.25rem;
-            box-shadow: 0 0 30px rgba(217, 63, 240, 0.3);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
         }
 
         .step-title {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
-            color: #fff;
+            color: var(--text-primary);
         }
 
         .step-desc {
-            color: var(--dim);
+            color: var(--text-secondary);
             font-size: 0.95rem;
+            line-height: 1.65;
         }
 
         /* Screenshots */
-        .screenshots {
-            background: linear-gradient(180deg, var(--void-900) 0%, var(--void-950) 100%);
-        }
-
         .screenshots-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         .screenshot-card {
-            background: rgba(17, 17, 26, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: 1rem;
             overflow: hidden;
-            transition: all 0.2s ease;
+            transition: all var(--transition-base);
+            box-shadow: var(--shadow-sm);
         }
 
         .screenshot-card:hover {
-            border-color: rgba(0, 240, 255, 0.2);
+            border-color: var(--border-highlight);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
         .screenshot-card img {
             width: 100%;
             height: auto;
             display: block;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .screenshot-caption {
-            padding: 1.25rem;
-            font-size: 0.95rem;
-            color: var(--dim);
+            padding: 1.25rem 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
         }
 
         .screenshot-caption strong {
-            color: #fff;
+            color: var(--text-primary);
             display: block;
             margin-bottom: 0.25rem;
+            font-weight: 600;
         }
 
         /* Tech highlights */
-        .tech {
-            background: var(--void-950);
-        }
+        .tech { background: transparent; }
 
         .tech-list {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .tech-item {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.6rem 1.25rem;
-            background: rgba(17, 17, 26, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.55rem 1rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: 999px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: var(--dim);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+        }
+
+        .tech-item:hover {
+            border-color: var(--border-highlight);
+            color: var(--text-primary);
         }
 
         .tech-item::before {
-            content: '◆';
-            color: var(--soul-400);
-            font-size: 0.6rem;
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%;
         }
 
         /* CTA section */
-        .cta-section {
-            background: linear-gradient(180deg, var(--void-950) 0%, var(--void-900) 100%);
-            text-align: center;
-        }
-
         .cta-box {
-            background: rgba(17, 17, 26, 0.7);
-            border: 1px solid rgba(0, 240, 255, 0.15);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
             border-radius: 1.5rem;
-            padding: 3rem 2rem;
+            padding: 4rem 2.5rem;
             max-width: 800px;
             margin: 0 auto;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.4;
         }
 
         .cta-title {
-            font-size: clamp(1.5rem, 4vw, 2.25rem);
+            font-size: clamp(1.5rem, 3.5vw, 2.25rem);
             font-weight: 700;
+            letter-spacing: -0.02em;
             margin-bottom: 1rem;
-            color: #fff;
+            color: var(--text-primary);
         }
 
         .cta-desc {
-            color: var(--dim);
+            color: var(--text-secondary);
             margin-bottom: 2rem;
             font-size: 1.1rem;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Footer */
         footer {
-            background: var(--void-900);
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 3rem 1.5rem 2rem;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-subtle);
+            padding: 4rem 0 2.5rem;
             position: relative;
             z-index: 1;
         }
 
         .footer-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 2.5rem;
             max-width: 1200px;
-            margin: 0 auto 2rem;
+            margin: 0 auto 3rem;
+            padding: 0 1.5rem;
         }
 
-        .footer-col h4 {
-            font-size: 0.9rem;
+        .footer-col h3 {
+            font-size: 0.75rem;
             font-weight: 600;
-            margin-bottom: 1rem;
-            color: #fff;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
         }
 
         .footer-col ul {
@@ -601,46 +837,30 @@
         }
 
         .footer-col li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
         }
 
         .footer-col a {
-            color: var(--dim);
+            color: var(--text-secondary);
             text-decoration: none;
             font-size: 0.9rem;
-            transition: color 0.2s ease;
+            transition: color var(--transition-fast);
         }
 
         .footer-col a:hover {
-            color: var(--code);
+            color: var(--accent);
         }
 
         .footer-bottom {
             text-align: center;
             padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            color: var(--dim);
-            font-size: 0.85rem;
+            border-top: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            font-size: 0.8rem;
             max-width: 1200px;
             margin: 0 auto;
-        }
-
-        /* Skip link */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--code);
-            color: var(--void-950);
-            padding: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            z-index: 100;
-            border-radius: 0 0 4px 0;
-        }
-
-        .skip-link:focus {
-            top: 0;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
         }
 
         /* Install prompt */
@@ -649,126 +869,235 @@
             position: fixed;
             bottom: 1rem;
             right: 1rem;
-            background: rgba(17, 17, 26, 0.95);
-            border: 1px solid rgba(0, 240, 255, 0.3);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-highlight);
             border-radius: 1rem;
-            padding: 1rem 1.5rem;
+            padding: 1.25rem 1.5rem;
             z-index: 50;
             max-width: 320px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--shadow-md);
         }
 
-        #install-banner.show {
-            display: block;
-        }
+        #install-banner.show { display: block; }
 
+        /* Mobile refinements */
         @media (max-width: 640px) {
-            .hero-actions {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn {
-                width: 100%;
-                max-width: 280px;
-                justify-content: center;
-            }
-
-            .hero-meta {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
+            .hero-actions { flex-direction: column; }
+            .btn { width: 100%; }
+            .hero-meta { flex-direction: column; gap: 0.5rem; }
+            section { padding: 4rem 0; }
+            .feature-row { margin-bottom: 3.5rem; }
+            .feature-visual { min-height: 160px; }
+            .hex-stack { width: 240px; height: 240px; }
         }
     </style>
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to content</a>
+    <div class="bg-ambient" aria-hidden="true"></div>
     <div class="bg-grid" aria-hidden="true"></div>
 
     <main id="main-content">
         <section class="hero" aria-labelledby="hero-title">
-            <div class="hero-glow" aria-hidden="true"></div>
-            <div class="hero-content">
-                <span class="hero-badge">Free Browser Idle Game</span>
-                <h1 id="hero-title" class="hero-title">Hex Compiler</h1>
-                <p class="hero-tagline">
-                    Magic is fading. You're a Hex Compiler — one of the last who knows how to preserve magic by crystallizing it into permanent structures. Cast, craft, ascend, and fight the fading.
-                </p>
-                <div class="hero-actions">
-                    <a href="play.html" class="btn btn-primary" role="button">
-                        <span>▶</span> Play Now
-                    </a>
-                    <a href="https://github.com/simongonzalezdc/CyberWitches/blob/main/GAME_MANUAL.md" class="btn btn-secondary" target="_blank" rel="noopener">Read the Manual</a>
-                </div>
-                <div class="hero-meta">
-                    <span>No download required</span>
-                    <span>Works offline</span>
-                    <span>Open source</span>
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <span class="hero-badge reveal">
+                            <span class="dot" aria-hidden="true"></span>
+                            Free Browser Idle Game
+                        </span>
+                        <h1 id="hero-title" class="hero-title reveal reveal-delay-1">
+                            Preserve magic.<br>
+                            <span class="accent-word">Compile</span> the fading.
+                        </h1>
+                        <p class="hero-tagline reveal reveal-delay-2">
+                            Magic is fading. You're a Hex Compiler — one of the last who knows how to preserve it by crystallizing spells into permanent structures. Cast, craft, ascend, and fight the fading.
+                        </p>
+                        <div class="hero-actions reveal reveal-delay-3">
+                            <a href="play.html" class="btn btn-primary" role="button">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                                Play Now
+                            </a>
+                            <a href="https://github.com/simongonzalezdc/CyberWitches/blob/main/GAME_MANUAL.md" class="btn btn-secondary" target="_blank" rel="noopener">Read the Manual</a>
+                        </div>
+                        <div class="hero-meta reveal reveal-delay-4">
+                            <span>
+                                <svg class="meta-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                                No download
+                            </span>
+                            <span>
+                                <svg class="meta-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                                Works offline
+                            </span>
+                            <span>
+                                <svg class="meta-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+                                Open source
+                            </span>
+                        </div>
+                    </div>
+                    <div class="hero-visual reveal reveal-delay-2" aria-hidden="true">
+                        <div class="hex-stack">
+                            <div class="hex-ring"></div>
+                            <div class="hex-ring"></div>
+                            <div class="hex-ring"></div>
+                            <div class="hex-core">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path d="M12 2l-9 5v10l9 5 9-5V7l-9-5z"/>
+                                    <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                                    <path d="M12 12l4-2.5"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
         <section class="features" aria-labelledby="features-title">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <p class="section-label">// Features</p>
-                    <h2 id="features-title" class="section-title">What Makes Hex Compiler Different</h2>
+                    <h2 id="features-title" class="section-title">What makes Hex Compiler different</h2>
                     <p class="section-desc">A story-driven idle experience where the interface itself is part of the narrative. The more magic you preserve, the more the world stabilizes.</p>
                 </div>
-                <div class="features-grid">
-                    <article class="feature-card">
-                        <div class="feature-icon" aria-hidden="true">✦</div>
-                        <h3 class="feature-title">Progressive UI Stabilization</h3>
+
+                <article class="feature-row reveal">
+                    <div class="feature-text-col">
+                        <p class="feature-number">01</p>
+                        <h3 class="feature-title">Progressive UI stabilization</h3>
                         <p class="feature-text">Start in a broken, glitched interface at Tier 0. As you advance through five design tiers, colors return, animations unlock, sound effects emerge, and procedural music restores the world.</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" aria-hidden="true">⚔</div>
-                        <h3 class="feature-title">Cast, Craft, Ascend</h3>
+                    </div>
+                    <div class="feature-visual-col">
+                        <div class="feature-visual">
+                            <div class="feature-icon-large">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <path d="M3 9h18"/>
+                                    <path d="M9 21V9"/>
+                                    <circle cx="15" cy="15" r="2"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="feature-row reverse reveal">
+                    <div class="feature-text-col">
+                        <p class="feature-number">02</p>
+                        <h3 class="feature-title">Cast, craft, ascend</h3>
                         <p class="feature-text">Cast spells to generate Arcane Bits. Craft preservation chambers to automate production. Prestige to earn Eldritch Keys and unlock permanent Boons and elemental specializations.</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" aria-hidden="true">🔬</div>
-                        <h3 class="feature-title">Experimentation & Discovery</h3>
+                    </div>
+                    <div class="feature-visual-col">
+                        <div class="feature-visual">
+                            <div class="feature-icon-large">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="feature-row reveal">
+                    <div class="feature-text-col">
+                        <p class="feature-number">03</p>
+                        <h3 class="feature-title">Experimentation and discovery</h3>
                         <p class="feature-text">Run protocols in the Lab to discover hidden recipes. Combine elements in new ways to unlock powerful ingredients and advance your preservation strategy.</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" aria-hidden="true">🧘</div>
-                        <h3 class="feature-title">Meditation Tower Defense</h3>
+                    </div>
+                    <div class="feature-visual-col">
+                        <div class="feature-visual">
+                            <div class="feature-icon-large">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path d="M9 3v6"/>
+                                    <path d="M15 3v6"/>
+                                    <path d="M8 21h8"/>
+                                    <path d="M7 9h10l-1.5 9h-7L7 9z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="feature-row reverse reveal">
+                    <div class="feature-text-col">
+                        <p class="feature-number">04</p>
+                        <h3 class="feature-title">Meditation tower defense</h3>
                         <p class="feature-text">Unlock a tower-defense meditation mini-game after your first ascension. Build focus, defend tranquility, and earn production bonuses that persist across sessions.</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" aria-hidden="true">🏆</div>
-                        <h3 class="feature-title">Achievements & Daily Rituals</h3>
+                    </div>
+                    <div class="feature-visual-col">
+                        <div class="feature-visual">
+                            <div class="feature-icon-large">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    <path d="M12 8v4"/>
+                                    <path d="M12 16h.01"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="feature-row reveal">
+                    <div class="feature-text-col">
+                        <p class="feature-number">05</p>
+                        <h3 class="feature-title">Achievements and daily rituals</h3>
                         <p class="feature-text">Earn achievements for milestones and complete daily rituals for bonus rewards. The coven keeps you coming back with fresh objectives every day.</p>
-                    </article>
-                    <article class="feature-card">
-                        <div class="feature-icon" aria-hidden="true">📱</div>
-                        <h3 class="feature-title">Offline PWA Support</h3>
+                    </div>
+                    <div class="feature-visual-col">
+                        <div class="feature-visual">
+                            <div class="feature-icon-large">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                    <path d="M4 22h16"/>
+                                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="feature-row reverse reveal">
+                    <div class="feature-text-col">
+                        <p class="feature-number">06</p>
+                        <h3 class="feature-title">Offline PWA support</h3>
                         <p class="feature-text">Install Hex Compiler to your home screen and play offline. Your progress auto-saves locally with an IndexedDB backup mirror for extra durability.</p>
-                    </article>
-                </div>
+                    </div>
+                    <div class="feature-visual-col">
+                        <div class="feature-visual">
+                            <div class="feature-icon-large">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                                    <path d="M12 18h.01"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             </div>
         </section>
 
         <section class="how-to-play" aria-labelledby="how-to-play-title">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <p class="section-label">// Quickstart</p>
-                    <h2 id="how-to-play-title" class="section-title">How to Play</h2>
+                    <h2 id="how-to-play-title" class="section-title">How to play</h2>
                     <p class="section-desc">Three simple steps to begin preserving magic.</p>
                 </div>
                 <div class="steps">
-                    <div class="step">
+                    <div class="step glass-card reveal">
                         <div class="step-number" aria-hidden="true">01</div>
                         <h3 class="step-title">Cast</h3>
                         <p class="step-desc">Click the EXEC button to execute protocols and generate Arcane Bits and elemental essence.</p>
                     </div>
-                    <div class="step">
+                    <div class="step glass-card reveal reveal-delay-1">
                         <div class="step-number" aria-hidden="true">02</div>
                         <h3 class="step-title">Craft</h3>
                         <p class="step-desc">Visit /MNT/WORKSTATIONS to craft preservation chambers that generate resources automatically.</p>
                     </div>
-                    <div class="step">
+                    <div class="step glass-card reveal reveal-delay-2">
                         <div class="step-number" aria-hidden="true">03</div>
                         <h3 class="step-title">Ascend</h3>
                         <p class="step-desc">When your progress stalls, perform SYSTEM_ASCENSION to convert lifetime gains into permanent Eldritch Keys.</p>
@@ -779,23 +1108,23 @@
 
         <section class="screenshots" aria-labelledby="screenshots-title">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header reveal">
                     <p class="section-label">// Gallery</p>
                     <h2 id="screenshots-title" class="section-title">Screenshots</h2>
                     <p class="section-desc">See the interface that evolves as you preserve more magic.</p>
                 </div>
                 <div class="screenshots-grid">
-                    <figure class="screenshot-card">
+                    <figure class="screenshot-card reveal">
                         <img src="screenshots/desktop-1.png" alt="Desktop screenshot of Hex Compiler showing the full game interface with workstations tab active" width="1280" height="720" loading="lazy">
                         <figcaption class="screenshot-caption">
-                            <strong>Desktop Interface</strong>
+                            <strong>Desktop interface</strong>
                             The full arcane terminal experience on larger screens.
                         </figcaption>
                     </figure>
-                    <figure class="screenshot-card">
+                    <figure class="screenshot-card reveal reveal-delay-1">
                         <img src="screenshots/mobile-1.png" alt="Mobile screenshot of Hex Compiler showing the responsive game layout" width="390" height="844" loading="lazy">
                         <figcaption class="screenshot-caption">
-                            <strong>Mobile Experience</strong>
+                            <strong>Mobile experience</strong>
                             Fully responsive design that works on phones and tablets.
                         </figcaption>
                     </figure>
@@ -805,19 +1134,19 @@
 
         <section class="tech" aria-labelledby="tech-title">
             <div class="container">
-                <div class="section-header">
-                    <p class="section-label">// Built With</p>
-                    <h2 id="tech-title" class="section-title">Open & Lightweight</h2>
+                <div class="section-header reveal">
+                    <p class="section-label">// Built with</p>
+                    <h2 id="tech-title" class="section-title">Open and lightweight</h2>
                     <p class="section-desc">No heavy frameworks. No tracking. Just modern web standards and a focused codebase.</p>
                 </div>
-                <div class="tech-list">
-                    <span class="tech-item">Vanilla JavaScript (ES2023 modules)</span>
+                <div class="tech-list reveal">
+                    <span class="tech-item">Vanilla JavaScript</span>
                     <span class="tech-item">esbuild bundler</span>
-                    <span class="tech-item">Self-hosted Tone.js audio</span>
+                    <span class="tech-item">Self-hosted Tone.js</span>
                     <span class="tech-item">CSS Custom Properties</span>
-                    <span class="tech-item">Service Worker + Web App Manifest</span>
-                    <span class="tech-item">IndexedDB durable backup</span>
-                    <span class="tech-item">Jest + Playwright testing</span>
+                    <span class="tech-item">Service Worker + Manifest</span>
+                    <span class="tech-item">IndexedDB backup</span>
+                    <span class="tech-item">Jest + Playwright</span>
                     <span class="tech-item">MIT License</span>
                 </div>
             </div>
@@ -825,12 +1154,13 @@
 
         <section class="cta-section" aria-labelledby="cta-title">
             <div class="container">
-                <div class="cta-box">
-                    <h2 id="cta-title" class="cta-title">Ready to Preserve Magic?</h2>
+                <div class="cta-box reveal">
+                    <h2 id="cta-title" class="cta-title">Ready to preserve magic?</h2>
                     <p class="cta-desc">No account required. No download. Just open the game and start compiling fading magic into permanent structure.</p>
-                    <div class="hero-actions">
+                    <div class="hero-actions" style="justify-content: center;">
                         <a href="play.html" class="btn btn-primary" role="button">
-                            <span>▶</span> Launch Hex Compiler
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                            Launch Hex Compiler
                         </a>
                         <a href="https://github.com/simongonzalezdc/CyberWitches" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
                     </div>
@@ -842,7 +1172,7 @@
     <footer>
         <div class="footer-grid">
             <div class="footer-col">
-                <h4>Game</h4>
+                <h3>Game</h3>
                 <ul>
                     <li><a href="play.html">Play Now</a></li>
                     <li><a href="https://github.com/simongonzalezdc/CyberWitches/blob/main/GAME_MANUAL.md" target="_blank" rel="noopener">Game Manual</a></li>
@@ -850,7 +1180,7 @@
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Project</h4>
+                <h3>Project</h3>
                 <ul>
                     <li><a href="https://github.com/simongonzalezdc/CyberWitches" target="_blank" rel="noopener">GitHub Repository</a></li>
                     <li><a href="CHANGELOG.md">Changelog</a></li>
@@ -858,7 +1188,7 @@
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Legal</h4>
+                <h3>Legal</h3>
                 <ul>
                     <li><a href="PRIVACY.md">Privacy Policy</a></li>
                     <li><a href="TERMS.md">Terms of Use</a></li>
@@ -866,7 +1196,7 @@
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Connect</h4>
+                <h3>Connect</h3>
                 <ul>
                     <li><a href="https://kyanitelabs.tech" target="_blank" rel="noopener">Kyanite Labs</a></li>
                     <li><a href="https://github.com/simongonzalezdc" target="_blank" rel="noopener">GitHub Profile</a></li>
@@ -874,13 +1204,13 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 Simon Gonzalez De Cruz. Hex Compiler is open source under the MIT License.</p>
+            <p>&copy; 2026 Simon Gonzalez De Cruz. Hex Compiler is open source under the MIT License.</p>
         </div>
     </footer>
 
     <div id="install-banner" role="dialog" aria-labelledby="install-title" aria-live="polite">
-        <h4 id="install-title" style="margin: 0 0 0.5rem; color: #fff; font-size: 1rem;">Install Hex Compiler</h4>
-        <p style="margin: 0 0 1rem; color: var(--dim); font-size: 0.9rem;">Add to your home screen for offline play.</p>
+        <h4 id="install-title" style="margin: 0 0 0.5rem; color: var(--text-primary); font-size: 1rem;">Install Hex Compiler</h4>
+        <p style="margin: 0 0 1rem; color: var(--text-secondary); font-size: 0.9rem;">Add to your home screen for offline play.</p>
         <div style="display: flex; gap: 0.5rem;">
             <button id="install-button" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Install</button>
             <button id="dismiss-install" class="btn btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Dismiss</button>
@@ -888,7 +1218,6 @@
     </div>
 
     <script>
-        // PWA install prompt
         let deferredPrompt = null;
         const installBanner = document.getElementById('install-banner');
         const installButton = document.getElementById('install-button');
