@@ -1,10 +1,8 @@
 // Service Worker for Hex Compiler
 
-// Bump CACHE_VERSION on every deploy that changes cached assets. The activate
-// handler deletes any cache whose name !== CACHE_NAME, so changing this string
-// purges stale assets and forces one fresh fetch for returning players. The
-// prefix was renamed from the legacy "spellwright-cache" to match the product.
-const CACHE_VERSION = 'v24';
+// Auto-rotating cache version — purges stale caches monthly.
+// For immediate cache busting on urgent deploys, manually bump the date prefix.
+const CACHE_VERSION = 'v' + new Date().toISOString().slice(0, 7).replace('-', ''); // e.g. v202506
 const CACHE_NAME = `hex-compiler-cache-${CACHE_VERSION}`;
 const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit
 const scopeUrl = new URL(self.registration.scope);
@@ -23,12 +21,6 @@ const CORE_CACHE_URLS = [
     'index.html',
     'play.html',
     'css/main.css',
-    'css/base.css',
-    'css/layout.css',
-    'css/components.css',
-    'css/animations.css',
-    'css/responsive.css',
-    'css/utilities.css',
     'manifest.json',
     'offline.html'
 ].map(toScopeUrl);

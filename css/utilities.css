@@ -140,8 +140,11 @@
 .bg-ky-amber { background-color: var(--ky-amber); }
 .bg-ky-green { background-color: var(--ky-green); }
 .bg-ky-red { background-color: var(--ky-red); }
+.bg-ky-cyan\/10 { background-color: rgba(38, 230, 255, 0.1); }
+.bg-ky-cyan\/20 { background-color: rgba(38, 230, 255, 0.2); }
 .border-ky-line { border-color: var(--ky-line); }
 .border-ky-magenta\/20 { border-color: rgba(255, 47, 109, 0.2); }
+.border-ky-magenta\/30 { border-color: rgba(255, 47, 109, 0.3); }
 .border-ky-magenta\/50 { border-color: rgba(255, 47, 109, 0.5); }
 .backdrop-blur-md,
 .backdrop-blur-sm { backdrop-filter: blur(10px); }

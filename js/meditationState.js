@@ -1,4 +1,4 @@
-import { MEDITATION_TOWERS, MEDITATION_DISTRACTIONS, MEDITATION_UPGRADES } from './data.js';
+import { MEDITATION_TOWERS, MEDITATION_DISTRACTIONS, MEDITATION_UPGRADES } from './modules/data/meditation.js';
 import { mirrorToIndexedDB, idbDelete } from './save/indexedDBBackup.js';
 
 /**

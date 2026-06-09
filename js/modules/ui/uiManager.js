@@ -3,16 +3,9 @@
  * Central manager for all UI interactions, tab switching, and updates.
  */
 
-import { ModalManager } from './modalManager.js';
 import { WorkstationUI } from './workstationUI.js';
 import { InventoryUI } from './inventoryUI.js';
 import { InscriptionsUI } from './inscriptionsUI.js';
-import { ExperimentUI } from './experimentUI.js';
-import { StatsUI } from './statsUI.js';
-import { DailiesUI } from './dailiesUI.js';
-import { BoonsUI } from './boonsUI.js';
-// MeditationUI loaded lazily when meditation tab is accessed
-// import { MeditationUI } from './meditationUI.js';
 import { FloatingTextUI } from './floatingTextUI.js';
 import { HUDUI } from './hudUI.js';
 import { showNotification } from './notifications.js';
@@ -28,18 +21,19 @@ export class UIManager {
         this.eventSystem = gameSystems.eventSystem;
         this.meditationState = gameSystems.meditationState;
 
-        // Initialize sub-managers
-        this.modalManager = new ModalManager(gameState);
+        // Initialize critical sub-managers (needed for first paint / boot)
+        this.modalManager = null; // lazy-loaded via initModalManager()
         this.workstationUI = new WorkstationUI(gameState, this);
         this.inventoryUI = new InventoryUI(gameState, this);
         this.inscriptionsUI = new InscriptionsUI(gameState, this);
-        this.experimentUI = new ExperimentUI(gameState, this);
-        this.statsUI = new StatsUI(gameState, this);
-        this.dailiesUI = new DailiesUI(gameState, this);
-        this.boonsUI = new BoonsUI(gameState, this);
         this.hudUI = new HUDUI(gameState, this);
         this.floatingTextUI = new FloatingTextUI();
-        // MeditationUI is initialized dynamically in game.js when unlocked, but we can prepare for it
+
+        // Non-critical UI modules — loaded lazily after boot to keep critical bundle small
+        this.experimentUI = null;
+        this.statsUI = null;
+        this.dailiesUI = null;
+        this.boonsUI = null;
         this.meditationUI = null;
 
         // UI State
@@ -184,6 +178,42 @@ export class UIManager {
 
     hideSkeletonScreen(panelId) {
         document.getElementById(panelId)?.classList.remove('is-loading');
+    }
+
+    /**
+     * Lazy-load ModalManager (~24KB). Called by gameInit before the story intro
+     * or any modal is shown. Keeps the critical bundle lean.
+     */
+    async initModalManager() {
+        if (this.modalManager) return;
+        const { ModalManager } = await import('./modalManager.js');
+        this.modalManager = new ModalManager(this.gameState);
+    }
+
+    /**
+     * Lazy-load non-critical UI modules after the game shell is interactive.
+     * Each module is loaded independently so one failure doesn't block others.
+     */
+    async initLazyUIs() {
+        const load = async (factory, exportName, propName, ...args) => {
+            if (this[propName]) return;
+            try {
+                const mod = await factory();
+                const Constructor = mod[exportName];
+                if (Constructor) {
+                    this[propName] = new Constructor(...args);
+                }
+            } catch (e) {
+                console.warn(`Lazy UI: failed to load ${exportName}`, e);
+            }
+        };
+
+        await Promise.all([
+            load(() => import('./experimentUI.js'), 'ExperimentUI', 'experimentUI', this.gameState, this),
+            load(() => import('./statsUI.js'), 'StatsUI', 'statsUI', this.gameState, this),
+            load(() => import('./dailiesUI.js'), 'DailiesUI', 'dailiesUI', this.gameState, this),
+            load(() => import('./boonsUI.js'), 'BoonsUI', 'boonsUI', this.gameState, this)
+        ]);
     }
 
     switchTab(tabName) {

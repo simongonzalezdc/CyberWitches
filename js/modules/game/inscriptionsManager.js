@@ -5,7 +5,7 @@
 import { showNotification } from '../ui/notifications.js';
 
 import { getAudioSystem } from '../../audio/audioAccess.js';
-import { UPGRADES } from '../../data.js';
+import { UPGRADES } from '../../modules/data/upgrades.js';
 
 export class InscriptionsManager {
     /**

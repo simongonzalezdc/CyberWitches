@@ -1,4 +1,4 @@
-import { DAILY_TASKS_POOL } from './data.js';
+import { DAILY_TASKS_POOL } from './modules/data/tasks.js';
 
 export class DailyRituals {
     constructor(gameState) {

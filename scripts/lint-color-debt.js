@@ -211,9 +211,25 @@ export function extractViolations(source, filePath) {
 
     const sanitized = stripExclusions(textToScan);
     const hex = sanitized.match(HEX_PATTERN) || [];
-    const rgb = sanitized.match(RGB_PATTERN) || [];
     const hsl = sanitized.match(HSL_PATTERN) || [];
-    return hex.length + rgb.length + hsl.length;
+
+    let rgbCount = 0;
+    const rgbRegex = new RegExp(RGB_PATTERN.source, 'gi');
+    let m;
+    while ((m = rgbRegex.exec(sanitized)) !== null) {
+        const openParenIndex = m.index + m[0].length - 1;
+        const closeParenIndex = findMatchingParen(sanitized, openParenIndex + 1);
+        if (closeParenIndex === -1) {
+            rgbCount++;
+            continue;
+        }
+        const inner = sanitized.slice(openParenIndex + 1, closeParenIndex);
+        if (!inner.includes('var(')) {
+            rgbCount++;
+        }
+    }
+
+    return hex.length + rgbCount + hsl.length;
 }
 
 /**

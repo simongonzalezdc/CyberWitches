@@ -106,7 +106,7 @@ class TutorialSystem {
                     // Highlight cast button
                     const btn = document.getElementById('cast-button');
                     if (btn) {
-                        btn.style.boxShadow = '0 0 20px var(--color-witch-500)';
+                        btn.style.boxShadow = '0 0 20px var(--ky-magenta)';
                         btn.style.animation = 'pulse 1s infinite';
                     }
                 }

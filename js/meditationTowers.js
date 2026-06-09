@@ -1,4 +1,4 @@
-import { MEDITATION_TOWERS } from './data.js';
+import { MEDITATION_TOWERS } from './modules/data/meditation.js';
 import { MEDITATION_COLORS } from './config/meditationColors.js';
 
 /**
