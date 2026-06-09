@@ -140,6 +140,20 @@ export class DesignTierSystem {
         }
     }
 
+    reconcileDesignSystemVersion() {
+        const root = document.documentElement;
+        root.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
+
+        try {
+            const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
+            if (storedVersion !== DesignTierSystem.DESIGN_SYSTEM_VERSION) {
+                localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, DesignTierSystem.DESIGN_SYSTEM_VERSION);
+            }
+        } catch (error) {
+            console.warn('Unable to persist design system version:', error);
+        }
+    }
+
     setTheme(colors) {
         document.documentElement.style.setProperty('--color-code', colors.secondary);
         document.documentElement.style.setProperty('--color-magic', colors.accent);
