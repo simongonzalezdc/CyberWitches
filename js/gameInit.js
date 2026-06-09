@@ -443,9 +443,9 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
         else if (activeTab === 'experiment') uiManager.debouncedUIUpdate('experiment', () => uiManager.experimentUI.update());
     };
 
-    dailyRituals.onTaskProgressUpdated = () => uiManager.dailiesUI.update();
-    dailyRituals.onTaskCompleted = () => uiManager.dailiesUI.update();
-    dailyRituals.onTasksRefreshed = () => uiManager.dailiesUI.update();
+    dailyRituals.onTaskProgressUpdated = () => uiManager.dailiesUI?.update();
+    dailyRituals.onTaskCompleted = () => uiManager.dailiesUI?.update();
+    dailyRituals.onTasksRefreshed = () => uiManager.dailiesUI?.update();
 }
 
 // Audio unlock is now handled by loadAudioOnGesture() inside loadLazySystems.
