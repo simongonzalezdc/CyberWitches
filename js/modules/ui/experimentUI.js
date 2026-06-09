@@ -38,12 +38,9 @@ export class ExperimentUI {
 
         // Show empty state if no recipes discovered yet
         if (this.gameState.discoveredRecipes.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state-container">
-                    <div class="empty-state-sigil" aria-hidden="true"></div>
-                    <p class="empty-state-message">> NO_DISCOVERIES_YET. Run protocols to discover hidden recipes.</p>
-                </div>
-            `;
+            container.innerHTML = this.renderEmptyState({
+                firstActionHint: 'EXPERIMENTS_UNLOCK_WITH_PROGRESS'
+            });
             return;
         }
 
@@ -182,5 +179,21 @@ export class ExperimentUI {
             }
             showNotification('Experiment failed. Try again.', 'error');
         }
+    }
+
+    /**
+     * Render progressive empty state based on player progress
+     */
+    renderEmptyState(context = {}) {
+        const { firstActionHint } = context;
+
+        // Simple empty state for experiments (no progress tracking)
+        return `
+            <div class="empty-state-container">
+                <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                <p class="empty-state-message">> ${firstActionHint || 'NO_DATA_FOUND'}</p>
+                <button class="btn-primary btn-sm" onclick="document.getElementById('experiment-button')?.focus()">> TRY_EXPERIMENT</button>
+            </div>
+        `;
     }
 }

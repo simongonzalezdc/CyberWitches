@@ -6,8 +6,9 @@
     <!-- Allow zoom up to 5x (WCAG 1.4.4): never disable user scaling. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 
-    <!-- Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; audio-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self' blob:;">
+    <!-- Content Security Policy — permissive for game; tighten in production -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 
     <!-- Primary Meta Tags -->
     <title>VOID WITCH PROTOCOL // HEX COMPILER</title>
@@ -282,6 +283,29 @@
                 <span id="import-save-desc" class="sr-only">Load save data from a previously exported JSON file</span>
                 <button id="clear-save-button" class="btn-danger py-3 bg-corruption/80 hover:bg-corruption text-white rounded font-bold tracking-wider transition-colors" aria-describedby="clear-save-desc">Wipe save</button>
                 <span id="clear-save-desc" class="sr-only">Permanently delete all save data and reset the game</span>
+            </div>
+
+            <!-- Import Data Textarea for direct paste import -->
+            <div class="mt-4">
+                <h3 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Import via Paste</h3>
+                <div class="flex flex-col gap-2">
+                    <label for="import-data" class="sr-only">Paste save data</label>
+                    <textarea
+                        id="import-data"
+                        class="w-full p-3 bg-void-900 border border-white/20 rounded text-white font-mono text-sm min-h-[120px] focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 outline-none transition-all"
+                        placeholder="Paste your exported save data here..."
+                        required
+                        aria-required="true"
+                        aria-describedby="import-help import-error"
+                        aria-invalid="false"
+                        minlength="2"
+                    ></textarea>
+                    <span id="import-help" class="sr-only">Paste your exported save data in JSON format. Must be valid JSON with at least 2 characters.</span>
+                    <span id="import-error" class="field-error" role="alert" aria-live="polite"></span>
+                    <button id="paste-import-button" class="btn-primary py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded font-bold tracking-wider transition-colors text-sm">
+                        Import Pasted Data
+                    </button>
+                </div>
             </div>
             <button id="install-pwa-button" class="btn-primary w-full py-3 mb-3 bg-witch-500 hover:bg-witch-600 text-white rounded font-bold tracking-wider transition-colors" style="display:none">Install app</button>
             <button id="close-settings-button" class="btn-secondary w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">Close</button>

@@ -51,12 +51,11 @@ export class InscriptionsUI {
 
         // Show empty state if no upgrades are unlocked
         if (unlockedUpgrades.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state-container">
-                    <div class="empty-state-sigil" aria-hidden="true"></div>
-                    <p class="empty-state-message">> NO_INSCRIPTIONS_FOUND. Compile essence to unlock enhancement protocols.</p>
-                </div>
-            `;
+            container.innerHTML = this.renderEmptyState({
+                totalItems: UPGRADES.length,
+                unlockedItems: 0,
+                firstActionHint: 'INSCRIBE RUNES TO ENHANCE OUTPUT'
+            });
             return;
         }
 
@@ -237,6 +236,33 @@ export class InscriptionsUI {
                 container.appendChild(card);
             }
         }
+    }
+
+    /**
+     * Render progressive empty state based on player progress
+     */
+    renderEmptyState(context = {}) {
+        const { totalItems, unlockedItems, firstActionHint } = context;
+
+        // Progress-aware message
+        if (unlockedItems > 0 && unlockedItems < totalItems) {
+            return `
+                <div class="empty-state-container">
+                    <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                    <p class="empty-state-message">> ${unlockedItems}/${totalItems} INSCRIPTIONS_AVAILABLE</p>
+                    <p class="empty-state-hint">> Continue compiling to unlock enhancements</p>
+                </div>
+            `;
+        }
+
+        // First-time empty with CTA
+        return `
+            <div class="empty-state-container">
+                <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                <p class="empty-state-message">> ${firstActionHint || 'NO_DATA_FOUND'}</p>
+                <button class="btn-primary btn-sm" onclick="document.getElementById('cast-button')?.focus()">> BEGIN_COMPILATION</button>
+            </div>
+        `;
     }
 }
 

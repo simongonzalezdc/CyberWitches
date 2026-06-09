@@ -29,6 +29,7 @@ export class WorkstationUI {
         this.uiManager = uiManager;
         this.virtualWorkstationList = null;
         this.lastRenderSignature = '';
+        this.hasLoaded = false;
     }
 
     /**
@@ -51,6 +52,14 @@ export class WorkstationUI {
         // Ensure container is visible
         container.classList.add('workstation-list-container');
         // Styles moved to CSS
+
+        // Show skeleton only on the very first call when container is empty.
+        // Once we've rendered at least once, skip straight to content.
+        if (!this.hasLoaded && container.childElementCount === 0) {
+            container.innerHTML = this.renderSkeleton();
+            // Don't return — fall through to render real content immediately
+            // so the skeleton is visible only until the first render completes.
+        }
 
         // Filter unlocked workstations (with Air specialization unlock speed bonus)
         const unlockedWorkstations = PRODUCERS.filter(prod => {
@@ -79,6 +88,7 @@ export class WorkstationUI {
         // Use traditional rendering
         this.updateTraditional(container, unlockedWorkstations);
         this.lastRenderSignature = renderSignature;
+        this.hasLoaded = true;
     }
 
     createRenderSignature(unlockedWorkstations) {
@@ -105,12 +115,11 @@ export class WorkstationUI {
         container.innerHTML = '';
 
         if (unlockedWorkstations.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state-container">
-                    <div class="empty-state-sigil" aria-hidden="true"></div>
-                    <p class="empty-state-message">No workstations yet. Cast to gather essence and unlock the first preservation chamber.</p>
-                </div>
-            `;
+            container.innerHTML = this.renderEmptyState({
+                totalItems: PRODUCERS.length,
+                unlockedItems: 0,
+                firstActionHint: 'COMPILE ESSENCE TO INSTALL MODULES'
+            });
             return;
         }
 
@@ -419,5 +428,58 @@ export class WorkstationUI {
         setTimeout(() => {
             button.classList.remove('error-shake', 'error-flash', 'success-pulse');
         }, 600);
+    }
+
+    /**
+     * Render progressive empty state based on player progress
+     */
+    renderEmptyState(context = {}) {
+        const { totalItems, unlockedItems, firstActionHint } = context;
+
+        // Progress-aware message
+        if (unlockedItems > 0 && unlockedItems < totalItems) {
+            return `
+                <div class="empty-state-container">
+                    <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                    <p class="empty-state-message">> ${unlockedItems}/${totalItems} MODULES_DETECTED</p>
+                    <p class="empty-state-hint">> Continue compiling to unlock remaining modules</p>
+                </div>
+            `;
+        }
+
+        // First-time empty with CTA
+        return `
+            <div class="empty-state-container">
+                <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                <p class="empty-state-message">> ${firstActionHint || 'NO_DATA_FOUND'}</p>
+                <button class="btn-primary btn-sm" onclick="document.getElementById('cast-button')?.focus()">> BEGIN_COMPILATION</button>
+            </div>
+        `;
+    }
+
+    /**
+     * Render skeleton loading state for workstation cards
+     */
+    renderSkeleton() {
+        return Array.from({length: 3}, () =>
+            '<div class="card skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line-short"></div></div>'
+        ).join('');
+    }
+
+    /**
+     * Render error state for workstation tab
+     */
+    renderError(message = 'Failed to load workstations', onRetry) {
+        const retryHtml = onRetry
+            ? '<button class="error-state__retry" data-action="retry-workstations">RETRY</button>'
+            : '';
+
+        return `
+            <div class="error-state">
+                <div class="error-state__icon">⚠</div>
+                <div class="error-state__message">${message}</div>
+                ${retryHtml}
+            </div>
+        `;
     }
 }

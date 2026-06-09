@@ -10,6 +10,7 @@ export class DailiesUI {
     constructor(gameState, uiManager) {
         this.gameState = gameState;
         this.uiManager = uiManager;
+        this.hasLoaded = false;
     }
 
     /**
@@ -20,6 +21,12 @@ export class DailiesUI {
         if (!container) return;
 
         container.innerHTML = '';
+
+        // Show skeleton if data hasn't loaded yet
+        if (!this.hasLoaded) {
+            container.innerHTML = this.renderSkeleton();
+            return;
+        }
 
         // Access dailyRituals from uiManager systems or window as fallback
         const dailyRituals = this.uiManager.systems.dailyRituals || window.dailyRituals;
@@ -33,12 +40,9 @@ export class DailiesUI {
 
             // Show empty state if no active tasks
             if (!activeTasks || activeTasks.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state-container">
-                        <div class="empty-state-sigil" aria-hidden="true"></div>
-                        <p class="empty-state-message">> NO_ACTIVE_RITUALS. New rituals generate at midnight.</p>
-                    </div>
-                `;
+                container.innerHTML = this.renderEmptyState({
+                    firstActionHint: 'DAILY_PROTOCOLS_REFRESH_AUTOMATICALLY'
+                });
                 return;
             }
 
@@ -136,5 +140,47 @@ export class DailiesUI {
             console.error('Error updating dailies tab:', error);
             showNotification('Failed to load daily tasks', 'error');
         }
+        this.hasLoaded = true;
+    }
+
+    /**
+     * Render skeleton loading state for daily tasks
+     */
+    renderSkeleton() {
+        return Array.from({length: 3}, () =>
+            '<div class="card skeleton-card"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line-short"></div></div>'
+        ).join('');
+    }
+
+    /**
+     * Render error state for dailies tab
+     */
+    renderError(message = 'Failed to load daily rituals', onRetry) {
+        const retryHtml = onRetry
+            ? '<button class="error-state__retry" data-action="retry-dailies">RETRY</button>'
+            : '';
+
+        return `
+            <div class="error-state">
+                <div class="error-state__icon">⚠</div>
+                <div class="error-state__message">${message}</div>
+                ${retryHtml}
+            </div>
+        `;
+    }
+
+    /**
+     * Render progressive empty state based on player progress
+     */
+    renderEmptyState(context = {}) {
+        const { firstActionHint } = context;
+
+        // Simple empty state for dailies (no progress tracking)
+        return `
+            <div class="empty-state-container">
+                <div class="empty-state-sigil" aria-hidden="true">◈</div>
+                <p class="empty-state-message">> ${firstActionHint || 'NO_DATA_FOUND'}</p>
+            </div>
+        `;
     }
 }

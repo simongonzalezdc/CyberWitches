@@ -900,3 +900,119 @@ input[type="radio"]:focus-visible {
     40% { content: ".."; }
     60%, 100% { content: "..."; }
 }
+
+/* Skeleton Loader */
+.skeleton {
+    background: linear-gradient(90deg, var(--bg-panel) 25%, var(--bg-panel-alt, #1a1a2e) 50%, var(--bg-panel) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+.skeleton-card {
+    height: 80px;
+    margin-bottom: 8px;
+}
+
+.skeleton-line {
+    height: 16px;
+    margin-bottom: 8px;
+    width: 80%;
+}
+
+.skeleton-line-short {
+    height: 16px;
+    margin-bottom: 8px;
+    width: 40%;
+}
+
+/* Error State */
+.error-state {
+    padding: 16px;
+    border: 1px solid var(--color-glitch-500, #ff0055);
+    border-radius: 4px;
+    background: rgba(255, 0, 85, 0.1);
+    color: var(--color-glitch-500, #ff0055);
+    font-family: var(--font-mono, monospace);
+    font-size: 12px;
+    text-align: center;
+}
+
+.error-state__icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.error-state__message {
+    margin-bottom: 8px;
+}
+
+.error-state__retry {
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--color-glitch-500, #ff0055);
+    color: var(--color-glitch-500, #ff0055);
+    padding: 4px 12px;
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    border-radius: 2px;
+}
+
+.error-state__retry:hover {
+    background: rgba(255, 0, 85, 0.2);
+}
+
+/* Form Validation */
+input:invalid, textarea:invalid {
+    border-color: var(--color-glitch-500, #ff0055);
+}
+
+input:focus:invalid, textarea:focus:invalid {
+    box-shadow: 0 0 0 2px rgba(255, 0, 85, 0.3);
+}
+
+input[aria-invalid="true"], textarea[aria-invalid="true"] {
+    border-color: var(--color-glitch-500, #ff0055);
+    background: rgba(255, 0, 85, 0.05);
+}
+
+.field-error {
+    color: var(--color-glitch-500, #ff0055);
+    font-size: 11px;
+    font-family: var(--font-mono, monospace);
+    margin-top: 4px;
+    display: none;
+}
+
+.field-error.visible {
+    display: block;
+}
+
+/* 10. Empty State Components */
+.empty-state-hint {
+    color: var(--color-system);
+    font-size: 11px;
+    margin-top: 4px;
+    opacity: 0.8;
+}
+
+.btn-sm {
+    padding: 4px 12px;
+    font-size: 11px;
+    margin-top: 8px;
+    min-height: 32px;
+}
+
+/* Screen reader only class */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
