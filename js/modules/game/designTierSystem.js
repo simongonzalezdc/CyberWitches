@@ -140,7 +140,7 @@ export class DesignTierSystem {
         }
     }
 
-    reconcileDesignSystemVersion() {
+    async reconcileDesignSystemVersion() {
         const root = document.documentElement;
         root.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
 
@@ -148,6 +148,7 @@ export class DesignTierSystem {
             const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
             if (storedVersion !== DesignTierSystem.DESIGN_SYSTEM_VERSION) {
                 localStorage.setItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY, DesignTierSystem.DESIGN_SYSTEM_VERSION);
+                await this.applyTier(this.currentTier);
             }
         } catch (error) {
             console.warn('Unable to persist design system version:', error);
@@ -155,9 +156,9 @@ export class DesignTierSystem {
     }
 
     setTheme(colors) {
-        document.documentElement.style.setProperty('--color-code', colors.secondary);
-        document.documentElement.style.setProperty('--color-magic', colors.accent);
-        document.documentElement.style.setProperty('--color-corruption', colors.corruption || COLORS.KY_RED);
+        document.documentElement.style.setProperty('--color-code', colors.secondary.toUpperCase());
+        document.documentElement.style.setProperty('--color-magic', colors.accent.toUpperCase());
+        document.documentElement.style.setProperty('--color-corruption', (colors.corruption || COLORS.KY_RED).toUpperCase());
     }
 
     toggleAnimations(enabled) {
