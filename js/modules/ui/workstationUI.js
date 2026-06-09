@@ -3,25 +3,11 @@
  * Manages the rendering and updates of the Workstations tab.
  */
 
-import { formatNumber } from '../../utils.js';
+import { formatNumber, escapeHtml } from '../../utils.js';
 import { getTierSymbol, getTierAppropriateStyle, getWorkstationTier } from './uiHelpers.js';
 import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
 import { Balance } from '../../utils.js';
 import { accessibilityManager } from '../../accessibility.js';
-
-/**
- * Escape HTML entities to prevent XSS attacks
- * @param {string} str - The string to escape
- * @returns {string} The escaped string
- */
-function escapeHtml(str) {
-    if (typeof str !== 'string') return String(str);
-    return str.replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
 
 export class WorkstationUI {
     constructor(gameState, uiManager) {

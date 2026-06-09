@@ -1,5 +1,5 @@
 import { ELEMENT_SPECIALIZATIONS } from '../../elementSpecialization.js';
-import { formatOneDecimal, formatShort } from '../../utils.js';
+import { formatOneDecimal, formatShort, escapeHtml } from '../../utils.js';
 import { animateNumberWithFormatter } from './uiHelpers.js';
 import { animateNumber } from '../../animations.js';
 import { calculateElementTotals } from '../utils/resourceUtils.js';
@@ -95,7 +95,7 @@ export class HUDUI {
             const castManager = this.uiManager.systems.castManager;
             const autoMaintaining = castManager && castManager.getAutoCastEnabled && castManager.getAutoCastEnabled();
 
-            this.comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${comboCount}x Combo (${(mult * 100).toFixed(0)}%)${autoMaintaining ? ' <span class="auto-indicator">AUTO</span>' : ''}`;
+            this.comboDisplay.innerHTML = `<span class="css-icon-fire"></span> ${escapeHtml(comboCount)}x Combo (${escapeHtml((mult * 100).toFixed(0))}%)${autoMaintaining ? ' <span class="auto-indicator">AUTO</span>' : ''}`;
             this.comboDisplay.style.display = 'block';
 
             // Update auto-combo visual feedback
@@ -241,7 +241,7 @@ export class HUDUI {
             const badge = document.createElement('div');
             badge.className = 'event-badge';
             badge.innerHTML = `
-                <div class="event-name">${event.name}</div>
+                <div class="event-name">${escapeHtml(event.name)}</div>
                 <div class="event-timer">${remaining}s remaining</div>
             `;
             eventsContainer.appendChild(badge);

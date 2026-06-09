@@ -4,7 +4,7 @@
  */
 
 import { showNotification } from './notifications.js';
-import { formatTimeDuration, formatShort } from '../../utils.js';
+import { formatTimeDuration, formatShort, escapeHtml } from '../../utils.js';
 
 export class DailiesUI {
     constructor(gameState, uiManager) {
@@ -75,8 +75,8 @@ export class DailiesUI {
                 card.className = 'card';
 
                 card.innerHTML = `
-                    <div class="card-title">${task.displayName}</div>
-                    <div class="card-description">${task.description}</div>
+                    <div class="card-title">${escapeHtml(task.displayName)}</div>
+                    <div class="card-description">${escapeHtml(task.description)}</div>
                     <div class="card-section">
                         <div class="card-label">Progress: ${progress} / ${target}</div>
                         <div class="progress-bar">
@@ -84,10 +84,10 @@ export class DailiesUI {
                         </div>
                     </div>
                     <div class="card-section">
-                        <div class="card-label">Reward: ${rewardText}</div>
+                        <div class="card-label">Reward: ${escapeHtml(rewardText)}</div>
                     </div>
-                    <button class="btn-primary" data-action="claim-task" data-task-id="${task.id}" ${progress >= target && !claimed ? '' : 'disabled'}>
-                        ${claimed ? 'Claimed' : progress >= target ? 'Claim' : 'Not Ready'}
+                    <button class="btn-primary" data-action="claim-task" data-task-id="${escapeHtml(task.id)}" ${progress >= target && !claimed ? '' : 'disabled'}>
+                        ${escapeHtml(claimed ? 'Claimed' : progress >= target ? 'Claim' : 'Not Ready')}
                     </button>
                 `;
 

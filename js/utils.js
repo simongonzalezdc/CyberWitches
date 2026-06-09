@@ -22,6 +22,20 @@ export const formatShort = memoize((value) => {
 
 export const formatNumber = formatShort;
 
+/**
+ * Escape HTML entities to prevent XSS attacks
+ * @param {string} str - The string to escape
+ * @returns {string} The escaped string
+ */
+export function escapeHtml(str) {
+    if (str == null) return '';
+    if (typeof str !== 'string') return String(str);
+    return str.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 export function formatPrecise(value, decimals = 2) {
     return value.toFixed(decimals);

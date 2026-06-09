@@ -4,6 +4,7 @@
  */
 
 import { showNotification } from './notifications.js';
+import { escapeHtml } from '../../utils.js';
 
 export class ExperimentUI {
     constructor(gameState, uiManager) {
@@ -66,8 +67,8 @@ export class ExperimentUI {
             });
             
             card.innerHTML = `
-                <div class="card-title">${recipe.name || 'Unknown Recipe'}</div>
-                <div class="card-description">${recipe.description || 'No description'}</div>
+                <div class="card-title">${escapeHtml(recipe.name || 'Unknown Recipe')}</div>
+                <div class="card-description">${escapeHtml(recipe.description || 'No description')}</div>
                 <div class="card-section">
                             <div class="card-label">Cost:</div>
                     ${Object.entries(recipeInputs).map(([ingId, amount]) => {
@@ -79,7 +80,7 @@ export class ExperimentUI {
         const have = this.gameState.inventory[ingId] || 0;
         const canAfford = have >= amount;
         return `<div class="recipe-item ${canAfford ? 'can-afford' : 'cannot-afford'}">
-                            <span class="recipe-label">${ingId}:</span>
+                            <span class="recipe-label">${escapeHtml(ingId)}:</span>
                             <span class="recipe-numbers">${window.formatShort(have)} / ${window.formatShort(amount)}</span>
                         </div>`;
     }).join('')}
@@ -92,10 +93,10 @@ export class ExperimentUI {
             console.warn(`Invalid recipe output amount for ${outputId}:`, amount);
             amount = 0;
         }
-        return `<div class="card-value">${outputId}: ${window.formatShort(amount)}</div>`;
+        return `<div class="card-value">${escapeHtml(outputId)}: ${window.formatShort(amount)}</div>`;
     }).join('')}
                 </div>
-                <button class="btn-primary craft-recipe-btn" data-action="craft-recipe" data-recipe-id="${recipeId}">Craft</button>
+                <button class="btn-primary craft-recipe-btn" data-action="craft-recipe" data-recipe-id="${escapeHtml(recipeId)}">Craft</button>
             `;
 
             // The "Craft" button is handled by the unified delegated input handler
@@ -145,28 +146,28 @@ export class ExperimentUI {
                         <source srcset="images/ui/experiment-result.webp" type="image/webp">
                         <img src="images/ui/experiment-result.png" alt="Experiment Success" class="experiment-result-illustration">
                     </picture>
-                    <span class="css-icon-sparkle"></span> Discovered: ${result.recipe.name}
+                    <span class="css-icon-sparkle"></span> Discovered: ${escapeHtml(result.recipe.name)}
                 `;
                 resultLabel.className = 'result-label success experiment-result-visible';
 
                 if (typeof window.pulseElement === 'function') {
                     window.pulseElement(newExpButton, 1.2, 400);
                 }
-                showNotification(`<span class="css-icon-celebration"></span> Discovered: ${result.recipe.name}!`, 'success');
+                showNotification(`<span class="css-icon-celebration"></span> Discovered: ${escapeHtml(result.recipe.name)}!`, 'success');
 
                 if (window.achievements) {
                     window.achievements.checkAchievements();
                 }
             } else {
                 console.info('Experiment failed:', result.message);
-                resultLabel.innerHTML = `<div class="result-label error experiment-error-message">${result.message}</div>`;
+                resultLabel.innerHTML = `<div class="result-label error experiment-error-message">${escapeHtml(result.message)}</div>`;
                 resultLabel.className = 'result-box experiment-result-visible';
 
                 if (typeof window.shakeElement === 'function') {
                     window.shakeElement(newExpButton, 3, 200);
                 }
 
-                showNotification(result.message, 'error');
+                showNotification(escapeHtml(result.message), 'error');
             }
 
             this.update();
