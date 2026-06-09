@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://simongonzalezdc.github.io/CyberWitches/sitemap.xml
