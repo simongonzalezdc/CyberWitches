@@ -103,7 +103,7 @@ test('branch B game shell boots with reskinned HUD, nav managers, and normal con
     const runtimeState = await page.evaluate(() => {
         const gs = /** @type {any} */ (window).gameState;
         return {
-            arcaneBits: gs.arcaneBits,
+            arcaneBits: gs.ab,
             activeTab: document.querySelector('.tab-panel:not(.hidden)')?.id || null,
             hasUiManager: typeof (/** @type {any} */ (window).uiManager) === 'object'
         };
