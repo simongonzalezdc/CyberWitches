@@ -39,6 +39,34 @@ export class DesignTierSystem {
     }
 
     /**
+     * Keep the live document on the current design-system version without
+     * routing through applyTier(), which can toggle audio during boot.
+     */
+    async reconcileDesignSystemVersion() {
+        const storedVersion = localStorage.getItem(DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY);
+        document.documentElement.dataset.designSystemVersion = DesignTierSystem.DESIGN_SYSTEM_VERSION;
+
+        if (storedVersion === DesignTierSystem.DESIGN_SYSTEM_VERSION) return;
+
+        const tier = Number.isFinite(this.currentTier) ? this.currentTier : 0;
+        if (tier <= 0) {
+            this.setTheme({
+                primary: COLORS.KY_CRYSTAL,
+                secondary: COLORS.KY_STEEL,
+                accent: COLORS.KY_CRYSTAL,
+                corruption: COLORS.KY_RED
+            });
+        } else {
+            this.setTheme(KYANITE_THEME);
+        }
+
+        localStorage.setItem(
+            DesignTierSystem.DESIGN_SYSTEM_STORAGE_KEY,
+            DesignTierSystem.DESIGN_SYSTEM_VERSION
+        );
+    }
+
+    /**
      * Check if a tier should be unlocked based on game state
      */
     checkTierUnlocks() {
