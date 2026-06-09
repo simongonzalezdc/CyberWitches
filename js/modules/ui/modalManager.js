@@ -131,18 +131,44 @@ export class ModalManager {
         const exportBtn = document.getElementById('export-save-button');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
+                // Add processing state
+                exportBtn.classList.add('modal-btn-feedback', 'processing');
+                exportBtn.textContent = 'Exporting...';
+
                 try {
                     const data = localStorage.getItem('cyberWitchesSave') || '{}';
                     const blob = new Blob([data], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'cyber-witches-save.json';
+                    a.download = `cyber-witches-save-${new Date().toISOString().slice(0,10)}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
-                    if (window.showNotification) window.showNotification('Save data exported.', 'success');
+
+                    // Show success state
+                    exportBtn.classList.remove('processing');
+                    exportBtn.classList.add('success');
+                    exportBtn.textContent = 'Export complete!';
+
+                    if (window.showNotification) {
+                        window.showNotification('Save data exported successfully.', 'success');
+                    }
+
+                    // Reset button after delay
+                    setTimeout(() => {
+                        exportBtn.classList.remove('modal-btn-feedback', 'success');
+                        exportBtn.textContent = 'Export save';
+                    }, 2000);
                 } catch (e) {
                     console.error('Export failed:', e);
+                    exportBtn.classList.remove('processing');
+                    exportBtn.classList.add('error');
+                    exportBtn.textContent = 'Export failed';
+
+                    setTimeout(() => {
+                        exportBtn.classList.remove('modal-btn-feedback', 'error');
+                        exportBtn.textContent = 'Export save';
+                    }, 2000);
                 }
             });
         }
@@ -156,20 +182,59 @@ export class ModalManager {
                 input.addEventListener('change', async () => {
                     const file = input.files && input.files[0];
                     if (!file) return;
+
+                    // Show processing state
+                    importBtn.classList.add('modal-btn-feedback', 'processing');
+                    importBtn.textContent = 'Importing...';
+
                     try {
                         const text = await file.text();
                         const data = JSON.parse(text);
                         const valid = this.gameState && this.gameState.validateSaveData
                             ? this.gameState.validateSaveData(data) : true;
                         if (!valid) {
-                            if (window.showNotification) window.showNotification('Invalid save file.', 'error');
+                            importBtn.classList.remove('processing');
+                            importBtn.classList.add('error');
+                            importBtn.textContent = 'Invalid save file';
+
+                            if (window.showNotification) {
+                                window.showNotification('Invalid save file format.', 'error');
+                            }
+
+                            setTimeout(() => {
+                                importBtn.classList.remove('modal-btn-feedback', 'error');
+                                importBtn.textContent = 'Import save';
+                            }, 2000);
                             return;
                         }
-                        localStorage.setItem('cyberWitchesSave', JSON.stringify(data));
-                        window.location.reload();
+
+                        importBtn.classList.remove('processing');
+                        importBtn.classList.add('success');
+                        importBtn.textContent = 'Import successful!';
+
+                        if (window.showNotification) {
+                            window.showNotification('Save data imported. Reloading...', 'success');
+                        }
+
+                        // Delay reload slightly to show success state
+                        setTimeout(() => {
+                            localStorage.setItem('cyberWitchesSave', JSON.stringify(data));
+                            window.location.reload();
+                        }, 500);
                     } catch (e) {
                         console.error('Import failed:', e);
-                        if (window.showNotification) window.showNotification('Could not read that save file.', 'error');
+                        importBtn.classList.remove('processing');
+                        importBtn.classList.add('error');
+                        importBtn.textContent = 'Import failed';
+
+                        if (window.showNotification) {
+                            window.showNotification('Could not read that save file.', 'error');
+                        }
+
+                        setTimeout(() => {
+                            importBtn.classList.remove('modal-btn-feedback', 'error');
+                            importBtn.textContent = 'Import save';
+                        }, 2000);
                     }
                 });
                 input.click();

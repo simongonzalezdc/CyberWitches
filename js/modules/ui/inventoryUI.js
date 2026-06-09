@@ -44,42 +44,12 @@ export class InventoryUI {
         }
 
         if (!this.gameState.inventory || Object.keys(this.gameState.inventory).length === 0) {
-            const emptyState = document.createElement('div');
-            emptyState.className = 'empty-state';
-            emptyState.style.display = 'flex';
-            emptyState.style.flexDirection = 'column';
-            emptyState.style.alignItems = 'center';
-            emptyState.style.justifyContent = 'center';
-            emptyState.style.padding = '40px';
-            emptyState.style.textAlign = 'center';
-            emptyState.style.gridColumn = '1 / -1';
-
-            const picture = document.createElement('picture');
-            const source = document.createElement('source');
-            source.srcset = 'images/ui/empty-state.webp';
-            source.type = 'image/webp';
-            picture.appendChild(source);
-
-            const img = document.createElement('img');
-            img.src = 'images/ui/empty-state.png';
-            img.alt = 'Empty State';
-            img.className = 'empty-state-illustration';
-            img.style.maxWidth = '400px';
-            img.style.width = '100%';
-            img.style.height = 'auto';
-            img.style.marginBottom = '20px';
-            img.style.opacity = '0.8';
-            picture.appendChild(img);
-            emptyState.appendChild(picture);
-
-            const msg = document.createElement('p');
-            msg.className = 'empty-state-message';
-            msg.style.color = 'var(--text-dim)';
-            msg.style.fontSize = '18px';
-            msg.textContent = 'Inventory empty. Craft workstations to get ingredients!';
-            emptyState.appendChild(msg);
-
-            container.appendChild(emptyState);
+            container.innerHTML = `
+                <div class="empty-state-container" style="grid-column: 1 / -1;">
+                    <div class="empty-state-sigil" aria-hidden="true"></div>
+                    <p class="empty-state-message">> INVENTORY_EMPTY. Execute protocols to gather elemental data.</p>
+                </div>
+            `;
             return;
         }
 

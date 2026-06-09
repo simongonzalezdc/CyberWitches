@@ -25,6 +25,17 @@ export class StatsUI {
         container.className = 'stats-tab-container';
         container.innerHTML = '';
 
+        // Check if game has started (no casts yet)
+        if (this.gameState.totalTaps === 0) {
+            container.innerHTML = `
+                <div class="empty-state-container">
+                    <div class="empty-state-sigil" aria-hidden="true"></div>
+                    <p class="empty-state-message">> AWAITING_DATA_STREAM. Metrics will populate after first execution.</p>
+                </div>
+            `;
+            return;
+        }
+
         // Stats section with two-column layout
         const statsCard = document.createElement('div');
         statsCard.className = 'card force-visible';
@@ -147,10 +158,11 @@ export class StatsUI {
     // Helper function for traditional rendering with two-column layout
     renderAchievementsTraditional(achievementsArray, container, leftColumn, rightColumn) {
         if (!achievementsArray || achievementsArray.length === 0) {
-            const emptyMsg = document.createElement('div');
-            emptyMsg.className = 'card-section empty-achievements';
-            emptyMsg.textContent = 'No achievements yet.';
-            container.appendChild(emptyMsg);
+            container.innerHTML = `
+                <div class="empty-state-container" style="min-height: 120px; padding: 20px;">
+                    <p class="empty-state-message" style="font-size: 14px;">> NO_ACHIEVEMENTS_DETECTED. Complete rituals to earn recognition.</p>
+                </div>
+            `;
             return;
         }
 

@@ -36,6 +36,17 @@ export class ExperimentUI {
         // Show discovered recipes with batched DOM updates
         const fragment = document.createDocumentFragment();
 
+        // Show empty state if no recipes discovered yet
+        if (this.gameState.discoveredRecipes.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-container">
+                    <div class="empty-state-sigil" aria-hidden="true"></div>
+                    <p class="empty-state-message">> NO_DISCOVERIES_YET. Run protocols to discover hidden recipes.</p>
+                </div>
+            `;
+            return;
+        }
+
         for (const recipeId of this.gameState.discoveredRecipes) {
             const recipe = window.HIDDEN_RECIPES.find(r => r.id === recipeId);
             if (!recipe) {

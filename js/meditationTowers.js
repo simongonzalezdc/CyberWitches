@@ -1,4 +1,5 @@
 import { MEDITATION_TOWERS } from './data.js';
+import { MEDITATION_COLORS } from './config/meditationColors.js';
 
 /**
  * Meditation Tower Defense Renderer - Handles canvas rendering for tower defense gameplay
@@ -316,7 +317,7 @@ export class MeditationTowers {
      * Draw grid background
      */
     drawGrid() {
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        this.ctx.strokeStyle = MEDITATION_COLORS.GRID_LINE;
         this.ctx.lineWidth = 1;
         
         // Vertical lines
@@ -352,7 +353,7 @@ export class MeditationTowers {
         }
         
         // Draw path tiles with a more visible color
-        this.ctx.fillStyle = 'rgba(60, 227, 197, 0.25)'; // Increased opacity from 0.15 to 0.25
+        this.ctx.fillStyle = MEDITATION_COLORS.SUCCESS_FILL; // Increased opacity from 0.15 to 0.25
         
         for (const tileStr of this.meditationState.pathTiles) {
             const [x, y] = tileStr.split(',').map(Number);
@@ -363,7 +364,7 @@ export class MeditationTowers {
         }
         
         // Draw path borders for better visibility
-        this.ctx.strokeStyle = 'rgba(60, 227, 197, 0.5)'; // Increased opacity from 0.3 to 0.5
+        this.ctx.strokeStyle = MEDITATION_COLORS.SUCCESS_STROKE; // Increased opacity from 0.3 to 0.5
         this.ctx.lineWidth = 2; // Increased from 1 to 2 for better visibility
         
         for (const tileStr of this.meditationState.pathTiles) {
@@ -385,8 +386,8 @@ export class MeditationTowers {
         
         // Draw outer glow
         const gradient = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 1.5);
-        gradient.addColorStop(0, 'rgba(255, 45, 170, 0.3)');
-        gradient.addColorStop(1, 'rgba(255, 45, 170, 0)');
+        gradient.addColorStop(0, MEDITATION_COLORS.MAGIC_FILL_START);
+        gradient.addColorStop(1, MEDITATION_COLORS.MAGIC_FILL_END);
         
         this.ctx.fillStyle = gradient;
         this.ctx.beginPath();
@@ -394,13 +395,13 @@ export class MeditationTowers {
         this.ctx.fill();
         
         // Draw center circle
-        this.ctx.fillStyle = 'rgba(255, 45, 170, 0.5)';
+        this.ctx.fillStyle = MEDITATION_COLORS.MAGIC_FILL_START;
         this.ctx.beginPath();
         this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Draw border
-        this.ctx.strokeStyle = 'rgba(255, 45, 170, 0.8)';
+        this.ctx.strokeStyle = MEDITATION_COLORS.MAGIC_STROKE;
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
     }
@@ -430,9 +431,9 @@ export class MeditationTowers {
                     const time = Date.now() * 0.001;
                     const pulse = 0.1 + Math.sin(time * 2) * 0.05;
                     const rangeGradient = this.ctx.createRadialGradient(x, y, 0, x, y, range);
-                    rangeGradient.addColorStop(0, `rgba(0, 255, 255, ${0.15 + pulse})`);
-                    rangeGradient.addColorStop(0.5, `rgba(0, 255, 255, ${0.08 + pulse * 0.5})`);
-                    rangeGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+                    rangeGradient.addColorStop(0, MEDITATION_COLORS.CODE_RANGE_START(pulse));
+                    rangeGradient.addColorStop(0.5, MEDITATION_COLORS.CODE_RANGE_MID(pulse));
+                    rangeGradient.addColorStop(1, MEDITATION_COLORS.CODE_RANGE_END);
                     
                     this.ctx.fillStyle = rangeGradient;
                     this.ctx.beginPath();
@@ -440,7 +441,7 @@ export class MeditationTowers {
                     this.ctx.fill();
                     
                     // Draw range ring
-                    this.ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 + pulse})`;
+                    this.ctx.strokeStyle = MEDITATION_COLORS.CODE_STROKE(pulse);
                     this.ctx.lineWidth = 1;
                     this.ctx.beginPath();
                     this.ctx.arc(x, y, range, 0, Math.PI * 2);
@@ -448,8 +449,8 @@ export class MeditationTowers {
                 } else {
                     // Basic range visualization
                     const rangeGradient = this.ctx.createRadialGradient(x, y, 0, x, y, range);
-                    rangeGradient.addColorStop(0, 'rgba(0, 255, 255, 0.1)');
-                    rangeGradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
+                    rangeGradient.addColorStop(0, MEDITATION_COLORS.CODE_AREA_START);
+                    rangeGradient.addColorStop(1, MEDITATION_COLORS.CODE_RANGE_END);
                     
                     this.ctx.fillStyle = rangeGradient;
                     this.ctx.beginPath();
@@ -476,7 +477,7 @@ export class MeditationTowers {
                 
                 // Draw tower level indicator if upgraded
                 if (level > 0) {
-                    this.ctx.fillStyle = 'rgba(255, 255, 0, 0.9)';
+                    this.ctx.fillStyle = MEDITATION_COLORS.HIGHLIGHT_YELLOW;
                     this.ctx.font = `${radius * 0.4}px Arial`;
                     this.ctx.textAlign = 'center';
                     this.ctx.textBaseline = 'middle';
@@ -484,7 +485,7 @@ export class MeditationTowers {
                 }
                 
                 // Draw tower icon (simple symbol)
-                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                this.ctx.fillStyle = MEDITATION_COLORS.TEXT_WHITE;
                 this.ctx.font = `${radius * 0.6}px Arial`;
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
@@ -510,7 +511,7 @@ export class MeditationTowers {
         
         // Draw outer glow
         const glowGradient = this.ctx.createRadialGradient(x, y, 0, x, y, radius * 1.8);
-        glowGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${a * 0.4})`);
+        glowGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${a * 0.4})`); // Keep dynamic RGB values
         glowGradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${a * 0.2})`);
         glowGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
         this.ctx.fillStyle = glowGradient;
@@ -549,7 +550,7 @@ export class MeditationTowers {
             this.ctx.arc(0, 0, radius, 0, Math.PI * 2);
             this.ctx.fill();
             // Inner ring
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            this.ctx.fillStyle = MEDITATION_COLORS.SHADOW_DARK;
             this.ctx.beginPath();
             this.ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2);
             this.ctx.fill();
@@ -619,8 +620,8 @@ export class MeditationTowers {
         
         // Draw level indicator with enhanced styling
         if (level > 0) {
-            this.ctx.fillStyle = `rgba(255, 255, 0, ${0.9 + Math.sin(time * 4) * 0.1})`;
-            this.ctx.strokeStyle = 'rgba(255, 200, 0, 0.9)';
+            this.ctx.fillStyle = MEDITATION_COLORS.TEXT_YELLOW(time);
+            this.ctx.strokeStyle = MEDITATION_COLORS.HIGHLIGHT_ORANGE;
             this.ctx.lineWidth = 1;
             this.ctx.font = `bold ${radius * 0.5}px Arial`;
             this.ctx.textAlign = 'center';
@@ -632,7 +633,7 @@ export class MeditationTowers {
         
         // Draw tower symbol/icon
         const symbol = this.getTowerSymbol(tower.id);
-        this.ctx.fillStyle = `rgba(255, 255, 255, ${0.9 + Math.sin(time * 2) * 0.1})`;
+        this.ctx.fillStyle = MEDITATION_COLORS.TEXT_WHITE_PULSE(time);
         this.ctx.font = `${radius * 0.7}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
@@ -689,19 +690,19 @@ export class MeditationTowers {
         const radius = this.cellSize * 0.3;
         
         // Draw preview circle
-        this.ctx.fillStyle = canPlace ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+        this.ctx.fillStyle = canPlace ? MEDITATION_COLORS.CAN_PLACE : MEDITATION_COLORS.CANNOT_PLACE;
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Draw preview border
-        this.ctx.strokeStyle = canPlace ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
+        this.ctx.strokeStyle = canPlace ? MEDITATION_COLORS.CAN_PLACE_STROKE : MEDITATION_COLORS.CANNOT_PLACE_STROKE;
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
         
         // Draw range preview (use base range)
         const range = towerData.baseRange * this.cellSize;
-        this.ctx.strokeStyle = canPlace ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+        this.ctx.strokeStyle = canPlace ? MEDITATION_COLORS.CAN_PLACE : MEDITATION_COLORS.CANNOT_PLACE;
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
         this.ctx.arc(x, y, range, 0, Math.PI * 2);
@@ -732,9 +733,9 @@ export class MeditationTowers {
             if (isEnhanced) {
                 // Enhanced health bar with border and gradient
                 // Background with border
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                this.ctx.fillStyle = MEDITATION_COLORS.SHADOW_DARKER;
                 this.ctx.fillRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
-                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.strokeStyle = MEDITATION_COLORS.GRID_LINE;
                 this.ctx.lineWidth = 1;
                 this.ctx.strokeRect(barX - 1, barY - 1, barWidth + 2, barHeight + 2);
                 
@@ -1109,7 +1110,7 @@ export class MeditationTowers {
                 this.ctx.shadowBlur = 0;
                 
                 // Inner core
-                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                this.ctx.fillStyle = MEDITATION_COLORS.TEXT_WHITE;
                 this.ctx.beginPath();
                 this.ctx.arc(x, y, projectileSize * 0.5, 0, Math.PI * 2);
                 this.ctx.fill();

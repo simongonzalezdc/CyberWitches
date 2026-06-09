@@ -7,6 +7,7 @@ import { formatNumber } from '../../utils.js';
 import { getTierSymbol, getTierAppropriateStyle, getWorkstationTier } from './uiHelpers.js';
 import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
 import { Balance } from '../../utils.js';
+import { accessibilityManager } from '../../accessibility.js';
 
 export class WorkstationUI {
     constructor(gameState, uiManager) {
@@ -179,6 +180,9 @@ export class WorkstationUI {
                 const cost = Balance ? Balance.scaledRecipe(prodData.recipe, owned, growth) : {};
                 const canAfford = this.gameState.canAfford(cost);
 
+                // Generate specific disabled reason
+                const disabledReason = canAfford ? '' : this.generateDisabledReason(cost);
+
                 // Calculate production
                 const production = {};
                 // Base production - validate outputs exist
@@ -273,12 +277,13 @@ export class WorkstationUI {
                             ${costHtml}
                         </div>
                         <div class="button-group">
-                            <button class="btn-craft" data-action="craft" data-ws-id="${prodData.id}" data-amount="1" ${!canAfford ? 'disabled aria-disabled="true" title="Insufficient essence for this workstation."' : ''}>
+                            <button class="btn-craft" data-action="craft" data-ws-id="${prodData.id}" data-amount="1" ${!canAfford ? `disabled aria-disabled="true" data-disabled-reason="${disabledReason}"` : ''} aria-describedby="${!canAfford ? `craft-disabled-${prodData.id}` : ''}">
                                 Craft
                             </button>
-                            <button class="btn-craft-max" data-action="craft-max" data-ws-id="${prodData.id}" ${!canAfford ? 'disabled aria-disabled="true" title="Insufficient essence for this workstation."' : ''}>
+                            <button class="btn-craft-max" data-action="craft-max" data-ws-id="${prodData.id}" ${!canAfford ? `disabled aria-disabled="true" data-disabled-reason="${disabledReason}"` : ''} aria-describedby="${!canAfford ? `craft-disabled-${prodData.id}` : ''}">
                                 Max
                             </button>
+                            ${!canAfford ? `<span id="craft-disabled-${prodData.id}" class="sr-only">${disabledReason}</span>` : ''}
                         </div>
                     </div>
                 `;
@@ -347,5 +352,58 @@ export class WorkstationUI {
         }
 
         return { multiplier: mult, inscriptions };
+    }
+
+    /**
+     * Generate a specific disabled reason message for craft buttons
+     */
+    generateDisabledReason(cost) {
+        const missingItems = [];
+        for (const [ingId, amount] of Object.entries(cost)) {
+            const userHas = this.gameState.inventory[ingId] || 0;
+            if (userHas < amount) {
+                const ing = INGREDIENTS.find(i => i.id === ingId);
+                const needed = formatNumber(amount - userHas);
+                missingItems.push(`${needed} ${ing ? ing.displayName : ingId}`);
+            }
+        }
+
+        if (missingItems.length === 0) return 'Unknown error';
+        if (missingItems.length === 1) return `Need ${missingItems[0]}`;
+        if (missingItems.length === 2) return `Need ${missingItems.join(' & ')}`;
+        return `Need ${missingItems.slice(0, 2).join(', ')} & ${missingItems.length - 1} more`;
+    }
+
+    /**
+     * Show visual feedback for craft attempt results
+     */
+    showCraftFeedback(button, result) {
+        if (!button) return;
+
+        // Remove any existing animation classes
+        button.classList.remove('error-shake', 'error-flash', 'success-pulse');
+
+        // Trigger reflow
+        void button.offsetWidth;
+
+        if (result.success) {
+            button.classList.add('success-pulse');
+            // Announce to screen reader
+            if (accessibilityManager) {
+                accessibilityManager.announce(result.message, 'polite');
+            }
+        } else {
+            button.classList.add('error-shake');
+            button.classList.add('error-flash');
+            // Announce error to screen reader
+            if (accessibilityManager) {
+                accessibilityManager.announce(`Failed: ${result.message}`, 'assertive');
+            }
+        }
+
+        // Clean up animation classes after animation completes
+        setTimeout(() => {
+            button.classList.remove('error-shake', 'error-flash', 'success-pulse');
+        }, 600);
     }
 }

@@ -49,6 +49,17 @@ export class InscriptionsUI {
             );
         }
 
+        // Show empty state if no upgrades are unlocked
+        if (unlockedUpgrades.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state-container">
+                    <div class="empty-state-sigil" aria-hidden="true"></div>
+                    <p class="empty-state-message">> NO_INSCRIPTIONS_FOUND. Compile essence to unlock enhancement protocols.</p>
+                </div>
+            `;
+            return;
+        }
+
         // Bind the inscribe click handler ONCE via delegation on the stable
         // #upgrade-list container, instead of re-attaching a listener to every
         // card on every render (which churned ~31 listeners per update — a real
