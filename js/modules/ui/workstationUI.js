@@ -150,11 +150,28 @@ export class WorkstationUI {
             }
 
             // Render workstations for this tier
+            // Background image mapping for workstation cards
+            const wsBgImages = {
+                'ws_fire_forge': 'images/backgrounds/fire-forge.jpg',
+                'ws_aqua_well': 'images/backgrounds/aqua-well.jpg',
+                'ws_zephyr_generator': 'images/backgrounds/zephyr-generator.jpg',
+                'ws_crystal_chamber': 'images/backgrounds/crystal-chamber.jpg',
+                'ws_aether_synthesizer': 'images/backgrounds/aether-synthesizer.jpg',
+            };
+
             for (const prodData of workstationsByTier[tier]) {
                 const card = document.createElement('div');
                 card.className = 'workstation-card card'; // Use both classes for compatibility
                 card.dataset.id = prodData.id;
                 card.dataset.tier = String(tierNum); // Store tier for CSS targeting
+
+                // Apply background image if available
+                const bgUrl = wsBgImages[prodData.id];
+                if (bgUrl) {
+                    card.style.backgroundImage = `linear-gradient(to right, rgba(16,18,32,0.92) 0%, rgba(16,18,32,0.75) 50%, rgba(16,18,32,0.55) 100%), url('${bgUrl}')`;
+                    card.style.backgroundSize = 'cover';
+                    card.style.backgroundPosition = 'center right';
+                }
 
                 // Always apply tier colors to the card border-left (the status indicator)
                 // This makes workstations colorful regardless of design tier
