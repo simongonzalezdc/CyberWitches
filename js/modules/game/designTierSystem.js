@@ -203,6 +203,15 @@ export class DesignTierSystem {
         document.documentElement.style.setProperty('--color-corruption', (colors.corruption || COLORS.KY_RED).toUpperCase());
     }
 
+    reapplyThemeForTier(tier) {
+        if (tier === 0) {
+            this.setTheme({ primary: '#FFFFFF', secondary: '#FFFFFF', accent: '#FFFFFF' });
+            return;
+        }
+
+        this.setTheme({ primary: '#FF2F6D', secondary: '#26E6FF', accent: '#F5D35C' });
+    }
+
     toggleAnimations(enabled) {
         if (enabled) {
             document.body.classList.remove('no-animations');
