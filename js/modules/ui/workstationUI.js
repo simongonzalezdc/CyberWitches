@@ -114,7 +114,7 @@ export class WorkstationUI {
             'ws_harmonic_stabilizer': 'images/backgrounds/aether-synthesizer.jpg',
             'ws_arcane_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
             'ws_etheric_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
-            'ws_infinity_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
+            'ws_infinity_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg'
         };
         const cards = container.querySelectorAll('.workstation-card');
         for (const card of cards) {
@@ -235,7 +235,7 @@ export class WorkstationUI {
                 'ws_harmonic_stabilizer': 'images/backgrounds/aether-synthesizer.jpg',
                 'ws_arcane_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
                 'ws_etheric_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
-                'ws_infinity_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg',
+                'ws_infinity_bit_reactor': 'images/backgrounds/aether-synthesizer.jpg'
             };
 
             for (const prodData of workstationsByTier[tier]) {
