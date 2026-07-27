@@ -13,6 +13,7 @@
  */
 
 import { GAME_CONSTANTS } from '../codeOrganization.js';
+import { reportThrottledFailure } from '../errorHandler.js';
 
 export class UnifiedGameLoop {
     constructor() {
@@ -154,11 +155,15 @@ export class UnifiedGameLoop {
             const delta = this.logicTimestep / 1000; // Convert to seconds
             
             // Call all logic update callbacks
-            this.logicCallbacks.forEach(callback => {
+            this.logicCallbacks.forEach((callback, i) => {
                 try {
                     callback(delta);
                 } catch (error) {
                     console.error('UnifiedGameLoop: Error in logic callback:', error);
+                    reportThrottledFailure(`loop:logic:${i}`, error, 'gameLoop:logic', {
+                        showToUser: true,
+                        cooldownMs: 20000
+                    });
                 }
             });
             
@@ -174,11 +179,15 @@ export class UnifiedGameLoop {
             const delta = this.visualTimestep / 1000; // Convert to seconds
             
             // Call all visual update callbacks
-            this.visualCallbacks.forEach(callback => {
+            this.visualCallbacks.forEach((callback, i) => {
                 try {
                     callback(delta);
                 } catch (error) {
                     console.error('UnifiedGameLoop: Error in visual callback:', error);
+                    reportThrottledFailure(`loop:visual:${i}`, error, 'gameLoop:visual', {
+                        showToUser: false,
+                        cooldownMs: 30000
+                    });
                 }
             });
             
@@ -188,11 +197,15 @@ export class UnifiedGameLoop {
         // Render with interpolation for ultra-smooth visuals
         const alpha = this.visualAccumulator / this.visualTimestep; // 0-1 interpolation factor
         
-        this.renderCallbacks.forEach(callback => {
+        this.renderCallbacks.forEach((callback, i) => {
             try {
                 callback(alpha);
             } catch (error) {
                 console.error('UnifiedGameLoop: Error in render callback:', error);
+                reportThrottledFailure(`loop:render:${i}`, error, 'gameLoop:render', {
+                    showToUser: false,
+                    cooldownMs: 30000
+                });
             }
         });
         
@@ -213,6 +226,10 @@ export class UnifiedGameLoop {
                 tierCheck.callback();
             } catch (error) {
                 console.error('UnifiedGameLoop: Error in tier check:', error);
+                reportThrottledFailure('loop:periodic:tier', error, 'gameLoop:tierCheck', {
+                    showToUser: true,
+                    cooldownMs: 20000
+                });
             }
             tierCheck.counter = 0;
         }
@@ -225,6 +242,10 @@ export class UnifiedGameLoop {
                 achievementCheck.callback();
             } catch (error) {
                 console.error('UnifiedGameLoop: Error in achievement check:', error);
+                reportThrottledFailure('loop:periodic:achievement', error, 'gameLoop:achievementCheck', {
+                    showToUser: false,
+                    cooldownMs: 20000
+                });
             }
             achievementCheck.counter = 0;
         }
@@ -237,6 +258,10 @@ export class UnifiedGameLoop {
                 eventCheck.callback();
             } catch (error) {
                 console.error('UnifiedGameLoop: Error in event check:', error);
+                reportThrottledFailure('loop:periodic:event', error, 'gameLoop:eventCheck', {
+                    showToUser: false,
+                    cooldownMs: 20000
+                });
             }
             eventCheck.counter = 0;
         }

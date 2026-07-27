@@ -1,5 +1,6 @@
 import { MEDITATION_TOWERS, MEDITATION_DISTRACTIONS, MEDITATION_UPGRADES } from './modules/data/meditation.js';
 import { mirrorToIndexedDB, idbDelete } from './save/indexedDBBackup.js';
+import { handleError, notifyPlayer } from './errorHandler.js';
 
 /**
  * Meditation State Manager - Manages meditation tower defense mode
@@ -1519,28 +1520,33 @@ export class MeditationState {
     }
 
     saveState() {
-        const state = {
-            focus: this.focus,
-            focusTotalEarned: this.focusTotalEarned,
-            tranquilityMax: this.tranquilityMax,
-            meditationInventory: this.meditationInventory,
-            meditationUpgrades: this.meditationUpgrades,
-            towers: this.towers.map(t => ({
-                id: t.id,
-                gridX: t.gridX,
-                gridY: t.gridY,
-                upgradeLevel: t.upgradeLevel || 0
-            })),
-            // Save meditation statistics for production bonus
-            totalWavesCompleted: this.totalWavesCompleted,
-            totalDistractionsKilled: this.totalDistractionsKilled,
-            totalSessionsCompleted: this.totalSessionsCompleted
-        };
+        try {
+            const state = {
+                focus: this.focus,
+                focusTotalEarned: this.focusTotalEarned,
+                tranquilityMax: this.tranquilityMax,
+                meditationInventory: this.meditationInventory,
+                meditationUpgrades: this.meditationUpgrades,
+                towers: this.towers.map(t => ({
+                    id: t.id,
+                    gridX: t.gridX,
+                    gridY: t.gridY,
+                    upgradeLevel: t.upgradeLevel || 0
+                })),
+                // Save meditation statistics for production bonus
+                totalWavesCompleted: this.totalWavesCompleted,
+                totalDistractionsKilled: this.totalDistractionsKilled,
+                totalSessionsCompleted: this.totalSessionsCompleted
+            };
 
-        const serialized = JSON.stringify(state);
-        localStorage.setItem('meditationState', serialized);
-        // Durable, eviction-resistant mirror (non-blocking). See indexedDBBackup.js.
-        mirrorToIndexedDB('meditationState', serialized);
+            const serialized = JSON.stringify(state);
+            localStorage.setItem('meditationState', serialized);
+            // Durable, eviction-resistant mirror (non-blocking). See indexedDBBackup.js.
+            mirrorToIndexedDB('meditationState', serialized);
+        } catch (error) {
+            console.error('Error saving meditation state:', error);
+            handleError(error, 'meditation:save', true);
+        }
     }
 
     /**
@@ -1551,7 +1557,20 @@ export class MeditationState {
             const saved = localStorage.getItem('meditationState');
             if (!saved) return;
 
-            const state = JSON.parse(saved);
+            let state;
+            try {
+                state = JSON.parse(saved);
+            } catch (_parseError) {
+                try {
+                    localStorage.setItem(`meditationState_corrupt_${Date.now()}`, saved);
+                } catch { /* quota */ }
+                handleError(
+                    new Error('Meditation save was corrupted and could not be loaded. A backup was kept.'),
+                    'meditation:load',
+                    true
+                );
+                return;
+            }
 
             this.focus = state.focus || 0;
             this.focusTotalEarned = state.focusTotalEarned || 0;
@@ -1567,6 +1586,7 @@ export class MeditationState {
             // Rebuild towers
             if (state.towers) {
                 this.towers = [];
+                let skipped = 0;
                 for (const towerData of state.towers) {
                     const towerInfo = MEDITATION_TOWERS.find(t => t.id === towerData.id);
                     if (towerInfo) {
@@ -1586,12 +1606,24 @@ export class MeditationState {
                             };
                             cell.tower = tower;
                             this.towers.push(tower);
+                        } else {
+                            skipped++;
                         }
+                    } else {
+                        skipped++;
                     }
+                }
+                if (skipped > 0) {
+                    notifyPlayer(
+                        `Meditation load skipped ${skipped} tower(s) with invalid data.`,
+                        'meditation:load',
+                        'warning'
+                    );
                 }
             }
         } catch (error) {
             console.error('Error loading meditation state:', error);
+            handleError(error, 'meditation:load', true);
         }
     }
 }

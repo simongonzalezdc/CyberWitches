@@ -107,6 +107,8 @@ export async function initGame() {
         // guarded by `if (window.showNotification)`. Nothing ever assigned these
         // globals, so every one of those notifications was a silent no-op.
         window.showNotification = showNotification;
+        // Bridge for errorHandler / storage modules that cannot import systemLog freely
+        window.__appendSystemLog = appendSystemLog;
         ensureSystemLogEmptyState();
 
 
@@ -135,6 +137,7 @@ export async function initGame() {
                 appendSystemLog(copy, 'success');
             } catch (error) {
                 console.warn('triggerBonusFeedback failed:', error);
+                try { appendSystemLog('ERR triggerBonusFeedback', 'warn'); } catch { /* optional */ }
             }
         };
 
@@ -175,6 +178,10 @@ export async function initGame() {
         } catch (error) {
             console.warn('Design tier boot apply failed:', error);
             document.body.classList.add('tier-0');
+            try {
+                appendSystemLog('LAZY_FAIL design tier boot — forced tier-0', 'error');
+                showNotification('Display tier failed to apply. Running in safe Tier 0 mode.', 'warning', 5000);
+            } catch { /* optional early-boot */ }
         }
 
         const fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
@@ -233,6 +240,10 @@ export async function initGame() {
                 designTierSystem.checkTierUnlocks();
             } catch (error) {
                 console.error('Error checking tier unlocks:', error);
+                try {
+                    appendSystemLog('ERR tier unlock check failed', 'error');
+                    showNotification('A progression check failed. Some unlocks may lag until reload.', 'warning', 4000);
+                } catch { /* optional */ }
             }
         });
 
