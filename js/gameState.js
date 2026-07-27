@@ -407,7 +407,7 @@ export class GameState {
     getProductionMultiplier(workstationId) {
         // Check cache if not dirty
         if (!this.multiplierCacheDirty && this.multiplierCache.has(workstationId)) {
-            return this.multiplierCache.get(workstationId);
+            return this._applyVolatileProductionMult(this.multiplierCache.get(workstationId));
         }
 
         // Recalculate if cache is dirty or missing
@@ -448,25 +448,51 @@ export class GameState {
             }
         }
 
-        // Active production buffs
+        // Cache stable portion only (upgrades + prestige). Volatile buffs and
+        // meditation change without always calling invalidateMultiplierCache.
+        this.multiplierCache.set(workstationId, mult);
+        this.multiplierCacheDirty = false;
+
+        return this._applyVolatileProductionMult(mult);
+    }
+
+    /**
+     * Apply production/ingredient buffs + meditation bonus (never cached).
+     * @param {number} baseMult
+     * @returns {number}
+     */
+    _applyVolatileProductionMult(baseMult) {
+        let mult = baseMult;
         mult *= this.getBuff('production');
-
-        // Active ingredient production buffs
         mult *= this.getBuff('ingredient_production');
-
-        // Meditation production bonus (only available through meditation)
-        // NOT cached — meditation state can change independently of cache invalidation
-        if (window.meditationState && typeof window.meditationState.getMeditationProductionBonus === 'function') {
+        if (typeof window !== 'undefined' && window.meditationState
+            && typeof window.meditationState.getMeditationProductionBonus === 'function') {
             const meditationBonus = window.meditationState.getMeditationProductionBonus();
             if (isFinite(meditationBonus) && !isNaN(meditationBonus)) {
                 mult *= meditationBonus;
             }
         }
-
-        // Cache the result
-        this.multiplierCache.set(workstationId, mult);
-
         return mult;
+    }
+
+    /**
+     * Stable cached mult × volatile buffs/meditation (for UI deltas).
+     * @param {string} workstationId
+     * @returns {{ base: number, volatile: number, total: number, meditation: number }}
+     */
+    getProductionMultiplierBreakdown(workstationId) {
+        const total = this.getProductionMultiplier(workstationId);
+        const base = (!this.multiplierCacheDirty && this.multiplierCache.has(workstationId))
+            ? this.multiplierCache.get(workstationId)
+            : total; // fallback
+        let meditation = 1;
+        if (typeof window !== 'undefined' && window.meditationState
+            && typeof window.meditationState.getMeditationProductionBonus === 'function') {
+            const m = window.meditationState.getMeditationProductionBonus();
+            if (isFinite(m) && !isNaN(m)) meditation = m;
+        }
+        const volatile = total / (base || 1);
+        return { base, volatile, total, meditation };
     }
 
     /**
@@ -474,6 +500,9 @@ export class GameState {
      */
     invalidateMultiplierCache() {
         this.multiplierCacheDirty = true;
+        // Clear entries so in-session prestige/resets cannot serve pre-reset mults
+        // once the cache is activated (dirty=false after a successful recompute).
+        this.multiplierCache.clear();
     }
 
     /**
@@ -820,6 +849,9 @@ export class GameState {
         // NOTE: discoveredRecipes intentionally persists across ascension.
         // Recipes represent player knowledge — standard idle game design keeps
         // knowledge/unlocks through prestige resets. Same for storyFlags.
+
+        // Cache held pre-reset upgrade mults; must not survive in-session ascend.
+        this.invalidateMultiplierCache();
 
         // Apply prestige start bonuses
         this.applyPrestigeStartBonuses();

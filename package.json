@@ -1,7 +1,7 @@
 {
   "name": "hex-compiler",
   "version": "1.0.0",
-  "description": "Magic is fading. You're a Hex Compiler—translating magical hexes into hexadecimal code. An idle game about compiling spells into data and building digital preservation chambers.",
+  "description": "Magic is fading. You're a Hex Compiler\u2014translating magical hexes into hexadecimal code. An idle game about compiling spells into data and building digital preservation chambers.",
   "main": "index.html",
   "type": "module",
   "scripts": {
@@ -25,7 +25,10 @@
     "format": "prettier --write \"js/**/*.js\" \"*.{html,css,md}\"",
     "docs": "jsdoc js -d docs -c jsdoc.json",
     "size-check": "node -e \"const fs=require('fs'),p=require('path'),d='dist/js';const crit=fs.statSync(p.join(d,'game.bundle.js')).size;const all=fs.readdirSync(d).filter(f=>f.endsWith('.js')).reduce((s,f)=>s+fs.statSync(p.join(d,f)).size,0);const ck=(crit/1024).toFixed(1),ak=(all/1024).toFixed(1);console.log('Critical bundle: '+ck+'KB | Total (with lazy chunks): '+ak+'KB');if(crit>200*1024){console.error('FAIL: critical bundle exceeds 200KB budget');process.exit(1);}else{console.log('PASS: critical bundle within 200KB budget');}\"",
-    "ci": "npm run lint && npm run lint:color-debt && npm run typecheck && npm run test"
+    "ci": "npm run lint && npm run lint:color-debt && npm run typecheck && npm run test",
+    "smoke:dist": "bash scripts/smoke-dist.sh dist",
+    "smoke:src": "bash scripts/smoke-dist.sh src",
+    "test:e2e:critical": "playwright test e2e/smoke.spec.js e2e/progression-tier.spec.js"
   },
   "keywords": [
     "idle",
