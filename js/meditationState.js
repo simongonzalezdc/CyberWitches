@@ -608,6 +608,19 @@ export class MeditationState {
         this.waveActive = false;
         this.distractions = [];
 
+        // Capture production mult before rewards mutate meditation bonus
+        let multBefore = null;
+        try {
+            if (window.gameState && typeof window.gameState.getProductionMultiplier === 'function') {
+                // Prefer a real workstation if owned; else synthetic id still runs formula
+                const wsIds = Object.keys(window.gameState.workstations || {}).filter(
+                    (id) => (window.gameState.workstations[id] || 0) > 0
+                );
+                const sampleId = wsIds[0] || 'ws_fire_forge';
+                multBefore = window.gameState.getProductionMultiplier(sampleId);
+            }
+        } catch { /* optional */ }
+
         // Show notification if tranquility was lost
         if (tranquilityLost && window.showNotification) {
             window.showNotification('Meditation ended - All tranquility lost!', 'error');
@@ -620,6 +633,35 @@ export class MeditationState {
 
         // Calculate rewards based on performance
         this.calculateSessionRewards();
+
+        // Meditation Δ mult feedback on the live production path
+        try {
+            if (window.gameState) {
+                if (window.gameState.storyFlags) {
+                    window.gameState.storyFlags.meditationSessionDone = true;
+                }
+                if (typeof window.gameState.getProductionMultiplier === 'function' && multBefore != null) {
+                    const wsIds = Object.keys(window.gameState.workstations || {}).filter(
+                        (id) => (window.gameState.workstations[id] || 0) > 0
+                    );
+                    const sampleId = wsIds[0] || 'ws_fire_forge';
+                    const multAfter = window.gameState.getProductionMultiplier(sampleId);
+                    const delta = multAfter - multBefore;
+                    const pct = multBefore > 0 ? ((delta / multBefore) * 100) : 0;
+                    const sign = delta >= 0 ? '+' : '';
+                    const line = `MEDITATION_Δ mult ${multBefore.toFixed(2)} → ${multAfter.toFixed(2)} (${sign}${pct.toFixed(1)}%)`;
+                    if (typeof window.__appendSystemLog === 'function') {
+                        window.__appendSystemLog(line, 'success');
+                    }
+                    if (window.showNotification) {
+                        window.showNotification(line, 'success', 4000);
+                    }
+                    window.__lastMeditationMultDelta = { before: multBefore, after: multAfter, delta, pct };
+                }
+            }
+        } catch (e) {
+            console.warn('meditation mult delta feedback failed', e);
+        }
     }
 
     /**

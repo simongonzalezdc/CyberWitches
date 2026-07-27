@@ -1079,3 +1079,28 @@ body.tier-0 .btn-cast {
     opacity: 1;
     outline: 1px solid var(--ky-crystal);
 }
+
+/* Heal-moment tier advance (ticket 08) */
+body.tier-advance-heal {
+    outline: 2px solid var(--ky-cyan);
+    outline-offset: -2px;
+    animation: heal-restore-pulse 1.4s ease-out 1;
+}
+@keyframes heal-restore-pulse {
+    0% { filter: brightness(1.35) saturate(1.2); }
+    40% { filter: brightness(1.1); }
+    100% { filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.tier-advance-heal {
+        animation: none;
+        outline: 1px solid var(--ky-cyan);
+    }
+}
+.compile-goal-rail {
+    border: 1px solid color-mix(in srgb, var(--ky-green) 35%, transparent);
+    min-width: 12rem;
+}
+#heal-share-button:not([hidden]) {
+    border: 1px solid color-mix(in srgb, var(--ky-cyan) 40%, transparent);
+}
