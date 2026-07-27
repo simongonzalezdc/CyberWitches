@@ -39,6 +39,16 @@
 
 No third currency, gacha, dual quest HUD, CSS framework swap, GameState rewrite, Steam-before-D1.
 
+## GLM review (PR #20)
+
+Initial `REQUEST CHANGES` addressed in `9ec0712`:
+
+- Reduced-motion share reveal without pulse class  
+- `visual.ok` only when download trigger succeeds  
+- Live ceremony `beats` array returned  
+- Session-scoped `sessionStart` for TTA/TTH clocks  
+- Sanitize check no longer matches short `ab` substrings  
+
 ## Honest residuals
 
 1. **Field mute-clip n=5** not executed (human subjects).  
