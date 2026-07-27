@@ -1,0 +1,13 @@
+{
+  "created": "2026-07-27T08:15:24.149Z",
+  "mute": true,
+  "durationHintSec": 15,
+  "video": "stimulus.webm",
+  "keyFrames": [
+    "01-tier0.webp",
+    "03-heal-ceremony.webp",
+    "05-share-restore.webp"
+  ],
+  "passRule": "≥4/5 spontaneous restored/healed/fixed/online",
+  "generator": "e2e/mute-clip-stimulus.spec.js"
+}

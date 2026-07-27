@@ -2,7 +2,7 @@
 
 **Label:** `wayfinder:map`  
 **Tracker:** local-markdown `.scratch/capture-the-heal/`  
-**Status:** **shipped on main** (PR #20, 2026-07-27) — residual HITL field mute-clip + growth pivot  
+**Status:** **shipped + residuals closed** (PR #20; field Pass; OG live 2026-07-27)  
 **Prior campaign:** ideal-critical-path (shipped #14–#19)  
 **Research:** `../ideal-critical-path/RESEARCH_GAP_CLOSEOUT.md`  
 **Ralplan:** `RALPLAN.md`  
