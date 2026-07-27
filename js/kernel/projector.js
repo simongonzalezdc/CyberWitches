@@ -39,12 +39,14 @@ export function projectPipelineHud(state, opts = {}) {
         }
     }
 
-    // Owned totals: merge kernel bag + optional live legacy bag
-    const merged = {
-        ...(state.workstations || {}),
-        ...(opts.legacyWorkstations || {})
-    };
-    const counts = countOwnedByRole(merged);
+    // Owned totals: use exactly one bag to avoid double-count when legacy ws_*
+    // was already mapped into state.workstations as mod_*. Prefer explicit
+    // live craft bag when provided (GameState.workstations).
+    const bag =
+        opts.legacyWorkstations != null
+            ? opts.legacyWorkstations
+            : state.workstations || {};
+    const counts = countOwnedByRole(bag);
     for (const role of ROLE_ORDER) {
         byRole[role].ownedTotal = counts[role] || 0;
     }

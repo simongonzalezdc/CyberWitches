@@ -81,11 +81,6 @@ export function countOwnedByRole(workstations) {
         if (!n) continue;
         const role = roleForId(id);
         if (role) out[role] = (out[role] || 0) + n;
-        // Also credit mapped kernel id if legacy present
-        const kId = LEGACY_TO_MODULE[id];
-        if (kId && kId !== id) {
-            // already counted via roleForId on legacy; skip double
-        }
     }
     return /** @type {Record<PipelineRole, number>} */ (out);
 }

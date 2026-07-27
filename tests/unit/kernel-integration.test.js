@@ -149,7 +149,7 @@ describe('Kernel live integration', () => {
         expect(r.ok).toBe(true);
     });
 
-    test('HUD counts legacy ws_* into capture role', () => {
+    test('HUD counts legacy ws_* into capture role exactly (no double-count)', () => {
         const p = projectorsFromGameState({
             ab: 10,
             inventory: {},
@@ -159,8 +159,8 @@ describe('Kernel live integration', () => {
         });
         const capture = p.pipeline.roles.find((x) => x.role === 'capture');
         const bind = p.pipeline.roles.find((x) => x.role === 'bind');
-        expect(capture.ownedTotal).toBeGreaterThanOrEqual(2);
-        expect(bind.ownedTotal).toBeGreaterThanOrEqual(1);
+        expect(capture.ownedTotal).toBe(2);
+        expect(bind.ownedTotal).toBe(1);
     });
 
     test('meditation productionMult increases tick production', () => {

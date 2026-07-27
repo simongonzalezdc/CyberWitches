@@ -75,7 +75,12 @@ function runSession(seed) {
         affinity: s.affinity,
         storageCap: s.storageCap
     });
-    const g3 = p.pipeline.roles.length === 5 && p.pipeline.roles.some((r) => r.ownedTotal > 0);
+    const captureOwned = p.pipeline.roles.find((r) => r.role === 'capture')?.ownedTotal || 0;
+    // Exact count: 1 ws_fire_forge + optional mod_fire_capture craft (0 or 1)
+    const g3 =
+        p.pipeline.roles.length === 5 &&
+        captureOwned >= 1 &&
+        captureOwned <= 3;
     // G4 prestige message present
     const g4 = typeof band === 'string' && band.length > 0;
 
