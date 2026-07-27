@@ -1,6 +1,6 @@
 # Spec — Hex Compiler identity lock + player-truth polish
 
-**Status:** ready-for-agent  
+**Status:** done  
 **Date:** 2026-07-27  
 **Sources:** adversarial audit 2026-07-26; wayfinder identity locks; ralplan O1-synthesis (Critic APPROVE); approved test seams S1–S8
 

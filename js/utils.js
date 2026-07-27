@@ -4,13 +4,18 @@ import { memoize, memoizeWithKey } from './utils/memoization.js';
 
 // Week 3: Memoize formatShort since it's called frequently with same values
 export const formatShort = memoize((value) => {
-    if (value < 1000) {
-        return Math.floor(value).toString();
+    const n = Number(value);
+    if (!Number.isFinite(n)) {
+        return '0';
+    }
+
+    if (n < 1000) {
+        return Math.floor(n).toString();
     }
 
     const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp'];
     let tier = 0;
-    let num = value;
+    let num = n;
 
     while (num >= 1000 && tier < suffixes.length - 1) {
         num /= 1000;
@@ -45,13 +50,18 @@ export function formatPrecise(value, decimals = 2) {
  * Format number with 1 decimal place (for element counters)
  */
 export function formatOneDecimal(value) {
-    if (value < 1000) {
-        return value.toFixed(1);
+    const n = Number(value);
+    if (!Number.isFinite(n)) {
+        return '0.0';
+    }
+
+    if (n < 1000) {
+        return n.toFixed(1);
     }
 
     const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp'];
     let tier = 0;
-    let num = value;
+    let num = n;
 
     while (num >= 1000 && tier < suffixes.length - 1) {
         num /= 1000;

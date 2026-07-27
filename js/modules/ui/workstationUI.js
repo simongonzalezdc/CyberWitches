@@ -358,7 +358,7 @@ export class WorkstationUI {
                     if (inscriptionMult > 1.0) {
                         productionHtml += `
                             <div class="inscription-bonus">
-                                <i class="fas fa-bolt"></i> ${escapeHtml(formatNumber((inscriptionMult - 1) * 100))}% Bonus
+                                <span class="css-icon-bolt" aria-hidden="true"></span> ${escapeHtml(formatNumber((inscriptionMult - 1) * 100))}% Bonus
                             </div>
                         `;
                     }
