@@ -18,6 +18,10 @@ export class CompileGoalUI {
         this.titleEl = document.getElementById('compile-goal-title');
         this.msgEl = document.getElementById('compile-goal-message');
         this.visible = false;
+        /** @type {string} */
+        this._lastGoalKey = '';
+        /** @type {string} */
+        this._lastCompletedKey = this.completedIds.join('\0');
     }
 
     loadCompleted() {
@@ -78,12 +82,22 @@ export class CompileGoalUI {
 
         const ctx = this.buildContext();
         this.completedIds = syncCompletedGoals(ctx, this.completedIds);
-        this.saveCompleted();
+        const completedKey = this.completedIds.join('\0');
+        if (completedKey !== this._lastCompletedKey) {
+            this._lastCompletedKey = completedKey;
+            this.saveCompleted();
+        }
         const goal = getPrimaryCompileGoal(ctx, this.completedIds);
         if (!goal) {
             this.root.hidden = true;
             return;
         }
+
+        const goalKey = `${goal.id}\0${goal.title}\0${goal.message}`;
+        if (goalKey === this._lastGoalKey && this.visible) {
+            return;
+        }
+        this._lastGoalKey = goalKey;
 
         this.root.hidden = false;
         this.root.setAttribute('aria-hidden', 'false');
