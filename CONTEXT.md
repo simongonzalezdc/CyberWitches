@@ -9,8 +9,9 @@ modules deepen; it is the map AI agents and new contributors read first.
   *casting*.
 - **Cast** — the core action: compile raw magic into data, producing AB
   (the EXEC button, `cast-button`).
-- **Workstation / Producer** — a preservation chamber that passively produces
-  AB or ingredients over time.
+- **Workstation / Producer** — a sector module (pipeline role: Capture/Store/Bind/
+  Compile/Shield) that passively produces AB or ingredients over time. Live buy
+  list is `PRODUCERS` (`ws_*`); ownership is coalesced with Kernel `mod_*` pairs.
 - **Ingredient** — a resource produced/consumed by recipes.
 - **Recipe / Crafting** — combine ingredients to craft workstations/potions.
 - **Prestige / Ascend** — reset progress for permanent **prestige bonuses** and
@@ -47,13 +48,21 @@ modules deepen; it is the map AI agents and new contributors read first.
   intermediates lower (still > 0). No produced intermediate is immortal.
 - **Aesthetic v2** — hex lattice terminal surface (`css/aesthetic-v2.css`);
   tier-0 monochrome path remains strict mono.
+- **Ownership coalesce** — `coalesceWorkstations` / `applyOwnershipDelta` in
+  `js/kernel/ownership.js`: paired `ws_*`/`mod_*` sum onto canonical live id;
+  production, roles, and save use the single bag.
+- **Void-pressure HUD** — pipeline strip shows weighted STORAGE used/cap and
+  ASCEND_BAND when prestige recommend is active.
+- **Overall S+ (O2)** — Eng ∩ Product ∩ Systems ∩ Identity; see
+  `guides/restoration-kernel/QUALITY_BAR.md`.
 
 ## Architecture seams
 
 - **Restoration Kernel** (`js/kernel/`) — pure transitions + content schema
   (`validate:kernel-content`, `typecheck:kernel`). Adapter bridges GameState.
-  Projectors: pipeline / contract / affinity HUD view-models. Guides + claim-audit:
-  `guides/restoration-kernel/` (includes adversarial GD review + quality bar).
+  Ownership projection (`ownership.js`). Projectors: pipeline / contract / affinity
+  HUD view-models (storage pressure + prestige band). Guides + claim-audit:
+  `guides/restoration-kernel/` (QUALITY_BAR overall S+ O2, adversarial GD).
 - **Save codec** (`js/save/saveCodec.js`) — owns the integrity + migration core
   of persistence as pure functions over a *save snapshot*. GameState depends on
   just two: `encode(snapshot) -> string` and `decode(rawString) -> { outcome,
@@ -81,10 +90,11 @@ modules deepen; it is the map AI agents and new contributors read first.
   meditationManager still wires its sub-UI through it. That bus is the deeper
   untangle left for a coverage-first follow-up.
 - **GameState** (`js/gameState.js`) — the live game model + tick loop. Cast
-  resources and soft fade go through Kernel adapter; production tick still uses
-  `PRODUCERS` + multipliers (incl. Kernel-written `productionMult` from Meditation).
-  Save includes optional `kernel` mirror (affinity, chapters, storageCap, rngSeed).
-  Still large; save integrity logic was lifted into the save codec.
+  resources and soft fade go through Kernel adapter; production tick uses
+  **coalesced** ownership × `PRODUCERS` rates (+ kernel-only module outputs) and
+  multipliers (incl. Kernel `productionMult` from Meditation). Save coalesces
+  workstations and includes optional `kernel` mirror. Still large; save integrity
+  logic lives in the save codec.
 - **Entry point** — `js/game.js` bootstraps on `DOMContentLoaded` and calls
   `initGame()` from `js/gameInit.js`. esbuild bundles from `js/game.js`.
 - **Heal capture (Capture the heal campaign, PR #20)** — thin modules on the

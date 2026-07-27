@@ -31,10 +31,14 @@ GameState (gameState.js)
 Restoration Kernel (js/kernel/) — pure, DOM-free
 ├── reduce / createKernel — cast, tick, craft, prestige, chapter/tier, meditation
 ├── content.js + schema.js — pipeline modules + CI validator
-├── fade.js — weighted soft fade / storage law (FADE_WEIGHT; no immortal intermediates)
-├── affinity.js + pipelineRoles.js — strategies + ws_* role map
-├── projector.js — HUD view-models
+├── fade.js — weighted soft fade / storage law (FADE_WEIGHT)
+├── ownership.js — coalesceWorkstations, applyOwnershipDelta (canonical ids)
+├── affinity.js + pipelineRoles.js — strategies + role map (counts via coalesce)
+├── projector.js — HUD view-models (storage used/cap, void pressure)
 └── tickWorkerHost.js — optional large offline worker path
+
+GameState production
+└── coalesced ownership bag × PRODUCERS (+ kernel-only module outputs)
 
 UI surface (css/)
 ├── aesthetic-v2.css — hex lattice instrument deck (post–tier-0)

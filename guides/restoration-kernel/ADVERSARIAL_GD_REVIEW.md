@@ -1,3 +1,5 @@
+> **Post-merge note (2026-07-27, PR #58 / v1.1.0):** Dual-graph dual-count (F5) mitigated by ownership coalesce + canonical craft writes. Store HUD + ASCEND_BAND ship product legibility. Overall S+ O2 stamped in QUALITY_REPORT. Residual: optional single-namespace content rewrite; migrate still may emit `mod_*` (reads coalesce).
+
 # Adversarial Game Design Review — Restoration Kernel
 
 **Date:** 2026-07-27  

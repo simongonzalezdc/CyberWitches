@@ -1,7 +1,7 @@
 # Falsifiable goal — Kernel ceiling close
 
 **Date:** 2026-07-27  
-**Status:** DONE on `main` and production (goal PR #30; quality bar #33–#34)
+**Status:** DONE on `main` and production (goal PR #30; quality bar #33–#34; overall S+ O2 PR #58; release v1.1.0)
 
 ## GOAL
 

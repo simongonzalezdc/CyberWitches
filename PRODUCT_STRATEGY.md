@@ -3,7 +3,7 @@
 
 **Last Updated**: 2026-07-27
 **Document Owner**: Product Team
-**Status**: Living — Capture the heal shipped; **Restoration Kernel live** on production (PRs #26–#34)
+**Status**: Living — Capture the heal shipped; **Restoration Kernel live**; **v1.1.0 overall S+ O2** (PRs #26–#58)
 
 This document outlines the complete product strategy, market positioning, user acquisition plan, and business model for Hex Compiler. This is designed for team collaboration and strategic planning.
 
@@ -12,13 +12,13 @@ This document outlines the complete product strategy, market positioning, user a
 | Decision | Detail |
 |----------|--------|
 | Differentiator | UI-state scoreboard: broken → **SYSTEM_RESTORE**, not cyber-skin alone |
-| Domain core | **Restoration Kernel** — cast/fade laws + pipeline roles + affinity; guides in `guides/restoration-kernel/` |
+| Domain core | **Restoration Kernel** — cast/fade/ownership coalesce + pipeline roles + affinity; guides in `guides/restoration-kernel/` |
 | Share artifact | Still-first sanitized split PNG + text (`SHARE_RESTORE`); no full save |
 | Mute-first | Ceremony shipped; **human** field mute-clip n=5 remains growth ops gate for paid UA |
 | Funnel | Local TTA / TTH / shareAttempt only (`cw.funnel.*`) |
 | Pivot | 30-day clock from visual share on main; N default **50**; miss → stop virality spend |
 | Kill list (90d) | No gacha / third currency / dual quest HUD / CSS framework swap / dual cast-fade writers / Steam-before-D1 |
-| Quality | Falsifiable S+/A+ bar: `guides/restoration-kernel/QUALITY_BAR.md` |
+| Quality | Overall S+ O2 (Eng∩Product∩Systems∩Identity): `guides/restoration-kernel/QUALITY_BAR.md` + `QUALITY_REPORT.md` |
 | Artifacts | Kernel: `guides/restoration-kernel/`; Capture-the-heal (historical): `.scratch/capture-the-heal/` |
 
 ---

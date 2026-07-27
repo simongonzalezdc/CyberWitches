@@ -3,33 +3,35 @@
 ## [1.1.0] — 2026-07-27
 
 **Play:** https://simongonzalezdc.github.io/CyberWitches/play.html  
-**Tag:** `v1.1.0` · **Commits:** Restoration Kernel campaign through PR #38
+**Tag:** `v1.1.0` · **Tip:** overall S+ O2 on `main` (PR #58)
 
 ### Highlights
 
-- **Restoration Kernel** live — pure domain under `js/kernel/` owns cast resources + weighted soft fade
-- **Pipeline roles** — Capture → Store → Bind → Compile → Shield (28/28 producers mapped; HUD + badges)
-- **Weighted fade (`FADE_WEIGHT`)** — all craft intermediates take void pressure; Store stays a mid/late verb
+- **Restoration Kernel** live — cast, weighted soft fade, prestige, affinity, chapters
+- **Ownership coalesce** — no dual-count; kernel craft writes canonical live ids (PR #58)
+- **Store / void-pressure HUD** — weighted STORAGE used/cap + ASCEND_BAND
+- **Pipeline roles** — Capture → Store → Bind → Compile → Shield (28/28 mapped)
+- **Aesthetic v2** — hex lattice instrument deck; tier-0 mono; story CTA AA
 - **Anti-cliché copy** — sector-terminal voice on producers + pipeline modules
-- **Aesthetic v2** — hex lattice instrument deck (`css/aesthetic-v2.css`); tier-0 mono preserved; story CTA AA contrast
-- **Capture the heal** — mute-first design-tier ceremony + SHARE_RESTORE + compile goal rail
-- **Quality bar** — toast max 2, S+/A+ gates, guides under `guides/restoration-kernel/`
-- **CI / Pages** — Kernel validate + playtest scripts; continuous GitHub Pages deploy
+- **Overall S+ (O2)** — Eng ∩ Product ∩ Systems ∩ Identity stamped in QUALITY_REPORT
+- **Capture the heal** — mute-first ceremony + SHARE_RESTORE + compile goal rail
 
-### PRs (selected)
+### Selected PRs
 
-#14–#20 heal spine · #26–#34 Kernel + quality · #36 adversarial GD / fade / aesthetic · #37 docs + sessionShipMust · #38 story CTA a11y
+#14–#20 heal · #26–#34 Kernel + quality · #36 fade/aesthetic · #37–#38 docs/a11y · #39 release cut · #58 overall S+ O2
 
-### Breaking / save
+### Save
 
-- Save kernel mirror fields optional; snapshot **version 2** unchanged for this cut
-- No forced reset — existing saves continue
+- Kernel snapshot version 2; coalesce on load; no forced wipe
+
+---
+
 
 ## Recent Changes
 
 ### Adversarial GD + intermediate fade + hex lattice aesthetic (2026-07-27) — PR #36
 
-**Landed on `main` + GitHub Pages** (Deploy workflow on merge; no semver bump — continuous Pages).
+**Landed on `main` + GitHub Pages** (Deploy on merge). Later included in **v1.1.0** release cut.
 
 - ✅ **Soft fade weights (`FADE_WEIGHT`)** — all non-AB producer outputs take void pressure (raw = 1.0 → void_crystal = 0.12). Store stays a mid/late-game verb; no immortal intermediate bank
 - ✅ **Anti-cliché copy** — producer + Kernel pipeline descriptions in sector-terminal voice
@@ -192,7 +194,7 @@ Prior heal foundation: mult-cache + ascend invalidate, SYSTEM_LOG save outcomes,
 
 ## Version History
 
-### v1.0.0 (Current)
+### v1.0.0 (historical)
 - Complete story integration ("The Fading")
 - Visual fading theme effects
 - Glitch effects system (progressive UI stabilization)

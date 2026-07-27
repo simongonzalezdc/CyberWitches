@@ -6,11 +6,11 @@
 
 ## What it is
 
-Hex Compiler is an idle game, published in the `CyberWitches` repository, that runs entirely in the browser. You play one of the last Hex Compilers, translating magical hexes into hexadecimal code and building digital preservation chambers to fight the fading of magic. It is built in vanilla JavaScript (ES2023 modules) with no runtime framework, bundled with esbuild, and ships with a service worker and web app manifest for offline play. As you preserve more magic, the deliberately glitched UI progressively stabilizes — the interface itself is part of the story.
+Hex Compiler is an idle game, published in the `CyberWitches` repository, that runs entirely in the browser. You play one of the last Hex Compilers, translating magical hexes into hexadecimal code and building sector modules (pipeline: Capture → Store → Bind → Compile → Shield) against soft void fade. It is built in vanilla JavaScript (ES2023 modules) with no runtime framework, bundled with esbuild, and ships with a service worker and web app manifest for offline play. As you preserve more magic, the deliberately glitched UI progressively stabilizes — the interface itself is part of the story.
 
 **Thesis (mute-readable):** broken terminal chrome **heals** as you progress. A tier advance is a **SYSTEM_RESTORE** moment; **SHARE_RESTORE** exports a sanitized before/after still (no full save secrets).
 
-**Restoration Kernel (live):** pure domain dispatch under `js/kernel/` owns **cast resources** and **weighted soft fade** (all craft intermediates take void pressure — denser packets bleed slower, never immortal); live craft remains the workstation ladder with **pipeline roles** (Capture → Store → Bind → Compile → Shield) on the HUD and cards. Affinity foreshadow and optional Meditation mastery production mult are Kernel-backed. Visual surface: hex lattice terminal (`css/aesthetic-v2.css`, tier-0 mono intact). Player/agent guides: [`guides/restoration-kernel/`](guides/restoration-kernel/) — including [adversarial GD review](guides/restoration-kernel/ADVERSARIAL_GD_REVIEW.md). Quality bar: [`QUALITY_BAR.md`](guides/restoration-kernel/QUALITY_BAR.md).
+**Release v1.1.0 · overall S+ (O2).** Restoration Kernel under `js/kernel/` owns **cast resources**, **weighted soft fade**, and **ownership coalesce** (no dual-count of `ws_*`/`mod_*`). Live buy list remains workstations with **pipeline roles** on the HUD (storage used/cap, void pressure, ascend band). Affinity foreshadow and Meditation mastery production mult are Kernel-backed. Visual: hex lattice terminal (`css/aesthetic-v2.css`, tier-0 mono). Guides: [`guides/restoration-kernel/`](guides/restoration-kernel/) · [QUALITY_BAR](guides/restoration-kernel/QUALITY_BAR.md) · [QUALITY_REPORT](guides/restoration-kernel/QUALITY_REPORT.md).
 
 ## Source of truth (remotes)
 
@@ -35,7 +35,7 @@ Serve the contents of `dist/` from any static web host (configure it to serve `i
 
 ## Usage
 
-Once the dev server is running, the game plays in the browser — cast spells manually or automate them, craft preservation chambers, buy upgrades, and run experiments to discover new techniques. Useful scripts:
+Once the dev server is running, the game plays in the browser — cast with EXEC, craft sector modules, buy upgrades, and run experiments. Useful scripts:
 
 ```bash
 npm test               # Jest unit suite
@@ -45,7 +45,7 @@ npm run lint           # ESLint over js/**
 npm run optimize:images # re-compress background images with sharp
 ```
 
-Core systems: EXEC cast (Kernel resources), weighted soft fade / storage pressure, workstation automation with pipeline roles, inscriptions, experimentation, prestige + affinity strategies, achievements, daily rituals, Meditation (post-prestige), design-tier heal ceremony + SHARE_RESTORE, hex lattice aesthetic v2.
+Core systems: EXEC cast (Kernel resources), weighted soft fade / storage pressure HUD, ownership-coalesced production, workstation automation with pipeline roles, inscriptions, experimentation, prestige + affinity + ASCEND_BAND, achievements, daily rituals, Meditation (post-prestige), design-tier heal + SHARE_RESTORE, hex lattice aesthetic v2.
 
 ## Why / how it works
 

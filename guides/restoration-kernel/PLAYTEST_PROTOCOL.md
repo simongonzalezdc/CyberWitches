@@ -4,40 +4,47 @@ Local, privacy-safe. n ≥ 5 sessions recommended against qualitative gates.
 
 ## Metrics (local only)
 
-Instrument or note manually:
-
 | Metric | Definition |
 |--------|------------|
-| TTA | Time to first Automation-like production (own ≥1 capture) |
+| TTA | Time to first capture automation (own ≥1 capture) |
 | TT_buffer | Time to first Store module |
 | TT_prestige | Time to first prestige recommend band |
 | Chapters reached | Count of `ch*` in session |
-| Void loss noticed | Y/N — player saw fade pressure |
-| Intermediate still bleeds | Y/N — after craft (e.g. Distilled Fire / orbs), overcap still loses stock |
-| Store still useful mid-run | Y/N — buffers/shields remain relevant after T0 |
+| Void loss noticed | Y/N — player saw fade / VOID_PRESSURE |
+| Intermediate still bleeds | Y/N — crafted stock still fades unbound |
+| Store still useful mid-run | Y/N — buffers/shields matter after T0 |
+| Ascend band noticed | Y/N — player saw ASCEND_BAND / recommend |
 | Dual HUD confusion | Y/N — felt split objectives |
 
-Local funnel helpers may exist under `js/funnelMetrics.js` / heal analytics; do not ship PII.
+Local funnel: `cw.funnel.*` / heal analytics — no PII.
 
-## Script
-
-```bash
-# unit + content gate
-npm run validate:kernel-content
-NODE_OPTIONS=--experimental-vm-modules npx jest tests/unit/kernel.test.js tests/unit/kernel-balance.test.js
-
-# optional critical e2e
-npm run test:e2e:critical
-```
-
-## Qualitative gates (§8-style)
+## Human qualitative gates
 
 | Gate | Pass criteria |
 |------|----------------|
-| G1 Clarity | Player names EXEC within 30s |
-| G2 Fade law | Player explains storage vs void without wiki |
-| G3 Pipeline | Player names ≥3 roles after 10 min |
-| G4 Prestige | Player knows Keys + what resets before ascend |
-| G5 Optional TD | Meditation skip still feels progressive |
+| H1 Clarity | Player names EXEC within 30s |
+| H2 Fade law | Player explains storage vs void without wiki |
+| H3 Pipeline | Player names ≥3 roles after 10 min |
+| H4 Prestige | Player knows Keys + what resets before ascend |
+| H5 Optional TD | Meditation skip still feels progressive |
 
-Record results under `.scratch/full-overhaul/playtest/` (gitignored if private).
+## Automated (`npm run playtest:kernel`)
+
+| Gate | Proxy |
+|------|--------|
+| G1 | TTA proxy — first capture craft |
+| G2 | Void fade overcap observed |
+| G3 | Pipeline roles; capture owned count sane |
+| G4 | Prestige band string present |
+| G5 | Band `recommend` with AB/lifetime **before** void unlock (400000) |
+
+Also: all 28 producers role-mapped.
+
+```bash
+npm run validate:kernel-content
+npm run playtest:kernel
+NODE_OPTIONS=--experimental-vm-modules npx jest tests/unit/kernel.test.js tests/unit/kernel-balance.test.js tests/unit/ownership-projection.test.js
+npm run test:e2e:critical
+```
+
+Record private notes under `.scratch/` if needed (often gitignored).
