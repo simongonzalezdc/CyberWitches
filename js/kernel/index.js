@@ -1,5 +1,5 @@
 /**
- * Restoration Kernel — pure dispatch seam (ticket 01+).
+ * Restoration Kernel — pure dispatch seam (tickets 01–15).
  * No DOM. UI and GameState adapt to this.
  */
 
@@ -9,6 +9,8 @@ import { applyTick } from './tick.js';
 import { applyCraft } from './craft.js';
 import { applyChapterCheck } from './chapters.js';
 import { applyPrestigePreview, applyPrestigeCommit } from './prestige.js';
+import { applyMeditationComplete } from './meditation.js';
+import { applyTierCheck } from './tiers.js';
 
 export { createInitialState, cloneState } from './state.js';
 export { applyCast } from './cast.js';
@@ -18,6 +20,15 @@ export { validateContentPack, assertContentPackValid } from './schema.js';
 export { PIPELINE_MODULES, getModule, LEGACY_TO_MODULE, mapLegacyWorkstations } from './content.js';
 export { CHAPTERS, getPrimaryContract } from './chapters.js';
 export { applyPrestigePreview, applyPrestigeCommit } from './prestige.js';
+export {
+    SPECIALIZATION_STRATEGIES,
+    affinityForeshadow,
+    dominantAffinity,
+    activeStrategyBonuses
+} from './affinity.js';
+export { applyMeditationComplete, FIRST_SESSION_TARGET_SEC } from './meditation.js';
+export { applyTierCheck, TIER_GATES } from './tiers.js';
+export { projectPipelineHud, projectContractHud, projectAffinityHud } from './projector.js';
 
 /**
  * @param {import('./types.js').KernelState} [state]
@@ -36,16 +47,30 @@ export function createKernel(state) {
         dispatch(command) {
             const result = reduce(current, command);
             current = result.state;
-            // Chapter checks after most commands
-            if (command.type !== 'chapter_check') {
+            // Chapter + tier checks after most mutating commands
+            if (command.type !== 'chapter_check' && command.type !== 'tier_check') {
                 const ch = applyChapterCheck(current);
                 current = ch.state;
                 result.events.push(...ch.events);
+                const tr = applyTierCheckSafe(current);
+                current = tr.state;
+                result.events.push(...tr.events);
                 result.state = current;
             }
             return { state: cloneState(current), events: result.events };
         }
     };
+}
+
+/**
+ * @param {import('./types.js').KernelState} state
+ */
+function applyTierCheckSafe(state) {
+    try {
+        return applyTierCheck(state);
+    } catch {
+        return { state, events: [] };
+    }
 }
 
 /**
@@ -79,6 +104,14 @@ export function reduce(state, command) {
             });
         case 'chapter_check':
             return applyChapterCheck(state);
+        case 'tier_check':
+            return applyTierCheck(state);
+        case 'meditation_complete':
+            return applyMeditationComplete(state, {
+                durationSec: Number(command.durationSec) || 0,
+                wavesCleared: Number(command.wavesCleared) || 0,
+                skip: !!command.skip
+            });
         default:
             return {
                 state: cloneState(state),
