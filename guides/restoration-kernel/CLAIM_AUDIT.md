@@ -1,7 +1,7 @@
 # Claim-audit — Restoration Kernel (current)
 
-**Last updated:** 2026-07-27  
-**main tip:**  / 
+**Last updated:** 2026-07-27
+**main tip:** `ffb0688` / `ffb068859c6371031b3c19da6a5755bdaf20a1d0`
 **package / release:** **v1.1.0** (`v1.1.0` GitHub Release)  
 **Deploy:** GitHub Pages on every `main` push
 
