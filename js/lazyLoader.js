@@ -105,7 +105,8 @@ export const lazyLoader = new LazyLoader();
  * @returns {Promise<any>} The TutorialSystem default export
  */
 export async function loadTutorial() {
-    return lazyLoader.loadModule('./tutorial.js', 'default');
+    // Sole owner is modules/game/tutorialSystem.js (orphans archived under js/archive/)
+    return lazyLoader.loadModule('./modules/game/tutorialSystem.js', 'TutorialSystem');
 }
 
 /**
@@ -127,12 +128,21 @@ export async function loadMeditationSystem() {
  * @returns {Promise<Object>} - Analytics modules
  */
 export async function loadAnalytics() {
+    // Analytics theater is debug-only — never start interval-backed modules on player path
+    const debug = (() => {
+        try {
+            return new URLSearchParams(location.search).has('debugAnalytics')
+                || localStorage.getItem('cyberWitchesDebugAnalytics') === 'true';
+        } catch { return false; }
+    })();
+    if (!debug) {
+        return { playerAnalytics: null, balanceAnalytics: null, progressionAnalysis: null };
+    }
     const [playerAnalytics, balanceAnalytics, progressionAnalysis] = await Promise.all([
         lazyLoader.loadModule('./playerAnalytics.js', 'default'),
         lazyLoader.loadModule('./balanceAnalytics.js', 'default'),
         lazyLoader.loadModule('./progressionAnalysis.js', 'default')
     ]);
-
     return { playerAnalytics, balanceAnalytics, progressionAnalysis };
 }
 
@@ -156,10 +166,7 @@ export async function loadEconomyBalancing() {
  * Preload modules that will likely be needed soon
  */
 export function preloadCommonModules() {
-    // Preload tutorial (likely needed for new players)
-    lazyLoader.preload('./tutorial.js');
-
-    // Preload meditation if player is past early game
+    // Preload meditation if player is past early game (tutorial is static-imported via gameInit lazy map)
     if (window.gameState && window.gameState.ab > 1000) {
         lazyLoader.preload('./meditationState.js');
         lazyLoader.preload('./meditationUI.js');

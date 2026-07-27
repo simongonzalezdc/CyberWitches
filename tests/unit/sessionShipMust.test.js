@@ -34,8 +34,11 @@ describe('session-ship Must contracts', () => {
 
     test('cast path uses critical_compile not jackpot bonusType', () => {
         const src = fs.readFileSync(path.join(root, 'js/gameState.js'), 'utf8');
-        expect(src).toContain("bonusType = 'critical_compile'");
+        const bonus = fs.readFileSync(path.join(root, 'js/game/castBonus.js'), 'utf8');
+        expect(bonus).toContain("bonusType = 'critical_compile'");
+        expect(src).toContain('rollCastBonus');
         expect(src).not.toMatch(/bonusType\s*=\s*'jackpot'/);
+        expect(bonus).not.toMatch(/bonusType\s*=\s*'jackpot'/);
         const backup = path.join(root, 'js/gameState.js.backup');
         if (fs.existsSync(backup)) {
             const b = fs.readFileSync(backup, 'utf8');

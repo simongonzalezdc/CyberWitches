@@ -19,13 +19,18 @@ class ProgressionAnalysis {
      * Start collecting progression data
      */
     startDataCollection() {
-        // Collect data every minute
-        setInterval(() => {
+        if (this._intervalId) clearInterval(this._intervalId);
+        this._intervalId = setInterval(() => {
             this.collectDataPoint();
         }, 60000);
-        
-        // Initial data point
         this.collectDataPoint();
+    }
+
+    dispose() {
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+            this._intervalId = null;
+        }
     }
     
     /**

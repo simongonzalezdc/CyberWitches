@@ -1039,28 +1039,43 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] {
     clip-path: polygon(50% 0, 70% 35%, 95% 30%, 75% 60%, 90% 100%, 50% 80%, 10% 100%, 25% 60%, 5% 30%, 30% 35%);
 }
 
-/* Tier 0: mute restored-luxury chrome so progressive heal is visible */
+/* Tier 0: mute restored-luxury chrome so progressive heal is visible (token-only colors) */
 body.tier-0 .glow-text,
 body.tier-0 .text-ky-cyan.glow-text {
     text-shadow: none !important;
-    color: #e8e8e8 !important;
+    color: var(--ky-crystal) !important;
 }
 
 body.tier-0 .glass-panel {
-    background: rgba(10, 10, 12, 0.92) !important;
+    background: var(--ky-void) !important;
+    opacity: 0.96;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     box-shadow: none !important;
-    border-color: rgba(255, 255, 255, 0.12) !important;
+    border-color: var(--ky-line) !important;
 }
 
 body.tier-0 .hud .text-ky-cyan,
 body.tier-0 .hud .text-ky-green {
-    color: #c8c8c8 !important;
+    color: var(--ky-steel) !important;
 }
 
 body.tier-0 .workstation-card,
 body.tier-0 .card {
     box-shadow: none !important;
-    border-left-color: #888 !important;
+    border-left-color: var(--ky-steel) !important;
+}
+
+/* Tier 0 dramatization: secondary chrome dim; cast stays primary */
+body.tier-0 .tab-btn,
+body.tier-0 .sidebar-header,
+body.tier-0 .sidebar-footer {
+    opacity: 0.72;
+}
+
+body.tier-0 #cast-button,
+body.tier-0 .cast-button,
+body.tier-0 .btn-cast {
+    opacity: 1;
+    outline: 1px solid var(--ky-crystal);
 }

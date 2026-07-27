@@ -49,7 +49,18 @@ const lazy = {
     get setAudioSystem() { return import('./audio/audioAccess.js').then(m => m.setAudioSystem); }
 };
 
+function reportLazyFailure(label, error) {
+    console.warn(`Lazy: ${label} failed to load`, error);
+    try { appendSystemLog(`LAZY_FAIL ${label}`, 'error'); } catch { /* optional */ }
+    try {
+        if (typeof showNotification === 'function') {
+            showNotification(`Module offline: ${label}. Some features may be limited.`, 'warning', 5000);
+        }
+    } catch { /* optional */ }
+}
+
 export async function initGame() {
+
     console.info('Initializing Hex Compiler...');
 
     try {
@@ -308,20 +319,20 @@ async function loadLazySystems(gameState, uiManager, designTierSystem, _gameLoop
         window.pulseElement = mod.pulseElement;
         window.shakeElement = mod.shakeElement;
         window.slideIn = mod.slideIn;
-    }).catch(e => console.warn('Lazy: animations failed to load', e));
+    }).catch(e => reportLazyFailure('animations', e));
 
     // Load PWA features (service worker registration, install prompt)
     lazy.PWAFeaturesManager.then(PWAFeaturesManager => {
         const pwaManager = new PWAFeaturesManager(gameState, uiManager);
         uiManager.systems.pwaManager = pwaManager;
         pwaManager.init();
-    }).catch(e => console.warn('Lazy: PWA manager failed to load', e));
+    }).catch(e => reportLazyFailure('PWA manager', e));
 
     // Load tutorial system
     lazy.TutorialSystem.then(TutorialSystem => {
         const tutorialSystem = new TutorialSystem(gameState);
         uiManager.systems.tutorialSystem = tutorialSystem;
-    }).catch(e => console.warn('Lazy: tutorial system failed to load', e));
+    }).catch(e => reportLazyFailure('tutorial system', e));
 
     // Load particle system (Tier 3+ only)
     if (designTierSystem.getCurrentTier() >= 3) {
@@ -329,7 +340,7 @@ async function loadLazySystems(gameState, uiManager, designTierSystem, _gameLoop
             const particleSystem = new ParticleSystem(gameState);
             uiManager.systems.particleSystem = particleSystem;
             particleSystem.init();
-        }).catch(e => console.warn('Lazy: particle system failed to load', e));
+        }).catch(e => reportLazyFailure('particle system', e));
     }
 
     // Load audio system on first user gesture (avoids autoplay warnings)
@@ -377,7 +388,7 @@ function loadAudioOnGesture(gameState, uiManager, designTierSystem) {
                 await audioSystem.startMusic();
             }
         } catch (e) {
-            console.warn('Lazy: audio system failed to load', e);
+            reportLazyFailure('audio system', e);
         }
     };
 
@@ -398,7 +409,7 @@ export async function loadMeditationSystem(gameState, uiManager) {
         uiManager.systems.meditationManager = meditationManager;
         return meditationManager;
     } catch (e) {
-        console.warn('Lazy: meditation manager failed to load', e);
+        reportLazyFailure('meditation manager', e);
         return null;
     }
 }

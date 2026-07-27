@@ -11,6 +11,7 @@ import { debounce } from './commonUtils.js';
 import { encode, decode, validateSaveData } from './save/saveCodec.js';
 import { mirrorToIndexedDB } from './save/indexedDBBackup.js';
 import { pulseElement } from './animations.js';
+import { rollCastBonus } from './game/castBonus.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
 
@@ -735,19 +736,7 @@ export class GameState {
         }
 
         // Variable reward system (diegetic critical compile overclock)
-        const bonusRoll = Math.random();
-        let bonusMultiplier = 1.0;
-        let bonusType = null;
-
-        if (bonusRoll < 0.05) {
-            // 5% chance for 2x-5x critical compile
-            bonusMultiplier = 2.0 + Math.random() * 3.0; // 2.0 to 5.0
-            bonusType = 'critical_compile';
-        } else if (bonusRoll < 0.15) {
-            // 10% chance for 1.5x overclock
-            bonusMultiplier = 1.5;
-            bonusType = 'compile_overclock';
-        }
+        const { bonusMultiplier, bonusType } = rollCastBonus();
 
         // Apply click upgrades
         let clickAdditive = 0.0;
