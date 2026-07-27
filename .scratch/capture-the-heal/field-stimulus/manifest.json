@@ -1,5 +1,6 @@
 {
-  "created": "2026-07-27T08:15:24.149Z",
+  "regenerated": "2026-07-27T14:52:12.436Z",
+  "product": "post-adversarial-polish (mono T0 + gated chrome + persistent SHARE)",
   "mute": true,
   "durationHintSec": 15,
   "video": "stimulus.webm",
@@ -8,6 +9,6 @@
     "03-heal-ceremony.webp",
     "05-share-restore.webp"
   ],
-  "passRule": "≥4/5 spontaneous restored/healed/fixed/online",
-  "generator": "e2e/mute-clip-stimulus.spec.js"
+  "generator": "e2e/mute-clip-stimulus.spec.js",
+  "passRule": "≥4/5 restore language; ≥3/5 open-link intent (human Pass 2)"
 }

@@ -1,8 +1,9 @@
 # Mute-clip stimulus + field runbook (ticket 01)
 
-**Status:** frozen for field use  
+**Status:** frozen for field use · **stimulus regenerated 2026-07-27** (post adversarial polish)  
 **Duration:** 12–15s mute (no VO)  
-**Pass rule:** ≥4/5 never-players say system/terminal **restored / healed / fixed / came online**  
+**Pass rule:** ≥4/5 restore language **and** ≥3/5 open-link intent (human Pass 2)  
+**Kit:** `field-stimulus/` · **Operator pack:** `VIRAL_POST_PACK.md`  
 **Linked from:** `.scratch/ideal-critical-path/RESEARCH_GAP_CLOSEOUT.md` §1  
 
 ---
@@ -25,10 +26,9 @@
 ### Option A — Playwright seed (preferred, reproducible)
 
 ```bash
-npx playwright test e2e/heal-operator-journeys.spec.js --headed
-# Or manual: boot play.html with tutorial dismissed, then in console:
-#   uiManager.systems.designTierSystem.emitTierAdvance(0, 1)
-# Record the window 0–15s around that emit; ensure SHARE_RESTORE unhidden.
+npx playwright test e2e/mute-clip-stimulus.spec.js
+# outputs artifacts/mute-clip-field/ → copy into field-stimulus/
+# Forces hard Tier 0 mono, then cast/goal → heal → SHARE_RESTORE
 ```
 
 Seed flags (already in e2e helpers):
