@@ -42,3 +42,14 @@ Play until AB + achievements meet Tier 1 gate. Preferred for “real” creator 
 - Do **not** document permanent save cheats in player-facing USER_GUIDE.  
 - DevTools / local-only is fine for stream prep.  
 - If a future seed URL is added, gate with explicit query + non-indexed staging host.
+
+## Stream beat (for creators)
+
+| t | What to say / show |
+|---|---------------------|
+| 0:00 | “Volume off — this is the point.” Show mono shell. |
+| 0:20 | Cast / early craft. Goal rail if visible. |
+| 0:45 | Heal / `SYSTEM_RESTORE … was v0.0`. |
+| 0:55 | Click `SHARE_RESTORE` — still has no save secrets. |
+
+Full DM + caption pack: `VIRAL_POST_PACK.md`.
