@@ -500,6 +500,9 @@ export class GameState {
      */
     invalidateMultiplierCache() {
         this.multiplierCacheDirty = true;
+        // Clear entries so in-session prestige/resets cannot serve pre-reset mults
+        // once the cache is activated (dirty=false after a successful recompute).
+        this.multiplierCache.clear();
     }
 
     /**
@@ -846,6 +849,9 @@ export class GameState {
         // NOTE: discoveredRecipes intentionally persists across ascension.
         // Recipes represent player knowledge — standard idle game design keeps
         // knowledge/unlocks through prestige resets. Same for storyFlags.
+
+        // Cache held pre-reset upgrade mults; must not survive in-session ascend.
+        this.invalidateMultiplierCache();
 
         // Apply prestige start bonuses
         this.applyPrestigeStartBonuses();
