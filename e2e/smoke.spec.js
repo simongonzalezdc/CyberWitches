@@ -1,5 +1,6 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
+import { dismissFirstRunOverlays } from './helpers/dismissOverlays.js';
 
 /**
  * Real-browser smoke test.
@@ -41,6 +42,7 @@ test('app boots and core flows raise no uncaught errors', async ({ page }) => {
     // 1. Boot — the game sets window.gameState once initGame resolves.
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await dismissFirstRunOverlays(page);
 
     // The game runs a perpetual requestAnimationFrame loop, so elements never go
     // "stable" — Playwright's default actionability checks would hang on it. Every
@@ -107,6 +109,7 @@ test('app boots and core flows raise no uncaught errors', async ({ page }) => {
 test('saves are mirrored into IndexedDB (durable backup)', async ({ page }) => {
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await dismissFirstRunOverlays(page);
 
     // Force an immediate save, which writes localStorage AND fire-and-forget
     // mirrors into IndexedDB.
@@ -166,6 +169,7 @@ test('self-hosted Tone.js lazy-loads after gesture without boot autoplay warning
     });
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await dismissFirstRunOverlays(page);
 
     const toneBeforeGesture = await page.evaluate(() => typeof (/** @type {any} */ (window).Tone));
     expect(toneBeforeGesture, 'Tone should not create an AudioContext during boot').toBe('undefined');
@@ -191,6 +195,7 @@ test('casting unlocks real workstation crafting through normal clicks', async ({
     });
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await dismissFirstRunOverlays(page);
 
     for (let i = 0; i < 20; i++) {
         await page.locator('#cast-button').click({ timeout: 5_000 });
@@ -214,6 +219,7 @@ test('cast button remains centered on the baseline viewport', async ({ page }) =
     });
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await dismissFirstRunOverlays(page);
 
     const box = await page.locator('#cast-button').boundingBox();
     const viewport = page.viewportSize();
@@ -231,6 +237,7 @@ test('first-run boot fade does not intercept visible controls', async ({ page })
     });
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await dismissFirstRunOverlays(page);
     await page.locator('#close-story-intro').dispatchEvent('click');
     await page.waitForFunction(() => {
         const boot = document.querySelector('#boot-screen');
@@ -253,6 +260,7 @@ test('first-run boot fade does not intercept visible controls', async ({ page })
 test('modals close on Escape and trap focus (dialog-like a11y)', async ({ page }) => {
     await page.goto('/play.html', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await dismissFirstRunOverlays(page);
 
     // Clear the first-run overlay so it doesn't intercept. (dispatchEvent may
     // throw if the button is absent — that's fine; the wait below is the real

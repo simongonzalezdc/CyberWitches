@@ -1,5 +1,5 @@
 import { handleError, ErrorCategory, ErrorSeverity } from './errorHandler.js';
-import { shouldAllowMusic } from './audio/musicPolicy.js';
+import { shouldAllowMusic, shouldAllowSfx } from './audio/musicPolicy.js';
 
 /**
  * Audio System - Manages sound effects and audio playback
@@ -1635,6 +1635,12 @@ export class AudioSystem {
      * @returns {Promise<boolean>} Whether sound was played successfully
      */
     async playSound(soundId, options = {}) {
+        try {
+            const tierSys = window.uiManager?.systems?.designTierSystem || window.designTierSystem;
+            const tier = Number(tierSys?.getCurrentTier?.() ?? 0) || 0;
+            if (!shouldAllowSfx(tier)) return false;
+        } catch { /* policy optional */ }
+
         // Check if sound effects are enabled (Tier 2+)
         // First check the design tier
         const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;

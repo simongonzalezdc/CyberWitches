@@ -43,17 +43,16 @@ describe('progression wiring integrity', () => {
         }
     });
 
-    test('every HIDDEN_RECIPES output has a getPotionEffect entry', () => {
+    test('every HIDDEN_RECIPES output has potion catalog effect + display', () => {
+        const cat = fs.readFileSync(path.join(root, 'js/modules/data/potionCatalog.js'), 'utf8');
         const gs = fs.readFileSync(path.join(root, 'js/gameState.js'), 'utf8');
-        const start = gs.indexOf('getPotionEffect');
-        const table = gs.slice(start, start + 3500);
+        expect(gs).toContain('getPotionEffectDef');
         for (const recipe of HIDDEN_RECIPES) {
             for (const outId of Object.keys(recipe.outputs || {})) {
-                expect(table).toContain(`'${outId}'`);
+                expect(cat).toContain(outId);
             }
             for (const inId of Object.keys(recipe.inputs || {})) {
                 const known = new Set(INGREDIENTS.map(i => i.id));
-                // inputs may be craftable intermediate ingredients
                 const isIngredient = known.has(inId);
                 const isPotionOutput = HIDDEN_RECIPES.some(r => r.outputs && r.outputs[inId] != null);
                 expect(isIngredient || isPotionOutput).toBe(true);

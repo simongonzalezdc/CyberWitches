@@ -12,6 +12,7 @@ import { encode, decode, validateSaveData } from './save/saveCodec.js';
 import { mirrorToIndexedDB } from './save/indexedDBBackup.js';
 import { pulseElement } from './animations.js';
 import { rollCastBonus } from './game/castBonus.js';
+import { getPotionEffectDef } from './modules/data/potionCatalog.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
 
@@ -537,46 +538,7 @@ export class GameState {
     }
 
     getPotionEffect(potionId) {
-        // Activate potion based on ID
-        const potionEffects = {
-            // Tier 1
-            'production_elixir': { type: 'production', value: 0.5, duration: 30 * 60 },
-            'haste_potion': { type: 'cast_speed', value: 1.0, duration: 15 * 60 },
-            'ab_amplifier': { type: 'ab_production', value: 2.0, duration: 20 * 60 },
-
-            // Tier 2
-            'mega_production_elixir': { type: 'production', value: 1.0, duration: 60 * 60 },
-            'speed_essence': { type: 'cast_speed', value: 2.0, duration: 30 * 60 },
-            'ab_turbo_charge': { type: 'ab_production', value: 5.0, duration: 45 * 60 },
-            'rare_catalyst': { type: 'ingredient_production', value: 1.0, duration: 60 * 60 },
-
-            // Tier 3
-            'ultimate_production_elixir': { type: 'production', value: 2.0, duration: 2 * 60 * 60 },
-            'quantum_speed_boost': { type: 'cast_speed', value: 3.0, duration: 60 * 60 },
-            'ab_overdrive': { type: 'ab_production', value: 10.0, duration: 1.5 * 60 * 60 },
-            'master_catalyst': { type: 'ingredient_production', value: 2.0, duration: 2 * 60 * 60 },
-            'prestige_boost': { type: 'prestige_gain', value: 0.5, duration: 3 * 60 * 60 },
-
-            // Tier 4
-            'infinity_production_elixir': { type: 'production', value: 5.0, duration: 4 * 60 * 60 },
-            'void_speed_surge': { type: 'cast_speed', value: 5.0, duration: 2 * 60 * 60 },
-            'ab_infinity_boost': { type: 'ab_production', value: 20.0, duration: 3 * 60 * 60 },
-            'ab_eternal_boost': { type: 'ab_production', value: 10.0, duration: 2 * 60 * 60 },
-            'infinity_catalyst': { type: 'ingredient_production', value: 4.0, duration: 4 * 60 * 60 },
-            'prestige_mastery': { type: 'prestige_gain', value: 1.0, duration: 6 * 60 * 60 },
-
-            // Focus / late-tier recipes that previously had no effect table (silent consume)
-            'focus_elixir': { type: 'focus_gain', value: 1.0, duration: 30 * 60 },
-            'focus_boost_potion': { type: 'focus_gain', value: 2.0, duration: 45 * 60 },
-            'quantum_focus_elixir': { type: 'focus_gain', value: 3.0, duration: 60 * 60 },
-            'void_focus_essence': { type: 'focus_gain', value: 4.0, duration: 90 * 60 },
-            'eternal_focus_essence': { type: 'focus_gain', value: 5.0, duration: 2 * 60 * 60 },
-            'eternal_production_elixir': { type: 'production', value: 8.0, duration: 5 * 60 * 60 },
-            'eternal_speed_surge': { type: 'cast_speed', value: 6.0, duration: 3 * 60 * 60 },
-            'eternal_catalyst': { type: 'ingredient_production', value: 6.0, duration: 5 * 60 * 60 }
-        };
-
-        return potionEffects[potionId] || null;
+        return getPotionEffectDef(potionId);
     }
 
     consumePotion(potionId) {

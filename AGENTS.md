@@ -24,3 +24,10 @@ Success line: “I noticed X, found a better way. The system just got an upgrade
 
 Full recipe: `docs/agent-law/empower-orchestrator.md`.
 <!-- EMPOWER_ORCHESTRATOR:END -->
+
+## Remotes / source of truth
+
+- **Forgejo** (`origin` → `git.kyanitelabs.tech`) is the **source of truth** for PRs, merge, and release status.
+- **GitHub** (`upstream-github` or similar) may lag as a mirror — do not open primary PRs there or claim work shipped from GitHub alone.
+- Protected `main` merges via Forgejo PR API/UI only; do not force-push protected branches.
+

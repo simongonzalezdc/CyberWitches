@@ -91,6 +91,46 @@ export class DesignTierSystem {
                 this.unlockTier(4);
             }
         }
+
+        this.notifyTierProgress(ab, unlockedCount);
+    }
+
+    /**
+     * Player-facing truth: near a gate, say what is still needed (once per threshold).
+     * @param {number} ab
+     * @param {number} unlockedCount
+     */
+    notifyTierProgress(ab, unlockedCount) {
+        if (typeof window === 'undefined') return;
+        const gates = [
+            { tier: 1, ab: 500, ach: 3 },
+            { tier: 2, ab: 5000, ach: 6 },
+            { tier: 3, ab: 50000, ach: 9 },
+            { tier: 4, ab: 500000, ach: 12 }
+        ];
+        for (const g of gates) {
+            if (this.unlockedTiers.has(g.tier)) continue;
+            const abMet = ab >= g.ab;
+            const achMet = unlockedCount >= g.ach;
+            if (!abMet && !achMet) continue;
+            if (abMet && achMet) continue; // unlock path owns this
+            const key = `cw.tierGateHint.${g.tier}`;
+            try {
+                if (sessionStorage.getItem(key) === '1') continue;
+                sessionStorage.setItem(key, '1');
+            } catch { /* private mode */ }
+            const need = [];
+            if (!abMet) need.push(`${g.ab} AB`);
+            if (!achMet) need.push(`${g.ach} achievements (have ${unlockedCount})`);
+            const msg = `SYSTEM_RESTORE v${g.tier}.0 pending: need ${need.join(' and ')}.`;
+            if (typeof window.showNotification === 'function') {
+                window.showNotification(msg, 'info', 6000);
+            }
+            if (typeof window.__appendSystemLog === 'function') {
+                window.__appendSystemLog(msg, 'info');
+            }
+            break; // one hint per check tick
+        }
     }
 
     /**

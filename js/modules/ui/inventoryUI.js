@@ -5,6 +5,7 @@
 
 import { getTierAppropriateStyle } from './uiHelpers.js';
 import { escapeHtml } from '../../utils.js';
+import { getItemDisplayName } from '../data/potionCatalog.js';
 
 export class InventoryUI {
     constructor(gameState, uiManager) {
@@ -84,7 +85,7 @@ export class InventoryUI {
 
             const ingredient = window.INGREDIENTS.find(ing => ing.id === ingId);
             const tier = ingredient?.tier || 0;
-            const displayName = ingredient?.displayName || ingId;
+            const displayName = ingredient?.displayName || getItemDisplayName(ingId) || ingId;
 
             items.push({ id: ingId, amount, tier, displayName });
             maxAmount = Math.max(maxAmount, amount);

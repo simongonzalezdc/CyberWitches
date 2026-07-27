@@ -101,7 +101,7 @@ export async function initGame() {
         });
 
         // Bind the global notification + screen-reader bridges. Many systems
-        // (gameState milestones, comboSystem, questSystem, tutorial, and the
+        // (gameState milestones, comboSystem, tutorial, and the
         // save-load error notices in errorHandler) call
         // `window.showNotification(...)` / `window.announceToScreenReader(...)`
         // guarded by `if (window.showNotification)`. Nothing ever assigned these
