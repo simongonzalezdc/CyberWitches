@@ -11,21 +11,28 @@ Ticket 18. Elemental clone ladders and dual-objective quest rails are **parked**
 - **Immortal intermediate banks** (crafted goods that never take fade pressure)  
 - Generic “preservation chamber / perfect harmony / transcendence through code” copy  
 - Generic cyan glassmorphism UI (use hex lattice instrument deck instead)  
+- Dual-count of the same station as both `ws_*` and `mod_*` in role totals or production  
 
 ## Mapping
 
-Legacy `ws_*` ids map into Kernel `mod_*` via `mapsFrom` / `LEGACY_TO_MODULE` in `js/kernel/content.js`.
+Legacy `ws_*` ids map into Kernel `mod_*` via `mapsFrom` / `LEGACY_TO_MODULE`.  
+Live ownership **canonical** prefers `ws_*` for paired stations (`applyOwnershipDelta`, `coalesceWorkstations`).
 
-## Current ownership (not “parked” — live truth)
+## Current ownership (live truth)
 
 | Path | Owner |
 |------|--------|
 | Cast resources | Kernel `castOnGameState` |
 | Soft fade (tick + offline) | Kernel `fadeOnGameState` + full `FADE_WEIGHT` ladder |
-| Ownership bag | `coalesceWorkstations` — live save prefers ws_* pairs; no dual-count |
+| Ownership bag | `coalesceWorkstations` — SUM pairs; craft writes canonical |
 | Workstation craft / buy list | Live `PRODUCERS` (`ws_*`) with **pipeline roles** |
+| Production tick | Coalesced bag × PRODUCERS rates + kernel-only module outputs |
 | Meditation mastery mult | Kernel → `specializationBonuses.productionMult` |
 | Surface chrome (post T0) | `css/aesthetic-v2.css` |
+
+## Dual-graph note (Overall S+ O2)
+
+The buy list and Kernel content pack are still two content tables, but **runtime ownership is single-bag**. Systems S+ does **not** require deleting `PRODUCERS`; it requires no dual-count and canonical writes (shipped PR #58).
 
 ## Do not
 
@@ -34,9 +41,5 @@ Legacy `ws_*` ids map into Kernel `mod_*` via `mapsFrom` / `LEGACY_TO_MODULE` in
 - Re-open dual **cast/fade** writers outside the Kernel adapter  
 - Raise notification `maxVisible` without a visual regression check  
 - Treat Capture-the-heal **human** field pilot as a Kernel engineering residual  
-- Add producer outputs without a `FADE_WEIGHT` entry (CI/unit tests pin late-tier fade)
-
-
-## Dual-graph contract (Overall S+ O2)
-
-Live craft ladder remains PRODUCERS (ws_*), but ownership is **coalesced** with Kernel mod_* pairs so role counts and production never double-count. Full single-id-only content rewrite is optional follow-up; Systems S+ requires coalesce sole path (shipped).
+- Add producer outputs without a `FADE_WEIGHT` entry  
+- Write craft purchases to both `ws_*` and `mod_*` for the same station without coalesce  

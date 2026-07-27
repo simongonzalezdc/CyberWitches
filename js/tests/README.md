@@ -1,22 +1,22 @@
 # Testing
 
-## Test Structure
+## Layout
 
-Tests are organized by module:
-- `gameState.test.js`: Game state management tests
-- Additional test files to be added
+- **Unit / integration:** `tests/unit/` (Jest ESM, `NODE_OPTIONS=--experimental-vm-modules`)
+- **E2E:** `e2e/` (Playwright)
+- **Kernel pure:** `tests/unit/kernel*.test.js`, `tests/unit/ownership-projection.test.js`
+- **Scripts:** `npm run playtest:kernel`, `npm run validate:kernel-content`, `npm run typecheck:kernel`
 
-## Running Tests
+## Commands
 
 ```bash
 npm test
+npm run ci
+npm run playtest:kernel
+npm run test:e2e
+npm run test:e2e:critical
 ```
 
-## Test Coverage Goal
+## Kernel / overall S+ gates
 
-Target: 80%+ code coverage
-
-## Test Framework
-
-To be implemented with a testing framework (Jest, Mocha, etc.)
-
+See `guides/restoration-kernel/QUALITY_BAR.md`. Ownership coalesce and fade weights are covered by unit + playtest-kernel (incl. G5 prestige band).

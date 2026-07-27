@@ -31,3 +31,8 @@ Full recipe: `docs/agent-law/empower-orchestrator.md`.
 - **GitHub** (`upstream-github` or similar) may lag as a mirror — do not open primary PRs there or claim work shipped from GitHub alone.
 - Protected `main` merges via Forgejo PR API/UI only; do not force-push protected branches.
 
+## Domain docs (keep current)
+
+- Domain map: `CONTEXT.md`
+- Kernel player/agent guides: `guides/restoration-kernel/` (QUALITY_BAR / QUALITY_REPORT / CLAIM_AUDIT)
+- Package release: **v1.1.0**; continuous GitHub Pages deploy on `main`

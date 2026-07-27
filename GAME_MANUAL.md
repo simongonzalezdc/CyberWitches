@@ -84,7 +84,9 @@ Growth is typically ~1.12–1.16 depending on the workstation.
 
 ### Pipeline roles (HUD)
 
-The workstations tab shows a **pipeline strip**: **CAPTURE → STORE → BIND → COMPILE → SHIELD**. Owned counts include your live craft graph. Stock you do not store can **fade** when over capacity — including distilled intermediates and late-tier packets (lower void weight than raw, never immortal). Store / buffer buildings raise the soft cap.
+The workstations tab shows a **pipeline strip**: **CAPTURE → STORE → BIND → COMPILE → SHIELD**. Owned counts use coalesced ownership (no double-count). The strip also shows **STORAGE used/cap** in weighted void-pressure units and **VOID_PRESSURE** when over capacity. When prestige is recommended, **ASCEND_BAND** appears.
+
+Stock you do not store can **fade** when over capacity — including distilled intermediates and late-tier packets (lower void weight than raw, never immortal). Store / buffer buildings raise the soft cap.
 
 Live Tier 0 starters (unlock at 0 AB):
 

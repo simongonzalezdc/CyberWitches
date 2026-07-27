@@ -1,7 +1,7 @@
 # Hex Compiler — User Guide
 
 **Last Updated:** 2026-07-27  
-**Version:** 2.3 (Restoration Kernel + weighted fade + aesthetic v2)
+**Version:** 2.4 (v1.1.0 · overall S+ O2 · ownership coalesce · storage HUD)
 
 ---
 
@@ -58,9 +58,11 @@ Click the **EXEC / Cast** button (or press **Space**) to cast. Each cast:
 
 ### Pipeline & fade
 
-- The workstations tab shows **CAPTURE → STORE → BIND → COMPILE → SHIELD**
-- Stock **over storage capacity** can fade — raw essence hardest; compiled intermediates still bleed if unbound (just slower)
-- Expand storage / buffers / shields to preserve stock; Store stays useful past the tutorial
+- The workstations tab shows **CAPTURE → STORE → BIND → COMPILE → SHIELD** with owned counts
+- **STORAGE used/cap** uses weighted void-pressure units; **VOID_PRESSURE** when overcap
+- Stock **over storage capacity** fades — raw essence hardest; compiled intermediates still bleed if unbound (slower)
+- Expand storage / buffers / shields to preserve stock; Store stays useful mid and late game
+- **ASCEND_BAND** appears when prestige is recommended (first prestige)
 - Affinity line foreshadows which specialization path prestige will favor
 - UI surface: hex lattice instrument deck after tier-0 (mono boot preserved)
 

@@ -1,6 +1,6 @@
 # Player Manual — Restoration Kernel
 
-**Status:** live in production (browser build). Companion to [`GAME_MANUAL.md`](../../GAME_MANUAL.md).
+**Status:** live in production (browser build, **v1.1.0**). Companion to [`GAME_MANUAL.md`](../../GAME_MANUAL.md).
 
 Hex Compiler’s midgame law: **magic you do not store will fade.** You are the compiler who preserves failing sectors.
 
@@ -22,9 +22,15 @@ Build along a clear structure — not four identical elemental ladders:
 
 You will rarely max every role. Tradeoffs are the game.
 
+The workstations tab shows a **pipeline strip** with owned counts per role and:
+
+- **STORAGE used/cap** — weighted void-pressure units (not raw item count alone)
+- **VOID_PRESSURE** when over capacity
+- **ASCEND_BAND** when prestige is recommended (first prestige)
+
 ## Soft fade
 
-Unstored stock above storage capacity bleeds into the void. **Raw essence** bleeds hardest; **compiled intermediates** (distilled fire, shaped crystal, resonant lattice, etc.) still bleed if unbound — just slower. That keeps **Store** meaningful after the tutorial. Early minutes are **soft** so you can learn. Offline catch-up is fair-capped (8h) and soft on fade.
+Unstored stock above storage capacity bleeds into the void. **Raw essence** bleeds hardest; **compiled intermediates** (distilled fire, shaped crystal, resonant lattice, late void packets, etc.) still bleed if unbound — just slower. That keeps **Store** meaningful through mid and late game. Early minutes are **soft** so you can learn. Offline catch-up is fair-capped (8h) and soft on fade.
 
 ## Contracts (one primary rail)
 
@@ -35,26 +41,19 @@ A single compile contract is the primary objective. No dual quest HUD. Contracts
 When the plane thins:
 
 1. Preview projected Eldritch Keys and what persists/resets.
-2. Soft recommend band: too early / optional / recommend.
+2. Soft recommend band: too early / optional / recommend — HUD surfaces **ASCEND_BAND** when ready.
 3. First prestige grants a sharp toy (Kernel fragment) and locks **affinity**.
 
-## Affinity strategies (after Prestige 1)
-
-Your pre-prestige build foreshadows affinity. After lock-in, four paths change optimal pipeline play:
-
-- **Ember Compiler (fire)** — hot capture/compile; thinner buffers  
-- **Depth Archivist (water)** — storage and soft fade  
-- **Zephyr Linker (air)** — bind streams + shield lean  
-- **Lattice Engineer (crystal)** — stable compile + fade control  
+Affinity strategies change post-prestige pipeline lean (capture-heavy vs store-heavy, etc.).
 
 ## Meditation (optional)
 
-After prestige, Meditation is optional. A **≤3 minute** first session with a real clear grants a clear production mult on the main pipeline. Pure idle remains valid — you can skip.
+After prestige, Meditation is optional. A short first mastery can grant a lasting **production mult**. Pure idle path remains valid if you skip.
 
-## Design-tier heal
+## Design tiers
 
-Chrome heals when you hit **chapter/skill milestones**, not pure AB grind. Mute-readable `SYSTEM_RESTORE` ceremony retained; share stills stay privacy-safe.
+UI heals as chapters and prestige unlock design tiers (Tier 0 mono boot → full chrome). **SHARE_RESTORE** exports a sanitized still, not your save.
 
-## Privacy
+## Quality
 
-Local-first. No gacha. Optional share does not export full save identity.
+Falsifiable overall S+ bar: [`QUALITY_BAR.md`](QUALITY_BAR.md). Latest stamp: [`QUALITY_REPORT.md`](QUALITY_REPORT.md).
