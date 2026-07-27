@@ -63,6 +63,27 @@ test('visual: heal moment tier advance', async ({ page }) => {
     await page.screenshot({ path: path.join(OUT, '03-heal-tier-advance.png'), fullPage: false });
     const bodyClass = await page.evaluate(() => document.body.className);
     expect(bodyClass).toMatch(/tier-[1-4]/);
+
+    // 100-score gate: full SHARE_RESTORE label visible, not truncated
+    const share = page.locator('#heal-share-button');
+    await expect(share).toBeVisible();
+    await expect(share).toContainText('SHARE_RESTORE');
+    const labelGeom = await page.evaluate(() => {
+        const btn = document.getElementById('heal-share-button');
+        const label = btn?.querySelector('.heal-share-label') || btn;
+        if (!label) return null;
+        return {
+            text: (label.textContent || '').trim(),
+            scrollW: label.scrollWidth,
+            clientW: label.clientWidth,
+            btnScrollW: btn.scrollWidth,
+            btnClientW: btn.clientWidth
+        };
+    });
+    expect(labelGeom?.text).toBe('SHARE_RESTORE');
+    // Label text must fully fit (no ellipsis/clip)
+    expect(labelGeom.scrollW, 'label scrollWidth must fit clientWidth').toBeLessThanOrEqual(labelGeom.clientW + 1);
+    expect(labelGeom.btnScrollW, 'button must not clip label').toBeLessThanOrEqual(labelGeom.btnClientW + 1);
 });
 
 test('visual: prestige ceremony modal', async ({ page }) => {

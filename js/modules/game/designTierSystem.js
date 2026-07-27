@@ -217,12 +217,16 @@ export class DesignTierSystem {
             if (this.audioSystem && typeof this.audioSystem.playSound === 'function') {
                 try { this.audioSystem.playSound('tier_unlock'); } catch { /* optional stinger */ }
             }
-            // Share capture affordance near heal
+            // Share capture affordance near heal — full label, pulse for noticeability
             const shareBtn = document.getElementById('heal-share-button');
             if (shareBtn) {
                 shareBtn.hidden = false;
                 shareBtn.dataset.fromTier = String(detail.fromTier);
                 shareBtn.dataset.toTier = String(detail.toTier);
+                shareBtn.classList.add('heal-share-btn--pulse');
+                window.setTimeout(() => {
+                    shareBtn.classList.remove('heal-share-btn--pulse');
+                }, 2600);
             }
         } catch (e) {
             console.warn('playHealMoment failed', e);

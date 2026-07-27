@@ -99,10 +99,15 @@ describe('heal critical path W1–W4', () => {
         expect(html).toContain('prestige-post-goals');
     });
 
-    test('play.html has compile goal rail and share button', () => {
+    test('play.html has compile goal rail and full SHARE_RESTORE label', () => {
         const html = fs.readFileSync(path.join(root, 'play.html'), 'utf8');
         expect(html).toContain('compile-goal-rail');
         expect(html).toContain('heal-share-button');
+        expect(html).toContain('SHARE_RESTORE');
+        expect(html).toContain('heal-share-label');
+        const css = fs.readFileSync(path.join(root, 'css/components.css'), 'utf8');
+        expect(css).toContain('white-space: nowrap');
+        expect(css).toContain('.heal-share-btn');
     });
 
     test('09 pacing: first automation recipe is low essence cost', () => {
