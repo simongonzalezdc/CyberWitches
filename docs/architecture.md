@@ -31,10 +31,14 @@ GameState (gameState.js)
 Restoration Kernel (js/kernel/) — pure, DOM-free
 ├── reduce / createKernel — cast, tick, craft, prestige, chapter/tier, meditation
 ├── content.js + schema.js — pipeline modules + CI validator
-├── fade.js — soft fade / storage law
+├── fade.js — weighted soft fade / storage law (FADE_WEIGHT; no immortal intermediates)
 ├── affinity.js + pipelineRoles.js — strategies + ws_* role map
 ├── projector.js — HUD view-models
 └── tickWorkerHost.js — optional large offline worker path
+
+UI surface (css/)
+├── aesthetic-v2.css — hex lattice instrument deck (post–tier-0)
+└── tier-0 mono path preserved (no chromatic lattice)
 
 UIManager (ui/uiManager.js)
 ├── Tab Management

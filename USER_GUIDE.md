@@ -1,7 +1,7 @@
 # Hex Compiler — User Guide
 
 **Last Updated:** 2026-07-27  
-**Version:** 2.2 (Restoration Kernel live)
+**Version:** 2.3 (Restoration Kernel + weighted fade + aesthetic v2)
 
 ---
 
@@ -59,8 +59,10 @@ Click the **EXEC / Cast** button (or press **Space**) to cast. Each cast:
 ### Pipeline & fade
 
 - The workstations tab shows **CAPTURE → STORE → BIND → COMPILE → SHIELD**
-- Essence **over storage capacity** can fade — expand storage / buffers to preserve stock
+- Stock **over storage capacity** can fade — raw essence hardest; compiled intermediates still bleed if unbound (just slower)
+- Expand storage / buffers / shields to preserve stock; Store stays useful past the tutorial
 - Affinity line foreshadows which specialization path prestige will favor
+- UI surface: hex lattice instrument deck after tier-0 (mono boot preserved)
 
 ### Workstations
 

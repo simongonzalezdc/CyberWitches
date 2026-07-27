@@ -10,7 +10,7 @@ Hex Compiler is an idle game, published in the `CyberWitches` repository, that r
 
 **Thesis (mute-readable):** broken terminal chrome **heals** as you progress. A tier advance is a **SYSTEM_RESTORE** moment; **SHARE_RESTORE** exports a sanitized before/after still (no full save secrets).
 
-**Restoration Kernel (live):** pure domain dispatch under `js/kernel/` owns **cast resources** and **soft fade**; live craft remains the workstation ladder with **pipeline roles** (Capture → Store → Bind → Compile → Shield) on the HUD and cards. Affinity foreshadow and optional Meditation mastery production mult are Kernel-backed. Player/agent guides: [`guides/restoration-kernel/`](guides/restoration-kernel/). Quality bar: [`guides/restoration-kernel/QUALITY_BAR.md`](guides/restoration-kernel/QUALITY_BAR.md).
+**Restoration Kernel (live):** pure domain dispatch under `js/kernel/` owns **cast resources** and **weighted soft fade** (all craft intermediates take void pressure — denser packets bleed slower, never immortal); live craft remains the workstation ladder with **pipeline roles** (Capture → Store → Bind → Compile → Shield) on the HUD and cards. Affinity foreshadow and optional Meditation mastery production mult are Kernel-backed. Visual surface: hex lattice terminal (`css/aesthetic-v2.css`, tier-0 mono intact). Player/agent guides: [`guides/restoration-kernel/`](guides/restoration-kernel/) — including [adversarial GD review](guides/restoration-kernel/ADVERSARIAL_GD_REVIEW.md). Quality bar: [`QUALITY_BAR.md`](guides/restoration-kernel/QUALITY_BAR.md).
 
 ## Source of truth (remotes)
 
@@ -45,7 +45,7 @@ npm run lint           # ESLint over js/**
 npm run optimize:images # re-compress background images with sharp
 ```
 
-Core systems: EXEC cast (Kernel resources), soft fade / storage pressure, workstation automation with pipeline roles, inscriptions, experimentation, prestige + affinity strategies, achievements, daily rituals, Meditation (post-prestige), design-tier heal ceremony + SHARE_RESTORE.
+Core systems: EXEC cast (Kernel resources), weighted soft fade / storage pressure, workstation automation with pipeline roles, inscriptions, experimentation, prestige + affinity strategies, achievements, daily rituals, Meditation (post-prestige), design-tier heal ceremony + SHARE_RESTORE, hex lattice aesthetic v2.
 
 ## Why / how it works
 

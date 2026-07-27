@@ -13,6 +13,8 @@ Instrument or note manually:
 | TT_prestige | Time to first prestige recommend band |
 | Chapters reached | Count of `ch*` in session |
 | Void loss noticed | Y/N — player saw fade pressure |
+| Intermediate still bleeds | Y/N — after craft (e.g. Distilled Fire / orbs), overcap still loses stock |
+| Store still useful mid-run | Y/N — buffers/shields remain relevant after T0 |
 | Dual HUD confusion | Y/N — felt split objectives |
 
 Local funnel helpers may exist under `js/funnelMetrics.js` / heal analytics; do not ship PII.

@@ -2,6 +2,16 @@
 
 ## Recent Changes
 
+### Adversarial GD + intermediate fade + hex lattice aesthetic (2026-07-27) — PR #36
+
+**Landed on `main` + GitHub Pages** (Deploy workflow on merge; no semver bump — continuous Pages).
+
+- ✅ **Soft fade weights (`FADE_WEIGHT`)** — all non-AB producer outputs take void pressure (raw = 1.0 → void_crystal = 0.12). Store stays a mid/late-game verb; no immortal intermediate bank
+- ✅ **Anti-cliché copy** — producer + Kernel pipeline descriptions in sector-terminal voice
+- ✅ **Aesthetic v2** — `css/aesthetic-v2.css` hex lattice instrument deck (tier-0 mono preserved)
+- ✅ Hostile design review: `guides/restoration-kernel/ADVERSARIAL_GD_REVIEW.md` (GLM BLOCK → full coverage fix → SHIP)
+- ✅ Kernel unit contracts: late-tier fade, mixed-bag ratio, clamp (25 tests in `kernel.test.js`)
+
 ### Restoration Kernel + S+/A+ quality bar (2026-07-27) — PRs #26–#34
 
 **Domain core:** pure Kernel under `js/kernel/` (cast, fade, pipeline content, chapters, prestige, affinity strategies, meditation mastery, projectors).

@@ -21,8 +21,8 @@
 **Hex Compiler** is a browser idle incremental game. You are a Hex Compiler: system chrome is a terminal that compiles fading magic into stable data. Occult content (essences, chambers, rituals) is what you preserve.
 
 - **Cast (EXEC)**: Compile raw magic into elemental essences and **Arcane Bits (AB)** (Kernel-owned resource path)
-- **Soft fade / storage**: Unstored essence over capacity slowly fades — build Store modules / buffers so stock survives
-- **Workstations**: Craft preservation chambers; each has a **pipeline role** (Capture → Store → Bind → Compile → Shield) on the HUD and card badge
+- **Soft fade / storage**: Unstored stock over capacity bleeds — **raw essence** hardest, **compiled intermediates** slower but still at risk. Build Store modules / buffers so stock survives
+- **Workstations**: Craft sector modules; each has a **pipeline role** (Capture → Store → Bind → Compile → Shield) on the HUD and card badge
 - **Inscriptions**: Upgrades that multiply cast and production
 - **Experiments**: Discover hidden recipes
 - **Prestige (Ascension)**: Reset for **Eldritch Keys (EK)** and **affinity** specialization strategies
@@ -84,7 +84,7 @@ Growth is typically ~1.12–1.16 depending on the workstation.
 
 ### Pipeline roles (HUD)
 
-The workstations tab shows a **pipeline strip**: **CAPTURE → STORE → BIND → COMPILE → SHIELD**. Owned counts include your live craft graph. Essence you do not store can **fade** when over capacity — Store / buffer buildings raise the soft cap.
+The workstations tab shows a **pipeline strip**: **CAPTURE → STORE → BIND → COMPILE → SHIELD**. Owned counts include your live craft graph. Stock you do not store can **fade** when over capacity — including distilled intermediates and late-tier packets (lower void weight than raw, never immortal). Store / buffer buildings raise the soft cap.
 
 Live Tier 0 starters (unlock at 0 AB):
 
