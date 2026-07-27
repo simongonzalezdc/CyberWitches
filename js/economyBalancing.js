@@ -19,13 +19,18 @@ class EconomyBalancing {
      * Start collecting economy data
      */
     startDataCollection() {
-        // Collect data every 30 seconds
-        setInterval(() => {
+        if (this._intervalId) clearInterval(this._intervalId);
+        this._intervalId = setInterval(() => {
             this.collectEconomyData();
         }, 30000);
-        
-        // Initial data point
         this.collectEconomyData();
+    }
+
+    dispose() {
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+            this._intervalId = null;
+        }
     }
     
     /**

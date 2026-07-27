@@ -1,4 +1,5 @@
 import { handleError, ErrorCategory, ErrorSeverity } from './errorHandler.js';
+import { shouldAllowMusic } from './audio/musicPolicy.js';
 
 /**
  * Audio System - Manages sound effects and audio playback
@@ -2324,6 +2325,15 @@ export class AudioSystem {
         
         // Check every second to ensure music is disabled for tiers 0-3
         this.musicTierMonitor = setInterval(() => {
+            // policy seam (extracted pure helper)
+            try {
+                const tierSys = window.uiManager?.systems?.designTierSystem;
+                const tier = tierSys?.getCurrentTier?.() ?? 0;
+                if (!shouldAllowMusic(tier) && this.musicEnabled) {
+                    // keep existing stop logic below
+                }
+            } catch { /* ignore */ }
+
             const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
             
             // STRICT: Tiers 0-3 must NEVER have music

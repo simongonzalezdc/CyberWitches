@@ -213,6 +213,11 @@ class MemoryLeakPreventionManager {
 }
 
 // Create global instance
-const memoryLeakPreventionManager = new MemoryLeakPreventionManager();
+// Not auto-started on player path — construct only from debug tooling
+const _memoryLeakPreventionManager = null;
+export function startMemoryLeakPrevention() {
+    return new MemoryLeakPreventionManager();
+}
 
-export default memoryLeakPreventionManager;
+
+export default { startMemoryLeakPrevention };

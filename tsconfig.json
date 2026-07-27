@@ -3,23 +3,27 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "types": [],
-
     "allowJs": true,
     "checkJs": true,
     "noEmit": true,
-
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-
     "strict": false,
     "noImplicitAny": false,
     "strictNullChecks": false
   },
-  "include": ["js/**/*.js", "types/**/*.d.ts"],
+  "include": [
+    "js/**/*.js",
+    "types/**/*.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist",
@@ -29,6 +33,8 @@
     "build.js",
     "scripts",
     "js/tests",
-    "**/*.test.js"
+    "**/*.test.js",
+    "js/archive",
+    "js/archive/**"
   ]
 }

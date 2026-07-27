@@ -14,10 +14,26 @@ class BalanceAnalyticsManager {
     }
     
     init() {
-        // Set up periodic metric collection
-        setInterval(() => {
+        // Debug-only: never own an uncleared interval on the default player path
+        const debug = (() => {
+            try {
+                return typeof window !== 'undefined' && (
+                    new URLSearchParams(window.location.search).has('debugAnalytics')
+                    || localStorage.getItem('cyberWitchesDebugAnalytics') === 'true'
+                );
+            } catch { return false; }
+        })();
+        if (!debug) return;
+        this._intervalId = setInterval(() => {
             this.collectMetrics();
-        }, 60000); // Collect every minute
+        }, 60000);
+    }
+
+    dispose() {
+        if (this._intervalId) {
+            clearInterval(this._intervalId);
+            this._intervalId = null;
+        }
     }
     
     /**

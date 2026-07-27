@@ -492,9 +492,25 @@ export class AnalyticsSystem {
      * @private
      */
     startPeriodicFlush() {
-        setInterval(() => {
+        // Local-only / debug: do not imply network telemetry on prod path
+        const enabled = (() => {
+            try {
+                return this.config?.enableFlush === true
+                    || localStorage.getItem('cyberWitchesDebugAnalytics') === 'true';
+            } catch { return false; }
+        })();
+        if (!enabled) return;
+        if (this._flushIntervalId) clearInterval(this._flushIntervalId);
+        this._flushIntervalId = setInterval(() => {
             this.flushEvents();
         }, this.config.flushInterval);
+    }
+
+    dispose() {
+        if (this._flushIntervalId) {
+            clearInterval(this._flushIntervalId);
+            this._flushIntervalId = null;
+        }
     }
     
     /**

@@ -199,6 +199,20 @@ export class TutorialSystem {
                 message: 'COMPILE_GOAL: Stabilize Fire sector — craft 1 Fire Forge.',
                 target: '#workstation-list',
                 position: 'top'
+            },
+            {
+                id: 'compile_goal_water',
+                title: 'COMPILE_GOAL',
+                message: 'COMPILE_GOAL: Stabilize Water sector — craft 1 Aqua Well.',
+                target: '#workstation-list',
+                position: 'top'
+            },
+            {
+                id: 'run_protocol',
+                title: 'RUN_PROTOCOL',
+                message: 'Open /BIN/LAB and run one experiment protocol to discover a hidden recipe.',
+                target: '.tab-btn[data-tab="experiment"]',
+                position: 'bottom'
             }
         ];
     }

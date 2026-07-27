@@ -6,7 +6,7 @@
     <!-- Allow zoom up to 5x (WCAG 1.4.4): never disable user scaling. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 
-    <!-- Content Security Policy — permissive for game; tighten in production -->
+    <!-- Content Security Policy — play still needs unsafe-eval for Tone audio engine (ticket 09 residual). Landing dropped unsafe-eval. -->
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://cdn.jsdelivr.net; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 

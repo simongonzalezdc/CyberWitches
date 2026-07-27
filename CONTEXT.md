@@ -54,3 +54,9 @@ modules deepen; it is the map AI agents and new contributors read first.
   large; the save integrity logic was lifted into the save codec.
 - **Entry point** — `js/game.js` bootstraps on `DOMContentLoaded` and calls
   `initGame()` from `js/gameInit.js`. esbuild bundles from `js/game.js`.
+
+## Persistence ownership
+
+- **Primary save store:** `localStorage` (hot path for encode/decode of the save snapshot).
+- **Mirror:** IndexedDB via `js/save/indexedDBBackup.js` for eviction resistance / restore-missing.
+- See `docs/adr/0002-save-store-primary.md`.
