@@ -66,7 +66,7 @@ export const PRODUCERS = [
     {
         id: 'ws_digcandle_forge',
         displayName: 'Digital Candle Forge',
-        description: 'A Digital Candle Forge preservation chamber that compiles fire essence into stable hex structures. Each unit online slows entropy in the fire sector.',
+        description: 'Digitized candle loops that keep Fire essence warm in cache. First stable fire sector after the raw forge.',
         unlockAtAb: 75.0,
         recipe: { dist_fire: 3, shaped_crys: 2 },
         growth: 1.14,
@@ -77,7 +77,7 @@ export const PRODUCERS = [
     {
         id: 'ws_aqua_well_t1',
         displayName: 'Deep Aqua Well',
-        description: 'A Deep Aqua Well preservation chamber that compiles water essence into stable hex structures. Each unit online slows entropy in the water sector.',
+        description: 'A deep well that circulates Water essence so it never stagnates. Completes the mid-session water compile goal.',
         unlockAtAb: 100.0,
         recipe: { liquid_essence: 3, shaped_crys: 2 },
         growth: 1.14,
@@ -88,7 +88,7 @@ export const PRODUCERS = [
     {
         id: 'ws_zephyr_generator_t1',
         displayName: 'Enhanced Zephyr Generator',
-        description: 'An Enhanced Zephyr Generator preservation chamber that compiles air essence into stable hex structures. Each unit online slows entropy in the air sector.',
+        description: 'Turbines that recompile Air before it disperses. Steady airflow for later multi-element recipes.',
         unlockAtAb: 125.0,
         recipe: { ethereal_gust: 3, shaped_crys: 2 },
         growth: 1.14,
@@ -99,7 +99,7 @@ export const PRODUCERS = [
     {
         id: 'ws_crystal_chamber_t1',
         displayName: 'Crystal Orb Chamber',
-        description: 'A Crystal Orb Chamber preservation chamber that compiles crystal essence into stable hex structures. Each unit online slows entropy in the crystal sector.',
+        description: 'Orbs that lattice Crystal essence into long-lived structure. The scaffold other sectors attach to.',
         unlockAtAb: 150.0,
         recipe: { shaped_crys: 3, dist_fire: 1, dist_aether: 1 },
         growth: 1.14,
@@ -110,7 +110,7 @@ export const PRODUCERS = [
     {
         id: 'ws_aether_reactor_t1',
         displayName: 'Aether Reactor',
-        description: 'An Aether Reactor preservation chamber that compiles aether essence into stable hex structures. Each unit online slows entropy in the aether sector.',
+        description: 'Binds the four element streams into Aether before the binding force fades. Unlock gate for denser craft trees.',
         unlockAtAb: 200.0,
         recipe: { dist_aether: 3, shaped_crys: 2 },
         growth: 1.15,
@@ -177,7 +177,7 @@ export const PRODUCERS = [
     {
         id: 'ws_enhanced_candle_forge',
         displayName: 'Enhanced Candle Forge',
-        description: 'An Enhanced Candle Forge preservation chamber that compiles fire essence into stable hex structures. Each unit online slows entropy in the fire sector.',
+        description: 'Overclocked candle loops with crystal heat sinks. Fire sector throughput for mid-game craft.',
         unlockAtAb: 5000.0,
         recipe: { dig_candle: 2, crystal_orb: 1, aether_well: 1 },
         growth: 1.16,
@@ -188,7 +188,7 @@ export const PRODUCERS = [
     {
         id: 'ws_flowing_current_well',
         displayName: 'Flowing Current Well',
-        description: 'A Flowing Current Well preservation chamber that compiles water essence into stable hex structures. Each unit online slows entropy in the water sector.',
+        description: 'Forced-current plumbing that keeps Water essence in motion. Higher liquid yield than the deep well.',
         unlockAtAb: 6000.0,
         recipe: { aqua_well: 3, crystal_orb: 2, dig_candle: 1 },
         growth: 1.16,
@@ -199,7 +199,7 @@ export const PRODUCERS = [
     {
         id: 'ws_wind_spiral_generator',
         displayName: 'Wind Spiral Generator',
-        description: 'A Wind Spiral Generator preservation chamber that compiles air essence into stable hex structures. Each unit online slows entropy in the air sector.',
+        description: 'Spiral ducts that recompile Air in layered vortices. Mid-game air feedstock.',
         unlockAtAb: 7000.0,
         recipe: { zephyr_totem: 3, crystal_orb: 2, dig_candle: 1 },
         growth: 1.16,
@@ -210,7 +210,7 @@ export const PRODUCERS = [
     {
         id: 'ws_crystal_core_chamber',
         displayName: 'Crystal Core Chamber',
-        description: 'A Crystal Core Chamber preservation chamber that compiles crystal essence into stable hex structures. Each unit online slows entropy in the crystal sector.',
+        description: 'Core lattices denser than simple orbs. Crystal backbone for tier-2 multi-element builds.',
         unlockAtAb: 8000.0,
         recipe: { crystal_orb: 3, aether_well: 2, dig_candle: 2 },
         growth: 1.17,
@@ -234,7 +234,7 @@ export const PRODUCERS = [
     {
         id: 'ws_quantum_candle_forge',
         displayName: 'Quantum Candle Forge',
-        description: 'A Quantum Candle Forge preservation chamber that compiles fire essence into stable hex structures. Each unit online slows entropy in the fire sector.',
+        description: 'Fire essence held in quantum superpositions until compile. Late-game fire density.',
         unlockAtAb: 100000.0,
         recipe: { enhanced_candle: 3, crystal_core: 2, flowing_current: 2, wind_spiral: 2 },
         growth: 1.20,
@@ -245,7 +245,7 @@ export const PRODUCERS = [
     {
         id: 'ws_quantum_water_well',
         displayName: 'Quantum Water Well',
-        description: 'A Quantum Water Well preservation chamber that compiles water essence into stable hex structures. Each unit online slows entropy in the water sector.',
+        description: 'Water states compiled across probability wells. Late-game liquid for quantum craft.',
         unlockAtAb: 120000.0,
         recipe: { flowing_current: 4, crystal_core: 2, enhanced_candle: 2, wind_spiral: 2 },
         growth: 1.20,
@@ -256,7 +256,7 @@ export const PRODUCERS = [
     {
         id: 'ws_quantum_air_generator',
         displayName: 'Quantum Air Generator',
-        description: 'A Quantum Air Generator preservation chamber that compiles air essence into stable hex structures. Each unit online slows entropy in the air sector.',
+        description: 'Air packets entangled across fan stages. Supplies quantum-era recipes.',
         unlockAtAb: 140000.0,
         recipe: { wind_spiral: 4, crystal_core: 2, enhanced_candle: 2, flowing_current: 2 },
         growth: 1.20,
@@ -267,7 +267,7 @@ export const PRODUCERS = [
     {
         id: 'ws_quantum_crystal_chamber',
         displayName: 'Quantum Crystal Chamber',
-        description: 'A Quantum Crystal Chamber preservation chamber that compiles crystal essence into stable hex structures. Each unit online slows entropy in the crystal sector.',
+        description: 'Crystal lattices that survive measurement collapse. Scaffold for endgame void craft.',
         unlockAtAb: 160000.0,
         recipe: { crystal_core: 4, enhanced_candle: 2, flowing_current: 2, wind_spiral: 2 },
         growth: 1.21,
@@ -278,7 +278,7 @@ export const PRODUCERS = [
     {
         id: 'ws_etheric_bit_reactor',
         displayName: 'Etheric Energy Reactor',
-        description: 'A Etheric Energy Reactor preservation chamber that compiles aether essence into stable hex structures. Each unit online slows entropy in the aether sector.',
+        description: 'Etheric reactor that turns quantum element stacks into dense Arcane Bits. Late-game AB engine.',
         unlockAtAb: 200000.0,
         recipe: { quantum_candle: 3, quantum_water: 3, quantum_air: 3, quantum_crystal: 3, aether_well: 3 },
         growth: 1.22,
@@ -291,7 +291,7 @@ export const PRODUCERS = [
     {
         id: 'ws_arcane_candle_forge',
         displayName: 'Arcane Candle Forge',
-        description: 'An Arcane Candle Forge preservation chamber that compiles fire essence into stable hex structures. Each unit online slows entropy in the fire sector.',
+        description: 'Legendary fire forge at the edge of safe compile temperatures. Feeds void-tier recipes.',
         unlockAtAb: 5000000.0,
         recipe: { quantum_candle: 5, quantum_water: 3, quantum_air: 3, quantum_crystal: 3 },
         growth: 1.25,
@@ -302,7 +302,7 @@ export const PRODUCERS = [
     {
         id: 'ws_void_liquid_well',
         displayName: 'Void Liquid Well',
-        description: 'A Void Liquid Well preservation chamber that compiles water essence into stable hex structures. Each unit online slows entropy in the water sector.',
+        description: 'Liquid drawn from absence — water essence that should not still flow. Void craft feedstock.',
         unlockAtAb: 6500000.0,
         recipe: { quantum_water: 5, quantum_crystal: 3, quantum_candle: 3, quantum_air: 3 },
         growth: 1.26,
@@ -313,7 +313,7 @@ export const PRODUCERS = [
     {
         id: 'ws_void_breath_generator',
         displayName: 'Void Breath Generator',
-        description: 'A Void Breath Generator preservation chamber that compiles air essence into stable hex structures. Each unit online slows entropy in the air sector.',
+        description: 'Air reclaimed from evacuated sectors. Breath without atmosphere for void recipes.',
         unlockAtAb: 8000000.0,
         recipe: { quantum_air: 5, quantum_crystal: 3, quantum_candle: 3, quantum_water: 3 },
         growth: 1.26,
@@ -324,7 +324,7 @@ export const PRODUCERS = [
     {
         id: 'ws_void_crystal_chamber',
         displayName: 'Void Crystal Chamber',
-        description: 'A Void Crystal Chamber preservation chamber that compiles crystal essence into stable hex structures. Each unit online slows entropy in the crystal sector.',
+        description: 'Crystals grown where structure should fail. Anchors infinity-class reactors.',
         unlockAtAb: 9000000.0,
         recipe: { quantum_crystal: 5, quantum_candle: 3, quantum_water: 3, quantum_air: 3 },
         growth: 1.26,
@@ -335,7 +335,7 @@ export const PRODUCERS = [
     {
         id: 'ws_infinity_bit_reactor',
         displayName: 'Infinity Energy Reactor',
-        description: 'A Infinity Energy Reactor preservation chamber that compiles aether essence into stable hex structures. Each unit online slows entropy in the aether sector.',
+        description: "The apex of arcane programming. Operates at reality's edge, compiling void-level data structures that exist beyond normal spacetime. Generates massive Arcane Bits from the source itself. Transcendence through code.",
         unlockAtAb: 20000000.0,
         recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,
