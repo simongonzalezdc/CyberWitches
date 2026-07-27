@@ -1,8 +1,9 @@
 /**
- * Prestige preview + commit (ticket 09).
+ * Prestige preview + commit (ticket 09) + affinity lock-in (ticket 10).
  */
 
 import { cloneState, createInitialState } from './state.js';
+import { dominantAffinity, SPECIALIZATION_STRATEGIES } from './affinity.js';
 
 /**
  * Rough EK projection (aligned with typical sqrt lifetime curves).
@@ -71,22 +72,6 @@ export function applyPrestigePreview(state) {
 
 /**
  * @param {import('./types.js').KernelState} state
- */
-function dominantAffinity(state) {
-    const a = state.affinity || { fire: 0, water: 0, air: 0, crystal: 0 };
-    let best = 'fire';
-    let v = -1;
-    for (const k of ['fire', 'water', 'air', 'crystal']) {
-        if ((a[/** @type {keyof typeof a} */ (k)] || 0) > v) {
-            v = a[/** @type {keyof typeof a} */ (k)] || 0;
-            best = k;
-        }
-    }
-    return best;
-}
-
-/**
- * @param {import('./types.js').KernelState} state
  * @param {{ affinity?: string|null }} [opts]
  * @returns {import('./types.js').DispatchResult}
  */
@@ -100,24 +85,42 @@ export function applyPrestigeCommit(state, opts = {}) {
     }
 
     const keys = Math.max(1, rec.projectedKeys);
-    const affinity = opts.affinity || dominantAffinity(state);
+    const affinityRaw = opts.affinity || dominantAffinity(state);
+    const affinity =
+        affinityRaw && SPECIALIZATION_STRATEGIES[/** @type {keyof typeof SPECIALIZATION_STRATEGIES} */ (affinityRaw)]
+            ? /** @type {keyof typeof SPECIALIZATION_STRATEGIES} */ (affinityRaw)
+            : dominantAffinity(state);
+    const strategy = SPECIALIZATION_STRATEGIES[affinity];
     const next = createInitialState(state.rngSeed ^ 0xabcddcba);
     next.prestigeCount = (state.prestigeCount || 0) + 1;
     next.prestigeLifetimeEarned = 0; // this-run lifetime resets
     next.totalKeys = (state.totalKeys || 0) + keys;
     next.keys = (state.keys || 0) + keys;
     next.prestigeBonuses = { ...(state.prestigeBonuses || {}) };
-    // First prestige sharp toy
+    // Strategy lock-in; preserve meditation mastery productionMult across rebirth
+    const priorProd = Number(state.specializationBonuses?.productionMult) || 1;
+    next.specializationBonuses = { ...strategy.bonuses };
+    if (priorProd > 1) {
+        next.specializationBonuses.productionMult = priorProd;
+        next.prestigeBonuses.meditation_production_mult = priorProd;
+    }
     if ((state.prestigeCount || 0) === 0) {
         next.prestigeBonuses.boon_kernel_fragment = (next.prestigeBonuses.boon_kernel_fragment || 0) + 1;
-        next.specializationBonuses = { castRewardMult: 1.1 };
+        next.specializationBonuses.castRewardMult =
+            (Number(next.specializationBonuses.castRewardMult) || 1) * 1.05;
     }
     next.elementSpecialization = affinity;
-    next.designTier = state.designTier || 0;
-    next.unlockedTiers = [...(state.unlockedTiers || [0])];
+    next.designTier = Math.max(state.designTier || 0, 6);
+    // Honest unlocks: prestige gate only at this moment (intermediates re-earn per run)
+    next.unlockedTiers = [0, 6].filter((t) => t <= next.designTier);
     next.chapters = {
         reached: ['ch0_boot', 'ch6_prestige'],
-        qualities: { ...(state.chapters?.qualities || {}), prestiger: true, affinity }
+        qualities: {
+            ...(state.chapters?.qualities || {}),
+            prestiger: true,
+            affinity,
+            strategy: strategy.name
+        }
     };
     next.affinity = { fire: 0, water: 0, air: 0, crystal: 0 };
     next.contractsCompleted = ['c_prestige'];
@@ -129,8 +132,18 @@ export function applyPrestigeCommit(state, opts = {}) {
                 type: 'prestigeCommitted',
                 keysGained: keys,
                 affinity,
+                strategy: strategy.name,
+                pipelineHint: strategy.pipelineHint,
                 prestigeCount: next.prestigeCount,
                 firstToy: (state.prestigeCount || 0) === 0 ? 'boon_kernel_fragment' : null
+            },
+            {
+                type: 'design_tier_heal',
+                from: state.designTier || 0,
+                to: next.designTier,
+                gateId: 'prestige_1',
+                ceremony: 'SYSTEM_RESTORE',
+                muteReadable: true
             }
         ]
     };
