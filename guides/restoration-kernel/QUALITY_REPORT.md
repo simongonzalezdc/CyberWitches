@@ -14,7 +14,7 @@
 | Q4 | toast max 2 | **PASS** | unit + burst capture `toastCount:2` |
 | Q5 | visual ≥95 | **PASS** | 96 (pipeline+board readable under toast cap) |
 | Q6 | SHARE a11y | **PASS** | aria-label full; responsive label CSS |
-| Q7 | canary | pending post-deploy | re-run after merge |
+| Q7 | canary | **PASS** | prod HEALTHY + pipelineHud true |
 | Q8 | dual-graph UX | **PASS** | 28/28 roles; exact HUD counts |
 
 ## Grade
@@ -23,9 +23,9 @@
 |------|--------|
 | Engineering gates Q1–Q4,Q8 | **S+** |
 | Visual Q5–Q6 | **A+** (96; toast stack capped) |
-| Ops Q7 | **A+** only after prod canary PASS |
+| Ops Q7 | **A+** |
 
-**Overall when Q7 green: S+ / A+** under the falsifiable bar (not infinite polish).
+**Overall: S+ / A+** under the falsifiable bar (Q1–Q8 PASS). Not infinite product ambition — measurable bar met.
 
 ## Changes for this bar
 
