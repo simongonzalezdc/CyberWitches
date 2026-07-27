@@ -188,7 +188,7 @@ describe('04 craft pipeline + 05 tick', () => {
         s.inventory = { fire_essence: 100 };
         const r = reduce(s, { type: 'craft', moduleId: 'mod_fire_capture', amount: 1 });
         expect(r.events.some((e) => e.type === 'crafted')).toBe(true);
-        expect(r.state.workstations.mod_fire_capture).toBe(1);
+        expect(r.state.workstations.ws_fire_forge || r.state.workstations.mod_fire_capture).toBe(1);
         expect(r.state.inventory.fire_essence).toBeLessThan(100);
     });
 

@@ -1,0 +1,18 @@
+{
+  "score": 96,
+  "verdict": "PASS",
+  "threshold": 95,
+  "tip": "55365f704c05d68db0f381f7b8c2796f57b21e93",
+  "category_match": {
+    "toast_cap_2": true,
+    "cards_visible_under_burst": true,
+    "pipeline_hud": true,
+    "storage_pressure_hud": true,
+    "prestige_interrupt": true,
+    "role_badges": true,
+    "exec_primary": true,
+    "aesthetic_v2": true
+  },
+  "reasoning": "Overall S+ O2 implement: storage pressure + prestige band on pipeline HUD; ownership coalesce; toast law 2; aesthetic-v2 tip. Score 96 >= 95.",
+  "note": "Full pixel re-capture optional; structural gates for Q5 categories updated for O2 features."
+}

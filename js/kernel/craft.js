@@ -4,6 +4,7 @@
 
 import { cloneState } from './state.js';
 import { getModule, computeStorageCap } from './content.js';
+import { applyOwnershipDelta, ownedCountIncludingAlias, coalesceWorkstations } from './ownership.js';
 
 /**
  * @param {Record<string, number>} inventory
@@ -52,13 +53,13 @@ export function applyCraft(state, moduleId, amount = 1) {
     let crafted = 0;
     const max = Math.min(100, Math.max(1, amount | 0));
     for (let i = 0; i < max; i++) {
-        const owned = next.workstations[moduleId] || 0;
+        const owned = ownedCountIncludingAlias(next.workstations, moduleId);
         const recipe = scaleRecipe(mod.recipe, owned, mod.growth);
         if (!canAfford(next.inventory, recipe)) break;
         for (const [k, v] of Object.entries(recipe)) {
             next.inventory[k] = (next.inventory[k] || 0) - v;
         }
-        next.workstations[moduleId] = owned + 1;
+        next.workstations = applyOwnershipDelta(next.workstations, moduleId, 1);
         crafted += 1;
 
         // Affinity lean from elemental modules
@@ -73,13 +74,14 @@ export function applyCraft(state, moduleId, amount = 1) {
         return { state: next, events: [{ type: 'craft_failed', reason: 'cannot_afford', moduleId }] };
     }
 
+    next.workstations = coalesceWorkstations(next.workstations);
     next.storageCap = computeStorageCap(next.workstations, next.storageCap || 50);
     events.push({
         type: 'crafted',
         moduleId,
         role: mod.role,
         amount: crafted,
-        owned: next.workstations[moduleId]
+        owned: ownedCountIncludingAlias(next.workstations, moduleId)
     });
     return { state: next, events };
 }

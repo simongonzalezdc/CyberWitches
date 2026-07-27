@@ -29,6 +29,7 @@ export {
 export { applyMeditationComplete, FIRST_SESSION_TARGET_SEC } from './meditation.js';
 export { applyTierCheck, TIER_GATES } from './tiers.js';
 export { projectPipelineHud, projectContractHud, projectAffinityHud } from './projector.js';
+export { coalesceWorkstations, projectOwnershipBag, canonicalWorkstationId, applyOwnershipDelta, owns } from './ownership.js';
 export {
     PRODUCER_PIPELINE_ROLES,
     ROLE_ORDER,

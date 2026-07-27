@@ -2,7 +2,8 @@
  * Pipeline role HUD projector (ticket 13) — progressive disclosure, a11y.
  * Reads Kernel projectors; no economy rules.
  */
-import { projectorsFromGameState } from '../../kernel/adapter.js';
+import { projectorsFromGameState, gameStateToKernel } from '../../kernel/adapter.js';
+import { prestigeRecommend } from '../../kernel/prestige.js';
 
 const ROLE_LABELS = {
     capture: 'CAPTURE',
@@ -40,11 +41,19 @@ export class PipelineHudUI {
         if (!this.root || !this.gameState) return;
 
         const { pipeline, affinity, contract } = projectorsFromGameState(this.gameState);
+        const kState = gameStateToKernel(this.gameState);
+        const rec = prestigeRecommend(kState);
+        const used = Math.floor(Number(pipeline.storageUsed) || 0);
+        const cap = Math.floor(Number(pipeline.storageCap) || 50);
+        const over = !!pipeline.storageOvercap;
         const sig = JSON.stringify({
             r: pipeline.roles.map((x) => [x.role, x.ownedTotal]),
             a: affinity.lead,
             c: contract.id,
-            cap: pipeline.storageCap
+            cap,
+            used,
+            over,
+            band: rec.band
         });
         if (sig === this._lastSig) return;
         this._lastSig = sig;
@@ -65,9 +74,13 @@ export class PipelineHudUI {
             <div class="pipeline-role-row" aria-live="polite">
                 ${parts.join('<span class="pipeline-role-arrow" aria-hidden="true">→</span>')}
             </div>
-            <div class="pipeline-role-meta text-[10px] font-mono text-gray-400 mt-1">
-                STORAGE_CAP ${Math.floor(pipeline.storageCap)} · EXEC is primary
+            <div class="pipeline-role-meta text-[10px] font-mono ${over ? 'text-ky-amber' : 'text-gray-400'} mt-1" data-storage-pressure="${over ? 'overcap' : 'ok'}">
+                STORAGE ${used}/${cap}${over ? ' · VOID_PRESSURE' : ''} · EXEC primary
             </div>
+            ${rec.band === 'recommend' && (this.gameState.prestigeCount || 0) === 0 ? `
+            <div class="pipeline-prestige-interrupt text-[10px] font-mono mt-1 border-l-2 border-ky-amber pl-2 text-ky-crystal" role="status" data-prestige-band="recommend">
+                ASCEND_BAND: ${String(rec.message || 'Keys ready — ascend when ready.').replace(/</g, '')}
+            </div>` : ''}
         `;
         this.root.hidden = false;
         this.root.removeAttribute('aria-hidden');

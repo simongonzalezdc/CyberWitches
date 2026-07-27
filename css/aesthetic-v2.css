@@ -656,3 +656,19 @@ body.tier-0 .notification {
         letter-spacing: 0.1em;
     }
 }
+
+
+/* Prestige ascend band interrupt (overall S+ product) */
+.pipeline-prestige-interrupt {
+    letter-spacing: 0.04em;
+    color: var(--ky-crystal);
+    border-left: 2px solid color-mix(in srgb, var(--ky-amber) 70%, transparent);
+}
+body.tier-0 .pipeline-prestige-interrupt {
+    color: var(--ky-crystal);
+    border-left-color: var(--ky-steel);
+}
+
+.pipeline-role-meta[data-storage-pressure="overcap"] {
+    color: var(--ky-amber);
+}

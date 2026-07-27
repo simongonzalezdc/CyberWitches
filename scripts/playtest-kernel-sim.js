@@ -30,7 +30,7 @@ function runSession(seed) {
             // craft capture
             const c = reduce(s, { type: 'craft', moduleId: 'mod_fire_capture' });
             s = c.state;
-            if ((s.workstations.mod_fire_capture || 0) >= 1) tta = t;
+            if ((s.workstations.mod_fire_capture || 0) >= 1 || (s.workstations.ws_fire_forge || 0) >= 1) tta = t;
         }
     }
 
@@ -83,6 +83,9 @@ function runSession(seed) {
         captureOwned <= 3;
     // G4 prestige message present
     const g4 = typeof band === 'string' && band.length > 0;
+    // G5 Product S+: recommend band reachable before void unlock AB (400000)
+    const VOID_UNLOCK_AB = 400000;
+    const g5 = band === 'recommend' && (s.ab || 0) < VOID_UNLOCK_AB && (s.prestigeLifetimeEarned || 0) < VOID_UNLOCK_AB;
 
     return {
         session: seed,
@@ -90,7 +93,7 @@ function runSession(seed) {
         buffer,
         voidSeen,
         prestigeBand: String(band),
-        pass: g1 && g2 && g3 && g4
+        pass: g1 && g2 && g3 && g4 && g5
     };
 }
 

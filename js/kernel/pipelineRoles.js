@@ -4,6 +4,7 @@
  */
 
 import { PIPELINE_MODULES, LEGACY_TO_MODULE } from './content.js';
+import { coalesceWorkstations } from './ownership.js';
 
 /** @typedef {'capture'|'store'|'bind'|'compile'|'shield'} PipelineRole */
 
@@ -77,7 +78,8 @@ export function roleForId(id) {
 export function countOwnedByRole(workstations) {
     /** @type {Record<string, number>} */
     const out = { capture: 0, store: 0, bind: 0, compile: 0, shield: 0 };
-    for (const [id, n] of Object.entries(workstations || {})) {
+    const bag = coalesceWorkstations(workstations || {});
+    for (const [id, n] of Object.entries(bag)) {
         if (!n) continue;
         const role = roleForId(id);
         if (role) out[role] = (out[role] || 0) + n;

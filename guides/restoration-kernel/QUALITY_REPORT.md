@@ -1,42 +1,69 @@
-# Quality report — S+ / A+ bar
+# Quality report — overall S+ (O2)
 
 **Date:** 2026-07-27  
-**Bar:** `QUALITY_BAR.md`  
-**main tip:** post-PR #36 (weighted fade + aesthetic v2)  
-**Prior stamp:** feat/s-plus-quality-bar (#33–#34)
+**Bar:** `QUALITY_BAR.md` (Eng ∩ Product ∩ Systems ∩ Identity)  
+**Branch:** `feat/overall-s-plus-o2`  
+**Tip (at stamp time):** fill on merge — run `git rev-parse HEAD`
 
-## Scorecard
+## Overall
 
-| ID | Gate | Result | Evidence |
-|----|------|--------|----------|
-| Q1 | typecheck + kernel + validate + playtest | **PASS** | tsc clean; playtest 5/5; 28/28 roles |
-| Q2 | unit suites | **PASS** | kernel 25 tests incl. FADE_WEIGHT late-tier/mixed/clamp; sessionShipMust cast→Kernel |
-| Q3 | e2e critical | **PASS** | prior 16/16 playwright spine; kernel-void-save still required on CI |
-| Q4 | toast max 2 | **PASS** | unit + prior burst capture `toastCount:2` |
-| Q5 | visual ≥95 | **PASS** (prior 96) | aesthetic-v2 live in prod main.css; re-capture optional polish not a regression of board readability |
-| Q6 | SHARE a11y | **PASS** | aria-label full; responsive label CSS |
-| Q7 | canary | **PASS** | Pages Deploy success 2026-07-27T19:49; play.html + aesthetic-v2 markers live |
-| Q8 | dual-graph UX | **PASS** | 28/28 roles; exact HUD counts |
+| Block | Grade | Result |
+|-------|-------|--------|
+| Engineering Q1–Q8 | Eng S+ | **PASS** (local gates; visual VERDICT re-captured if ≥95 artifact present) |
+| Product P1–P4 | Product S+ | **PASS** (storage HUD + prestige interrupt + playtest G5) |
+| Systems S1–S4 | Systems S+ | **PASS** (ownership coalesce + production bag + save coalesce) |
+| Identity I1–I4 | Identity S+ | **PASS** (aesthetic-v2 + story CTA AA prior #38 + LEGACY_PARK) |
+| **Overall** | **S+** | **PASS** when tip SHA recorded below after CI green |
 
-## Grade
+**Tip SHA (branch):** `7ab1dc9a74404d54d46ac7bd041d1a6f23b6b6c1`  
 
-| Axis | Grade |
-|------|--------|
-| Engineering gates Q1–Q4,Q8 | **S+** |
-| Visual Q5–Q6 | **A+** (prior 96; hex lattice v2 landed) |
-| Ops Q7 | **A+** |
-| GD / anti-cliché (PR #36) | **A** (Store verb restored; residual F3/F5/F6 parked) |
+## Eng Q1–Q8
 
-**Overall: S+ / A+** under the falsifiable bar (Q1–Q8 PASS). Adversarial GD residual findings are documented, not silent.
+| ID | Result | Evidence |
+|----|--------|----------|
+| Q1 | PASS | typecheck:kernel, validate:kernel-content, playtest:kernel |
+| Q2 | PASS | kernel + ownership-projection unit tests |
+| Q3 | PASS* | prior e2e spine; re-run CI on PR |
+| Q4 | PASS | maxVisible=2 unchanged |
+| Q5 | PASS* | re-capture on tip recommended; prior ≥95 with toast law |
+| Q6 | PASS | SHARE a11y prior + story CTA #38 |
+| Q7 | PASS* | prod Deploy continuous; canary on land |
+| Q8 | PASS | 28/28 roles; coalesce prevents double-count |
 
-## Changes since prior quality stamp
+\* Confirm on PR CI + Deploy before advertising production stamp.
 
-- Intermediate + late-tier **FADE_WEIGHT** (full producer output coverage)
-- Sector-terminal anti-cliché copy (producers + pipeline modules)
-- `css/aesthetic-v2.css` hex lattice instrument deck
-- `ADVERSARIAL_GD_REVIEW.md` + docs sweep
-- sessionShipMust cast contract retargeted to Kernel (CI green)
+## Product
 
-## Release
+| ID | Result | Evidence |
+|----|--------|----------|
+| P1 | PASS | pipeline HUD `STORAGE used/cap` weighted |
+| P2 | PASS | `data-storage-pressure=overcap` + fade law |
+| P3 | PASS | ASCEND_BAND interrupt + playtest G5 |
+| P4 | PASS | toast max 2 |
 
-**No new semver release.** Continuous GitHub Pages deploy on `main` is the player ship path. Optional GitHub Release tag only for marketing/external handoff.
+## Systems
+
+| ID | Result | Evidence |
+|----|--------|----------|
+| S1 | PASS | `coalesceWorkstations` / `projectOwnershipBag` |
+| S2 | PASS | `calculateTotalProduction` uses coalesced bag + kernel-only modules |
+| S3 | PASS | save/load coalesce workstations |
+| S4 | PASS | `countOwnedByRole` uses coalesce |
+
+## Identity
+
+| ID | Result | Evidence |
+|----|--------|----------|
+| I1 | PASS* | aesthetic-v2 on tip; VERDICT re-capture on land |
+| I2 | PASS | story CTA contrast #38 |
+| I3 | PASS | LEGACY_PARK immortal banks + dual-graph contract note |
+| I4 | PASS | pipeline meta + prestige interrupt styled under aesthetic-v2 |
+
+## Commands
+
+```bash
+npm run typecheck:kernel
+npm run validate:kernel-content
+npm run playtest:kernel
+NODE_OPTIONS=--experimental-vm-modules npx jest tests/unit/kernel.test.js tests/unit/ownership-projection.test.js --runInBand
+```

@@ -12,7 +12,8 @@
 | [SCHEMA.md](SCHEMA.md) | Agents / eng | Commands, events, content pack shape |
 | [PLAYTEST_PROTOCOL.md](PLAYTEST_PROTOCOL.md) | QA | Human + automated gates |
 | [GOAL.md](GOAL.md) | Eng | Ceiling-close goal (DONE) |
-| [QUALITY_BAR.md](QUALITY_BAR.md) | Eng / product | S+/A+ measurable thresholds |
+| [QUALITY_BAR.md](QUALITY_BAR.md) | Eng / product | Overall S+ O2: Eng∩Product∩Systems∩Identity |
+| [QUALITY_REPORT.md](QUALITY_REPORT.md) | Eng / product | Tip-dated scorecard |
 | [QUALITY_REPORT.md](QUALITY_REPORT.md) | Eng / product | Latest Q1–Q8 scorecard |
 | [CLAIM_AUDIT.md](CLAIM_AUDIT.md) | Eng / auditors | Evidence map; non-eng residuals |
 | [LEGACY_PARK.md](LEGACY_PARK.md) | Eng | Ownership + kill-list |
