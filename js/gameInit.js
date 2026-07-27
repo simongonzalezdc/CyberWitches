@@ -6,6 +6,7 @@
 // ── Critical-path static imports (needed for boot / first paint) ──────────
 import { UIManager } from './modules/ui/uiManager.js';
 import { showNotification } from './modules/ui/notifications.js';
+import { appendSystemLog, ensureSystemLogEmptyState } from './modules/ui/systemLog.js';
 import { announceToScreenReader } from './accessibility.js';
 import { InputManager } from './modules/ui/inputManager.js';
 import { CraftingManager } from './modules/game/craftingManager.js';
@@ -95,6 +96,8 @@ export async function initGame() {
         // guarded by `if (window.showNotification)`. Nothing ever assigned these
         // globals, so every one of those notifications was a silent no-op.
         window.showNotification = showNotification;
+        ensureSystemLogEmptyState();
+
 
         // Diegetic cast overclock feedback (replaces dead jackpot hook)
         window.triggerBonusFeedback = (bonusType, multiplier) => {
@@ -118,6 +121,7 @@ export async function initGame() {
                 } else if (typeof showNotification === 'function') {
                     showNotification(copy, 'success', 2000);
                 }
+                appendSystemLog(copy, 'success');
             } catch (error) {
                 console.warn('triggerBonusFeedback failed:', error);
             }
@@ -414,6 +418,10 @@ function setupGameStateCallbacks(gameState, uiManager, dailyRituals, castManager
             dailyRituals.updateTaskProgress('own', wsId, count);
         }
         uiManager.debouncedUIUpdate('workstationsTab', () => uiManager.workstationUI.update());
+        try {
+            const name = (window.PRODUCERS || []).find?.(p => p.id === wsId)?.displayName || wsId;
+            appendSystemLog(`CRAFT_OK ${name} ×${count}`, 'success');
+        } catch { /* log optional */ }
     };
 
     gameState.onUpgradePurchased = () => {
