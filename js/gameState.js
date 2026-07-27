@@ -1039,6 +1039,11 @@ export class GameState {
                 console.error('Failed to parse save data:', result.error);
                 handleError(result.error, 'load', true);
                 this.backupRawSave('cyberWitchesSave_backup_', saveDataStr);
+                try {
+                    if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                        window.__appendSystemLog('SAVE_OUTCOME parse_error — backup kept; starting recovery', 'error');
+                    }
+                } catch { /* optional */ }
                 return;
             }
 
@@ -1054,6 +1059,11 @@ export class GameState {
                     'load:checksum',
                     'warning'
                 );
+                try {
+                    if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                        window.__appendSystemLog('SAVE_OUTCOME checksum_recalculated — integrity repaired', 'warn');
+                    }
+                } catch { /* optional */ }
             }
 
             if (result.outcome === 'migration_failed') {
@@ -1065,6 +1075,11 @@ export class GameState {
                     new Error('Your save could not be upgraded to this version and was reset. A backup was kept in this browser.'),
                     'load:migration', true
                 );
+                try {
+                    if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                        window.__appendSystemLog('SAVE_OUTCOME migration_failed — backup kept; fresh start', 'error');
+                    }
+                } catch { /* optional */ }
                 return;
             }
 
@@ -1076,6 +1091,11 @@ export class GameState {
                     new Error('Your save was corrupted and could not be loaded, so the game was reset. A backup was kept in this browser.'),
                     'load:validation', true
                 );
+                try {
+                    if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                        window.__appendSystemLog('SAVE_OUTCOME invalid — backup kept; reset notified', 'error');
+                    }
+                } catch { /* optional */ }
                 return;
             }
 
