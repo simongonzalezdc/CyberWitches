@@ -30,7 +30,7 @@ function runSession(seed) {
             // craft capture
             const c = reduce(s, { type: 'craft', moduleId: 'mod_fire_capture' });
             s = c.state;
-            if ((s.workstations.mod_fire_capture || 0) >= 1) tta = t;
+            if ((s.workstations.mod_fire_capture || 0) >= 1 || (s.workstations.ws_fire_forge || 0) >= 1) tta = t;
         }
     }
 

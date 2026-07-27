@@ -3,6 +3,8 @@
  */
 
 import { cloneState } from './state.js';
+import { owns } from './ownership.js';
+import { countOwnedByRole } from './pipelineRoles.js';
 
 /**
  * @typedef {{ id: string, title: string, body: string, quality?: string }} Storylet
@@ -24,7 +26,7 @@ export const CHAPTERS = [
     {
         id: 'ch1_capture',
         title: 'First capture',
-        gate: (s) => Object.entries(s.workstations || {}).some(([id, n]) => n > 0 && id.includes('capture')),
+        gate: (s) => (countOwnedByRole(s.workstations || {}).capture || 0) >= 1,
         storylet: {
             id: 'st_capture',
             title: 'SECTOR TAP ONLINE',
@@ -35,7 +37,7 @@ export const CHAPTERS = [
     {
         id: 'ch2_storage',
         title: 'Storage against fade',
-        gate: (s) => (s.workstations?.mod_essence_buffer || 0) >= 1 || (s.workstations?.mod_deep_cache || 0) >= 1,
+        gate: (s) => owns(s.workstations, 'mod_essence_buffer') || owns(s.workstations, 'mod_deep_cache'),
         storylet: {
             id: 'st_store',
             title: 'BUFFER ALLOCATED',
@@ -46,7 +48,7 @@ export const CHAPTERS = [
     {
         id: 'ch3_bind',
         title: 'Binding',
-        gate: (s) => (s.workstations?.mod_aether_bind || 0) >= 1,
+        gate: (s) => owns(s.workstations, 'mod_aether_bind') || owns(s.workstations, 'ws_aether_synthesizer'),
         storylet: {
             id: 'st_bind',
             title: 'FOUR STREAMS LOCK',
@@ -58,7 +60,9 @@ export const CHAPTERS = [
         id: 'ch4_compile',
         title: 'Self-hosting compile',
         gate: (s) =>
-            (s.workstations?.mod_bit_reactor || 0) >= 1 || (s.workstations?.mod_sector_compiler || 0) >= 1,
+            owns(s.workstations, 'mod_bit_reactor') ||
+            owns(s.workstations, 'mod_sector_compiler') ||
+            owns(s.workstations, 'ws_arcane_bit_reactor'),
         storylet: {
             id: 'st_compile',
             title: 'REACTOR HEARTBEAT',
@@ -96,32 +100,34 @@ export const CONTRACTS = [
         id: 'c_fire_tap',
         title: 'COMPILE_CONTRACT',
         message: 'Fire sector failing — bring a Fire Sector Tap online (≥1).',
-        check: (s) => (s.workstations?.mod_fire_capture || 0) >= 1
+        check: (s) => owns(s.workstations, 'mod_fire_capture') || owns(s.workstations, 'ws_fire_forge')
     },
     {
         id: 'c_buffer',
         title: 'COMPILE_CONTRACT',
         message: 'Essence bleeds — craft an Essence Buffer so stock survives soft fade.',
-        check: (s) => (s.workstations?.mod_essence_buffer || 0) >= 1
+        check: (s) => owns(s.workstations, 'mod_essence_buffer')
     },
     {
         id: 'c_water_tap',
         title: 'COMPILE_CONTRACT',
         message: 'Stabilize Water sector — own ≥1 Water Sector Tap.',
-        check: (s) => (s.workstations?.mod_water_capture || 0) >= 1
+        check: (s) => owns(s.workstations, 'mod_water_capture') || owns(s.workstations, 'ws_aqua_well')
     },
     {
         id: 'c_bind',
         title: 'COMPILE_CONTRACT',
         message: 'Bind the four streams — craft Aether Binder.',
-        check: (s) => (s.workstations?.mod_aether_bind || 0) >= 1
+        check: (s) => owns(s.workstations, 'mod_aether_bind') || owns(s.workstations, 'ws_aether_synthesizer')
     },
     {
         id: 'c_compile',
         title: 'COMPILE_CONTRACT',
         message: 'Self-host progress — own Sector Compiler or Arcane Bit Reactor.',
         check: (s) =>
-            (s.workstations?.mod_bit_reactor || 0) >= 1 || (s.workstations?.mod_sector_compiler || 0) >= 1
+            owns(s.workstations, 'mod_bit_reactor') ||
+            owns(s.workstations, 'mod_sector_compiler') ||
+            owns(s.workstations, 'ws_arcane_bit_reactor')
     },
     {
         id: 'c_prestige',

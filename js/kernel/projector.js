@@ -3,11 +3,12 @@
  * Pure view models — no DOM. Counts legacy ws_* via pipelineRoles.
  */
 
-import { PIPELINE_MODULES } from './content.js';
+import { PIPELINE_MODULES, computeStorageCap } from './content.js';
 import { getPrimaryContract } from './chapters.js';
 import { affinityForeshadow } from './affinity.js';
 import { ROLE_ORDER, countOwnedByRole, roleForId } from './pipelineRoles.js';
 import { fadeableTotal } from './fade.js';
+import { coalesceWorkstations } from './ownership.js';
 
 /**
  * Pipeline structure for progressive disclosure HUD.
@@ -52,7 +53,9 @@ export function projectPipelineHud(state, opts = {}) {
         byRole[role].ownedTotal = counts[role] || 0;
     }
 
-    const cap = state.storageCap || 50;
+    const bagForCap = coalesceWorkstations(bag);
+    // Recompute from modules + base 50 (do not use state.storageCap as base — it already includes bonuses)
+    const cap = computeStorageCap(bagForCap, 50);
     const used = fadeableTotal(state.inventory || {});
     const overcap = used > cap;
     return {

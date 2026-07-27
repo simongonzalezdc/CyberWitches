@@ -3,6 +3,7 @@
  * Ceremony listens to events; Kernel owns the rules.
  */
 
+import { owns } from './ownership.js';
 import { cloneState } from './state.js';
 import { CHAPTERS } from './chapters.js';
 
@@ -23,7 +24,7 @@ export const TIER_GATES = [
         id: 'storage_online',
         check: (s) =>
             (s.chapters?.reached || []).includes('ch2_storage') ||
-            (s.workstations?.mod_essence_buffer || 0) >= 1
+            owns(s.workstations, 'mod_essence_buffer')
     },
     {
         tier: 3,

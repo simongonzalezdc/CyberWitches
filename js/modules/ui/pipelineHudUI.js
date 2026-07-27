@@ -79,7 +79,7 @@ export class PipelineHudUI {
             </div>
             ${rec.band === 'recommend' && (this.gameState.prestigeCount || 0) === 0 ? `
             <div class="pipeline-prestige-interrupt text-[10px] font-mono mt-1 border-l-2 border-ky-amber pl-2 text-ky-crystal" role="status" data-prestige-band="recommend">
-                ASCEND_BAND: Keys ready — plane grind diminishing. Preview prestige when ready.
+                ASCEND_BAND: ${String(rec.message || 'Keys ready — ascend when ready.').replace(/</g, '')}
             </div>` : ''}
         `;
         this.root.hidden = false;
