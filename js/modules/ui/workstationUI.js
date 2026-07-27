@@ -8,6 +8,7 @@ import { getTierSymbol, getTierAppropriateStyle, getWorkstationTier } from './ui
 import { PRODUCERS, UPGRADES, INGREDIENTS } from '../data/index.js';
 import { Balance } from '../../utils.js';
 import { accessibilityManager } from '../../accessibility.js';
+import { roleForId } from '../../kernel/pipelineRoles.js';
 
 export class WorkstationUI {
     constructor(gameState, uiManager) {
@@ -366,12 +367,17 @@ export class WorkstationUI {
                     productionHtml += '</div>';
                 }
 
+                const pipeRole = roleForId(prodData.id) || 'capture';
+                const roleLabel = String(pipeRole).toUpperCase();
+                card.dataset.pipelineRole = pipeRole;
+
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="card-title-row">
                             <h3 class="card-title">${escapeHtml(prodData.displayName)}</h3>
                             <span class="card-owned">Lv. ${escapeHtml(formatNumber(owned))}</span>
                         </div>
+                        <div class="pipeline-role-badge font-mono text-[10px] tracking-widest" data-role="${escapeHtml(pipeRole)}" title="Pipeline role">${escapeHtml(roleLabel)}</div>
                         ${prodData.description ? `<p class="card-desc">${escapeHtml(prodData.description)}</p>` : ''}
                     </div>
 

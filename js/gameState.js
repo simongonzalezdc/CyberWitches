@@ -361,8 +361,13 @@ export class GameState {
                     specializationMult = 1.0;
                 }
 
-                // Apply event multiplier
-                const finalMult = mult * specializationMult * eventMultiplier;
+                // Meditation / Kernel production mult (mastery) applies to tick production
+                const productionMult = Number(this.specializationBonuses?.productionMult) || 1;
+                const safeProdMult =
+                    isFinite(productionMult) && productionMult > 0 ? productionMult : 1;
+
+                // Apply event multiplier + mastery mult
+                const finalMult = mult * specializationMult * eventMultiplier * safeProdMult;
 
                 const finalRate = baseRate * finalMult * owned;
 
@@ -1317,6 +1322,10 @@ export class GameState {
                 this._lastVoidLoss = fadeResult.faded;
                 this.batchUpdate('voidLoss', fadeResult.faded, fadeResult.storageCap);
             }
+            // Worker host remains available via offlineTickOnGameState for pure-kernel
+            // simulations; load-path offline uses main-thread production + single fade
+            // to avoid double-apply. Flag eligibility for metrics/tests.
+            this._lastOfflineWorkerEligible = cappedSeconds >= 60;
         }
 
         if (offlineAb > 0) {

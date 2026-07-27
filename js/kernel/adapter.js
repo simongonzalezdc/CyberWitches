@@ -186,7 +186,9 @@ export function strategyBonusesFor(element) {
 export function projectorsFromGameState(gs) {
     const k = gameStateToKernel(gs);
     return {
-        pipeline: projectPipelineHud(k),
+        pipeline: projectPipelineHud(k, {
+            legacyWorkstations: gs.workstations || {}
+        }),
         contract: projectContractHud(k),
         affinity: projectAffinityHud(k)
     };

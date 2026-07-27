@@ -1191,6 +1191,31 @@ body.tier-advance-heal .compile-goal-rail:not([hidden]) {
         transition: none;
     }
 }
+.pipeline-role-badge {
+    display: inline-block;
+    margin: 0.25rem 0 0.35rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.2rem;
+    border: 1px solid color-mix(in srgb, var(--ky-cyan) 40%, transparent);
+    color: var(--ky-cyan, #7dd3fc);
+    background: color-mix(in srgb, var(--ky-cyan) 8%, transparent);
+}
+.pipeline-role-badge[data-role="store"] {
+    color: var(--ky-amber, #fbbf24);
+    border-color: color-mix(in srgb, var(--ky-amber, #fbbf24) 40%, transparent);
+}
+.pipeline-role-badge[data-role="bind"] {
+    color: var(--ky-magenta, #e879f9);
+    border-color: color-mix(in srgb, var(--ky-magenta, #e879f9) 40%, transparent);
+}
+.pipeline-role-badge[data-role="compile"] {
+    color: var(--ky-green, #7dffb3);
+    border-color: color-mix(in srgb, var(--ky-green, #7dffb3) 40%, transparent);
+}
+.pipeline-role-badge[data-role="shield"] {
+    color: var(--ky-steel, #94a3b8);
+    border-color: color-mix(in srgb, var(--ky-steel, #94a3b8) 40%, transparent);
+}
 /* Full SHARE_RESTORE label — persistent + touch-friendly (Opus 5 Rank 2) */
 .heal-share-btn {
     display: inline-flex;
