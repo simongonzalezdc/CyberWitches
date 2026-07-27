@@ -55,7 +55,15 @@ export class DesignTierSystem {
         if (!this.gameState) return;
 
         const ab = this.gameState.ab || 0;
-        const unlockedCount = this.uiManager?.systems?.achievementSystem?.getUnlockedCount() || 0;
+        // UIManager is constructed with { achievements } (not achievementSystem).
+        // Also accept window.achievements and legacy misspelled key.
+        const achievementSrc =
+            this.uiManager?.systems?.achievements
+            || (typeof window !== 'undefined' ? window.achievements : null)
+            || this.uiManager?.systems?.achievementSystem;
+        const unlockedCount = typeof achievementSrc?.getUnlockedCount === 'function'
+            ? achievementSrc.getUnlockedCount()
+            : 0;
         // Tier 1: BASIC - 500 AB + 3 Achievements
         if (!this.unlockedTiers.has(1)) {
             if (unlockedCount >= 3 && ab >= 500) {

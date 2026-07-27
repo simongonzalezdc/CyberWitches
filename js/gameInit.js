@@ -109,6 +109,9 @@ export async function initGame() {
         window.showNotification = showNotification;
         // Bridge for errorHandler / storage modules that cannot import systemLog freely
         window.__appendSystemLog = appendSystemLog;
+        // StatsUI / design tiers / legacy reads use these globals
+        window.achievements = achievements;
+        window.comboSystem = comboSystem;
         ensureSystemLogEmptyState();
 
 

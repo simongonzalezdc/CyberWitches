@@ -563,7 +563,17 @@ export class GameState {
             'ab_infinity_boost': { type: 'ab_production', value: 20.0, duration: 3 * 60 * 60 },
             'ab_eternal_boost': { type: 'ab_production', value: 10.0, duration: 2 * 60 * 60 },
             'infinity_catalyst': { type: 'ingredient_production', value: 4.0, duration: 4 * 60 * 60 },
-            'prestige_mastery': { type: 'prestige_gain', value: 1.0, duration: 6 * 60 * 60 }
+            'prestige_mastery': { type: 'prestige_gain', value: 1.0, duration: 6 * 60 * 60 },
+
+            // Focus / late-tier recipes that previously had no effect table (silent consume)
+            'focus_elixir': { type: 'focus_gain', value: 1.0, duration: 30 * 60 },
+            'focus_boost_potion': { type: 'focus_gain', value: 2.0, duration: 45 * 60 },
+            'quantum_focus_elixir': { type: 'focus_gain', value: 3.0, duration: 60 * 60 },
+            'void_focus_essence': { type: 'focus_gain', value: 4.0, duration: 90 * 60 },
+            'eternal_focus_essence': { type: 'focus_gain', value: 5.0, duration: 2 * 60 * 60 },
+            'eternal_production_elixir': { type: 'production', value: 8.0, duration: 5 * 60 * 60 },
+            'eternal_speed_surge': { type: 'cast_speed', value: 6.0, duration: 3 * 60 * 60 },
+            'eternal_catalyst': { type: 'ingredient_production', value: 6.0, duration: 5 * 60 * 60 }
         };
 
         return potionEffects[potionId] || null;
@@ -575,7 +585,12 @@ export class GameState {
 
         const effect = this.getPotionEffect(potionId);
         if (!effect) {
-            console.warn('⚠️ Unknown potion consumed:', potionId);
+            console.warn('Unknown potion consumed:', potionId);
+            handleError(
+                new Error(`Potion "${potionId}" has no effect definition and was not consumed.`),
+                'potion:unknown',
+                true
+            );
             return false;
         }
 
