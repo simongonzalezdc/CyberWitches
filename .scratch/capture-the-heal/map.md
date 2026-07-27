@@ -2,14 +2,18 @@
 
 **Label:** `wayfinder:map`  
 **Tracker:** local-markdown `.scratch/capture-the-heal/`  
-**Status:** executing — RALPLAN approved (`/implement all`)  
+**Status:** **shipped on main** (PR #20, 2026-07-27) — residual HITL field mute-clip + growth pivot  
 **Prior campaign:** ideal-critical-path (shipped #14–#19)  
 **Research:** `../ideal-critical-path/RESEARCH_GAP_CLOSEOUT.md`  
-**Ralplan:** `RALPLAN.md`
+**Ralplan:** `RALPLAN.md`  
+**Merged:** https://git.kyanitelabs.tech/simon/CyberWitches/pulls/20  
+**Claim-audit:** `CLAIM_AUDIT.md` · **Pivot:** `PIVOT_REBASELINE.md`
 
 ## Destination
 
 Ship **Capture the heal**: mute-readable heal **ceremony** + **visual share artifact** (split still; optional short loop) + **instrumented TTA/TTH**, so a stranger can understand “the system restored” from one still or 15s clip — then re-run the 30-day share pivot with real visual share. Done when Must tickets are complete, mute-clip protocol is runnable with a frozen stimulus, and claim-audit for this map exists.
+
+**Engineering destination: met on main.** Field n=5 + N=50 pivot still open for growth.
 
 ## Notes
 

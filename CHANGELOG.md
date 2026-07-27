@@ -2,6 +2,21 @@
 
 ## Recent Changes
 
+### Capture the heal (2026-07-27) — PR #20 + heal spine #14–#19
+
+**Product thesis:** mute-readable UI restore is the shareable scoreboard.
+
+- ✅ **Heal ceremony** on `hex:tierAdvance` (`healCeremony.js`) — dim → restore → chrome → toast → share; reduced-motion safe
+- ✅ **SHARE_RESTORE** downloads sanitized split still + copies text (`healCapture.js`, `healShare.js`); no full save secrets
+- ✅ **Local funnel** TTA / TTH / shareAttempt (`funnelMetrics.js`, `cw.funnel.*`)
+- ✅ **Compile goal rail** — single primary post-tutorial objective
+- ✅ **Landing / OG** heal still (`screenshots/heal-split-still.png`)
+- ✅ Operator e2e + unit coverage (`captureTheHeal.test.js`, `heal-operator-journeys.spec.js`)
+- ✅ Campaign map / claim-audit / mute-clip runbook under `.scratch/capture-the-heal/`
+- ⏳ Field mute-clip n=5 (HITL) still residual — growth spend gated
+
+Prior heal foundation: mult-cache + ascend invalidate, SYSTEM_LOG save outcomes, meditation Δ feedback, prestige ceremony preview (PRs #14–#19).
+
 ### Game Title & Story Integration (Phase 1-3)
 - ✅ Game title changed to **"Hex Compiler"**
 - ✅ Currency renamed to **"Arcane Bits (AB)"** (replacing "Spell Energy (SE)")

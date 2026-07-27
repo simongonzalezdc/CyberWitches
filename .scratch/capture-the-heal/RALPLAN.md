@@ -1,6 +1,6 @@
 # RALPLAN — Capture the heal
 
-**Status:** approved · implementing  
+**Status:** approved · **shipped** (PR #20 → main 2026-07-27)  
 **Mode:** consensus · **deliberate** (product/viral campaign risk)  
 **Date:** 2026-07-27  
 **Map:** `.scratch/capture-the-heal/map.md`  
@@ -156,7 +156,7 @@ Default **still-first split of chrome tiers** (left Tier 0 chrome, right current
 | `ralplan_architect_review` | APPROVE with constraints (still-first capture; event-bus ceremony) |
 | `ralplan_critic_review` | APPROVE (nits adopted) |
 | `ralplan_consensus_gate.complete` | **true** (Architect→Critic order satisfied) |
-| **Plan status** | **`approved`** — user `/implement all` 2026-07-27 |
+| **Plan status** | **`shipped`** — PR #20 merged; docs closeout follow-up |
 
 ---
 

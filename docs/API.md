@@ -31,6 +31,27 @@ This document provides comprehensive API documentation for all systems and modul
 4. [Data Structures](#data-structures)
    - [Game Data](#game-data)
 
+5. [Heal / share / funnel (current)](#heal--share--funnel-current)
+
+---
+
+## Heal / share / funnel (current)
+
+Live modules under `js/modules/game/`. Prefer reading sources + unit tests over this section if they diverge.
+
+| Module | Role |
+|--------|------|
+| `designTierSystem.js` | `emitTierAdvance(from, to)` → `hex:tierAdvance`; `playHealMoment` |
+| `healCeremony.js` | `runHealCeremony`, `playHealCeremonyInBrowser` — timeline + reduced-motion |
+| `healCapture.js` | `captureSplitStill`, `buildCaptureMeta`, `isCaptureSanitized` |
+| `healShare.js` | `buildHealShareArtifact`, `captureHealShare` — SHARE_RESTORE |
+| `funnelMetrics.js` | `markSessionStart`, `markFirstAutomation`, `markFirstHeal`, `markShareAttempt`, `getFunnelSnapshot` |
+| `compileGoalStack.js` | Primary goal queue + `getPrimaryCompileGoal` |
+
+**Privacy invariant:** share payloads and still meta contain tier chrome only — never AB, inventory, prestige keys, or full save.
+
+**Local keys:** `cw.funnel.sessionStartMs`, `cw.funnel.ttaMs`, `cw.funnel.tthMs`, `cw.funnel.shareAttempt`, `cw.funnel.tierAdvance`.
+
 ---
 
 ## Core Systems

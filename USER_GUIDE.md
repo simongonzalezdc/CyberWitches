@@ -78,17 +78,25 @@ Inscriptions are permanent upgrades that boost your production. To purchase:
 
 ## Core Systems
 
-### Design Tier System
+### Design Tier System (the UI heals)
 
-The game progressively unlocks visual and audio features:
+The game progressively restores visual and audio chrome — this is the main product thesis:
 
-- **Tier 0 (Minimal):** Monochrome, no animations, no sound
-- **Tier 1 (Basic Colors):** Unlocks at first achievement OR 100 AB
-- **Tier 2 (Sound Effects):** Unlocks at first ascension OR 1,000 AB
-- **Tier 3 (Full Graphics):** Unlocks at second ascension OR 10,000 AB
-- **Tier 4 (Music):** Unlocks at third ascension OR 100,000 AB
+| Tier | Feel | Unlock (live build) |
+|------|------|---------------------|
+| 0 | Monochrome, heavy glitch, minimal chrome | Always |
+| 1 | Basic color | 500 AB **and** 3 achievements |
+| 2 | Color + sound effects | 5,000 AB **and** 6 achievements |
+| 3 | Fuller graphics / motion | 50,000 AB **and** 9 achievements |
+| 4 | Peak chrome + music path | 500,000 AB **and** 12 achievements |
 
-**Tip:** You can manually select your tier in Settings after your first ascension!
+When a tier unlocks you get a short **SYSTEM_RESTORE** moment (log + optional flash). With reduced-motion preferences, motion is suppressed but the restore message remains.
+
+**SHARE_RESTORE:** after a heal, use the share control to download a privacy-safe before/after still and copy a short blurb. It does **not** export your full save.
+
+**Compile goals:** after the tutorial, one primary goal appears in the goal rail (e.g. craft Fire Forge). Follow it for the critical path.
+
+**Tip:** In Settings you can select any tier you have already unlocked (presentation only — unlocks still come from progress).
 
 ### Prestige System (Ascension)
 
@@ -332,7 +340,15 @@ Discover new recipes by experimenting:
 
 ### Q: How do I change my design tier?
 
-**A:** Go to Settings → Design Tier. You can only select tiers you've unlocked.
+**A:** Go to Settings → Design Tier. You can only select tiers you've unlocked (presentation preview of chrome you already earned).
+
+### Q: What is SHARE_RESTORE?
+
+**A:** After a design-tier heal (`SYSTEM_RESTORE`), the SHARE_RESTORE control can download a before/after still and copy short share text. It does **not** export your full save (no inventory, AB total, or prestige keys).
+
+### Q: What is the compile goal rail?
+
+**A:** After the tutorial, one primary goal (e.g. craft Fire Forge) appears as a rail near the HUD. Completing real game beats advances it. It is not a second quest list.
 
 ### Q: Can I play on mobile?
 

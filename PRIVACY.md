@@ -1,8 +1,8 @@
 # Privacy Policy
 
 **Effective Date**: 2025-11-08
-**Last Updated**: 2025-11-08
-**Version**: 1.0
+**Last Updated**: 2026-07-27
+**Version**: 1.1
 
 ## Introduction
 
@@ -29,8 +29,14 @@ Hex Compiler stores game data **locally on your device** using your browser's Lo
 - Element specialization choice
 - Meditation progress (if applicable)
 - Daily ritual completion
+- Optional **local-only funnel counters** under keys such as `cw.funnel.*`
+  (e.g. session start time, time to first Fire Forge craft, time to first
+  design-tier heal, share-button attempts). These stay on your device and are
+  **not** sent to a remote analytics service by the game.
+- Compile-goal completion flags (`cw.compileGoals.completed`) for the goal rail
 
-**Purpose**: To save your game progress between sessions.
+**Purpose**: To save your game progress between sessions and measure local
+progression timing for development quality (never for ad tracking).
 
 **Retention**: Data remains on your device until you clear your browser data or explicitly delete your save file.
 
@@ -44,9 +50,23 @@ A random device ID is generated and stored locally to differentiate between mult
 - Is stored only on your device
 - Is NOT transmitted to any server unless you use cloud save features
 
+### 2b. SHARE_RESTORE exports (player-initiated)
+
+If you click **SHARE_RESTORE** after a design-tier heal, the game may:
+
+1. **Download a PNG** generated in-browser (split “before / after” tier chrome).
+2. **Copy short share text** to the clipboard (or show a prompt fallback).
+
+**What is included:** public tier numbers (from/to), brand copy, play URL.  
+**What is NOT included:** full save payloads, AB balances, inventory,
+workstations, prestige points, passwords, or other save secrets.
+
+You control when this runs; nothing is uploaded by the game to our servers.
+
 ### 3. Analytics Data (Optional - If Enabled)
 
-**Current Status**: Analytics are NOT currently enabled in this version.
+**Current Status**: Remote / third-party analytics are NOT currently enabled in this version.
+Local funnel counters (§1) are not remote analytics.
 
 **If analytics are enabled in future updates**, we may collect:
 - Anonymized gameplay statistics (features used, progression metrics)
