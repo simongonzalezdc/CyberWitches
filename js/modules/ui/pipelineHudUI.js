@@ -64,7 +64,7 @@ export class PipelineHudUI {
                 ${parts.join('<span class="pipeline-role-arrow" aria-hidden="true">→</span>')}
             </div>
             <div class="pipeline-role-meta text-[10px] font-mono text-gray-400 mt-1">
-                STORAGE_CAP ${Math.floor(pipeline.storageCap)} · EXEC primary · no dual quest HUD
+                STORAGE_CAP ${Math.floor(pipeline.storageCap)} · EXEC is primary
             </div>
         `;
         this.root.hidden = false;
@@ -74,12 +74,13 @@ export class PipelineHudUI {
             /** @type {Record<string, number>} */
             const shares = /** @type {any} */ (affinity.shares || {});
             const pct = (/** @type {number} */ n) => Math.round((n || 0) * 100);
+            // Keep copy short so it does not clip under toast stack / narrow rails
             this.affinityEl.innerHTML = affinity.locked
                 ? `<span class="text-ky-green">AFFINITY_LOCK ${String(affinity.lockedId || '').toUpperCase()}</span>
                    <span class="text-gray-400"> — ${affinity.strategyName || ''}</span>`
                 : `<span>AFFINITY lean <strong>${String(affinity.lead || '').toUpperCase()}</strong>
                    F${pct(shares.fire || 0)} W${pct(shares.water || 0)} A${pct(shares.air || 0)} C${pct(shares.crystal || 0)}</span>
-                   <span class="text-gray-500"> · foreshadows prestige path</span>`;
+                   <span class="text-gray-500"> · prestige path</span>`;
             this.affinityEl.hidden = false;
         }
 

@@ -1148,6 +1148,14 @@ body.tier-advance-heal .compile-goal-rail:not([hidden]) {
 /* Pipeline role HUD — Capture→Store→Bind→Compile→Shield */
 .pipeline-role-hud {
     border: 1px solid color-mix(in srgb, var(--ky-cyan) 30%, transparent);
+    max-width: 100%;
+    overflow: hidden;
+}
+.affinity-foreshadow {
+    max-width: min(42rem, 100%);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
 }
 .pipeline-role-row {
     display: flex;
