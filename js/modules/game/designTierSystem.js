@@ -5,6 +5,8 @@
  */
 
 import { COLORS } from '../../config/colorConstants.js';
+import { markFirstHeal } from './funnelMetrics.js';
+import { playHealCeremonyInBrowser } from './healCeremony.js';
 
 const KYANITE_THEME = {
     primary: COLORS.KY_MAGENTA,
@@ -166,19 +168,11 @@ export class DesignTierSystem {
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new window.CustomEvent('hex:tierAdvance', { detail }));
                 window.__lastTierAdvance = detail;
-                if (typeof window.__appendSystemLog === 'function') {
-                    window.__appendSystemLog(
-                        `SYSTEM_RESTORE v${toTier}.0 ONLINE (was v${fromTier}.0)`,
-                        'success'
-                    );
-                }
-                // Unmissable heal package: visual pulse + optional stinger
+                // Unmissable heal package: ceremony timeline + optional stinger
                 this.playHealMoment(detail);
-                // Scoped funnel counter (local-only)
+                // Local funnel: TTH (once) + cumulative tierAdvance
                 try {
-                    const key = 'cw.funnel.tierAdvance';
-                    const n = Number(localStorage.getItem(key) || '0') + 1;
-                    localStorage.setItem(key, String(n));
+                    markFirstHeal(detail.at);
                 } catch { /* private mode */ }
             }
         } catch (e) {
@@ -190,43 +184,15 @@ export class DesignTierSystem {
     }
 
     /**
-     * Diegetic heal moment: body flash + notification + optional SFX + share CTA.
-     * Reduced-motion users get log/notification only (no animation class).
+     * Diegetic heal moment via ceremony state machine (ticket 04).
+     * Reduced-motion: final state + SYSTEM_LOG + toast (no motion classes).
      * @param {{ fromTier: number, toTier: number, at: number }} detail
      */
     playHealMoment(detail) {
         try {
-            const reduced = typeof window !== 'undefined'
-                && window.matchMedia
-                && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (!reduced && typeof document !== 'undefined' && document.body) {
-                document.body.classList.add('tier-advance-heal');
-                document.body.dataset.healFrom = String(detail.fromTier);
-                document.body.dataset.healTo = String(detail.toTier);
-                window.setTimeout(() => {
-                    document.body.classList.remove('tier-advance-heal');
-                }, 1600);
-            }
-            if (typeof window.showNotification === 'function') {
-                window.showNotification(
-                    `SYSTEM_RESTORE v${detail.toTier}.0 — chrome recovering`,
-                    'success',
-                    4500
-                );
-            }
+            playHealCeremonyInBrowser(detail, { audioSystem: this.audioSystem });
             if (this.audioSystem && typeof this.audioSystem.playSound === 'function') {
                 try { this.audioSystem.playSound('tier_unlock'); } catch { /* optional stinger */ }
-            }
-            // Share capture affordance near heal — full label, pulse for noticeability
-            const shareBtn = document.getElementById('heal-share-button');
-            if (shareBtn) {
-                shareBtn.hidden = false;
-                shareBtn.dataset.fromTier = String(detail.fromTier);
-                shareBtn.dataset.toTier = String(detail.toTier);
-                shareBtn.classList.add('heal-share-btn--pulse');
-                window.setTimeout(() => {
-                    shareBtn.classList.remove('heal-share-btn--pulse');
-                }, 2600);
             }
         } catch (e) {
             console.warn('playHealMoment failed', e);

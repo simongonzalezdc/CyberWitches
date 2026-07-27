@@ -1080,13 +1080,22 @@ body.tier-0 .btn-cast {
     outline: 1px solid var(--ky-crystal);
 }
 
-/* Heal-moment tier advance (ticket 08) — unmissable restore spectacle */
+/* Heal-moment tier advance (ticket 08 + capture 04) — ceremony timeline */
 body.tier-advance-heal {
     outline: 3px solid var(--ky-cyan);
     outline-offset: -3px;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ky-green) 55%, transparent),
         0 0 48px color-mix(in srgb, var(--ky-cyan) 35%, transparent);
     animation: heal-restore-pulse 1.6s ease-out 1;
+}
+body.tier-advance-heal.heal-ceremony-dim {
+    filter: brightness(0.72) saturate(0.85);
+}
+body.tier-advance-heal.heal-ceremony-restore {
+    filter: brightness(1.35) saturate(1.25);
+}
+body.tier-advance-heal.heal-ceremony-chrome {
+    filter: brightness(1.1) saturate(1.1);
 }
 body.tier-advance-heal .compile-goal-rail:not([hidden]) {
     border-color: var(--ky-cyan);
@@ -1098,8 +1107,12 @@ body.tier-advance-heal .compile-goal-rail:not([hidden]) {
     100% { filter: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-    body.tier-advance-heal {
+    body.tier-advance-heal,
+    body.tier-advance-heal.heal-ceremony-dim,
+    body.tier-advance-heal.heal-ceremony-restore,
+    body.tier-advance-heal.heal-ceremony-chrome {
         animation: none;
+        filter: none;
         outline: 2px solid var(--ky-cyan);
         box-shadow: inset 0 0 0 1px var(--ky-cyan);
     }
