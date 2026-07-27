@@ -333,6 +333,14 @@ export class TutorialSystem {
         localStorage.setItem('tutorialCompleted', 'true');
         
         this.notify('SYSTEM_READY. BEGIN_OPERATIONS.', 'success');
+        // Hand off to post-tutorial compile goal stack (not a second onboarding owner)
+        try {
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new window.CustomEvent('hex:tutorialComplete', {
+                    detail: { at: Date.now() }
+                }));
+            }
+        } catch { /* optional */ }
     }
     
     skipTutorial() {

@@ -197,6 +197,46 @@ export async function initGame() {
         uiManager.systems.designTierSystem = designTierSystem;
         uiManager.systems.fadingThemeSystem = fadingThemeSystem;
         uiManager.systems.accessibilityManager = accessibilityManager;
+        // Post-tutorial goal stack (primary compile objective)
+        try {
+            const { CompileGoalUI } = await import('./modules/ui/compileGoalUI.js');
+            uiManager.compileGoalUI = new CompileGoalUI(gameState, uiManager);
+            uiManager.compileGoalUI.update();
+            window.addEventListener('hex:tutorialComplete', () => {
+                try { uiManager.compileGoalUI?.update(); } catch { /* optional */ }
+            });
+        } catch (e) {
+            console.warn('CompileGoalUI failed to load', e);
+        }
+        // Heal share button (sanitized capture)
+        try {
+            const shareBtn = document.getElementById('heal-share-button');
+            if (shareBtn && !shareBtn.dataset.bound) {
+                shareBtn.dataset.bound = '1';
+                shareBtn.addEventListener('click', async () => {
+                    try {
+                        const detail = window.__lastTierAdvance || {
+                            fromTier: Number(shareBtn.dataset.fromTier) || 0,
+                            toTier: Number(shareBtn.dataset.toTier) || 0,
+                            at: Date.now()
+                        };
+                        const { captureHealShare } = await import('./modules/game/healShare.js');
+                        const result = await captureHealShare(detail);
+                        if (result.ok) {
+                            appendSystemLog('SHARE_CAPTURE heal artifact copied', 'success');
+                            showNotification('Heal share copied (no save secrets).', 'success', 3000);
+                        } else {
+                            appendSystemLog('SHARE_CAPTURE failed', 'warn');
+                        }
+                    } catch (err) {
+                        console.warn('heal share click failed', err);
+                        try { appendSystemLog('SHARE_CAPTURE err', 'warn'); } catch { /* optional */ }
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('heal share bind failed', e);
+        }
         // Lazy systems are wired when their chunks load (see loadLazySystems below)
 
         // 6b. Load ModalManager (needed before story intro) and non-critical UIs
