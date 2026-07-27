@@ -139,6 +139,47 @@ describe('03 fade + storage', () => {
         // Weighted total for intermediates is lower → less absolute bleed at same count
         expect(lostRaw).toBeGreaterThan(lostMid);
     });
+
+    test('late-tier intermediates are not immortal (crystal_core / void_crystal fade)', () => {
+        for (const key of ['crystal_core', 'void_crystal', 'quantum_candle', 'harmonic_essence']) {
+            expect(FADEABLE).toContain(key);
+            expect(FADE_WEIGHT[key]).toBeGreaterThan(0);
+            expect(FADE_WEIGHT[key]).toBeLessThan(1);
+            const s = createInitialState(1);
+            s.inventory = { [key]: 500 };
+            s.storageCap = 50;
+            s.totalTaps = 1000;
+            const r = applyFade(s, 30);
+            expect(r.inventory[key]).toBeLessThan(500);
+            expect(r.faded[key]).toBeGreaterThan(0);
+        }
+    });
+
+    test('mixed bag: per-unit bleed proportional to weight; Σ faded ≈ lose budget', () => {
+        const s = createInitialState(1);
+        s.inventory = { fire_essence: 100, dist_fire: 100 };
+        s.storageCap = 50;
+        s.totalTaps = 1000;
+        const r = applyFade(s, 20);
+        const lostRaw = 100 - r.inventory.fire_essence;
+        const lostMid = 100 - r.inventory.dist_fire;
+        expect(lostRaw).toBeGreaterThan(0);
+        expect(lostMid).toBeGreaterThan(0);
+        // Same stack sizes → higher weight loses more units
+        expect(lostRaw / lostMid).toBeCloseTo(FADE_WEIGHT.fire_essence / FADE_WEIGHT.dist_fire, 5);
+        const sumFaded = Object.values(r.faded).reduce((a, b) => a + b, 0);
+        expect(sumFaded).toBeCloseTo(lostRaw + lostMid, 10);
+    });
+
+    test('clamp: stack smaller than weighted share does not go negative', () => {
+        const s = createInitialState(1);
+        s.inventory = { fire_essence: 0.001, void_crystal: 10000 };
+        s.storageCap = 1;
+        s.totalTaps = 1000;
+        const r = applyFade(s, 3600);
+        expect(r.inventory.fire_essence).toBeGreaterThanOrEqual(0);
+        expect(r.inventory.void_crystal).toBeGreaterThanOrEqual(0);
+    });
 });
 
 describe('04 craft pipeline + 05 tick', () => {

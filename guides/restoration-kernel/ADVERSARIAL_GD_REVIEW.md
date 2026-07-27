@@ -71,7 +71,9 @@ EXEC (cast raw) → CAPTURE (automate raw/intermediates) → STORE (cap vs fade)
 **Player exploit:** Convert everything to `dist_fire` / `shaped_crys` / craft ladder → zero void pressure → Store becomes cosmetic after T0.  
 **Idle best practice violated:** Soft caps must tax the *actual* banked wealth, not only the tutorial resource.
 
-**Fix shipped:** `FADE_WEIGHT` map — raw = 1.0, distilled intermediates 0.3–0.55, still fade under overcap. Store remains a midgame verb.
+**Fix shipped:** full `FADE_WEIGHT` map across **all** producer non-AB outputs (raw → void tier). Weights descend with densification (raw 1.0 → void_crystal 0.12). Cap is in weighted void-pressure units (documented in `fade.js`). Store remains a verb through late game.
+
+**GLM gate (pre-merge):** first slice only covered T0–T1.5 — T2+ were immortal. Extended + tests pin crystal_core / void_crystal / mixed-bag ratio / clamp.
 
 ---
 

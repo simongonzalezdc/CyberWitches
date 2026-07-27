@@ -155,7 +155,7 @@ export const PRODUCERS = [
     {
         id: 'ws_harmonic_stabilizer',
         displayName: 'Harmonic Stabilizer',
-        description: 'First true dual-output node: harmonic essence for craft, trickle AB for compile goals. Bridge between pure capture ladders and self-hosting AB.',
+        description: 'First dual-output node: harmonic essence for craft, trickle AB for compile goals. Bridge between pure capture ladders and passive AB engines.',
         unlockAtAb: 1000.0,
         recipe: {
             fused_aether: 3,

@@ -76,7 +76,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_essence_buffer',
         displayName: 'Essence Buffer',
-        description: 'Raises unbound cap so soft fade stops eating your first captures. The verb that makes Capture matter.',
+        description: 'Raises unbound cap so soft fade stops eating your first captures. Without this, Capture is a leak.',
         role: 'store',
         unlockAtAb: 0,
         recipe: { crystal_dust: 8, fire_essence: 4 },
@@ -86,7 +86,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_deep_cache',
         displayName: 'Deep Cache Vault',
-        description: 'High-capacity vault plus a soft fade mult. Mid-run answer when intermediate packets still bleed.',
+        description: 'High-capacity vault that also slows global fade. Mid-run answer when intermediate packets still bleed.',
         role: 'store',
         unlockAtAb: 100,
         recipe: { crystal_dust: 40, water_essence: 20, air_essence: 20 },
@@ -126,7 +126,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_bit_reactor',
         displayName: 'Arcane Bit Reactor',
-        description: 'Compiles aether + raw essence into Arcane Bits. Self-host income once Capture/Store/Bind are online.',
+        description: 'Compiles aether + raw essence into Arcane Bits. Passive AB once Capture, Store, and Bind are online.',
         role: 'compile',
         unlockAtAb: 50,
         recipe: { dist_aether: 10, fire_essence: 20, crystal_dust: 20 },
