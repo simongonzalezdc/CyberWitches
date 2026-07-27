@@ -72,6 +72,9 @@ declare global {
     showNotification: (message: string, type?: string, duration?: number, options?: { html?: boolean }) => any;
     // SYSTEM_LOG bridge for errorHandler / storage modules (set in gameInit).
     __appendSystemLog?: (message: string, level?: string) => void;
+    // Heal-moment / funnel debug surfaces (set at runtime, optional)
+    __lastTierAdvance?: { fromTier: number; toTier: number; at: number };
+    __lastMeditationMultDelta?: { before: number; after: number; delta: number; pct: number };
 
     // --- Analytics surface (opt-in) ---
     trackEvent: (...args: any[]) => any;

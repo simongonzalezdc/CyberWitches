@@ -28,6 +28,8 @@ export class UIManager {
         this.inscriptionsUI = new InscriptionsUI(gameState, this);
         this.hudUI = new HUDUI(gameState, this);
         this.floatingTextUI = new FloatingTextUI();
+        /** @type {import('./compileGoalUI.js').CompileGoalUI | null} */
+        this.compileGoalUI = null;
 
         // Non-critical UI modules — loaded lazily after boot to keep critical bundle small
         this.experimentUI = null;
@@ -396,6 +398,8 @@ export class UIManager {
 
         // Update HUD elements (global)
         if (this.hudUI) this.hudUI.update();
+        // Post-tutorial primary compile goal (always-on after tutorial)
+        if (this.compileGoalUI) this.compileGoalUI.update();
     }
 
     showNotification(message, type = 'info', duration = 3000, options = {}) {

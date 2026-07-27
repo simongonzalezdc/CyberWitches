@@ -26,6 +26,8 @@ export class DesignTierSystem {
         this.loadUnlockedTiers();
         this.gameStartTime = Date.now(); // Track when game started for time-based requirements
         this.tierUnlockTimes = {}; // Track when each tier was unlocked
+        /** @type {null | ((detail: { fromTier: number, toTier: number, at: number }) => void)} */
+        this.onTierAdvance = null;
     }
 
     /**
@@ -139,15 +141,91 @@ export class DesignTierSystem {
     async unlockTier(tier) {
         if (this.unlockedTiers.has(tier)) return;
 
+        const fromTier = this.currentTier;
         this.unlockedTiers.add(tier);
         this.currentTier = Math.max(this.currentTier, tier);
         await this.applyTier(tier);
         this.saveTier();
         this.showUnlockNotification(tier);
+        this.emitTierAdvance(fromTier, tier);
 
         // Initialize background sparkles when Tier 3 is unlocked
         if (tier >= 3 && this.uiManager?.systems?.particleSystem) {
             this.uiManager.systems.particleSystem.init();
+        }
+    }
+
+    /**
+     * First-class tier advance bus (heal/share/telemetry subscribe here).
+     * @param {number} fromTier
+     * @param {number} toTier
+     */
+    emitTierAdvance(fromTier, toTier) {
+        const detail = { fromTier, toTier, at: Date.now() };
+        try {
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new window.CustomEvent('hex:tierAdvance', { detail }));
+                window.__lastTierAdvance = detail;
+                if (typeof window.__appendSystemLog === 'function') {
+                    window.__appendSystemLog(
+                        `SYSTEM_RESTORE v${toTier}.0 ONLINE (was v${fromTier}.0)`,
+                        'success'
+                    );
+                }
+                // Unmissable heal package: visual pulse + optional stinger
+                this.playHealMoment(detail);
+                // Scoped funnel counter (local-only)
+                try {
+                    const key = 'cw.funnel.tierAdvance';
+                    const n = Number(localStorage.getItem(key) || '0') + 1;
+                    localStorage.setItem(key, String(n));
+                } catch { /* private mode */ }
+            }
+        } catch (e) {
+            console.warn('emitTierAdvance failed', e);
+        }
+        if (typeof this.onTierAdvance === 'function') {
+            try { this.onTierAdvance(detail); } catch (e) { console.warn(e); }
+        }
+    }
+
+    /**
+     * Diegetic heal moment: body flash + notification + optional SFX + share CTA.
+     * Reduced-motion users get log/notification only (no animation class).
+     * @param {{ fromTier: number, toTier: number, at: number }} detail
+     */
+    playHealMoment(detail) {
+        try {
+            const reduced = typeof window !== 'undefined'
+                && window.matchMedia
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!reduced && typeof document !== 'undefined' && document.body) {
+                document.body.classList.add('tier-advance-heal');
+                document.body.dataset.healFrom = String(detail.fromTier);
+                document.body.dataset.healTo = String(detail.toTier);
+                window.setTimeout(() => {
+                    document.body.classList.remove('tier-advance-heal');
+                }, 1600);
+            }
+            if (typeof window.showNotification === 'function') {
+                window.showNotification(
+                    `SYSTEM_RESTORE v${detail.toTier}.0 — chrome recovering`,
+                    'success',
+                    4500
+                );
+            }
+            if (this.audioSystem && typeof this.audioSystem.playSound === 'function') {
+                try { this.audioSystem.playSound('tier_unlock'); } catch { /* optional stinger */ }
+            }
+            // Share capture affordance near heal
+            const shareBtn = document.getElementById('heal-share-button');
+            if (shareBtn) {
+                shareBtn.hidden = false;
+                shareBtn.dataset.fromTier = String(detail.fromTier);
+                shareBtn.dataset.toTier = String(detail.toTier);
+            }
+        } catch (e) {
+            console.warn('playHealMoment failed', e);
         }
     }
 

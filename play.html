@@ -77,10 +77,15 @@
             
             <div class="hud-center flex-1 flex justify-center">
                 <div id="active-events" class="active-events flex gap-2"></div>
+                <div id="compile-goal-rail" class="compile-goal-rail glass-panel px-3 py-1.5 mx-2 max-w-md" hidden aria-hidden="true" role="status" aria-live="polite">
+                    <div class="text-[10px] font-mono text-ky-green tracking-widest" id="compile-goal-title">COMPILE_GOAL</div>
+                    <div class="text-xs font-mono text-gray-200 leading-snug" id="compile-goal-message">Awaiting tutorial complete…</div>
+                </div>
             </div>
 
             <div class="hud-right">
                 <div class="system-controls flex gap-2">
+                    <button id="heal-share-button" type="button" class="btn-icon glass-panel px-2 py-1 rounded-md hover:bg-white/10 transition-colors text-[10px] font-mono text-ky-cyan" hidden aria-label="Share heal moment">SHARE_RESTORE</button>
                     <button id="help-button" class="btn-icon glass-panel p-2 rounded-md hover:bg-white/10 transition-colors" aria-label="Help">
                         <span class="text-ky-green">?</span>
                     </button>
@@ -269,9 +274,19 @@
     <div id="prestige-modal" class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden" role="dialog" aria-modal="true" aria-labelledby="prestige-modal-title">
         <div class="modal-content glass-panel p-8 rounded-lg max-w-md w-full mx-4 border border-ky-line shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
             <h2 id="prestige-modal-title" class="text-2xl font-bold text-ky-cyan mb-4 font-orbitron">SYSTEM_ASCENSION</h2>
-            <p class="mb-4 text-gray-300">REBOOTING SYSTEM WITH NEW KERNEL...</p>
+            <p class="mb-3 text-gray-300">Chapter reboot: recompile the kernel. Progress becomes permanent Eldritch Keys—not punishment, recovery.</p>
+            <div id="prestige-preview" class="mb-4 text-xs font-mono text-gray-400 space-y-1 border border-white/10 rounded p-3 bg-black/30">
+                <p class="text-ky-green tracking-widest">PERSISTS</p>
+                <p>• Eldritch Keys + boons purchased</p>
+                <p>• Prestige count / meditation unlock (P1+)</p>
+                <p>• Achievements &amp; design-tier progress</p>
+                <p class="text-ky-amber tracking-widest mt-2">RESETS THIS RUN</p>
+                <p>• Arcane Bits, inventory, workstations, upgrades</p>
+                <p>• Lab discoveries for this run (lifetime stats kept)</p>
+            </div>
             <p class="mb-2 text-lg">KEYS_HELD: <span id="prestige-ek" class="text-ky-amber font-mono font-bold">0</span></p>
-            <p class="mb-6 text-lg">KEYS_ACQUIRED: <span id="prestige-gain" class="text-ky-amber font-mono font-bold">0</span></p>
+            <p class="mb-2 text-lg">KEYS_ACQUIRED: <span id="prestige-gain" class="text-ky-amber font-mono font-bold">0</span></p>
+            <p id="prestige-post-goals" class="mb-6 text-xs font-mono text-gray-300">After reboot: spend Keys in /OPT/BOONS, then open /PROC/MEDITATION for a DEFRAG session.</p>
             <div class="modal-buttons flex gap-4">
                 <button id="ascend-button" class="btn-primary flex-1 py-3 bg-ky-cyan text-white rounded font-bold tracking-wider transition-colors">CONFIRM_REBOOT</button>
                 <button id="close-prestige-button" class="btn-secondary flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded font-bold tracking-wider transition-colors">CANCEL</button>
