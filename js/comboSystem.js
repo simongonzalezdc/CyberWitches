@@ -1,5 +1,6 @@
 // Combo/Streak System
 import { pulseElement } from './animations.js';
+import { escapeHtml } from './utils.js';
 
 export class ComboSystem {
     constructor(gameState = null) {
@@ -54,7 +55,12 @@ export class ComboSystem {
         
         // Visual feedback
         if (window.showNotification) {
-            window.showNotification(`<span class="css-icon-fire"></span> ${milestone}x Combo! +${bonus.toFixed(1)} AB`, 'success');
+            window.showNotification(
+                `<span class="css-icon-fire"></span> ${escapeHtml(String(milestone))}x Combo! +${escapeHtml(bonus.toFixed(1))} AB`,
+                'success',
+                3000,
+                { html: true }
+            );
         }
         
         // Particle effect
