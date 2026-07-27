@@ -52,7 +52,9 @@ export class PipelineHudUI {
         const parts = pipeline.roles.map((roleBlock) => {
             const label = ROLE_LABELS[roleBlock.role] || roleBlock.role.toUpperCase();
             const owned = roleBlock.ownedTotal;
-            const unlocked = roleBlock.modules.filter((m) => m.unlocked).length;
+            const unlocked = roleBlock.modules.filter(
+                (/** @type {{ unlocked?: boolean }} */ m) => !!m.unlocked
+            ).length;
             return `<div class="pipeline-role-chip" data-role="${roleBlock.role}" title="${label}: ${owned} owned, ${unlocked} unlocked">
                 <span class="pipeline-role-name">${label}</span>
                 <span class="pipeline-role-count" aria-label="${owned} owned">${owned}</span>

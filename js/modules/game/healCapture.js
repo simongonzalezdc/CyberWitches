@@ -59,7 +59,7 @@ export function isCaptureSanitized(meta) {
     // Word-boundary scan for long secret-shaped substrings only (avoid matching "ab" in "label").
     const json = JSON.stringify(meta);
     if (/\b(prestigePoints|cyberWitchesSave|eldritch|workstations)\b/i.test(json)) return false;
-    return meta.kind === CAPTURE_KIND;
+    return /** @type {{ kind?: string }} */ (meta).kind === CAPTURE_KIND;
 }
 
 /**
