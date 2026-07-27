@@ -401,6 +401,14 @@ export class ModalManager {
         const gainEl = document.getElementById('prestige-gain');
         if (gainEl) gainEl.textContent = gain;
 
+        const postGoals = document.getElementById('prestige-post-goals');
+        if (postGoals) {
+            const nextCount = (this.gameState.prestigeCount || 0) + 1;
+            postGoals.textContent = nextCount === 1
+                ? 'After first reboot: spend Keys in /OPT/BOONS, then open /PROC/MEDITATION — primary goals retarget to DEFRAG.'
+                : `After reboot #${nextCount}: reinvest Keys in boons; continue meditation for main-path mult.`;
+        }
+
         const ascendButton = /** @type {HTMLButtonElement} */ (document.getElementById('ascend-button'));
         if (ascendButton) {
             ascendButton.disabled = gain <= 0;
