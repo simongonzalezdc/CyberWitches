@@ -64,6 +64,20 @@ npm run validate:kernel-content
 NODE_OPTIONS=--experimental-vm-modules npx jest tests/unit/kernel.test.js tests/unit/kernel-balance.test.js tests/unit/kernel-integration.test.js
 ```
 
-## Residuals
+## Residuals (engineering)
 
-*(none)*
+*(none for must integration gates after comorbidity pass #29.)*
+
+## Known non-must / next-horizon (not residuals of this campaign)
+
+- Live craft graph still uses legacy `PRODUCERS` (`ws_*`); Kernel `PIPELINE_MODULES` drive HUD foreshadow + fade law, not workstation craft list yet.
+- `offlineTickOnGameState` worker host exists; load-path offline still main-thread production + kernel fade (worker optional for large pure-kernel ticks).
+- Human mute-field n=5 pilot remains growth ops before paid UA.
+
+## Comorbidity pass (2026-07-27)
+
+Fixed before ship:
+1. Offline catch-up skipped soft fade → void law hole (fixed: `applyOfflineProgress` → `fadeOnGameState`).
+2. Kernel affinity/chapters/seed not in save → reload amnesia (fixed: `saveData.kernel` + load merge).
+3. Load overwrote `specializationBonuses` from catalog only → lost meditation mult (fixed: merge saved + strategy).
+4. `voidLoss` batch events had no projector (fixed: SYSTEM_LOG).
