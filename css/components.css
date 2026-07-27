@@ -1257,6 +1257,26 @@ body.tier-advance-heal .compile-goal-rail:not([hidden]) {
     overflow: visible;
     text-overflow: clip;
 }
+/* Narrow rails: keep full meaning via aria-label; shorten visible glyph only */
+@media (max-width: 420px) {
+    .heal-share-btn .heal-share-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.04em;
+    }
+}
+@media (max-width: 360px) {
+    .heal-share-btn .heal-share-label::after {
+        content: '';
+    }
+    .heal-share-btn .heal-share-label {
+        /* Still show SHARE_RESTORE; allow wrap inside button if needed */
+        white-space: normal;
+        line-height: 1.1;
+        max-width: 5.5rem;
+        text-align: center;
+    }
+}
+}
 #heal-share-button:not([hidden]) {
     display: inline-flex;
 }

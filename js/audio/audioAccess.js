@@ -19,7 +19,10 @@ export function setAudioSystem(audioSystem) {
     currentAudioSystem = audioSystem;
 }
 
-/** @returns {object|null} the registered AudioSystem, or null before it is wired */
+/**
+ * @returns {{ playSound?: Function, [k: string]: unknown } | null}
+ *   the registered AudioSystem, or null before it is wired
+ */
 export function getAudioSystem() {
     return currentAudioSystem;
 }

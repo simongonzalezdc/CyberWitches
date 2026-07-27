@@ -17,6 +17,8 @@ export class NotificationManager {
         this.count = 0;
         this.lastReset = Date.now();
         this.maxPerSecond = 3;
+        /** Max simultaneous toasts — keeps workstation board readable (S+ visual bar). */
+        this.maxVisible = 2;
         this.lastSoundTime = 0;
         this.soundThrottle = 500;
         this._draining = false;
@@ -136,6 +138,7 @@ export class NotificationManager {
         notification.appendChild(closeBtn);
 
         this.container.appendChild(notification);
+        this._enforceMaxVisible();
 
         requestAnimationFrame(() => {
             notification.classList.add('show');
@@ -147,6 +150,31 @@ export class NotificationManager {
         el._autoRemoveTimer = setTimeout(() => {
             this.removeNotification(notification);
         }, duration);
+    }
+
+    /**
+     * Drop oldest visible toasts beyond maxVisible so the main board stays usable.
+     * Immediate DOM removal (no fade queue) so the cap is hard, not eventual.
+     */
+    _enforceMaxVisible() {
+        if (!this.container) return;
+        const max = Math.max(1, Number(this.maxVisible) || 2);
+        const nodes = /** @type {HTMLElement[]} */ (
+            Array.from(this.container.querySelectorAll('.notification:not(.fade-out)'))
+        );
+        // Oldest first (DOM order)
+        while (nodes.length > max) {
+            const oldest = nodes.shift();
+            if (!oldest) break;
+            /** @type {any} */
+            const el = oldest;
+            if (el._autoRemoveTimer) {
+                clearTimeout(el._autoRemoveTimer);
+                el._autoRemoveTimer = null;
+            }
+            el._removing = true;
+            if (oldest.parentNode) oldest.parentNode.removeChild(oldest);
+        }
     }
 
     removeNotification(notification) {
