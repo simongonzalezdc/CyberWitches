@@ -15,7 +15,7 @@
 | Identity I1–I4 | Identity S+ | **PASS** (aesthetic-v2 + story CTA AA prior #38 + LEGACY_PARK) |
 | **Overall** | **S+** | **PASS** when tip SHA recorded below after CI green |
 
-**Tip SHA (branch):** `55365f704c05d68db0f381f7b8c2796f57b21e93`  
+**Tip SHA (branch):** `7ab1dc9a74404d54d46ac7bd041d1a6f23b6b6c1`  
 
 ## Eng Q1–Q8
 
