@@ -4,7 +4,7 @@ export const PRODUCERS = [
     {
         id: 'ws_fire_forge',
         displayName: 'Fire Forge',
-        description: 'A digital preservation chamber that compiles Fire essence into stable data structures. Every forge you program is a small victory against entropy.',
+        description: 'Sectors dump raw Fire as heat noise. The Forge latches it into Distilled Fire packets — still fragile, but addressable.',
         unlockAtAb: 0.0,
         recipe: { fire_essence: 10 },
         growth: 1.12,
@@ -15,7 +15,7 @@ export const PRODUCERS = [
     {
         id: 'ws_aqua_well',
         displayName: 'Aqua Well',
-        description: 'A digital preservation chamber that encodes Water essence into flowing data streams. Constant data circulation preserves what static storage would lose.',
+        description: 'Water stagnates into checksum rot. The Well forces circulation so packets stay liquid and mergeable.',
         unlockAtAb: 0.0,
         recipe: { water_essence: 10 },
         growth: 1.12,
@@ -26,7 +26,7 @@ export const PRODUCERS = [
     {
         id: 'ws_zephyr_generator',
         displayName: 'Zephyr Generator',
-        description: 'A preservation chamber that stabilizes Air essence before it fades. Constant circulation creates a barrier against entropy.',
+        description: 'Air disperses mid-frame. Turbines recompile gust into Ethereal Gust before it leaves the sector map.',
         unlockAtAb: 0.0,
         recipe: { air_essence: 10 },
         growth: 1.12,
@@ -37,7 +37,7 @@ export const PRODUCERS = [
     {
         id: 'ws_crystal_chamber',
         displayName: 'Crystal Chamber',
-        description: 'A preservation chamber that stabilizes Crystal essence before it fades. Crystal structures resist entropy better than other elements—the foundation of all preservation work.',
+        description: 'Dust wants to powder back to noise. The Chamber latches Crystal into Shaped Crystals — lattice packets that other sectors can actually address.',
         unlockAtAb: 0.0,
         recipe: { crystal_dust: 10 },
         growth: 1.12,
@@ -48,7 +48,7 @@ export const PRODUCERS = [
     {
         id: 'ws_aether_synthesizer',
         displayName: 'Aether Synthesizer',
-        description: 'A digital chamber that runs synthesis algorithms to merge all four elemental data streams into Aether. Aether—the binding force—fades fastest, but compiled together, elements resist entropy better than apart.',
+        description: 'Four streams refuse to cohere alone. The Synthesizer forces a bind into Distilled Aether — the intermediate the void hates least.',
         unlockAtAb: 0.0,
         recipe: {
             fire_essence: 2,
@@ -123,7 +123,7 @@ export const PRODUCERS = [
     {
         id: 'ws_aether_fusion_chamber',
         displayName: 'Aether Fusion Chamber',
-        description: 'A complex preservation chamber that fuses multiple aether sources into a more stable form. Layering preservation techniques creates compound stability—each layer reinforces the others.',
+        description: 'Stacks aether wells under crystal heat. Fusion does not make stock immortal — it densifies packets so Store has something worth defending.',
         unlockAtAb: 500.0,
         recipe: {
             aether_well: 3,
@@ -139,7 +139,7 @@ export const PRODUCERS = [
     {
         id: 'ws_resonance_crystallizer',
         displayName: 'Resonance Crystallizer',
-        description: 'Uses harmonic vibrations to create crystals that resonate with magical frequencies. Far more stable than ordinary crystals.',
+        description: 'Harmonic lattice pass: orbs, totems, and fused aether lock into Resonant Crystals. Lower void weight than raw dust — still bleeds if unbound.',
         unlockAtAb: 750.0,
         recipe: {
             crystal_orb: 4,
@@ -155,7 +155,7 @@ export const PRODUCERS = [
     {
         id: 'ws_harmonic_stabilizer',
         displayName: 'Harmonic Stabilizer',
-        description: 'A sophisticated chamber that uses resonant frequencies to stabilize magic. Produces both harmonic essence and small amounts of Arcane Bits.',
+        description: 'First dual-output node: harmonic essence for craft, trickle AB for compile goals. Bridge between pure capture ladders and passive AB engines.',
         unlockAtAb: 1000.0,
         recipe: {
             fused_aether: 3,
@@ -221,7 +221,7 @@ export const PRODUCERS = [
     {
         id: 'ws_arcane_bit_reactor',
         displayName: 'Arcane Bit Reactor',
-        description: 'A self-executing algorithm that generates Arcane Bits autonomously. Orchestrates all five elements in perfect harmony, creating a generative loop. Digital preservation that creates, not just conserves.',
+        description: 'Mid-game compile engine. Burns enhanced candles, currents, spirals, and cores into Arcane Bits — the self-host loop the prestige curve is built on.',
         unlockAtAb: 9000.0,
         recipe: { enhanced_candle: 2, flowing_current: 2, wind_spiral: 2, crystal_core: 2, aether_well: 2 },
         growth: 1.18,
@@ -335,7 +335,7 @@ export const PRODUCERS = [
     {
         id: 'ws_infinity_bit_reactor',
         displayName: 'Infinity Energy Reactor',
-        description: "The apex of arcane programming. Operates at reality's edge, compiling void-level data structures that exist beyond normal spacetime. Generates massive Arcane Bits from the source itself. Transcendence through code.",
+        description: 'End-of-plane AB reactor. Void feedstock in, bulk Arcane Bits out. When lifetime keys look fat, this is the last grind before abandoning the sector.',
         unlockAtAb: 9000000.0,
         recipe: { arcane_candle: 5, void_liquid: 5, void_breath: 5, void_crystal: 5, aether_well: 5 },
         growth: 1.30,

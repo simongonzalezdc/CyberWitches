@@ -24,7 +24,7 @@ You will rarely max every role. Tradeoffs are the game.
 
 ## Soft fade
 
-Unstored essence above storage capacity bleeds into the void. Early minutes are **soft** so you can learn. Offline catch-up is fair-capped (8h) and soft on fade.
+Unstored stock above storage capacity bleeds into the void. **Raw essence** bleeds hardest; **compiled intermediates** (distilled fire, shaped crystal, resonant lattice, etc.) still bleed if unbound — just slower. That keeps **Store** meaningful after the tutorial. Early minutes are **soft** so you can learn. Offline catch-up is fair-capped (8h) and soft on fade.
 
 ## Contracts (one primary rail)
 
