@@ -1,11 +1,23 @@
 # Product Strategy & Go-to-Market Plan
 ## Hex Compiler - Product Management Roadmap
 
-**Last Updated**: 2025-11-08
+**Last Updated**: 2026-07-27
 **Document Owner**: Product Team
-**Status**: Draft for Team Review
+**Status**: Living — Capture the heal campaign shipped on main (PR #20)
 
 This document outlines the complete product strategy, market positioning, user acquisition plan, and business model for Hex Compiler. This is designed for team collaboration and strategic planning.
+
+### 2026-07 active strategy (Capture the heal)
+
+| Decision | Detail |
+|----------|--------|
+| Differentiator | UI-state scoreboard: broken → **SYSTEM_RESTORE**, not cyber-skin alone |
+| Share artifact | Still-first sanitized split PNG + text (`SHARE_RESTORE`); no full save |
+| Mute-first | Ceremony and field mute-clip protocol; growth spend waits on n=5 field result |
+| Funnel | Local TTA / TTH / shareAttempt only (`cw.funnel.*`) |
+| Pivot | 30-day clock from visual share on main; N default **50**; miss → stop virality spend |
+| Kill list (90d) | No gacha / third currency / dual quest HUD / CSS framework swap / GameState rewrite / Steam-before-D1 |
+| Artifacts | `.scratch/capture-the-heal/` (map, runbook, pivot, claim-audit) |
 
 ---
 
@@ -43,12 +55,12 @@ This document outlines the complete product strategy, market positioning, user a
 - **Content Depth**: 7/10 (needs mid/end-game expansion)
 - **Market Readiness**: 6/10 (needs optimization & strategy)
 
-### Immediate Goals (Next 90 Days)
-1. **Define clear product positioning** and target audience
-2. **Implement analytics** to understand player behavior
-3. **Launch user acquisition** campaigns on key channels
-4. **Achieve 10,000 MAU** (Monthly Active Users) as initial traction goal
-5. **Validate product-market fit** through retention metrics
+### Immediate Goals (Next 90 Days) — revised 2026-07
+1. **Complete mute-clip field n=5** (runbook frozen; growth spend blocked until Pass/Soft-pass)
+2. **Run 30-day share pivot** (N=50 visual shares from 2026-07-27; see `.scratch/capture-the-heal/PIVOT_REBASELINE.md`)
+3. **Keep kill-list** (no gacha / dual HUD / Steam-before-D1) while measuring heal share
+4. **Creator seed demos** using documented console path only (`CREATOR_SEED.md`)
+5. **Local funnel only** — do not ship remote analytics sprawl until pivot passes
 
 ### 12-Month Vision
 - **100,000+ total players**

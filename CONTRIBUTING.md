@@ -9,3 +9,11 @@ If a change exposes a repeated task or repeated agent failure, contributors and 
 
 Automation and durable system changes require the scale/severity/reversibility/predictability blast-radius check before dispatch.
 <!-- EMPOWER_ORCHESTRATOR:END -->
+
+## Project notes for contributors
+
+- **Canonical remote:** Forgejo (`git.kyanitelabs.tech`); GitHub may lag as a mirror.
+- **Domain map:** read [CONTEXT.md](CONTEXT.md) before deep refactors.
+- **Heal / share path:** do not put save secrets into `healShare` / `healCapture` exports. Prefer extending those modules over rewriting `GameState` for share features.
+- **Tests:** `npm run ci` before PR; heal journeys live under `e2e/heal-operator-journeys.spec.js`.
+- **Campaign scratch:** `.scratch/capture-the-heal/` holds map, claim-audit, and growth gates (field mute-clip residual).

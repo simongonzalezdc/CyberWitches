@@ -137,15 +137,32 @@ Unlocked after first prestige. A tower-defense sub-game: place towers, defend Tr
 
 ## Design Tiers
 
-| Tier | Feel |
-|---|---|
-| 0 | Broken mono terminal — incomplete chrome |
-| 1+ | Color returns |
-| 2+ | SFX |
-| 3+ | Glass / richer motion |
-| 4 | Full sensory restoration |
+| Tier | Feel | Live gate (approx.) |
+|---|---|---|
+| 0 | Broken mono terminal — incomplete chrome | Always |
+| 1 | Color returns | 500 AB **and** 3 achievements |
+| 2 | SFX + richer color | 5,000 AB **and** 6 achievements |
+| 3 | Glass / motion | 50,000 AB **and** 9 achievements |
+| 4 | Full sensory restoration | 500,000 AB **and** 12 achievements |
 
 Tier unlocks track AB + achievements. The USP is real: start broken, heal as you compile.
+
+### Heal moment (`SYSTEM_RESTORE`)
+
+When a tier unlocks, the game emits `hex:tierAdvance` and runs a short **heal ceremony** (~1.2–1.8s): dim → restore line → chrome → toast/log → share pulse. With `prefers-reduced-motion`, you get the final log/toast and share button without motion.
+
+### SHARE_RESTORE
+
+After a heal, the **SHARE_RESTORE** control appears. One or two actions:
+
+1. Download a **sanitized split still** (Tier before | restored after) — tier chrome labels only.  
+2. Copy a short text blurb (clipboard; prompt fallback).
+
+**Privacy:** share artifacts never include AB totals, inventory, prestige keys, or the full save. See [PRIVACY.md](PRIVACY.md).
+
+### Compile goal rail
+
+After the tutorial, a single primary **compile goal** (e.g. craft Fire Forge) shows in the goal rail. Completing real beats advances the stack. This is not a second quest HUD.
 
 ---
 
@@ -154,10 +171,11 @@ Tier unlocks track AB + achievements. The USP is real: start broken, heal as you
 1. Hit the first compile goal: craft **Fire Forge**, then the other elemental starters.
 2. Keep casting while early forges run — AB compounds unlocks.
 3. Synthesize Aether when you can afford the four-essence recipe.
-4. Push toward Arcane Bit Reactors / mid-tier AB producers before prestige.
-5. After prestige, grab impactful EK boons, then sample Meditation for long-term production bonus.
-6. Trust the live UI costs over any outdated third-party guide.
+4. Watch for the first **SYSTEM_RESTORE** — that heal is the product thesis; try SHARE_RESTORE if you want a shareable still.
+5. Push toward Arcane Bit Reactors / mid-tier AB producers before prestige.
+6. After prestige, grab impactful EK boons, then sample Meditation for long-term production bonus.
+7. Trust the live UI costs over any outdated third-party guide.
 
 ---
 
-*Manual regenerated for live Hex Compiler systems (Arcane Bits / Eldritch Keys, Fire Forge line, post-prestige meditation). If in-game data differs, the running build wins.*
+*Manual updated for Capture the heal (PR #20): ceremony, SHARE_RESTORE, compile goals, live tier gates. If in-game data differs, the running build wins.*

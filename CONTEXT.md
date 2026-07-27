@@ -21,6 +21,16 @@ modules deepen; it is the map AI agents and new contributors read first.
 - **Save snapshot** — the plain serializable object capturing all of the above
   at a point in time (currency, inventory, workstations, upgrades, prestige,
   experiments, stats, milestones, element specialization, version, timestamp).
+- **Design tier / heal** — progressive UI restoration (Tier 0 broken mono →
+  Tier 4 full chrome). A tier advance is a **SYSTEM_RESTORE** moment, not only
+  a cosmetics unlock.
+- **Compile goal** — single primary post-tutorial objective (goal rail), not a
+  second quest HUD.
+- **SHARE_RESTORE** — player action that exports a **sanitized** heal share
+  (split still + text). Never embeds the full save.
+- **TTA / TTH** — local-only funnel: time to first Fire Forge craft; time to
+  first real `hex:tierAdvance`. Keys under `cw.funnel.*` (localStorage /
+  sessionStorage). No remote analytics.
 
 ## Architecture seams
 
@@ -54,6 +64,17 @@ modules deepen; it is the map AI agents and new contributors read first.
   large; the save integrity logic was lifted into the save codec.
 - **Entry point** — `js/game.js` bootstraps on `DOMContentLoaded` and calls
   `initGame()` from `js/gameInit.js`. esbuild bundles from `js/game.js`.
+- **Heal capture (Capture the heal campaign, PR #20)** — thin modules on the
+  tier-advance bus; no GameState rewrite:
+  - `js/modules/game/designTierSystem.js` — emits `hex:tierAdvance`, runs ceremony
+  - `js/modules/game/healCeremony.js` — 1.2–1.8s mute-first timeline; reduced-motion
+  - `js/modules/game/healCapture.js` — sanitized split still (tier chrome only)
+  - `js/modules/game/healShare.js` — SHARE_RESTORE: PNG download + text clipboard
+  - `js/modules/game/funnelMetrics.js` — local TTA/TTH/shareAttempt counters
+  - `js/modules/game/compileGoalStack.js` + `compileGoalUI.js` — primary goal rail
+- **Planning / claim-audit artifacts** — `.scratch/capture-the-heal/` (map,
+  runbook, pivot, claim-audit). Research closeout:
+  `.scratch/ideal-critical-path/RESEARCH_GAP_CLOSEOUT.md`.
 
 ## Persistence ownership
 

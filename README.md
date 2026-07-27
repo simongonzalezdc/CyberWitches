@@ -8,6 +8,8 @@
 
 Hex Compiler is an idle game, published in the `CyberWitches` repository, that runs entirely in the browser. You play one of the last Hex Compilers, translating magical hexes into hexadecimal code and building digital preservation chambers to fight the fading of magic. It is built in vanilla JavaScript (ES2023 modules) with no runtime framework, bundled with esbuild, and ships with a service worker and web app manifest for offline play. As you preserve more magic, the deliberately glitched UI progressively stabilizes — the interface itself is part of the story.
 
+**Thesis (mute-readable):** broken terminal chrome **heals** as you progress. A tier advance is a **SYSTEM_RESTORE** moment; **SHARE_RESTORE** exports a sanitized before/after still (no full save secrets).
+
 
 ## Source of truth (remotes)
 
@@ -44,7 +46,7 @@ Core systems: manual & automatic spell casting, preservation-chamber automation,
 
 ## Why / how it works
 
-The hook is that the **UI is diegetic**. Hex Compiler uses a five-tier design system (Tier 0-4) that maps your progress onto the interface: Tier 0 is monochrome with maximum glitch (screen tearing, chromatic aberration, scanlines, text corruption, jitter), and each tier you reach adds color, sound effects (Tier 2+), full graphics, and finally procedural ambient music (Tier 4+) as the glitches resolve to nothing. The "fading magic" theme is literally rendered as visual instability that you fix by playing. Audio is driven by self-hosted [Tone.js](https://tonejs.github.io/) from `vendor/tone-15.1.22.js`, styling is plain CSS with custom properties, and offline play comes from a service worker + web app manifest.
+The hook is that the **UI is diegetic**. Hex Compiler uses a five-tier design system (Tier 0-4) that maps your progress onto the interface: Tier 0 is monochrome with maximum glitch (screen tearing, chromatic aberration, scanlines, text corruption, jitter), and each tier you reach adds color, sound effects (Tier 2+), full graphics, and finally procedural ambient music (Tier 4+) as the glitches resolve to nothing. The "fading magic" theme is literally rendered as visual instability that you fix by playing. Tier advances play a short **heal ceremony** (respecting `prefers-reduced-motion`) and surface **SHARE_RESTORE** for a privacy-safe split still. Post-tutorial, a single **compile goal** rail points at the next real beat (not a second quest HUD). Audio is driven by self-hosted [Tone.js](https://tonejs.github.io/) from `vendor/tone-15.1.22.js`, styling is plain CSS with custom properties, and offline play comes from a service worker + web app manifest.
 
 ## Best-fit searches
 
@@ -53,8 +55,12 @@ browser idle game · incremental clicker game open source · vanilla JavaScript 
 ## Links
 
 - **Game manual:** [GAME_MANUAL.md](GAME_MANUAL.md)
+- **User guide:** [USER_GUIDE.md](USER_GUIDE.md)
+- **Agent / domain map:** [CONTEXT.md](CONTEXT.md)
+- **Privacy:** [PRIVACY.md](PRIVACY.md)
 - **Deployment guide:** [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md)
 - **Play the game:** [simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
+- **Campaign artifacts (Capture the heal):** [.scratch/capture-the-heal/](.scratch/capture-the-heal/)
 - **API docs:** [docs/API.md](docs/API.md)
 - **License:** [MIT](LICENSE)
 - **KyaniteLabs:** [kyanitelabs.tech](https://kyanitelabs.tech)
