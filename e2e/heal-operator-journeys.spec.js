@@ -4,7 +4,6 @@
  * Covers goal rail, tier-advance event/heal flash, sanitized share, prestige preview.
  */
 import { test, expect } from '@playwright/test';
-import { dismissFirstRunOverlays } from './helpers/dismissOverlays.js';
 
 const boot = async (page, { clear = true } = {}) => {
     if (clear) {
@@ -104,7 +103,7 @@ test('operator journey: share artifact is sanitized (no save secrets)', async ({
             // Fallback: reimplement the privacy contract check against source of truth shape
             return {
                 text: 'Hex Compiler — SYSTEM_RESTORE v2.0 ONLINE\n(was v0.0)',
-                payload: { kind: 'hex-compiler-heal', v: 1, fromTier: 0, toTier: 2, at: 1 },
+                payload: { kind: 'hex-compiler-heal', v: 2, fromTier: 0, toTier: 2, at: 1, visual: 'split-still' },
                 fallback: true
             };
         }
@@ -115,6 +114,46 @@ test('operator journey: share artifact is sanitized (no save secrets)', async ({
     expect(artifact.payload).not.toHaveProperty('inventory');
     expect(JSON.stringify(artifact.payload)).not.toMatch(/cyberWitchesSave|prestigePoints/i);
     expect(artifact.text).toMatch(/SYSTEM_RESTORE/);
+});
+
+test('operator journey: funnel TTH + split capture privacy on tier advance', async ({ page }) => {
+    await boot(page);
+
+    const out = await page.evaluate(async () => {
+        const w = /** @type {any} */ (window);
+        localStorage.removeItem('cw.funnel.tthMs');
+        localStorage.removeItem('cw.funnel.sessionStartMs');
+        localStorage.setItem('cw.funnel.sessionStartMs', String(Date.now() - 5000));
+
+        const dts = w.uiManager?.systems?.designTierSystem || w.designTierSystem;
+        if (!dts?.emitTierAdvance) return { ok: false, reason: 'no emit' };
+        dts.emitTierAdvance(0, 1);
+
+        const funnel = await import('/js/modules/game/funnelMetrics.js');
+        const snap = funnel.getFunnelSnapshot();
+
+        const capture = await import('/js/modules/game/healCapture.js');
+        const still = await capture.captureSplitStill({ fromTier: 0, toTier: 1 });
+        const metaOk = capture.isCaptureSanitized(still.meta);
+
+        return {
+            ok: true,
+            tthMs: snap.tthMs,
+            tierAdvance: snap.tierAdvance,
+            stillOk: still.ok,
+            metaOk,
+            meta: still.meta,
+            healClass: document.body.classList.contains('tier-advance-heal')
+                || !!document.body.dataset.healTo
+        };
+    });
+
+    expect(out.ok, out.reason || 'funnel+capture').toBe(true);
+    expect(out.tthMs, 'TTH should record').not.toBeNull();
+    expect(out.tierAdvance).toBeGreaterThanOrEqual(1);
+    expect(out.metaOk, 'capture meta sanitized').toBe(true);
+    expect(out.meta).not.toHaveProperty('ab');
+    expect(out.healClass || out.stillOk, 'ceremony or still').toBeTruthy();
 });
 
 test('operator journey: prestige modal shows persist/reset ceremony', async ({ page }) => {

@@ -208,7 +208,14 @@ export async function initGame() {
         } catch (e) {
             console.warn('CompileGoalUI failed to load', e);
         }
-        // Heal share button (sanitized capture)
+        // Funnel: session start (TTA/TTH baseline)
+        try {
+            const { markSessionStart } = await import('./modules/game/funnelMetrics.js');
+            markSessionStart();
+        } catch (e) {
+            console.warn('funnel session start failed', e);
+        }
+        // Heal share button (sanitized visual still + text fallback)
         try {
             const shareBtn = document.getElementById('heal-share-button');
             if (shareBtn && !shareBtn.dataset.bound) {
@@ -223,8 +230,12 @@ export async function initGame() {
                         const { captureHealShare } = await import('./modules/game/healShare.js');
                         const result = await captureHealShare(detail);
                         if (result.ok) {
-                            appendSystemLog('SHARE_CAPTURE heal artifact copied', 'success');
-                            showNotification('Heal share copied (no save secrets).', 'success', 3000);
+                            const mode = result.mode || 'text';
+                            const msg = mode === 'visual+text'
+                                ? 'Heal still downloaded + text copied (no save secrets).'
+                                : 'Heal share copied (no save secrets).';
+                            appendSystemLog(`SHARE_CAPTURE ${mode}`, 'success');
+                            showNotification(msg, 'success', 3000);
                         } else {
                             appendSystemLog('SHARE_CAPTURE failed', 'warn');
                         }
