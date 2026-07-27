@@ -15,7 +15,7 @@ describe('audit residual 01 FA icons', () => {
         const roots = [
             path.join(root, 'js/modules/ui'),
             path.join(root, 'js/modules/game'),
-            path.join(root, 'play.html'),
+            path.join(root, 'play.html')
         ];
         for (const r of roots) {
             const walk = (fp) => {
