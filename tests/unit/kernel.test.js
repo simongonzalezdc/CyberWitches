@@ -12,7 +12,7 @@ import {
     getPrimaryContract,
     applyPrestigePreview
 } from '../../js/kernel/index.js';
-import { applyFade, FADEABLE } from '../../js/kernel/fade.js';
+import { applyFade, FADEABLE, FADE_WEIGHT } from '../../js/kernel/fade.js';
 import { migrateKernelSnapshot, serializeKernel, deserializeKernel } from '../../js/kernel/migrate.js';
 import { projectCastThroughKernel } from '../../js/kernel/adapter.js';
 import fs from 'fs';
@@ -107,6 +107,37 @@ describe('03 fade + storage', () => {
         expect(lost).toBeGreaterThan(0);
         expect(r.faded.fire_essence).toBeGreaterThan(0);
         expect(FADEABLE).toContain('fire_essence');
+    });
+
+    test('FADE_WEIGHT includes craft intermediates (Store stays a midgame verb)', () => {
+        expect(FADEABLE).toContain('dist_fire');
+        expect(FADEABLE).toContain('shaped_crys');
+        expect(FADEABLE).toContain('resonant_crystal');
+        expect(FADE_WEIGHT.fire_essence).toBe(1);
+        expect(FADE_WEIGHT.resonant_crystal).toBeLessThan(FADE_WEIGHT.fire_essence);
+        expect(FADE_WEIGHT.dist_fire).toBeGreaterThan(0);
+        expect(FADE_WEIGHT.dist_fire).toBeLessThan(1);
+    });
+
+    test('raw essence bleeds faster than equal intermediate stacks under overcap', () => {
+        const raw = createInitialState(1);
+        raw.inventory = { fire_essence: 200 };
+        raw.storageCap = 50;
+        raw.totalTaps = 1000;
+        const rRaw = applyFade(raw, 10);
+        const lostRaw = 200 - rRaw.inventory.fire_essence;
+
+        const mid = createInitialState(1);
+        mid.inventory = { dist_fire: 200 };
+        mid.storageCap = 50;
+        mid.totalTaps = 1000;
+        const rMid = applyFade(mid, 10);
+        const lostMid = 200 - (rMid.inventory.dist_fire || 0);
+
+        expect(lostRaw).toBeGreaterThan(0);
+        expect(lostMid).toBeGreaterThan(0);
+        // Weighted total for intermediates is lower → less absolute bleed at same count
+        expect(lostRaw).toBeGreaterThan(lostMid);
     });
 });
 

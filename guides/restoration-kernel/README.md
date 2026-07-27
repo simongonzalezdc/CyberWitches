@@ -6,6 +6,7 @@
 | Doc | Audience | Contents |
 |-----|----------|----------|
 | [MANUAL.md](MANUAL.md) | Players | EXEC, fade, pipeline, prestige, affinity, Meditation |
+| [ADVERSARIAL_GD_REVIEW.md](ADVERSARIAL_GD_REVIEW.md) | Designers / agents | Hostile GD pass: scaling, difficulty, anti-cliché, aesthetic |
 | [STORY_BIBLE.md](STORY_BIBLE.md) | Writers / designers | Chapters and qualities |
 | [SCHEMA.md](SCHEMA.md) | Agents / eng | Commands, events, content pack shape |
 | [PLAYTEST_PROTOCOL.md](PLAYTEST_PROTOCOL.md) | QA | Human + automated gates |

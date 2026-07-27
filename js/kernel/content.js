@@ -27,7 +27,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_fire_capture',
         displayName: 'Fire Sector Tap',
-        description: 'Captures fading Fire essence from ambient hex noise.',
+        description: 'Latches heat noise into addressable Fire packets. Still full void weight until Store covers it.',
         role: 'capture',
         unlockAtAb: 0,
         recipe: { fire_essence: 10 },
@@ -39,7 +39,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_water_capture',
         displayName: 'Water Sector Tap',
-        description: 'Captures Water essence before it stagnates.',
+        description: 'Forces circulation so Water does not checksum-rot mid-frame. Capture without Store is a leak.',
         role: 'capture',
         unlockAtAb: 0,
         recipe: { water_essence: 10 },
@@ -51,7 +51,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_air_capture',
         displayName: 'Air Sector Tap',
-        description: 'Captures Air essence in circulation loops.',
+        description: 'Recompiles dispersing Air before it leaves the sector map. High throughput, high overcap risk.',
         role: 'capture',
         unlockAtAb: 0,
         recipe: { air_essence: 10 },
@@ -63,7 +63,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_crystal_capture',
         displayName: 'Crystal Sector Tap',
-        description: 'Captures Crystal dust into lattice buffers.',
+        description: 'Pulls Crystal dust into lattice buffers. Scaffold material for every Store and Bind recipe.',
         role: 'capture',
         unlockAtAb: 0,
         recipe: { crystal_dust: 10 },
@@ -76,7 +76,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_essence_buffer',
         displayName: 'Essence Buffer',
-        description: 'Raises unbound storage so essence resists soft fade.',
+        description: 'Raises unbound cap so soft fade stops eating your first captures. The verb that makes Capture matter.',
         role: 'store',
         unlockAtAb: 0,
         recipe: { crystal_dust: 8, fire_essence: 4 },
@@ -86,7 +86,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_deep_cache',
         displayName: 'Deep Cache Vault',
-        description: 'High-capacity vault. Cuts fade further when stocked.',
+        description: 'High-capacity vault plus a soft fade mult. Mid-run answer when intermediate packets still bleed.',
         role: 'store',
         unlockAtAb: 100,
         recipe: { crystal_dust: 40, water_essence: 20, air_essence: 20 },
@@ -98,7 +98,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_aether_bind',
         displayName: 'Aether Binder',
-        description: 'Binds four essence streams into Aether (stable intermediate).',
+        description: 'Forces four streams into Distilled Aether — lower void weight than raw, never immortal.',
         role: 'bind',
         unlockAtAb: 0,
         recipe: {
@@ -115,7 +115,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_purity_lattice',
         displayName: 'Purity Lattice',
-        description: 'Improves bind efficiency — less waste when synthesizing.',
+        description: 'Bind throughput upgrade. More Distilled Aether per second when multi-stream recipes stall.',
         role: 'bind',
         unlockAtAb: 200,
         recipe: { dist_aether: 5, crystal_dust: 25 },
@@ -126,7 +126,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_bit_reactor',
         displayName: 'Arcane Bit Reactor',
-        description: 'Compiles preserved stock into stable Arcane Bits.',
+        description: 'Compiles aether + raw essence into Arcane Bits. Self-host income once Capture/Store/Bind are online.',
         role: 'compile',
         unlockAtAb: 50,
         recipe: { dist_aether: 10, fire_essence: 20, crystal_dust: 20 },
@@ -137,7 +137,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_sector_compiler',
         displayName: 'Sector Compiler',
-        description: 'Early compile node — slow AB from raw essence.',
+        description: 'Early compile node — trickle AB from fire+water before the reactor unlocks.',
         role: 'compile',
         unlockAtAb: 15,
         recipe: { fire_essence: 15, water_essence: 15 },
@@ -148,7 +148,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_hex_shield',
         displayName: 'Hex Shield Coil',
-        description: 'Slows global fade rate. Scarce — spend carefully.',
+        description: 'Global fade dampener. Scarce recipe — spend when Store alone cannot hold the overcap.',
         role: 'shield',
         unlockAtAb: 75,
         recipe: { air_essence: 30, crystal_dust: 30, dist_aether: 3 },
@@ -158,7 +158,7 @@ export const PIPELINE_MODULES = [
     {
         id: 'mod_stability_ring',
         displayName: 'Stability Ring',
-        description: 'Stronger global fade dampener for late pre-prestige.',
+        description: 'Harder global fade cut for late pre-prestige. Stacks multiplicatively with Deep Cache / Coil.',
         role: 'shield',
         unlockAtAb: 500,
         recipe: { dist_aether: 20, crystal_dust: 80 },

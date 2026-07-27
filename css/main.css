@@ -14,6 +14,7 @@
 @import 'utilities.css';
 @import 'containment.css'; /* Week 2: CSS containment for paint optimization */
 @import 'loading.css'; /* Week 3: Loading states and skeleton screens */
+@import 'aesthetic-v2.css'; /* Hex lattice terminal — anti-slop surface pass */
 
 /* Glitch effects - lazy loaded via JavaScript when design tier > 0 */
 /* @import 'glitch-effects.css'; */
