@@ -12,6 +12,8 @@ import { encode, decode, validateSaveData } from './save/saveCodec.js';
 import { mirrorToIndexedDB } from './save/indexedDBBackup.js';
 import { pulseElement } from './animations.js';
 import { castOnGameState, fadeOnGameState, strategyBonusesFor } from './kernel/adapter.js';
+import { coalesceWorkstations } from './kernel/ownership.js';
+import { PIPELINE_MODULES } from './kernel/content.js';
 import { getPotionEffectDef } from './modules/data/potionCatalog.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
@@ -301,16 +303,22 @@ export class GameState {
             effectiveDelta *= this.specializationBonuses.productionSpeedMult;
         }
 
-        for (const wsId in this.workstations) {
-            const owned = this.workstations[wsId];
+        // Systems S+: production uses coalesced ownership (no dual-count pairs)
+        const ownershipBag = coalesceWorkstations(this.workstations || {});
+        for (const wsId in ownershipBag) {
+            const owned = ownershipBag[wsId];
             if (!owned || owned <= 0) continue;
 
             const prodData = PRODUCERS.find(p => p.id === wsId);
-            if (!prodData) continue;
+            const modData = !prodData
+                ? PIPELINE_MODULES.find((m) => m.id === wsId && m.outputs)
+                : null;
+            const outputs = prodData?.outputs || modData?.outputs;
+            if (!outputs) continue;
 
             // Get base outputs
-            for (const outputId in prodData.outputs) {
-                const baseRate = prodData.outputs[outputId];
+            for (const outputId in outputs) {
+                const baseRate = outputs[outputId];
 
                 // Apply multipliers
                 let mult = this.getProductionMultiplier(wsId);
@@ -971,7 +979,7 @@ export class GameState {
                 ab: this.ab,
                 abTotal: this.abTotalEarned,
                 inventory: { ...this.inventory },
-                workstations: { ...this.workstations },
+                workstations: { ...coalesceWorkstations(this.workstations || {}) },
                 upgrades: { ...this.upgradesOwned },
                 prestige: {
                     points: this.prestigePoints,
@@ -1169,7 +1177,7 @@ export class GameState {
             }
 
             this.inventory = data.inventory || {};
-            this.workstations = data.workstations || {};
+            this.workstations = coalesceWorkstations(data.workstations || {});
             this.upgradesOwned = data.upgrades || {};
 
             // Clean up deprecated ingredients from inventory

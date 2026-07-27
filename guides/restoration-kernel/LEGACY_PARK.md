@@ -22,6 +22,7 @@ Legacy `ws_*` ids map into Kernel `mod_*` via `mapsFrom` / `LEGACY_TO_MODULE` in
 |------|--------|
 | Cast resources | Kernel `castOnGameState` |
 | Soft fade (tick + offline) | Kernel `fadeOnGameState` + full `FADE_WEIGHT` ladder |
+| Ownership bag | `coalesceWorkstations` — live save prefers ws_* pairs; no dual-count |
 | Workstation craft / buy list | Live `PRODUCERS` (`ws_*`) with **pipeline roles** |
 | Meditation mastery mult | Kernel → `specializationBonuses.productionMult` |
 | Surface chrome (post T0) | `css/aesthetic-v2.css` |
@@ -34,3 +35,8 @@ Legacy `ws_*` ids map into Kernel `mod_*` via `mapsFrom` / `LEGACY_TO_MODULE` in
 - Raise notification `maxVisible` without a visual regression check  
 - Treat Capture-the-heal **human** field pilot as a Kernel engineering residual  
 - Add producer outputs without a `FADE_WEIGHT` entry (CI/unit tests pin late-tier fade)
+
+
+## Dual-graph contract (Overall S+ O2)
+
+Live craft ladder remains PRODUCERS (ws_*), but ownership is **coalesced** with Kernel mod_* pairs so role counts and production never double-count. Full single-id-only content rewrite is optional follow-up; Systems S+ requires coalesce sole path (shipped).
