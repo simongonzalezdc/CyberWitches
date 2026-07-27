@@ -85,7 +85,7 @@ export class InventoryUI {
 
             const ingredient = window.INGREDIENTS.find(ing => ing.id === ingId);
             const tier = ingredient?.tier || 0;
-            const displayName = ingredient?.displayName || getItemDisplayName(ingId) || ingId;
+            const displayName = ingredient?.displayName || getItemDisplayName(ingId);
 
             items.push({ id: ingId, amount, tier, displayName });
             maxAmount = Math.max(maxAmount, amount);

@@ -11,12 +11,6 @@ export async function dismissFirstRunOverlays(page) {
     }
     // Force-hide stuck boot screen after TutorialSystem should have finished
     await page.waitForTimeout(500);
-    await page.evaluate(() => {
-        const boot = document.getElementById('boot-screen');
-        if (boot && getComputedStyle(boot).display !== 'none') {
-            // give natural dismiss a moment; if still visible after wait, force for e2e
-        }
-    });
     await page.waitForFunction(() => {
         const story = document.querySelector('.story-intro-modal');
         const boot = document.getElementById('boot-screen');

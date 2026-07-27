@@ -1635,21 +1635,13 @@ export class AudioSystem {
      * @returns {Promise<boolean>} Whether sound was played successfully
      */
     async playSound(soundId, options = {}) {
+        let designTier = 0;
         try {
             const tierSys = window.uiManager?.systems?.designTierSystem || window.designTierSystem;
-            const tier = Number(tierSys?.getCurrentTier?.() ?? 0) || 0;
-            if (!shouldAllowSfx(tier)) return false;
+            designTier = Number(tierSys?.getCurrentTier?.() ?? 0) || 0;
+            if (!shouldAllowSfx(designTier)) return false;
         } catch { /* policy optional */ }
 
-        // Check if sound effects are enabled (Tier 2+)
-        // First check the design tier
-        const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-        if (currentTier < 2) {
-            // Sound effects are only available from Tier 2 onwards
-            // Silent return to prevent console spam
-            return false;
-        }
-        
         // Also check the soundEffectsEnabled flag
         if (!this.soundEffectsEnabled) {
             console.info('playSound: Sound effects not enabled');
@@ -1708,7 +1700,7 @@ export class AudioSystem {
             console.info(`playSound: Playing sound ${soundId}`, {
                 soundFound: !!sound,
                 soundType: sound.synthType,
-                tier: currentTier,
+                tier: designTier,
                 soundEffectsEnabled: this.soundEffectsEnabled,
                 isMuted: this.isMuted,
                 soundsLoaded: this.soundsLoaded,
