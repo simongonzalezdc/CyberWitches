@@ -1,6 +1,6 @@
 # Hex Compiler — Game Manual
 
-## 📖 Table of Contents
+## Table of Contents
 
 1. [Game Overview](#game-overview)
 2. [Getting Started](#getting-started)
@@ -9,634 +9,155 @@
 5. [Inscriptions (Upgrades)](#inscriptions-upgrades)
 6. [Experiments & Recipes](#experiments--recipes)
 7. [Prestige System](#prestige-system)
-8. [Achievements](#achievements)
+8. [Meditation](#meditation)
 9. [Daily Rituals](#daily-rituals)
-10. [Advanced Features](#advanced-features)
+10. [Design Tiers](#design-tiers)
 11. [Tips & Strategies](#tips--strategies)
 
 ---
 
-## 🎮 Game Overview
+## Game Overview
 
-**Hex Compiler** is an incremental idle game where you play as a Hex Compiler translating magical hexes into hexadecimal code and building preservation chambers. The game features:
+**Hex Compiler** is a browser idle incremental game. You are a Hex Compiler: system chrome is a terminal that compiles fading magic into stable data. Occult content (essences, chambers, rituals) is what you preserve.
 
-- **Manual Casting**: Click the Cast button to manually generate ingredients
-- **Automated Production**: Craft workstations that automatically produce ingredients
-- **Upgrades**: Inscribe powerful upgrades to boost your production
-- **Experimentation**: Discover hidden recipes through experimentation
-- **Prestige System**: Reset your progress to gain permanent bonuses
-- **Achievements**: Unlock achievements for milestones and rewards
-- **Daily Challenges**: Complete daily tasks for bonus rewards
-- **Combo System**: Build combos for increased rewards
-- **Random Events**: Experience special events that boost production
+- **Cast (EXEC)**: Compile raw magic into elemental essences and **Arcane Bits (AB)**
+- **Workstations**: Craft preservation chambers that produce ingredients over time
+- **Inscriptions**: Upgrades that multiply cast and production
+- **Experiments**: Discover hidden recipes
+- **Prestige (Ascension)**: Reset for **Eldritch Keys (EK)** and element specialization
+- **Meditation**: Post-prestige tower defense that boosts production (gated at Prestige 1)
+- **Design tiers**: Progressive UI restoration from broken Tier 0 to full Kyanite chrome
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### Initial Setup
+1. Open `play.html` (or Play from the landing page).
+2. Click **EXEC** to cast — you receive base elemental essences and **0.15 AB** per cast (before multipliers).
+3. Watch the **resource monitor** for Fire, Water, Air, Crystal, and Aether totals.
+4. First compile goal: **Stabilize Fire sector — craft 1 Fire Forge** (10 Fire Essence).
+5. Craft more workstations to automate ingredient production, then unlock higher AB producers.
 
-1. **Launch the game**: Open `index.html` in your browser or access via the dev server
-2. **First Cast**: Click the **"✨ Cast"** button to start generating ingredients
-3. **Earn AB**: Each cast gives you 0.1 AB (Aether Bits) - the main currency
-4. **Build Workstations**: Use ingredients to craft workstations that automate production
+### Controls
 
-### Basic Controls
-
-- **Cast Button**: Click to manually generate ingredients and AB
-- **Auto-Cast Toggle**: Enable automatic casting (casts every 500ms)
-- **Tab Navigation**: Switch between different game sections using tabs
-- **Craft Buttons**: Use "Craft x1", "Craft x10", or "Max" to build items
+- **EXEC / Cast**: Manual compile pulse
+- **Tabs**: Workstations, upgrades, inventory, lab, stats, daily rituals; Boons and Meditation unlock after prestige
+- **Craft controls**: Craft ×1 / ×10 / Max where available
 
 ---
 
-## ⚙️ Core Mechanics
+## Core Mechanics
 
 ### Currency
 
-- **AB (Aether Bits)**: Main currency, used to unlock workstations and upgrades
-  - Earned by clicking Cast (0.1 per cast)
-  - Produced by certain workstations (Digital Candle Farm, Crystal Rig, Quantum Cauldron)
-  
-- **EK (Eldritch Keys)**: Prestige currency, earned by ascending
-  - Used to purchase permanent bonuses
-  - Persists across prestige resets
+- **AB (Arcane Bits)** — primary currency. Earned from casting (~0.15 AB base per cast × multipliers) and later from AB-producing workstations. Used for unlocks and progression thresholds.
+- **EK (Eldritch Keys)** — prestige currency. Spent on permanent boons and prestige bonuses. Persists across ascension.
 
-### Ingredients
+### Ingredients (cast baseline)
 
-**Tier 0 (Base Ingredients - from Casting):**
-- **Wax Bits**: 1.0 per cast
-- **Wick Fiber**: 1.0 per cast
-- **Crystal Dust**: 0.5 per cast
-- **Fire Essence**: 0.5 per cast
-- **Water Essence**: 0.5 per cast
-- **Air Essence**: 0.5 per cast
+Each cast grants (before multipliers):
 
-**Note:** Aether is not generated from CAST. It must be synthesized by combining Fire, Water, Air, and Earth (Crystal) elements in the Aether Synthesizer workstation.
+| Ingredient | Base amount |
+|---|---|
+| Crystal Dust | 0.5 |
+| Fire Essence | 0.5 |
+| Water Essence | 0.5 |
+| Air Essence | 0.5 |
 
-**Tier 1 (Crafted Ingredients):**
-- **Wax Block**: Crafted from Wax Bits (10 Wax Bits)
-- **Braided Wick**: Crafted from Wick Fiber (10 Wick Fiber)
-- **Shaped Crystal**: Crafted from Crystal Dust (10 Crystal Dust)
-- **Distilled Aether**: Crafted from Aether Essence (10 Aether Essence)
+Aether is **not** granted by cast. Craft an **Aether Synthesizer** (mix of all four base essences) to produce Aether streams.
 
-**Tier 2 (Advanced Ingredients):**
-- **Digital Candle**: Crafted from multiple ingredients (see workstations)
+Rare casts can **critical-compile** (large mult) or **compile-overclock** (1.5×) — framed as system events, not casino jackpots.
 
-### Production Scaling
+### Production scaling
 
-Workstation costs scale exponentially:
-- Each workstation costs more than the previous one
-- Growth rate: 1.10x to 1.16x depending on the workstation
-- Formula: `cost = base_cost × (growth_rate ^ owned_count)`
+Workstation costs scale with owned count:
+
+`cost = base_recipe × (growth ^ owned)`
+
+Growth is typically ~1.12–1.16 depending on the workstation.
 
 ---
 
-## 🏭 Workstations
+## Workstations
 
-Workstations are automated producers that generate ingredients and AB over time. Each workstation has:
-- **Unlock Requirement**: Minimum AB needed to see the workstation
-- **Recipe**: Ingredients needed to craft
-- **Growth Rate**: How fast costs increase
-- **Outputs**: What the workstation produces per second
+Live Tier 0 starters (unlock at 0 AB):
 
-### Workstation List
+| Workstation | Recipe (base) | Role |
+|---|---|---|
+| **Fire Forge** | 10 Fire Essence | Fire sector preservation |
+| **Aqua Well** | 10 Water Essence | Water sector |
+| **Zephyr Generator** | 10 Air Essence | Air sector |
+| **Crystal Chamber** | 10 Crystal Dust | Crystal sector |
+| **Aether Synthesizer** | 2 each of Fire/Water/Air/Crystal | Aether synthesis |
 
-#### 1. **Wax Melter** (Unlocks at 0 AB)
-- **Recipe**: 10 Wax Bits
-- **Growth**: 1.10x
-- **Produces**: 0.30 Wax Block/s
-- **Strategy**: First workstation, produces Wax Blocks for crafting
+Higher tiers include Digital Candle Forge, Deep Aqua Well, Enhanced Zephyr Generator, Crystal Orb Chamber, Aether Reactor, fusion/resonance chambers, quantum and void-tier producers, and **Arcane Bit Reactor** lines for idle AB.
 
-#### 2. **Wick Spinner** (Unlocks at 0 AB)
-- **Recipe**: 10 Wick Fiber
-- **Growth**: 1.10x
-- **Produces**: 0.30 Braided Wick/s
-- **Strategy**: Second workstation, produces Braided Wicks
-
-#### 3. **Crystal Shaper** (Unlocks at 25 AB)
-- **Recipe**: 10 Crystal Dust
-- **Growth**: 1.12x
-- **Produces**: 0.20 Shaped Crystal/s
-- **Strategy**: Produces Shaped Crystals for advanced crafting
-
-#### 4. **Aether Synthesizer** (Unlocks at 50 AB)
-- **Recipe**: 2 Fire Essence + 2 Water Essence + 2 Air Essence + 2 Crystal Dust
-- **Growth**: 1.12x
-- **Produces**: 0.20 Distilled Aether/s
-- **Strategy**: Synthesizes Aether from the four basic elements. Essential for advanced recipes that require Aether.
-
-#### 5. **Digital Candle Farm** (Unlocks at 100 AB) ⭐ **First AB Producer**
-- **Recipe**: 5 Wax Block, 1 Braided Wick, 2 Distilled Aether
-- **Growth**: 1.14x
-- **Produces**: 1.0 AB/s
-- **Strategy**: **KEY WORKSTATION** - This is your first automated AB producer!
-
-#### 6. **Crystal Rig** (Unlocks at 250 AB)
-- **Recipe**: 2 Shaped Crystal, 2 Distilled Aether
-- **Growth**: 1.14x
-- **Produces**: 0.15 AB/s, 0.05 Crystal Dust/s
-- **Strategy**: Secondary AB producer with bonus Crystal Dust
-
-#### 7. **Quantum Cauldron** (Unlocks at 1500 AB) ⭐ **Best AB Producer**
-- **Recipe**: 3 Shaped Crystal, 3 Distilled Aether, 1 Digital Candle
-- **Growth**: 1.16x
-- **Produces**: 2.5 AB/s
-- **Strategy**: **BEST WORKSTATION** - Highest AB production rate!
-
-### Unlocking Workstations
-
-**Progression Path:**
-1. **0 AB**: Cast manually → Build Wax Melter & Wick Spinner
-2. **25 AB**: Unlock Crystal Shaper
-3. **50 AB**: Unlock Aether Still
-4. **100 AB**: Unlock Digital Candle Farm (first AB producer!)
-5. **250 AB**: Unlock Crystal Rig
-6. **1500 AB**: Unlock Quantum Cauldron (best producer!)
+Open the Workstations tab in-game for live costs, rates, and unlock thresholds — the UI is source of truth if this manual and a patch diverge.
 
 ---
 
-## 📜 Inscriptions (Upgrades)
+## Inscriptions (Upgrades)
 
-Inscriptions are permanent upgrades that boost production. Each inscription can only be purchased once.
-
-### Upgrade List
-
-#### 1. **Hex Compiler v1** (Unlocks at 0 AB)
-- **Effect**: Increases all production by 50%
-- **Type**: Global multiplier (×1.5)
-- **Recipe**: 2 Wax Block, 2 Braided Wick, 1 Shaped Crystal
-- **Priority**: ⭐⭐⭐ High - Get this early!
-
-#### 2. **Sigil Stroke** (Unlocks at 0 AB)
-- **Effect**: Adds +1 to all cast rewards
-- **Type**: Click additive (+1.0)
-- **Recipe**: 10 Wick Fiber
-- **Priority**: ⭐⭐ Medium - Helps manual casting
-
-#### 3. **Wax Algorithm** (Unlocks at 100 AB)
-- **Effect**: Doubles Digital Candle Farm production
-- **Type**: Producer multiplier (×2.0)
-- **Recipe**: 3 Wax Block, 1 Distilled Aether
-- **Priority**: ⭐⭐⭐ High - Doubles your first AB producer!
-
-#### 4. **Quantum Faceting** (Unlocks at 250 AB)
-- **Effect**: Doubles Crystal Rig production
-- **Type**: Producer multiplier (×2.0)
-- **Recipe**: 2 Shaped Crystal, 1 Distilled Aether
-- **Priority**: ⭐⭐ Medium - Good for Crystal Rig users
-
-#### 5. **Sigil Cache** (Unlocks at 500 AB)
-- **Effect**: Increases all production by 80%
-- **Type**: Global multiplier (×1.8)
-- **Recipe**: 3 Wax Block, 2 Shaped Crystal, 2 Distilled Aether
-- **Priority**: ⭐⭐⭐ High - Massive global boost!
-
-#### 6. **Brew Daemon** (Unlocks at 1500 AB)
-- **Effect**: Increases Quantum Cauldron production by 80%
-- **Type**: Producer multiplier (×1.8)
-- **Recipe**: 2 Shaped Crystal, 2 Distilled Aether, 1 Digital Candle
-- **Priority**: ⭐⭐⭐ High - Best for Quantum Cauldron users!
-
-### Upgrade Strategy
-
-**Early Game (0-100 AB):**
-1. Hex Compiler v1 (global boost)
-2. Sigil Stroke (casting boost)
-
-**Mid Game (100-500 AB):**
-1. Wax Algorithm (double Digital Candle Farm)
-2. Sigil Cache (massive global boost)
-
-**Late Game (500+ AB):**
-1. Quantum Faceting (Crystal Rig boost)
-2. Brew Daemon (Quantum Cauldron boost)
+Inscriptions improve cast yield, production multipliers, and related systems. Purchase with ingredients/AB as shown in `/SYS/UPGRADES`. Prefer early cast and production mults that compound with EXEC.
 
 ---
 
-## 🔬 Experiments & Recipes
+## Experiments & Recipes
 
-### Experimentation System
-
-The Experiment tab allows you to discover hidden recipes by spending ingredients.
-
-**How to Experiment:**
-1. Go to the **Experiment** tab
-2. Click the **"Try Experiment"** button
-3. Spend ingredients to attempt discovery
-4. Successfully discover recipes unlock new crafting options
-
-**Experiment Costs:**
-- Base cost increases with each attempt
-- Successful discovery reveals a new recipe
-- Failed experiments still consume ingredients
-
-### Hidden Recipes
-
-Hidden recipes are discovered through experimentation. These recipes often provide:
-- Alternative crafting paths
-- More efficient ingredient conversion
-- Special items not available through normal crafting
-
-**Strategy:**
-- Experiment early to discover efficient recipes
-- Some recipes may be more cost-effective than workstations
-- Experimentation can unlock unique crafting paths
+The lab (`/BIN/LAB`) discovers hidden recipes through experimentation. Run protocols when you have spare ingredients; discovered recipes expand crafting options permanently (subject to save).
 
 ---
 
-## ⚡ Prestige System
+## Prestige System
 
-### What is Prestige?
+When progress stalls, **ascend** to convert lifetime progress into **Eldritch Keys (EK)** and permanent bonuses.
 
-Prestige (Ascension) allows you to reset your progress in exchange for permanent bonuses called **Eldritch Keys (EK)**.
-
-### How to Ascend
-
-1. Click the **"⚡ Ascend"** button in the top bar
-2. Check how many EK you'll gain
-3. Confirm the ascension
-4. Your progress resets, but you keep EK and prestige bonuses
-
-### Prestige Bonuses (Boons)
-
-EK can be spent on permanent bonuses that persist across ascensions:
-
-#### 1. **Global Production Boost** (Level-based)
-- **Effect**: +5% production per level
-- **Cost**: Increases per level
-- **Max Level**: Unlimited
-
-#### 2. **Starting AB** (Level-based)
-- **Effect**: Start with +AB after ascension
-- **Cost**: Increases per level
-- **Max Level**: Unlimited
-
-#### 3. **Starting Ingredients** (Level-based)
-- **Effect**: Start with ingredients after ascension
-- **Cost**: Increases per level
-- **Max Level**: Unlimited
-
-### When to Ascend
-
-**Good Time to Ascend:**
-- When you've earned significantly more AB than your current total
-- When progress slows down significantly
-- When you can afford meaningful prestige bonuses
-- After unlocking major milestones
-
-**Prestige Formula:**
-- EK gained = `prestige_points_for(lifetime_ab) - current_ek`
-- More lifetime AB = More EK gained
+- Resets AB, ingredients, workstations, and most upgrades
+- Keeps EK, boons, recipes, achievements, and design-tier unlocks (see in-game confirm dialog)
+- Choose an **element specialization** (fire / water / air / crystal) for asymmetric bonuses
+- Unlocks **Boons** and **Meditation** tabs at Prestige ≥ 1
 
 ---
 
-## 🏆 Achievements
+## Meditation
 
-Achievements are milestones that reward you with AB or EK when unlocked.
+Unlocked after first prestige. A tower-defense sub-game: place towers, defend Tranquility against Distractions, earn Focus and session stats.
 
-### Achievement List
-
-1. **First Spell** (Cast 1 time)
-   - Reward: 10 AB
-
-2. **First AB** (Earn 1 AB)
-   - Reward: 5 AB
-
-3. **First Factory** (Craft 1 workstation)
-   - Reward: 50 AB
-
-4. **Century of Spells** (Cast 100 times)
-   - Reward: 100 AB
-
-5. **Century of Power** (Reach 100 AB)
-   - Reward: 200 AB
-
-6. **Experimenter** (Discover 1 recipe)
-   - Reward: 100 AB
-
-7. **Industrial Scale** (Craft 10 workstations)
-   - Reward: 500 AB
-
-8. **Diverse Production** (Own 5 different workstation types)
-   - Reward: 500 AB
-
-9. **Master Alchemist** (Discover all 5 recipes)
-   - Reward: 1000 AB
-
-10. **Ascendant** (Complete 1 prestige)
-    - Reward: 1 EK
-
-### Achievement Strategy
-
-- Achievements provide free AB/EK
-- Check the **Stats** tab to see your progress
-- Some achievements unlock naturally through gameplay
-- Focus on achievements that provide large rewards
+- Production bonus scales with completed waves, kills, and sessions
+- Stats **persist** across save/load
+- Not available in the first pre-prestige arc by design
 
 ---
 
-## 📅 Daily Rituals
+## Daily Rituals
 
-### Daily Tasks System
-
-Daily tasks provide bonus rewards for completing specific objectives.
-
-**Task Types:**
-- **Tap**: Cast a certain number of times
-- **Craft**: Craft a specific workstation
-- **Own**: Own a certain number of workstations
-- **Earn**: Earn a certain amount of AB
-
-**Rewards:**
-- Tasks refresh daily
-- Complete tasks to earn bonus AB
-- Multiple tasks can be active simultaneously
-
-**Strategy:**
-- Check the Dailies tab regularly
-- Complete easy tasks first
-- Some tasks may require strategic planning
+`/ETC/RITUALS` offers rotating tasks with AB / ingredient / fragment rewards. Complete dailies for steady EK fragment progress toward keys.
 
 ---
 
-## 🎯 Advanced Features
+## Design Tiers
 
-### Combo System
+| Tier | Feel |
+|---|---|
+| 0 | Broken mono terminal — incomplete chrome |
+| 1+ | Color returns |
+| 2+ | SFX |
+| 3+ | Glass / richer motion |
+| 4 | Full sensory restoration |
 
-**How Combos Work:**
-- Click Cast rapidly to build a combo
-- Each click within 2 seconds continues the combo
-- Combo multiplies your rewards (up to 2x at 50+ combo)
-- Formula: `multiplier = 1.0 + (combo_count × 0.02)`, capped at 2.0
-
-**Combo Benefits:**
-- Increased ingredient rewards
-- Increased AB rewards
-- Visual feedback shows current combo
-- Max combo tracked in stats
-
-**Strategy:**
-- Use auto-cast to maintain combos
-- Combos reset after 2 seconds of inactivity
-- Higher combos = Better rewards
-
-### Random Events
-
-Random events provide temporary bonuses:
-
-#### 1. **✨ Lucky Strike**
-- **Effect**: All production doubled for 30 seconds
-- **Strategy**: Great time to stock up on ingredients and AB
-
-#### 2. **💰 Windfall**
-- **Effect**: Instant AB bonus (10% of current AB, minimum 100)
-- **Strategy**: Happens automatically, enjoy the bonus!
-
-#### 3. **💡 Inspiration**
-- **Effect**: Double cast rewards for 20 seconds
-- **Strategy**: Perfect time to manually cast for maximum rewards
-
-**Event Frequency:**
-- Events occur randomly (0.1% chance per tick)
-- Minimum 60 seconds between events
-- More active players get more events
-- Event chance increases with more taps
-
-### Auto-Cast Feature
-
-**How to Use:**
-- Click the **"Auto Mode"** button in the sidebar to toggle
-- Unlocks after your first ascension (prestige)
-- When enabled, casts automatically every 500ms (2 casts per second)
-- Great for maintaining combos
-- Useful for idle gameplay
-
-**Visual Feedback:**
-- Cast button shows visual indicator when auto-cast is active
-- Combo display shows ⚡ icon when auto-cast is maintaining your combo
-- Visual feedback respects design tier restrictions (animations only at Tier 3+)
-
-**Event-Aware Speed Boost:**
-- During **💡 Inspiration** events (double cast rewards), auto-cast speed increases to 250ms (4 casts per second)
-- Automatically adjusts when Inspiration event starts or ends
-- Notification appears when speed boost activates
-
-**Strategy:**
-- **Maintaining Combos**: Auto-cast is perfect for maintaining high combos (casts every 500ms, well within 2-second combo window)
-- **During Events**: Auto-cast automatically speeds up during Inspiration events for maximum benefit
-- **Idle Gameplay**: Enable auto-cast when you want to focus on other tasks or planning
-- **Manual vs Auto**: For maximum control during Inspiration events, you can manually cast faster than auto-cast, but auto-cast ensures you don't miss the event window
-- **Post-Prestige**: After first prestige, workstations produce most resources, so auto-cast is mainly for combo maintenance and event bonuses
-
-### Offline Progress
-
-The game calculates offline progress when you return:
-- Production continues while you're away
-- Welcome back modal shows time away and AB earned
-- Offline production is based on your AB/s when you left
+Tier unlocks track AB + achievements. The USP is real: start broken, heal as you compile.
 
 ---
 
-## 💡 Tips & Strategies
+## Tips & Strategies
 
-### Early Game (0-100 AB)
-
-1. **Manual Casting**: Click Cast to build up initial ingredients and AB
-2. **First Workstations**: Build Wax Melter and Wick Spinner early
-3. **First Upgrade**: Get Hex Compiler v1 for global production boost
-4. **Goal**: Reach 100 AB to unlock Digital Candle Farm
-
-### Mid Game (100-500 AB)
-
-1. **Digital Candle Farm**: Focus on building your first AB-producing workstation
-2. **Wax Algorithm**: Double your Digital Candle Farm production
-3. **Sigil Cache**: Get the massive global production boost
-4. **Crystal Rig**: Unlock at 250 AB for additional AB production
-5. **Goal**: Build up to 500 AB for Sigil Cache
-
-### Late Game (500+ AB)
-
-1. **Quantum Cauldron**: Unlock at 1500 AB - best AB producer
-2. **Brew Daemon**: Boost Quantum Cauldron production
-3. **Experimentation**: Discover hidden recipes for efficiency
-4. **Prestige Planning**: Consider when to ascend for maximum EK
-
-### General Strategies
-
-**Production Optimization:**
-- Focus on workstations that produce AB
-- Use upgrades to boost production
-- Balance ingredient production with AB production
-- Plan workstation growth strategically
-
-**Efficiency Tips:**
-- Use "Max" button to craft efficiently
-- Check costs before crafting (they scale!)
-- Prioritize upgrades that affect multiple workstations
-- Experiment with different production paths
-
-**Prestige Strategy:**
-- Ascend when progress slows significantly
-- Invest EK in production bonuses first
-- Starting bonuses help early game significantly
-- Plan your prestige timing for maximum EK gain
-
-**Achievement Hunting:**
-- Check Stats tab regularly
-- Some achievements unlock naturally
-- Focus on high-reward achievements
-- Achievements provide free AB/EK
+1. Hit the first compile goal: craft **Fire Forge**, then the other elemental starters.
+2. Keep casting while early forges run — AB compounds unlocks.
+3. Synthesize Aether when you can afford the four-essence recipe.
+4. Push toward Arcane Bit Reactors / mid-tier AB producers before prestige.
+5. After prestige, grab impactful EK boons, then sample Meditation for long-term production bonus.
+6. Trust the live UI costs over any outdated third-party guide.
 
 ---
 
-## 🎮 Game Tabs Overview
-
-### 🏭 Workstations Tab
-- View all available workstations
-- Craft workstations using ingredients
-- See production rates and costs
-- Check unlock requirements
-
-### 📜 Inscriptions Tab
-- View all available upgrades
-- Purchase upgrades with ingredients
-- See upgrade effects and requirements
-- Track which upgrades you own
-
-### 🎒 Inventory Tab
-- View all your current ingredients
-- See ingredient quantities
-- Track your resources
-
-### 🔬 Experiment Tab
-- Try experiments to discover recipes
-- View discovered recipes
-- Craft discovered recipes
-- See experiment results
-
-### 📅 Dailies Tab
-- View daily tasks
-- Track task progress
-- Claim task rewards
-- See available bonuses
-
-### ⭐ Boons Tab
-- View prestige bonuses
-- Purchase bonuses with EK
-- See bonus levels and costs
-- Plan your prestige investments
-
-### 📊 Stats Tab
-- View game statistics
-- Track achievements
-- See your progress
-- Monitor your performance
-
----
-
-## 🔧 Technical Details
-
-### Production Calculation
-
-**Workstation Production:**
-```
-final_production = base_rate × multiplier × owned_count × event_multiplier
-```
-
-**Multipliers:**
-- Global upgrades (affect all)
-- Producer-specific upgrades
-- Prestige bonuses
-- Event bonuses
-
-### Cost Scaling
-
-**Workstation Costs:**
-```
-cost = base_cost × (growth_rate ^ owned_count)
-```
-
-**Example:**
-- Base cost: 10 Wax Bits
-- Growth: 1.10x
-- 1st workstation: 10 × 1.10^0 = 10
-- 2nd workstation: 10 × 1.10^1 = 11
-- 3rd workstation: 10 × 1.10^2 = 12.1
-- etc.
-
-### Game Tick Rate
-
-- Game updates 10 times per second (100ms per tick)
-- Production is calculated per tick
-- UI updates every second for AB/s display
-
----
-
-## 📝 Changelog & Version
-
-**Current Version**: 1.0
-
-**Features:**
-- ✅ Manual casting system
-- ✅ Workstation automation
-- ✅ Upgrade system
-- ✅ Experimentation system
-- ✅ Prestige system
-- ✅ Achievement system
-- ✅ Daily rituals
-- ✅ Combo system
-- ✅ Random events
-- ✅ Auto-cast feature
-- ✅ Offline progress
-- ✅ Visual polish and animations
-
----
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-**Game not loading:**
-- Check browser console for errors
-- Ensure all files are present
-- Try refreshing the page
-
-**Production not updating:**
-- Check browser console for errors
-- Verify game state is initialized
-- Try refreshing the page
-
-**Save not working:**
-- Check browser localStorage support
-- Clear browser cache if needed
-- Check browser console for errors
-
-**Performance issues:**
-- Disable auto-cast if laggy
-- Close other browser tabs
-- Check browser console for errors
-
----
-
-## 📚 Additional Resources
-
-- **Game Code**: See `js/` folder for game logic
-- **Data Files**: See `js/data.js` for game content
-- **Styling**: See `styles.css` for visual design
-- **Setup Guide**: See `SETUP_GUIDE.md` for development setup
-
----
-
-## 🎉 Have Fun!
-
-Enjoy your journey as a Cyber Witch! Build your coven, automate your production, and ascend to greater heights of power!
-
-**Remember:**
-- Progress is saved automatically
-- Experiment with different strategies
-- Prestige when progress slows
-- Enjoy the idle gameplay!
-
-Happy casting! ✨
-
+*Manual regenerated for live Hex Compiler systems (Arcane Bits / Eldritch Keys, Fire Forge line, post-prestige meditation). If in-game data differs, the running build wins.*

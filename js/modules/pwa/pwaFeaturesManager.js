@@ -229,7 +229,7 @@ export class PWAFeaturesManager {
                 if (outcome === 'accepted') {
                     console.info('User accepted install prompt');
                     if (this.uiManager && this.uiManager.showNotification) {
-                        this.uiManager.showNotification('<span class="css-icon-celebration"></span> Installing Cyber Witches...', 'success');
+                        this.uiManager.showNotification('<span class="css-icon-celebration"></span> Installing Cyber Witches...', 'success', 3000, { html: true });
                     }
                     // Hide install button
                     const installButton = document.getElementById('install-app-button');

@@ -398,8 +398,8 @@ export class UIManager {
         if (this.hudUI) this.hudUI.update();
     }
 
-    showNotification(message, type = 'info', duration = 3000) {
-        showNotification(message, type, duration);
+    showNotification(message, type = 'info', duration = 3000, options = {}) {
+        showNotification(message, type, duration, options);
     }
 
     announceToScreenReader(message, politeness) {

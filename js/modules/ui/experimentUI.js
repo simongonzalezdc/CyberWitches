@@ -153,7 +153,7 @@ export class ExperimentUI {
                 if (typeof window.pulseElement === 'function') {
                     window.pulseElement(newExpButton, 1.2, 400);
                 }
-                showNotification(`<span class="css-icon-celebration"></span> Discovered: ${escapeHtml(result.recipe.name)}!`, 'success');
+                showNotification(`<span class="css-icon-celebration"></span> Discovered: ${escapeHtml(result.recipe.name)}!`, 'success', 3000, { html: true });
 
                 if (window.achievements) {
                     window.achievements.checkAchievements();

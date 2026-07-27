@@ -67,7 +67,7 @@ export class HUDUI {
                 return `${formatOneDecimal(val)} AB/s`;
             });
 
-            // Add glow effect if SE/s increased
+            // Add glow effect if AB/s increased
             if (abps > this.previousAbps && abps > 0) {
                 this.abpsDisplay.style.textShadow = '0 0 10px rgba(34, 227, 255, 0.8)';
                 setTimeout(() => {

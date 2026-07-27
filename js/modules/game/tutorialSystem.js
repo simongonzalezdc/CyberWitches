@@ -192,12 +192,29 @@ export class TutorialSystem {
                 message: 'Install workstations to automate the compilation process.',
                 target: '.tab-btn[data-tab="workstations"]',
                 position: 'bottom'
+            },
+            {
+                id: 'compile_goal_fire',
+                title: 'COMPILE_GOAL',
+                message: 'COMPILE_GOAL: Stabilize Fire sector — craft 1 Fire Forge.',
+                target: '#workstation-list',
+                position: 'top'
             }
         ];
     }
 
     startTutorialSteps() {
         if (this.tutorialSteps.length === 0) return;
+        // First-session compile goal (identity lock — single owner: TutorialSystem)
+        try {
+            this.notify(
+                'COMPILE_GOAL: Stabilize Fire sector — craft 1 Fire Forge.',
+                'info',
+                8000
+            );
+        } catch {
+            // notifier optional in tests
+        }
         this.showStep(0);
     }
 

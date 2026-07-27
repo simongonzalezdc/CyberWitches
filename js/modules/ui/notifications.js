@@ -19,6 +19,7 @@ export class NotificationManager {
         this.maxPerSecond = 3;
         this.lastSoundTime = 0;
         this.soundThrottle = 500;
+        this._draining = false;
 
         // Dependencies
         this.audioSystem = null;
@@ -34,13 +35,19 @@ export class NotificationManager {
     }
 
     /**
-     * Show a notification
-     * @param {string} message - Message to display
-     * @param {string} type - Notification type (success, error, info, warning)
-     * @param {number} duration - Duration in ms
+     * Show a notification.
+     * Default is text-safe (textContent). Pass { html: true } only for trusted templates.
+     * @param {string} message
+     * @param {string} type
+     * @param {number} duration
+     * @param {{ html?: boolean }} options
      */
-    show(message, type = 'info', duration = 3000) {
+    show(message, type = 'info', duration = 3000, options = {}) {
         if (!this.container) return;
+
+        // Sticky trust decision: only explicit opt-in, never content sniffing
+        const allowHtml = options.html === true;
+        const opts = { html: allowHtml };
 
         // Remove emojis if low tier
         message = stripEmojisIfLowTier(message);
@@ -49,7 +56,7 @@ export class NotificationManager {
         if (this.analyticsManager && this.analyticsManager.enabled) {
             this.analyticsManager.track('notification_shown', {
                 type,
-                message: message.substring(0, 50)
+                message: String(message).substring(0, 50)
             });
         }
 
@@ -61,19 +68,37 @@ export class NotificationManager {
         }
 
         if (this.count >= this.maxPerSecond) {
-            this.queue.push({ message, type, duration });
+            // Preserve trust decision at enqueue time
+            this.queue.push({ message, type, duration, options: opts });
             return;
         }
 
         this.count++;
+        this._playSound(message, type, now);
+        this._render(message, type, duration, opts);
+    }
 
-        // Play sound
+    /**
+     * Plain-text notification (safe default).
+     */
+    showText(message, type = 'info', duration = 3000) {
+        this.show(message, type, duration, { html: false });
+    }
+
+    /**
+     * Trusted HTML notification (icons/templates only). Caller must escape untrusted values.
+     */
+    showHtml(message, type = 'info', duration = 3000) {
+        this.show(message, type, duration, { html: true });
+    }
+
+    _playSound(message, type, now = Date.now()) {
         if (this.audioSystem && this.audioSystem.playSound) {
             if (now - this.lastSoundTime >= this.soundThrottle) {
                 if (type === 'error') {
                     this.audioSystem.playSound('error', { volume: 0.3 });
                 } else if (type === 'success') {
-                    if (!message.includes('Achievement')) {
+                    if (!String(message).includes('Achievement')) {
                         this.audioSystem.playSound('success', { volume: 0.3 });
                     }
                 } else {
@@ -82,17 +107,24 @@ export class NotificationManager {
                 this.lastSoundTime = now;
             }
         }
-
-        this.createNotificationElement(message, type, duration);
     }
 
-    createNotificationElement(message, type, duration) {
+    _render(message, type, duration, options = {}) {
+        const allowHtml = options.html === true;
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.setAttribute('role', type === 'error' ? 'alert' : 'status');
-        notification.innerHTML = message;
 
-        // Add close button
+        // Message body (separate from close button so textContent is safe)
+        const body = document.createElement('span');
+        body.className = 'notification-body';
+        if (allowHtml) {
+            body.innerHTML = message;
+        } else {
+            body.textContent = String(message ?? '');
+        }
+        notification.appendChild(body);
+
         const closeBtn = document.createElement('button');
         closeBtn.className = 'notification-close';
         closeBtn.type = 'button';
@@ -105,33 +137,75 @@ export class NotificationManager {
 
         this.container.appendChild(notification);
 
-        // Animation
         requestAnimationFrame(() => {
             notification.classList.add('show');
         });
 
-        // Auto remove
-        setTimeout(() => {
-            if (notification.parentNode) {
-                this.removeNotification(notification);
-            }
+        // Auto remove — store timer so removeNotification can cancel it
+        /** @type {any} */
+        const el = notification;
+        el._autoRemoveTimer = setTimeout(() => {
+            this.removeNotification(notification);
         }, duration);
     }
 
     removeNotification(notification) {
+        /** @type {any} */
+        const el = notification;
+        if (!el || el._removing) return;
+        el._removing = true;
+
+        if (el._autoRemoveTimer) {
+            clearTimeout(el._autoRemoveTimer);
+            el._autoRemoveTimer = null;
+        }
+
         notification.classList.remove('show');
         notification.classList.add('fade-out');
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
+            this._drainQueueOnce();
         }, 300);
+    }
+
+    _drainQueueOnce() {
+        if (this._draining || this.queue.length === 0) return;
+        this._draining = true;
+        try {
+            // Allow rate window to open for queued items when prior ones finish
+            const now = Date.now();
+            if (now - this.lastReset > 1000) {
+                this.count = 0;
+                this.lastReset = now;
+            }
+            if (this.count >= this.maxPerSecond) {
+                // Still limited — leave queue; next removal will try again
+                return;
+            }
+            const next = this.queue.shift();
+            if (!next) return;
+            this.count++;
+            this._playSound(next.message, next.type, now);
+            // options already sticky from enqueue
+            this._render(next.message, next.type, next.duration, next.options || { html: false });
+        } finally {
+            this._draining = false;
+        }
     }
 }
 
 export const notificationManager = new NotificationManager();
 
-// Export for modules
-export const showNotification = (message, type, duration) => {
-    notificationManager.show(message, type, duration);
+export const showNotification = (message, type, duration, options) => {
+    notificationManager.show(message, type, duration, options);
+};
+
+export const showText = (message, type, duration) => {
+    notificationManager.showText(message, type, duration);
+};
+
+export const showHtml = (message, type, duration) => {
+    notificationManager.showHtml(message, type, duration);
 };

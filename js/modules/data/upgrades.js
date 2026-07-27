@@ -298,10 +298,10 @@ export const UPGRADES = [
     {
         id: 'u_focus_conversion_1',
         displayName: 'Focus Conversion',
-        description: 'Convert Focus to SE (1 SE = 100 Focus)',
+        description: 'Convert Focus to AB (1 AB = 100 Focus)',
         affects: 'focus_to_ab',
         type: 'conversion',
-        value: 0.01, // 100 focus = 1 SE
+        value: 0.01, // 100 focus = 1 AB
         recipe: { focus: 100, enhanced_candle: 5, crystal_core: 5 },
         unlockAtAb: 10000.0
     },

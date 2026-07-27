@@ -874,33 +874,48 @@ export class MeditationState {
             const dy = targetY - dist.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Check if distraction is stuck (not moving for too long)
+            // Stuck detection: real progress toward path/center, not mere oscillation
             const now = this._now();
             const timeSinceLastMove = now - (dist.lastMoveTime || now);
-            const hasMoved = distance > 0.01; // Check if actually moving
+            const prevX = dist._prevX ?? dist.x;
+            const prevY = dist._prevY ?? dist.y;
+            const _posDelta = Math.hypot(dist.x - prevX, dist.y - prevY);
+            dist._prevX = dist.x;
+            dist._prevY = dist.y;
+
+            const prevWaypointDist = dist._prevWaypointDist ?? distance;
+            const closingOnWaypoint = distance < prevWaypointDist - 0.005;
+            dist._prevWaypointDist = distance;
+
+            const prevCenterDist = dist._prevCenterDist ?? distToCenter;
+            const closingOnCenter = distToCenter < prevCenterDist - 0.005;
+            dist._prevCenterDist = distToCenter;
+
+            // Oscillation without closing on path/center is stuck (ignore pure posDelta thrash)
+            const hasMoved = closingOnWaypoint || closingOnCenter;
 
             if (!hasMoved && timeSinceLastMove > 1000) {
-                // Stuck for more than 1 second - force movement
                 dist.stuckCount = (dist.stuckCount || 0) + 1;
 
-                // If stuck multiple times, try to find alternative path
-                if (dist.stuckCount > 3) {
-                    // Force move toward center directly as last resort
-                    const centerDx = centerX - dist.x;
-                    const centerDy = centerY - dist.y;
-                    const centerDist = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
-
-                    if (centerDist > 0.001) {
-                        const forceMoveSpeed = dist.speed * delta * 2.0; // Faster movement when stuck
-                        dist.x += (centerDx / centerDist) * forceMoveSpeed;
-                        dist.y += (centerDy / centerDist) * forceMoveSpeed;
-                        dist.lastMoveTime = now;
-                        dist.stuckCount = 0; // Reset stuck count after forced move
-                        continue;
-                    }
+                // Always nudge when stuck; stronger after repeated stalls
+                const forceMult = dist.stuckCount > 3 ? 2.0 : 1.25;
+                let nudgeDx = dx;
+                let nudgeDy = dy;
+                let nudgeDist = distance;
+                if (nudgeDist < 0.001 || dist.stuckCount > 3) {
+                    nudgeDx = centerX - dist.x;
+                    nudgeDy = centerY - dist.y;
+                    nudgeDist = Math.hypot(nudgeDx, nudgeDy);
+                }
+                if (nudgeDist > 0.001) {
+                    const forceMoveSpeed = dist.speed * delta * forceMult;
+                    dist.x += (nudgeDx / nudgeDist) * forceMoveSpeed;
+                    dist.y += (nudgeDy / nudgeDist) * forceMoveSpeed;
+                    dist.lastMoveTime = now;
+                    if (dist.stuckCount > 3) dist.stuckCount = 0;
+                    continue;
                 }
             } else if (hasMoved) {
-                // Reset stuck tracking if moving
                 dist.lastMoveTime = now;
                 dist.stuckCount = 0;
             }
@@ -1543,6 +1558,11 @@ export class MeditationState {
             this.tranquilityMax = state.tranquilityMax || 100;
             this.meditationInventory = state.meditationInventory || {};
             this.meditationUpgrades = state.meditationUpgrades || {};
+
+            // Restore meditation statistics (production bonus depends on these)
+            this.totalWavesCompleted = state.totalWavesCompleted || 0;
+            this.totalDistractionsKilled = state.totalDistractionsKilled || 0;
+            this.totalSessionsCompleted = state.totalSessionsCompleted || 0;
 
             // Rebuild towers
             if (state.towers) {

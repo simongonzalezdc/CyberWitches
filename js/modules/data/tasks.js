@@ -130,7 +130,7 @@ export const DAILY_TASKS_POOL = [
     {
         id: 'd_ab_earn',
         displayName: 'Accumulate Power',
-        description: 'Earn 10000 SE',
+        description: 'Earn 10000 AB',
         condition: 'earn_ab:10000',
         rewardType: 'ab',
         rewardValue: 5000.0
