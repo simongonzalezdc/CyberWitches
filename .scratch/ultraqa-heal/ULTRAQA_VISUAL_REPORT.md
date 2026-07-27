@@ -49,7 +49,17 @@ Not a redesign loop — **verify live UI** against product intent after heal mer
 | `04-prestige-ceremony.png` | ceremony modal captured — **pass** (suite assert) |
 | `06-mobile-shell.png` | cast deck remains usable — **pass** (suite assert) |
 
-**Visual score (product-intent match):** ~**92/100** — heal differentiator readable without secondary UI study. Residual: SHARE_RESTORE label truncates slightly on narrow HUD; non-blocking.
+**Visual score (product-intent match):** **100/100** (after score-100 pass).
+
+### Score-100 pass (2026-07-27)
+
+| Was | Fix | Gate |
+|-----|-----|------|
+| SHARE_RESTORE truncated in HUD | `.heal-share-btn` + `nowrap` full label | e2e asserts `scrollWidth ≤ clientWidth` + full text |
+| Soft heal flash | stronger outline/glow + goal-rail highlight + share pulse | CSS `tier-advance-heal` + `heal-share-btn--pulse` |
+| No falsifiable visual gate | geometry + text assertions on heal screenshot path | `visual: heal moment tier advance` |
+
+Re-captured screenshots under `.scratch/ultraqa-heal/visual/`. Residual risks below are ops/CI, not product-intent visual blockers.
 
 ## Root cause fixed (e2e flake)
 

@@ -84,8 +84,10 @@
             </div>
 
             <div class="hud-right">
-                <div class="system-controls flex gap-2">
-                    <button id="heal-share-button" type="button" class="btn-icon glass-panel px-2 py-1 rounded-md hover:bg-white/10 transition-colors text-[10px] font-mono text-ky-cyan" hidden aria-label="Share heal moment">SHARE_RESTORE</button>
+                <div class="system-controls flex gap-2 items-center">
+                    <button id="heal-share-button" type="button" class="heal-share-btn glass-panel" hidden aria-label="Share heal moment: SYSTEM_RESTORE artifact">
+                        <span class="heal-share-label">SHARE_RESTORE</span>
+                    </button>
                     <button id="help-button" class="btn-icon glass-panel p-2 rounded-md hover:bg-white/10 transition-colors" aria-label="Help">
                         <span class="text-ky-green">?</span>
                     </button>
