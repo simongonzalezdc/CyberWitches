@@ -103,7 +103,9 @@ export function applyPrestigeCommit(state, opts = {}) {
     const affinity = opts.affinity || dominantAffinity(state);
     const next = createInitialState(state.rngSeed ^ 0xabcddcba);
     next.prestigeCount = (state.prestigeCount || 0) + 1;
-    next.prestigeLifetimeEarned = 0; // this-run lifetime resets; total keys separate
+    next.prestigeLifetimeEarned = 0; // this-run lifetime resets
+    next.totalKeys = (state.totalKeys || 0) + keys;
+    next.keys = (state.keys || 0) + keys;
     next.prestigeBonuses = { ...(state.prestigeBonuses || {}) };
     // First prestige sharp toy
     if ((state.prestigeCount || 0) === 0) {

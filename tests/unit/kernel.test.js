@@ -48,6 +48,27 @@ describe('01 Kernel cast dispatch pure', () => {
         expect(r.events.some((e) => e.type === 'cast')).toBe(true);
         expect(k.getState().totalTaps).toBe(1);
     });
+
+    test('two casts advance seed and stack gains', () => {
+        const k = createKernel(createInitialState(11));
+        const first = k.dispatch({ type: 'cast' });
+        const seedAfter = first.state.rngSeed;
+        const abAfter = first.state.ab;
+        const second = k.dispatch({ type: 'cast' });
+        expect(second.state.rngSeed).not.toBe(seedAfter);
+        expect(second.state.ab).toBeGreaterThan(abAfter);
+        expect(second.state.totalTaps).toBe(2);
+    });
+
+    test('affinity tracks actual essence gain (specialization lean)', () => {
+        const s = createInitialState(3);
+        s.elementSpecialization = 'fire';
+        s.specializationBonuses = { castRewardMult: 2 };
+        const r = reduce(s, { type: 'cast' });
+        expect(r.state.affinity.fire).toBeGreaterThan(r.state.affinity.water);
+        expect(r.state.affinity.fire).toBeGreaterThan(r.state.affinity.air);
+        expect(r.state.affinity.fire).toBeGreaterThan(r.state.affinity.crystal);
+    });
 });
 
 describe('02 content schema', () => {
@@ -127,6 +148,20 @@ describe('06 migrate', () => {
             expect(r.state.chapters).toBeTruthy();
         }
     });
+
+    test('v1 migrates legacy ws_* workstation ids to mod_*', () => {
+        const r = migrateKernelSnapshot({
+            version: 1,
+            ab: 10,
+            workstations: { ws_fire_forge: 2, ws_aqua_well: 1 }
+        });
+        expect(r.ok).toBe(true);
+        if (r.ok) {
+            expect(r.state.workstations.mod_fire_capture).toBe(2);
+            expect(r.state.workstations.mod_water_capture).toBe(1);
+            expect(r.state.workstations.ws_fire_forge).toBeUndefined();
+        }
+    });
 });
 
 describe('07–09 chapters contracts prestige', () => {
@@ -164,6 +199,21 @@ describe('07–09 chapters contracts prestige', () => {
         expect(r.state.workstations.mod_fire_capture || 0).toBe(0);
         expect(r.state.elementSpecialization).toBe('fire');
         expect(r.state.prestigeBonuses.boon_kernel_fragment).toBe(1);
+        expect(r.state.totalKeys).toBeGreaterThanOrEqual(1);
+        expect(r.state.keys).toBe(r.state.totalKeys);
+        // Keys survive serialize round-trip
+        const json = serializeKernel(r.state);
+        const d = deserializeKernel(json);
+        expect(d.ok).toBe(true);
+        if (d.ok) expect(d.state.totalKeys).toBe(r.state.totalKeys);
+    });
+
+    test('offline tick clamps to 8h', () => {
+        const s = createInitialState(1);
+        s.workstations = { mod_fire_capture: 1 };
+        const r = reduce(s, { type: 'tick', dtSec: 9 * 3600, offline: true });
+        const ev = r.events.find((e) => e.type === 'tick');
+        expect(ev.dtSec).toBe(8 * 3600);
     });
 });
 

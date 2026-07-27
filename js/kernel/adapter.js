@@ -4,6 +4,7 @@
  */
 
 import { createKernel, createInitialState } from './index.js';
+import { mapLegacyWorkstations } from './content.js';
 
 /**
  * Build a Kernel state snapshot from a GameState-like object.
@@ -21,36 +22,14 @@ export function gameStateToKernel(gs) {
         prestigeBonuses: { ...(gs.prestigeBonuses || {}) },
         prestigeCount: gs.prestigeCount || 0,
         prestigeLifetimeEarned: gs.prestigeLifetimeEarned || 0,
+        totalKeys: gs.totalKeys || gs.enlightenmentKeys || 0,
+        keys: gs.keys || gs.enlightenmentKeys || 0,
         totalTaps: gs.totalTaps || 0,
         elementSpecialization: gs.elementSpecialization || null,
         specializationBonuses: { ...(gs.specializationBonuses || {}) },
         designTier: typeof gs.designTier === 'number' ? gs.designTier : base.designTier,
         rngSeed: (gs.totalTaps || 1) ^ 0x9e3779b9
     };
-}
-
-/** Map legacy ws_* ids to mod_* when possible. */
-const LEGACY_MAP = {
-    ws_fire_forge: 'mod_fire_capture',
-    ws_aqua_well: 'mod_water_capture',
-    ws_zephyr_generator: 'mod_air_capture',
-    ws_crystal_chamber: 'mod_crystal_capture',
-    ws_aether_synthesizer: 'mod_aether_bind',
-    ws_arcane_bit_reactor: 'mod_bit_reactor'
-};
-
-/**
- * @param {Record<string, number>} ws
- */
-function mapLegacyWorkstations(ws) {
-    /** @type {Record<string, number>} */
-    const out = {};
-    for (const [id, n] of Object.entries(ws)) {
-        if (!n) continue;
-        const mapped = LEGACY_MAP[id] || id;
-        out[mapped] = (out[mapped] || 0) + n;
-    }
-    return out;
 }
 
 /**

@@ -8,6 +8,8 @@
  * @property {Record<string, number>} prestigeBonuses
  * @property {number} prestigeCount
  * @property {number} prestigeLifetimeEarned
+ * @property {number} totalKeys cumulative prestige keys earned
+ * @property {number} keys spendable prestige keys
  * @property {number} totalTaps
  * @property {string|null} elementSpecialization
  * @property {Record<string, number>} specializationBonuses

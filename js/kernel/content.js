@@ -168,6 +168,30 @@ export const PIPELINE_MODULES = [
 ];
 
 /**
+ * Legacy GameState workstation ids → Kernel module ids (derived from mapsFrom).
+ * @type {Record<string, string>}
+ */
+export const LEGACY_TO_MODULE = Object.fromEntries(
+    PIPELINE_MODULES.filter((m) => m.mapsFrom).map((m) => [/** @type {string} */ (m.mapsFrom), m.id])
+);
+
+/**
+ * Remap a workstation bag from legacy ws_* ids to mod_*.
+ * @param {Record<string, number>} ws
+ * @returns {Record<string, number>}
+ */
+export function mapLegacyWorkstations(ws) {
+    /** @type {Record<string, number>} */
+    const out = {};
+    for (const [id, n] of Object.entries(ws || {})) {
+        if (!n) continue;
+        const mapped = LEGACY_TO_MODULE[id] || id;
+        out[mapped] = (out[mapped] || 0) + n;
+    }
+    return out;
+}
+
+/**
  * @param {string} id
  * @returns {PipelineModule | undefined}
  */

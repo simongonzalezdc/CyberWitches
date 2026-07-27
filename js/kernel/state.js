@@ -18,6 +18,8 @@ export function createInitialState(seed = 1) {
         prestigeBonuses: {},
         prestigeCount: 0,
         prestigeLifetimeEarned: 0,
+        totalKeys: 0,
+        keys: 0,
         totalTaps: 0,
         elementSpecialization: null,
         specializationBonuses: {},

@@ -15,7 +15,7 @@ export { applyCast } from './cast.js';
 export { applyTick } from './tick.js';
 export { applyCraft } from './craft.js';
 export { validateContentPack, assertContentPackValid } from './schema.js';
-export { PIPELINE_MODULES, getModule } from './content.js';
+export { PIPELINE_MODULES, getModule, LEGACY_TO_MODULE, mapLegacyWorkstations } from './content.js';
 export { CHAPTERS, getPrimaryContract } from './chapters.js';
 export { applyPrestigePreview, applyPrestigeCommit } from './prestige.js';
 

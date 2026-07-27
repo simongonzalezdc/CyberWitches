@@ -48,29 +48,43 @@ export function applyCast(state, opts = {}) {
         air_essence: 0.5
     };
 
-    if (next.elementSpecialization === 'fire' && next.specializationBonuses?.castRewardMult) {
+    // Element specialization boosts only that element's cast reward (affinity lean).
+    if (next.elementSpecialization && next.specializationBonuses?.castRewardMult) {
         const m = Number(next.specializationBonuses.castRewardMult) || 1;
-        for (const k of Object.keys(baseAmounts)) baseAmounts[k] *= m;
+        const keyMap = {
+            fire: 'fire_essence',
+            water: 'water_essence',
+            air: 'air_essence',
+            crystal: 'crystal_dust'
+        };
+        const k = keyMap[/** @type {string} */ (next.elementSpecialization)];
+        if (k && k in baseAmounts) baseAmounts[k] *= m;
     }
 
     const totalMult = clickMult * comboMult * eventMult * castSpeedMult * bonusMultiplier;
     next.totalTaps = (next.totalTaps || 0) + 1;
+    next.affinity = next.affinity || { fire: 0, water: 0, air: 0, crystal: 0 };
+
+    /** Map inventory essence keys → affinity keys. */
+    const affinityKey = {
+        fire_essence: 'fire',
+        water_essence: 'water',
+        air_essence: 'air',
+        crystal_dust: 'crystal'
+    };
 
     for (const [ingId, base] of Object.entries(baseAmounts)) {
         const gain = (base + clickAdditive) * totalMult;
         next.inventory[ingId] = (next.inventory[ingId] || 0) + gain;
+        const el = affinityKey[ingId];
+        if (el && el in next.affinity) {
+            next.affinity[el] = (next.affinity[el] || 0) + gain;
+        }
     }
 
     const abGain = 0.15 * totalMult;
     next.ab = (next.ab || 0) + abGain;
     next.prestigeLifetimeEarned = (next.prestigeLifetimeEarned || 0) + abGain;
-
-    // Affinity foreshadow: slight lean toward highest essence gained this cast (all equal → fire bias none)
-    next.affinity = next.affinity || { fire: 0, water: 0, air: 0, crystal: 0 };
-    next.affinity.fire += 0.25 * totalMult;
-    next.affinity.water += 0.25 * totalMult;
-    next.affinity.air += 0.25 * totalMult;
-    next.affinity.crystal += 0.25 * totalMult;
 
     next.rngSeed = advanceSeed(state.rngSeed, 3);
 

@@ -3,6 +3,7 @@
  */
 
 import { createInitialState } from './state.js';
+import { mapLegacyWorkstations } from './content.js';
 
 export const KERNEL_SAVE_VERSION = 2;
 
@@ -21,8 +22,12 @@ export function migrateKernelSnapshot(raw) {
 
     if (version < 1) return { ok: false, reason: 'version_too_old' };
 
-    // v1 → v2: ensure pipeline fields
+    // v1 → v2: ensure pipeline fields + remap legacy workstation ids
     if (version === 1) {
+        const rawWs =
+            cur.workstations && typeof cur.workstations === 'object'
+                ? /** @type {Record<string, number>} */ (cur.workstations)
+                : {};
         cur = {
             ...createInitialState(Number(cur.rngSeed) || 1),
             ...cur,
@@ -31,7 +36,9 @@ export function migrateKernelSnapshot(raw) {
             chapters: cur.chapters || { reached: ['ch0_boot'], qualities: {} },
             affinity: cur.affinity || { fire: 0, water: 0, air: 0, crystal: 0 },
             contractsCompleted: cur.contractsCompleted || [],
-            workstations: cur.workstations || {}
+            workstations: mapLegacyWorkstations(rawWs),
+            totalKeys: Number(cur.totalKeys) || 0,
+            keys: Number(cur.keys) || 0
         };
         version = 2;
     }
@@ -43,7 +50,12 @@ export function migrateKernelSnapshot(raw) {
     // Sanitize numbers
     cur.ab = Math.max(0, Number(cur.ab) || 0);
     cur.inventory = cur.inventory && typeof cur.inventory === 'object' ? cur.inventory : {};
-    cur.workstations = cur.workstations && typeof cur.workstations === 'object' ? cur.workstations : {};
+    cur.workstations =
+        cur.workstations && typeof cur.workstations === 'object'
+            ? mapLegacyWorkstations(/** @type {Record<string, number>} */ (cur.workstations))
+            : {};
+    cur.totalKeys = Math.max(0, Number(cur.totalKeys) || 0);
+    cur.keys = Math.max(0, Number(cur.keys) || 0);
 
     return {
         ok: true,
