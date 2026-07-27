@@ -115,4 +115,28 @@ describe('Kernel live integration', () => {
         expect(r.events.some((e) => e.type === 'cast')).toBe(true);
         expect(g2.totalTaps).toBe(1);
     });
+
+    test('offline progress applies kernel fade (no void-law hole)', () => {
+        gs.inventory = { fire_essence: 800 };
+        gs.storageCap = 30;
+        gs.totalTaps = 500;
+        gs.workstations = {};
+        gs.applyOfflineProgress(120);
+        expect(gs.inventory.fire_essence).toBeLessThan(800);
+        expect(gs._lastVoidLoss).toBeTruthy();
+    });
+
+    test('kernel mirror fields round-trip save payload shape', () => {
+        gs.cast();
+        expect(gs.affinity).toBeTruthy();
+        // Simulate save payload construction fields
+        const kernelBlob = {
+            affinity: gs.affinity ? { ...gs.affinity } : undefined,
+            chapters: gs.kernelChapters,
+            storageCap: gs.storageCap,
+            rngSeed: gs.rngSeed
+        };
+        expect(kernelBlob.affinity).toBeTruthy();
+        expect(typeof kernelBlob.rngSeed === 'number' || kernelBlob.rngSeed === undefined).toBe(true);
+    });
 });

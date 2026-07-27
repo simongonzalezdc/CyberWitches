@@ -988,6 +988,23 @@ export class GameState {
                 // Element Specialization
                 elementSpecialization: this.elementSpecialization,
                 specializationBonuses: { ...this.specializationBonuses },
+                // Restoration Kernel mirror (affinity, chapters, fade cap, seed)
+                kernel: {
+                    affinity: this.affinity ? { ...this.affinity } : undefined,
+                    chapters: this.kernelChapters
+                        ? JSON.parse(JSON.stringify(this.kernelChapters))
+                        : undefined,
+                    contractsCompleted: Array.isArray(this.kernelContractsCompleted)
+                        ? [...this.kernelContractsCompleted]
+                        : undefined,
+                    storageCap: this.storageCap,
+                    rngSeed: this.rngSeed,
+                    totalKeys: this.totalKeys,
+                    keys: this.keys,
+                    unlockedTiers: Array.isArray(this.kernelUnlockedTiers)
+                        ? [...this.kernelUnlockedTiers]
+                        : undefined
+                },
                 // Story Flags
                 storyFlags: { ...this.storyFlags },
                 // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
@@ -1158,19 +1175,45 @@ export class GameState {
             this.prestigeLifetimeEarned = prestigeData.lifetimeEarned || 0.0;
             this.prestigeBonuses = prestigeData.bonuses || {};
 
-            // Load element specialization
+            // Load element specialization — prefer saved bonuses (Kernel strategies +
+            // meditation mult) over catalog-only defaults so mults survive reload.
             this.elementSpecialization = data.elementSpecialization || null;
+            const savedSpecBonuses =
+                data.specializationBonuses && typeof data.specializationBonuses === 'object'
+                    ? { ...data.specializationBonuses }
+                    : null;
             if (this.elementSpecialization) {
-                const spec = ELEMENT_SPECIALIZATIONS[this.elementSpecialization];
-                if (spec) {
-                    this.specializationBonuses = spec.bonuses;
+                const kernelStrat = strategyBonusesFor(this.elementSpecialization);
+                const legacy = ELEMENT_SPECIALIZATIONS[this.elementSpecialization];
+                if (kernelStrat || legacy) {
+                    this.specializationBonuses = {
+                        ...(legacy?.bonuses || {}),
+                        ...(kernelStrat || {}),
+                        ...(savedSpecBonuses || {})
+                    };
+                } else if (savedSpecBonuses) {
+                    this.specializationBonuses = savedSpecBonuses;
                 } else {
-                    // Invalid specialization, reset it
                     this.elementSpecialization = null;
                     this.specializationBonuses = {};
                 }
             } else {
-                this.specializationBonuses = {};
+                this.specializationBonuses = savedSpecBonuses || {};
+            }
+
+            // Kernel mirror fields (optional on legacy saves)
+            const k = data.kernel && typeof data.kernel === 'object' ? data.kernel : null;
+            if (k) {
+                if (k.affinity && typeof k.affinity === 'object') this.affinity = { ...k.affinity };
+                if (k.chapters) this.kernelChapters = JSON.parse(JSON.stringify(k.chapters));
+                if (Array.isArray(k.contractsCompleted)) {
+                    this.kernelContractsCompleted = [...k.contractsCompleted];
+                }
+                if (typeof k.storageCap === 'number') this.storageCap = k.storageCap;
+                if (typeof k.rngSeed === 'number') this.rngSeed = k.rngSeed;
+                if (typeof k.totalKeys === 'number') this.totalKeys = k.totalKeys;
+                if (typeof k.keys === 'number') this.keys = k.keys;
+                if (Array.isArray(k.unlockedTiers)) this.kernelUnlockedTiers = [...k.unlockedTiers];
             }
 
             // Load prestige count, with fallback: if missing but has prestige points, assume at least 1 ascension
@@ -1263,12 +1306,25 @@ export class GameState {
             }
         }
 
+        // Soft fade is mandatory for offline too (was a sole-path hole: online
+        // tick faded, offline catch-up did not → void law violated on reload).
+        if (cappedSeconds > 0) {
+            const fadeResult = fadeOnGameState(this, cappedSeconds, {
+                offline: true,
+                soft: true
+            });
+            if (fadeResult?.faded && Object.keys(fadeResult.faded).length) {
+                this._lastVoidLoss = fadeResult.faded;
+                this.batchUpdate('voidLoss', fadeResult.faded, fadeResult.storageCap);
+            }
+        }
+
         if (offlineAb > 0) {
             this.batchUpdate('welcomeBack', elapsedSeconds, offlineAb);
         }
 
         // Inform player if offline progress was capped
-        if (wasCapped && window.showNotification) {
+        if (wasCapped && typeof window !== 'undefined' && window.showNotification) {
             const capHours = Balance.offlineCapSeconds / 3600;
             const actualHours = (elapsedSeconds / 3600).toFixed(1);
             window.showNotification(
@@ -1335,6 +1391,26 @@ export class GameState {
                 case 'welcomeBack':
                     if (this.onWelcomeBack) {
                         this.onWelcomeBack(...latestArgs);
+                    }
+                    break;
+                case 'voidLoss':
+                    // Surface "lost to the void" without dual quest HUD
+                    try {
+                        if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                            const faded = latestArgs[0] || {};
+                            const parts = Object.entries(faded)
+                                .filter(([, v]) => Number(v) > 0)
+                                .map(([k, v]) => `${k}:${Number(v).toFixed(2)}`)
+                                .slice(0, 4);
+                            if (parts.length) {
+                                window.__appendSystemLog(
+                                    `VOID_LOSS ${parts.join(' ')} — store essence or it fades`,
+                                    'warn'
+                                );
+                            }
+                        }
+                    } catch {
+                        /* optional projector */
                     }
                     break;
             }
