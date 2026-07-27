@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-27  
 **Bar:** `QUALITY_BAR.md` (Eng ∩ Product ∩ Systems ∩ Identity)  
-**main tip:** `ffb068859c6371031b3c19da6a5755bdaf20a1d0` (PR #58 + docs #59 + post-ship stamp #60)
+**main tip:** `8ed82273c8a09f1145d67631d98ac2dbae24d92a`
 **package:** v1.1.0 · tag `v1.1.0`
 
 ## Overall
@@ -13,7 +13,7 @@
 | Product P1–P4 | Product S+ | **PASS** |
 | Systems S1–S4 | Systems S+ | **PASS** (ownership coalesce sole path) |
 | Identity I1–I4 | Identity S+ | **PASS** |
-| **Overall** | **S+** | **PASS** on tip `ffb068859c6371031b3c19da6a5755bdaf20a1d0` |
+| **Overall** | **S+** | **PASS** on tip `8ed82273c8a09f1145d67631d98ac2dbae24d92a` |
 
 ## Eng Q1–Q8
 
