@@ -21,16 +21,27 @@ Hex Compiler is an idle/incremental game where players compile magical hexes int
 ### Core Systems (_INITIALIZED IN gameInit.js_)
 ```
 GameState (gameState.js)
-├── Save/Load: saveCodec.js, indexedDBBackup.js
-├── Element System: elementSpecialization.js
+├── Cast resources + soft fade → js/kernel/adapter.js (castOnGameState / fadeOnGameState)
+├── Production tick: PRODUCERS (ws_*) + mults (incl. Kernel productionMult)
+├── Save/Load: saveCodec.js, indexedDBBackup.js (+ optional kernel mirror fields)
+├── Element System: elementSpecialization.js + Kernel affinity strategies
 ├── Balance: utils.js (Balance class)
 └── DOM Batching: DOMBatcher.js
+
+Restoration Kernel (js/kernel/) — pure, DOM-free
+├── reduce / createKernel — cast, tick, craft, prestige, chapter/tier, meditation
+├── content.js + schema.js — pipeline modules + CI validator
+├── fade.js — soft fade / storage law
+├── affinity.js + pipelineRoles.js — strategies + ws_* role map
+├── projector.js — HUD view-models
+└── tickWorkerHost.js — optional large offline worker path
 
 UIManager (ui/uiManager.js)
 ├── Tab Management
 ├── UI Update Coordination
 └── Sub-UI Managers:
-    ├── workstationUI.js
+    ├── workstationUI.js (+ pipeline role badges)
+    ├── pipelineHudUI.js — Capture→Store→Bind→Compile→Shield strip
     ├── inventoryUI.js
     ├── inscriptionsUI.js
     ├── experimentUI.js
@@ -50,14 +61,14 @@ CraftingManager (craftingManager.js)
 └── Ingredient validation
 
 CastManager (castManager.js)
-├── Click handling
+├── Click handling → GameState.cast → Kernel
 ├── Combo system
 └── Auto-cast functionality
 
 MeditationManager (meditationManager.js)
 ├── Tower-defense logic
 ├── Wave management
-└── Tower/upgrades
+└── endSession → Kernel meditation mastery mult
 
 PrestigeManager (prestigeManager.js)
 ├── Ascension logic
@@ -68,7 +79,7 @@ InscriptionsManager (inscriptionsManager.js)
 └── Bonus application
 
 DesignTierSystem (designTierSystem.js)
-├── Progressive feature unlocks
+├── Progressive feature unlocks (AB/achievements OR chapter milestones)
 ├── Visual/audio tier progression
 ├── emitTierAdvance → CustomEvent('hex:tierAdvance')
 └── playHealMoment → healCeremony
@@ -83,6 +94,9 @@ Heal / share / funnel (Capture the heal)
 ├── healShare.js — SHARE_RESTORE (PNG download + text clipboard)
 ├── funnelMetrics.js — local cw.funnel.* TTA/TTH/shareAttempt
 └── compileGoalStack.js + compileGoalUI.js — single primary goal rail
+
+Notifications (notifications.js)
+└── maxVisible = 2 hard cap (board readability)
 ```
 
 ### Supporting Systems

@@ -12,8 +12,10 @@ Automation and durable system changes require the scale/severity/reversibility/p
 
 ## Project notes for contributors
 
-- **Canonical remote:** Forgejo (`git.kyanitelabs.tech`); GitHub may lag as a mirror.
+- **Canonical remote:** Forgejo (`git.kyanitelabs.tech`) for PRs/merges. **GitHub** is the mirror that runs **Pages Deploy** — if production lags, check Actions **Deploy** (often `npm ci` / lockfile), not only Forgejo.
 - **Domain map:** read [CONTEXT.md](CONTEXT.md) before deep refactors.
+- **Restoration Kernel:** pure domain in `js/kernel/`; live cast/fade must stay on the adapter. Docs: [guides/restoration-kernel/](guides/restoration-kernel/). Quality bar: `QUALITY_BAR.md`.
 - **Heal / share path:** do not put save secrets into `healShare` / `healCapture` exports. Prefer extending those modules over rewriting `GameState` for share features.
-- **Tests:** `npm run ci` before PR; heal journeys live under `e2e/heal-operator-journeys.spec.js`.
-- **Campaign scratch:** `.scratch/capture-the-heal/` holds map, claim-audit, and growth gates (field mute-clip residual).
+- **Notifications:** do not raise `NotificationManager.maxVisible` above 2 without a visual regression check — board readability is part of the quality bar.
+- **Tests:** `npm run ci` before PR (includes kernel content validate + playtest sim). Heal e2e: `e2e/heal-operator-journeys.spec.js`. Kernel e2e: `e2e/kernel-void-save.spec.js`.
+- **Campaign scratch:** Capture-the-heal history in `.scratch/capture-the-heal/` (growth field pilot is ops, not Kernel residual). Kernel overhaul tickets in `.scratch/full-overhaul/`.

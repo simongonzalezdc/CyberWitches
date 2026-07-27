@@ -1,7 +1,7 @@
 # Falsifiable goal — Kernel ceiling close
 
 **Date:** 2026-07-27  
-**Status:** DONE (local evidence; land via goal PR → main)
+**Status:** DONE on `main` and production (goal PR #30; quality bar #33–#34)
 
 ## GOAL
 

@@ -1,7 +1,7 @@
 # Hex Compiler — User Guide
 
-**Last Updated:** November 2025  
-**Version:** 2.1
+**Last Updated:** 2026-07-27  
+**Version:** 2.2 (Restoration Kernel live)
 
 ---
 
@@ -51,10 +51,16 @@ You can skip the tutorial at any time, or restart it later from the Settings tab
 
 ### Casting Spells
 
-Click the **Cast** button (or press **Space**) to cast a spell. Each cast:
-- Earns AB and ingredients
-- Has a chance for bonus multipliers
-- Progresses quests and achievements
+Click the **EXEC / Cast** button (or press **Space**) to cast. Each cast:
+- Earns AB and elemental essences (Kernel-backed resource path)
+- May **critical-compile** or **overclock** (system-framed bonuses)
+- Advances compile goals, affinity foreshadow, and achievements
+
+### Pipeline & fade
+
+- The workstations tab shows **CAPTURE → STORE → BIND → COMPILE → SHIELD**
+- Essence **over storage capacity** can fade — expand storage / buffers to preserve stock
+- Affinity line foreshadows which specialization path prestige will favor
 
 ### Workstations
 

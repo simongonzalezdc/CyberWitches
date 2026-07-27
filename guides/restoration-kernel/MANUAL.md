@@ -1,5 +1,7 @@
 # Player Manual — Restoration Kernel
 
+**Status:** live in production (browser build). Companion to [`GAME_MANUAL.md`](../../GAME_MANUAL.md).
+
 Hex Compiler’s midgame law: **magic you do not store will fade.** You are the compiler who preserves failing sectors.
 
 ## Primary verb

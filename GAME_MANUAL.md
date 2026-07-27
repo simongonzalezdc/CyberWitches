@@ -20,13 +20,15 @@
 
 **Hex Compiler** is a browser idle incremental game. You are a Hex Compiler: system chrome is a terminal that compiles fading magic into stable data. Occult content (essences, chambers, rituals) is what you preserve.
 
-- **Cast (EXEC)**: Compile raw magic into elemental essences and **Arcane Bits (AB)**
-- **Workstations**: Craft preservation chambers that produce ingredients over time
+- **Cast (EXEC)**: Compile raw magic into elemental essences and **Arcane Bits (AB)** (Kernel-owned resource path)
+- **Soft fade / storage**: Unstored essence over capacity slowly fades — build Store modules / buffers so stock survives
+- **Workstations**: Craft preservation chambers; each has a **pipeline role** (Capture → Store → Bind → Compile → Shield) on the HUD and card badge
 - **Inscriptions**: Upgrades that multiply cast and production
 - **Experiments**: Discover hidden recipes
-- **Prestige (Ascension)**: Reset for **Eldritch Keys (EK)** and element specialization
-- **Meditation**: Post-prestige tower defense that boosts production (gated at Prestige 1)
-- **Design tiers**: Progressive UI restoration from broken Tier 0 to full Kyanite chrome
+- **Prestige (Ascension)**: Reset for **Eldritch Keys (EK)** and **affinity** specialization strategies
+- **Meditation**: Optional post-prestige tower defense; short first mastery can grant a lasting **production mult** (skippable pure-idle path)
+- **Design tiers**: Progressive UI restoration from broken Tier 0 to full Kyanite chrome (chapter milestones can advance heals, not only pure AB grind)
+- **Deeper Kernel lore / machine schema:** `guides/restoration-kernel/`
 
 ---
 
@@ -80,19 +82,25 @@ Growth is typically ~1.12–1.16 depending on the workstation.
 
 ## Workstations
 
+### Pipeline roles (HUD)
+
+The workstations tab shows a **pipeline strip**: **CAPTURE → STORE → BIND → COMPILE → SHIELD**. Owned counts include your live craft graph. Essence you do not store can **fade** when over capacity — Store / buffer buildings raise the soft cap.
+
 Live Tier 0 starters (unlock at 0 AB):
 
-| Workstation | Recipe (base) | Role |
+| Workstation | Recipe (base) | Pipeline role |
 |---|---|---|
-| **Fire Forge** | 10 Fire Essence | Fire sector preservation |
-| **Aqua Well** | 10 Water Essence | Water sector |
-| **Zephyr Generator** | 10 Air Essence | Air sector |
-| **Crystal Chamber** | 10 Crystal Dust | Crystal sector |
-| **Aether Synthesizer** | 2 each of Fire/Water/Air/Crystal | Aether synthesis |
+| **Fire Forge** | 10 Fire Essence | Capture |
+| **Aqua Well** | 10 Water Essence | Capture |
+| **Zephyr Generator** | 10 Air Essence | Capture |
+| **Crystal Chamber** | 10 Crystal Dust | Capture |
+| **Aether Synthesizer** | 2 each of Fire/Water/Air/Crystal | Bind |
 
-Higher tiers include Digital Candle Forge, Deep Aqua Well, Enhanced Zephyr Generator, Crystal Orb Chamber, Aether Reactor, fusion/resonance chambers, quantum and void-tier producers, and **Arcane Bit Reactor** lines for idle AB.
+Higher tiers include Digital Candle Forge, Deep Aqua Well, Enhanced Zephyr Generator, Crystal Orb Chamber, Aether Reactor, fusion/resonance chambers, quantum and void-tier producers, and **Arcane Bit Reactor** lines for idle AB (Compile). Cards show a small role badge.
 
 Open the Workstations tab in-game for live costs, rates, and unlock thresholds — the UI is source of truth if this manual and a patch diverge.
+
+**Affinity:** while you cast and craft, the game leans **affinity** (fire/water/air/crystal). After prestige, specialization strategies change optimal pipeline play.
 
 ---
 

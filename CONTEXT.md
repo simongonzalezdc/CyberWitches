@@ -31,9 +31,25 @@ modules deepen; it is the map AI agents and new contributors read first.
 - **TTA / TTH** — local-only funnel: time to first Fire Forge craft; time to
   first real `hex:tierAdvance`. Keys under `cw.funnel.*` (localStorage /
   sessionStorage). No remote analytics.
+- **Restoration Kernel** — pure domain package `js/kernel/`: `reduce` /
+  `createKernel` dispatch for `cast`, `tick` (production+fade), `craft`
+  (pipeline modules), prestige preview/commit, chapter/tier checks, meditation
+  mastery. **Live sole paths:** cast resources + soft fade via
+  `castOnGameState` / `fadeOnGameState` (adapter). Live craft graph remains
+  `PRODUCERS` (`ws_*`) with **pipeline roles** for HUD/cards.
+- **Pipeline roles** — Capture | Store | Bind | Compile | Shield
+  (`pipelineRoles.js`, `PipelineHudUI`, role badges on workstation cards).
+- **Affinity** — pre-prestige foreshadow; post-prestige specialization strategies
+  (`affinity.js` / `SPECIALIZATION_STRATEGIES`).
+- **Soft fade** — unstored essence over storage cap bleeds (early game soft;
+  offline catch-up also fades).
 
 ## Architecture seams
 
+- **Restoration Kernel** (`js/kernel/`) — pure transitions + content schema
+  (`validate:kernel-content`, `typecheck:kernel`). Adapter bridges GameState.
+  Projectors: pipeline / contract / affinity HUD view-models. Guides + claim-audit:
+  `guides/restoration-kernel/`. Quality bar: `QUALITY_BAR.md` / `QUALITY_REPORT.md`.
 - **Save codec** (`js/save/saveCodec.js`) — owns the integrity + migration core
   of persistence as pure functions over a *save snapshot*. GameState depends on
   just two: `encode(snapshot) -> string` and `decode(rawString) -> { outcome,
@@ -60,8 +76,11 @@ modules deepen; it is the map AI agents and new contributors read first.
   (`uiManager.hudUI.update()`, `.boonsUI.update()`, `.floatingTextUI.show()`) and
   meditationManager still wires its sub-UI through it. That bus is the deeper
   untangle left for a coverage-first follow-up.
-- **GameState** (`js/gameState.js`) — the live game model + tick loop. Still
-  large; the save integrity logic was lifted into the save codec.
+- **GameState** (`js/gameState.js`) — the live game model + tick loop. Cast
+  resources and soft fade go through Kernel adapter; production tick still uses
+  `PRODUCERS` + multipliers (incl. Kernel-written `productionMult` from Meditation).
+  Save includes optional `kernel` mirror (affinity, chapters, storageCap, rngSeed).
+  Still large; save integrity logic was lifted into the save codec.
 - **Entry point** — `js/game.js` bootstraps on `DOMContentLoaded` and calls
   `initGame()` from `js/gameInit.js`. esbuild bundles from `js/game.js`.
 - **Heal capture (Capture the heal campaign, PR #20)** — thin modules on the
@@ -72,9 +91,12 @@ modules deepen; it is the map AI agents and new contributors read first.
   - `js/modules/game/healShare.js` — SHARE_RESTORE: PNG download + text clipboard
   - `js/modules/game/funnelMetrics.js` — local TTA/TTH/shareAttempt counters
   - `js/modules/game/compileGoalStack.js` + `compileGoalUI.js` — primary goal rail
-- **Planning / claim-audit artifacts** — `.scratch/capture-the-heal/` (map,
-  runbook, pivot, claim-audit). Research closeout:
-  `.scratch/ideal-critical-path/RESEARCH_GAP_CLOSEOUT.md`.
+- **Notifications** — `NotificationManager` hard-caps **2** visible toasts
+  (`maxVisible`) so achievement bursts do not bury the workstation board.
+- **Planning / claim-audit artifacts** —
+  - Kernel (current): `guides/restoration-kernel/` (CLAIM_AUDIT, QUALITY_*, GOAL)
+  - Capture the heal (historical campaign): `.scratch/capture-the-heal/`
+  - Overhaul tickets/PRD: `.scratch/full-overhaul/`
 
 ## Persistence ownership
 
