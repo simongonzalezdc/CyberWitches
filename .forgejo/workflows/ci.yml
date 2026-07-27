@@ -7,20 +7,27 @@ jobs:
     runs-on: docker
     steps:
       - uses: actions/checkout@v4
-      - name: Debug info
-        run: echo "CI started" && pwd && ls -la
       - name: Install dependencies
         run: |
           if [ -f package.json ]; then
             npm ci || npm install
           fi
       - name: Lint
-        run: |
-          if [ -f package.json ]; then
-            npx --no eslint . || true
-          fi
-      - name: Test
-        run: |
-          if [ -f package.json ]; then
-            npm test || true
-          fi
+        run: npm run lint
+      - name: Color debt
+        run: npm run lint:color-debt
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: E2E smoke + progression
+        run: npx playwright test e2e/smoke.spec.js e2e/progression-tier.spec.js
+      - name: Upload playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
