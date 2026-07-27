@@ -81,8 +81,9 @@ export async function captureHealShare(detail) {
                 still.dataUrl,
                 `hex-compiler-heal-t${Number(detail.toTier) || 0}.png`
             );
+            // Only claim visual success when download trigger ran; dataUrl alone is not delivery.
             visual = {
-                ok: downloaded || !!still.dataUrl,
+                ok: !!downloaded,
                 dataUrl: still.dataUrl,
                 meta: still.meta,
                 sanitized: true
@@ -101,6 +102,9 @@ export async function captureHealShare(detail) {
 
     const textOk = await copyText(text);
 
+    if (visual.ok && textOk) {
+        return { ok: true, text, payload, visual, mode: 'visual+text' };
+    }
     if (visual.ok) {
         return { ok: true, text, payload, visual, mode: 'visual+text' };
     }

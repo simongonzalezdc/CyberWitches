@@ -52,33 +52,35 @@ function memStore() {
 describe('02 funnelMetrics TTA/TTH/share', () => {
     test('session start is sticky; TTA on first fire forge only', () => {
         const store = memStore();
+        const sess = memStore();
         const t0 = 1_000_000;
-        expect(markSessionStart(t0, store)).toBe(t0);
-        expect(markSessionStart(t0 + 5000, store)).toBe(t0);
+        expect(markSessionStart(t0, store, sess)).toBe(t0);
+        expect(markSessionStart(t0 + 5000, store, sess)).toBe(t0);
 
-        const miss = markFirstAutomation('ws_other', t0 + 1000, store);
+        const miss = markFirstAutomation('ws_other', t0 + 1000, store, sess);
         expect(miss.recorded).toBe(false);
         expect(miss.ttaMs).toBeNull();
 
-        const hit = markFirstAutomation(TTA_WORKSTATION_ID, t0 + 12_000, store);
+        const hit = markFirstAutomation(TTA_WORKSTATION_ID, t0 + 12_000, store, sess);
         expect(hit.recorded).toBe(true);
         expect(hit.ttaMs).toBe(12_000);
 
-        const again = markFirstAutomation(TTA_WORKSTATION_ID, t0 + 99_000, store);
+        const again = markFirstAutomation(TTA_WORKSTATION_ID, t0 + 99_000, store, sess);
         expect(again.recorded).toBe(false);
         expect(again.ttaMs).toBe(12_000);
     });
 
     test('TTH once + tierAdvance increments every heal', () => {
         const store = memStore();
+        const sess = memStore();
         const t0 = 2_000_000;
-        markSessionStart(t0, store);
-        const first = markFirstHeal(t0 + 60_000, store);
+        markSessionStart(t0, store, sess);
+        const first = markFirstHeal(t0 + 60_000, store, sess);
         expect(first.recorded).toBe(true);
         expect(first.tthMs).toBe(60_000);
         expect(first.tierAdvance).toBe(1);
 
-        const second = markFirstHeal(t0 + 120_000, store);
+        const second = markFirstHeal(t0 + 120_000, store, sess);
         expect(second.recorded).toBe(false);
         expect(second.tthMs).toBe(60_000);
         expect(second.tierAdvance).toBe(2);
@@ -111,6 +113,8 @@ describe('04 healCeremony state machine', () => {
         const jobs = [];
         const classes = new Set();
         const logs = [];
+        /** @type {Array<{ pulse?: boolean } | undefined>} */
+        const shareCalls = [];
         const result = runHealCeremony(
             { fromTier: 0, toTier: 1 },
             {
@@ -120,7 +124,7 @@ describe('04 healCeremony state machine', () => {
                 setHealDataset: () => {},
                 appendLog: (line) => logs.push(line),
                 notify: () => {},
-                showSharePulse: () => {},
+                showSharePulse: (o) => shareCalls.push(o),
                 schedule: (ms, fn) => { jobs.push([ms, fn]); }
             }
         );
@@ -128,13 +132,19 @@ describe('04 healCeremony state machine', () => {
         expect(result.beats).toContain('dim');
         expect(classes.has('tier-advance-heal')).toBe(true);
         expect(logs[0]).toMatch(/SYSTEM_RESTORE/);
-        // Drain scheduled beats
+        // Drain scheduled beats — live beats array mutates
         jobs.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
+        expect(result.beats).toEqual(
+            expect.arrayContaining(['dim', 'restore_line', 'chrome', 'toast_log', 'share_pulse', 'done'])
+        );
+        expect(shareCalls.some((c) => c && c.pulse === true)).toBe(true);
         expect(result.line).toContain('v1.0');
     });
 
-    test('reduced-motion: final state + log only (no motion class)', () => {
+    test('reduced-motion: final state + log only (no motion class / no pulse)', () => {
         const classes = new Set();
+        /** @type {Array<{ pulse?: boolean } | undefined>} */
+        const shareCalls = [];
         const result = runHealCeremony(
             { fromTier: 0, toTier: 3 },
             {
@@ -144,7 +154,7 @@ describe('04 healCeremony state machine', () => {
                 setHealDataset: () => {},
                 appendLog: () => {},
                 notify: () => {},
-                showSharePulse: () => {},
+                showSharePulse: (o) => shareCalls.push(o),
                 schedule: () => {}
             }
         );
@@ -152,6 +162,8 @@ describe('04 healCeremony state machine', () => {
         expect(result.durationMs).toBe(0);
         expect(classes.has('tier-advance-heal')).toBe(false);
         expect(result.beats).toEqual(expect.arrayContaining(['toast_log', 'done']));
+        expect(shareCalls.length).toBe(1);
+        expect(shareCalls[0]?.pulse).toBe(false);
     });
 
     test('prefersReducedMotion reads matchMedia', () => {

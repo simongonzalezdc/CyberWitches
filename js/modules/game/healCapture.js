@@ -51,13 +51,14 @@ export function buildCaptureMeta(input) {
  * @returns {boolean}
  */
 export function isCaptureSanitized(meta) {
-    const banned = [
+    const bannedExact = [
         'ab', 'inventory', 'save', 'prestigePoints', 'eldritch',
         'cyberWitchesSave', 'workstations', 'password', 'token'
     ];
+    if (bannedExact.some((k) => Object.prototype.hasOwnProperty.call(meta, k))) return false;
+    // Word-boundary scan for long secret-shaped substrings only (avoid matching "ab" in "label").
     const json = JSON.stringify(meta);
-    if (banned.some((k) => Object.prototype.hasOwnProperty.call(meta, k))) return false;
-    if (banned.some((k) => new RegExp(k, 'i').test(json))) return false;
+    if (/\b(prestigePoints|cyberWitchesSave|eldritch|workstations)\b/i.test(json)) return false;
     return meta.kind === CAPTURE_KIND;
 }
 
@@ -155,13 +156,13 @@ export function createSplitStillCanvas(input, env = {}) {
     canvas.width = meta.w;
     canvas.height = meta.h;
     /** @type {CanvasRenderingContext2D | null} */
-    let ctx = null;
+    let ctx;
     try {
         ctx = typeof env.getContext === 'function'
             ? env.getContext(canvas)
             : canvas.getContext('2d');
     } catch {
-        ctx = null;
+        return { canvas: null, meta, sanitized };
     }
     if (!ctx) {
         return { canvas: null, meta, sanitized };

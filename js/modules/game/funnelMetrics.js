@@ -53,16 +53,30 @@ function safeSet(store, key, value) {
 }
 
 /**
+ * Session start is per browser tab session (sessionStorage) so TTA/TTH
+ * measure from this visit, not a multi-day sticky profile clock.
  * @param {number} [now]
- * @param {Storage | null} [store]
+ * @param {Storage | null} [store] durable store for TTA/TTH snapshots (localStorage)
+ * @param {Storage | null} [sessionStore] session boundary store (sessionStorage)
  * @returns {number} session start ms
  */
-export function markSessionStart(now = Date.now(), store = typeof localStorage !== 'undefined' ? localStorage : null) {
-    const existing = safeGet(store, FUNNEL_KEYS.sessionStartMs);
+export function markSessionStart(
+    now = Date.now(),
+    store = typeof localStorage !== 'undefined' ? localStorage : null,
+    sessionStore = typeof sessionStorage !== 'undefined' ? sessionStorage : store
+) {
+    const existing = safeGet(sessionStore, FUNNEL_KEYS.sessionStartMs)
+        ?? safeGet(store, FUNNEL_KEYS.sessionStartMs);
     if (existing) {
         const n = Number(existing);
-        if (Number.isFinite(n) && n > 0) return n;
+        if (Number.isFinite(n) && n > 0) {
+            // Keep a durable copy for getFunnelSnapshot without inventing a new clock.
+            safeSet(store, FUNNEL_KEYS.sessionStartMs, String(n));
+            safeSet(sessionStore, FUNNEL_KEYS.sessionStartMs, String(n));
+            return n;
+        }
     }
+    safeSet(sessionStore, FUNNEL_KEYS.sessionStartMs, String(now));
     safeSet(store, FUNNEL_KEYS.sessionStartMs, String(now));
     return now;
 }
@@ -77,7 +91,8 @@ export function markSessionStart(now = Date.now(), store = typeof localStorage !
 export function markFirstAutomation(
     wsId,
     now = Date.now(),
-    store = typeof localStorage !== 'undefined' ? localStorage : null
+    store = typeof localStorage !== 'undefined' ? localStorage : null,
+    sessionStore = typeof sessionStorage !== 'undefined' ? sessionStorage : store
 ) {
     if (wsId !== TTA_WORKSTATION_ID) {
         return { recorded: false, ttaMs: readMs(store, FUNNEL_KEYS.ttaMs) };
@@ -86,7 +101,7 @@ export function markFirstAutomation(
     if (existing != null) {
         return { recorded: false, ttaMs: existing };
     }
-    const start = markSessionStart(now, store);
+    const start = markSessionStart(now, store, sessionStore);
     const ttaMs = Math.max(0, now - start);
     safeSet(store, FUNNEL_KEYS.ttaMs, String(ttaMs));
     return { recorded: true, ttaMs };
@@ -96,11 +111,13 @@ export function markFirstAutomation(
  * Record TTH on first real hex:tierAdvance (once) and bump cumulative tierAdvance.
  * @param {number} [now]
  * @param {Storage | null} [store]
+ * @param {Storage | null} [sessionStore]
  * @returns {{ recorded: boolean, tthMs: number | null, tierAdvance: number }}
  */
 export function markFirstHeal(
     now = Date.now(),
-    store = typeof localStorage !== 'undefined' ? localStorage : null
+    store = typeof localStorage !== 'undefined' ? localStorage : null,
+    sessionStore = typeof sessionStorage !== 'undefined' ? sessionStorage : store
 ) {
     // Always count every real advance
     const tierAdvance = Number(safeGet(store, FUNNEL_KEYS.tierAdvance) || '0') + 1;
@@ -110,7 +127,7 @@ export function markFirstHeal(
     if (existing != null) {
         return { recorded: false, tthMs: existing, tierAdvance };
     }
-    const start = markSessionStart(now, store);
+    const start = markSessionStart(now, store, sessionStore);
     const tthMs = Math.max(0, now - start);
     safeSet(store, FUNNEL_KEYS.tthMs, String(tthMs));
     return { recorded: true, tthMs, tierAdvance };

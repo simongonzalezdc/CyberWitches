@@ -49,7 +49,7 @@ export function restoreLine(detail = {}) {
  * @property {(from: number, to: number) => void} [setHealDataset]
  * @property {(line: string) => void} [appendLog]
  * @property {(msg: string, type?: string, ms?: number) => void} [notify]
- * @property {() => void} [showSharePulse]
+ * @property {(opts?: { pulse?: boolean }) => void} [showSharePulse]
  * @property {(ms: number, fn: () => void) => number | void} [schedule]
  * @property {() => boolean} [isReducedMotion]
  */
@@ -93,8 +93,8 @@ export function runHealCeremony(detail = {}, hooks = {}) {
         if (hooks.notify) {
             hooks.notify(`SYSTEM_RESTORE v${toTier}.0 — chrome recovering`, 'success', 4500);
         }
-        // Share affordance still appears (no pulse class cycle).
-        if (hooks.showSharePulse) hooks.showSharePulse();
+        // Share affordance still appears without pulse animation.
+        if (hooks.showSharePulse) hooks.showSharePulse({ pulse: false });
         return { reduced: true, beats, line, durationMs: 0 };
     }
 
@@ -123,7 +123,7 @@ export function runHealCeremony(detail = {}, hooks = {}) {
 
     schedule(1000, () => {
         mark('share_pulse');
-        if (hooks.showSharePulse) hooks.showSharePulse();
+        if (hooks.showSharePulse) hooks.showSharePulse({ pulse: true });
     });
 
     schedule(CEREMONY_DURATION_MS, () => {
@@ -136,7 +136,7 @@ export function runHealCeremony(detail = {}, hooks = {}) {
         }
     });
 
-    return { reduced: false, beats: ['dim'], line, durationMs: CEREMONY_DURATION_MS };
+    return { reduced: false, beats, line, durationMs: CEREMONY_DURATION_MS };
 }
 
 /**
@@ -167,12 +167,14 @@ export function playHealCeremonyInBrowser(detail, _opts = {}) {
                 window.showNotification(msg, type || 'success', ms || 4500);
             }
         },
-        showSharePulse: () => {
+        showSharePulse: (opts = {}) => {
             const shareBtn = doc?.getElementById('heal-share-button');
             if (!shareBtn) return;
             shareBtn.hidden = false;
             shareBtn.dataset.fromTier = String(detail.fromTier);
             shareBtn.dataset.toTier = String(detail.toTier);
+            const wantPulse = opts.pulse !== false;
+            if (!wantPulse) return;
             shareBtn.classList.add('heal-share-btn--pulse');
             if (typeof window !== 'undefined') {
                 window.setTimeout(() => {
