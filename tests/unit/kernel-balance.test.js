@@ -132,4 +132,29 @@ describe('15 balance battery', () => {
         expect(r.state.workstations.mod_fire_capture).toBe(1);
         expect(r.state.designTier).toBeGreaterThanOrEqual(1);
     });
+
+    test('meditation productionMult survives prestige_commit', () => {
+        let s = createInitialState(1);
+        s.prestigeCount = 1;
+        s.prestigeLifetimeEarned = 10000;
+        s.ab = 500;
+        let r = reduce(s, {
+            type: 'meditation_complete',
+            durationSec: 90,
+            wavesCleared: 3
+        });
+        const mult = r.state.specializationBonuses.productionMult;
+        expect(mult).toBeGreaterThan(1);
+        r = reduce(r.state, { type: 'prestige_commit', affinity: 'water' });
+        expect(r.state.elementSpecialization).toBe('water');
+        expect(r.state.specializationBonuses.productionMult).toBe(mult);
+    });
+
+    test('unlockedTiers only lists gates that pass', () => {
+        const s = createInitialState(1);
+        s.chapters = { reached: ['ch0_boot', 'ch1_capture'], qualities: {} };
+        const r = reduce(s, { type: 'tier_check' });
+        expect(r.state.unlockedTiers).toEqual(expect.arrayContaining([0, 1]));
+        expect(r.state.unlockedTiers).not.toContain(4);
+    });
 });

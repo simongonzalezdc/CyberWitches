@@ -64,12 +64,21 @@ export function createKernel(state) {
 
 /**
  * @param {import('./types.js').KernelState} state
+ * @returns {import('./types.js').DispatchResult}
  */
 function applyTierCheckSafe(state) {
     try {
         return applyTierCheck(state);
-    } catch {
-        return { state, events: [] };
+    } catch (err) {
+        return {
+            state,
+            events: [
+                {
+                    type: 'tier_check_error',
+                    message: String(err && /** @type {Error} */ (err).message ? /** @type {Error} */ (err).message : err)
+                }
+            ]
+        };
     }
 }
 

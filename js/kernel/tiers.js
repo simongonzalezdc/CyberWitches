@@ -58,20 +58,19 @@ export function applyTierCheck(state) {
     const events = [];
 
     let maxTier = 0;
-    /** @type {string[]} */
-    const unlocked = [];
+    /** @type {number[]} */
+    const unlockedTiers = [];
     for (const g of TIER_GATES) {
         if (g.check(next)) {
             maxTier = Math.max(maxTier, g.tier);
-            unlocked.push(g.id);
+            unlockedTiers.push(g.tier);
         }
     }
 
     const prev = typeof next.designTier === 'number' ? next.designTier : 0;
     next.designTier = maxTier;
-    next.unlockedTiers = [...new Set([...(next.unlockedTiers || [0]), ...unlocked.map((_, i) => i).filter((i) => i <= maxTier)])];
-    // Keep numeric unlocked list as 0..maxTier
-    next.unlockedTiers = Array.from({ length: maxTier + 1 }, (_, i) => i);
+    // Only tiers whose gates actually pass (not a synthetic contiguous range)
+    next.unlockedTiers = [...new Set(unlockedTiers)].sort((a, b) => a - b);
 
     if (maxTier > prev) {
         events.push({

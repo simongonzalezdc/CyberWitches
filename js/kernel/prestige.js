@@ -97,8 +97,13 @@ export function applyPrestigeCommit(state, opts = {}) {
     next.totalKeys = (state.totalKeys || 0) + keys;
     next.keys = (state.keys || 0) + keys;
     next.prestigeBonuses = { ...(state.prestigeBonuses || {}) };
-    // First prestige sharp toy + strategy lock-in
+    // Strategy lock-in; preserve meditation mastery productionMult across rebirth
+    const priorProd = Number(state.specializationBonuses?.productionMult) || 1;
     next.specializationBonuses = { ...strategy.bonuses };
+    if (priorProd > 1) {
+        next.specializationBonuses.productionMult = priorProd;
+        next.prestigeBonuses.meditation_production_mult = priorProd;
+    }
     if ((state.prestigeCount || 0) === 0) {
         next.prestigeBonuses.boon_kernel_fragment = (next.prestigeBonuses.boon_kernel_fragment || 0) + 1;
         next.specializationBonuses.castRewardMult =
@@ -106,7 +111,8 @@ export function applyPrestigeCommit(state, opts = {}) {
     }
     next.elementSpecialization = affinity;
     next.designTier = Math.max(state.designTier || 0, 6);
-    next.unlockedTiers = Array.from({ length: (next.designTier || 0) + 1 }, (_, i) => i);
+    // Honest unlocks: prestige gate only at this moment (intermediates re-earn per run)
+    next.unlockedTiers = [0, 6].filter((t) => t <= next.designTier);
     next.chapters = {
         reached: ['ch0_boot', 'ch6_prestige'],
         qualities: {
