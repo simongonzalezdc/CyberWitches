@@ -215,11 +215,21 @@ export async function initGame() {
         } catch (e) {
             console.warn('funnel session start failed', e);
         }
-        // Heal share button (sanitized visual still + text fallback)
+        // Heal share button (persistent after first heal; honest mode messages)
         try {
             const shareBtn = document.getElementById('heal-share-button');
             if (shareBtn && !shareBtn.dataset.bound) {
                 shareBtn.dataset.bound = '1';
+                // Rank 2: unhide for any saved tier > 0 (reload-safe, Tier 4 reachable)
+                try {
+                    const savedTier = Number(localStorage.getItem('cw.designTier') || '0');
+                    if (savedTier > 0) {
+                        shareBtn.hidden = false;
+                        shareBtn.classList.add('heal-share-btn--ready');
+                        shareBtn.dataset.fromTier = String(Math.max(0, savedTier - 1));
+                        shareBtn.dataset.toTier = String(savedTier);
+                    }
+                } catch { /* private mode */ }
                 shareBtn.addEventListener('click', async () => {
                     try {
                         const detail = window.__lastTierAdvance || {
@@ -230,14 +240,19 @@ export async function initGame() {
                         const { captureHealShare } = await import('./modules/game/healShare.js');
                         const result = await captureHealShare(detail);
                         if (result.ok) {
-                            const mode = result.mode || 'text';
-                            const msg = mode === 'visual+text'
-                                ? 'Heal still downloaded + text copied (no save secrets).'
-                                : 'Heal share copied (no save secrets).';
+                            const mode = result.mode || 'fail';
+                            const msgByMode = {
+                                native: 'Heal still shared (no save secrets).',
+                                'visual+text': 'Heal still downloaded + text copied (no save secrets).',
+                                download: 'Heal still downloaded (no save secrets).',
+                                text: 'Heal share text copied (no save secrets).'
+                            };
+                            const msg = msgByMode[mode] || 'Heal share ready.';
                             appendSystemLog(`SHARE_CAPTURE ${mode}`, 'success');
                             showNotification(msg, 'success', 3000);
                         } else {
                             appendSystemLog('SHARE_CAPTURE failed', 'warn');
+                            showNotification('Share failed — try again or copy from SYSTEM_LOG.', 'warn', 3000);
                         }
                     } catch (err) {
                         console.warn('heal share click failed', err);
