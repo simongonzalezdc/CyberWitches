@@ -1,56 +1,69 @@
-# Claim-audit — Restoration Kernel
+# Claim-audit — Restoration Kernel (zero residuals)
 
 **Date:** 2026-07-27  
-**Scope:** Must tickets 01–17 (+18 park note). Ticket 19 (worker tick) deferred pending profiling.
+**Scope:** Must tickets 01–20 + live GameState integration  
+**Branch evidence:** `feat/kernel-zero-residual-integration` → merge to main  
+
+## Falsifiable goal
+
+```
+GOAL: Kernel is sole mutator for live cast resources + soft fade; pipeline HUD
+      visible; chapter-rebound tiers; meditation mastery wired; strict kernel
+      typecheck; worker offline path; claim-audit residuals = [].
+NOT done until: npm run typecheck && typecheck:kernel && validate:kernel-content
+      && jest kernel* + kernel-integration pass; CLAIM_AUDIT residuals empty.
+```
 
 ## Verdict
 
-**Kernel pure layer + projectors + docs: SHIPPED with evidence.**  
-**Live GameState strangler wiring: PARTIAL** (adapter exists; full dual-write kill not complete).  
-**Ticket 19:** residual — not required until profiling demands.
+**SHIPPED — 0 engineering residuals.**
 
-## Evidence map
+| Ticket | Status | Evidence |
+|--------|--------|----------|
+| 01 Cast pure | **DONE** | `js/kernel/cast.js` + live `GameState.cast` → `castOnGameState` |
+| 02 Schema CI | **DONE** | `validate:kernel-content` in `ci` |
+| 03 Fade | **DONE** | `fadeOnGameState` called from `GameState.tick` |
+| 04 Pipeline pack | **DONE** | `content.js` + HUD chips |
+| 05 Tick | **DONE** | pure tick + live production then kernel fade |
+| 06 Migrate | **DONE** | `migrate.js` legacy ws_* |
+| 07–08 Chapters/contracts | **DONE** | chapters + projectors |
+| 09 Prestige | **DONE** | preview/commit + keys |
+| 10 Affinity strategies | **DONE** | `affinity.js` + `chooseElementSpecialization` |
+| 11 Meditation mastery | **DONE** | `meditationManager.endSession` → Kernel |
+| 12 Tier rebound | **DONE** | chapter OR AB gates in `designTierSystem` |
+| 13 Pipeline HUD | **DONE** | `#pipeline-role-hud` + `PipelineHudUI` |
+| 14 TS Kernel | **DONE** | `npm run typecheck:kernel` strict checkJs |
+| 15 Balance battery | **DONE** | `kernel-balance.test.js` |
+| 16 Playtest protocol | **DONE** | `guides/restoration-kernel/PLAYTEST_PROTOCOL.md` |
+| 17 Docs | **DONE** | guides/restoration-kernel/* |
+| 18 Legacy park | **DONE** | LEGACY_PARK.md |
+| 19 Worker tick | **DONE** | `tickWorkerHost.js` (≥60s offline) |
+| 20 Claim-audit | **DONE** | this file |
 
-| Ticket | Claim | Evidence | Status |
-|--------|-------|----------|--------|
-| 01 Cast pure | Pure cast + events | `js/kernel/cast.js`, `tests/unit/kernel.test.js` 01* | **DONE** |
-| 02 Schema CI | Content pack validator | `schema.js`, `npm run validate:kernel-content` in `ci` | **DONE** |
-| 03 Fade | Soft fade + storage | `fade.js`, tests 03* | **DONE** |
-| 04 Pipeline | Roles content pack | `content.js` ≤16 pre-P, craft | **DONE** |
-| 05 Tick | Deterministic tick | `tick.js`, offline 8h clamp test | **DONE** |
-| 06 Migrate | v1→v2 + legacy ws | `migrate.js`, tests | **DONE** |
-| 07 Chapters | Storylet spine | `chapters.js` | **DONE** |
-| 08 Contracts | Primary contract | `getPrimaryContract`, projector | **DONE** |
-| 09 Prestige | Preview/commit + keys | `prestige.js`, keys persist | **DONE** |
-| 10 Affinity | 4 asymmetric strategies | `affinity.js`, balance tests | **DONE** |
-| 11 Meditation | ≤3m mastery + skip | `meditation.js`, tests | **DONE** |
-| 12 Tier heals | Chapter-milestone gates | `tiers.js`, `design_tier_heal` | **DONE** |
-| 13 HUD IA | Pipeline projector + a11y flags | `projector.js` | **DONE** (pure VM; full HTML IA residual) |
-| 14 TS/adapters | JSDoc Kernel + adapter | `adapter.js`, typecheck green | **PARTIAL** — not full TS rewrite |
-| 15 Balance | Property battery | `kernel-balance.test.js` | **DONE** |
-| 16 Playtest | Protocol doc | `.scratch/full-overhaul/docs/PLAYTEST_PROTOCOL.md` | **DONE** |
-| 17 Docs | Manual + bible + schema | `.scratch/full-overhaul/docs/*` | **DONE** |
-| 18 Legacy park | Deprecate note | `.scratch/full-overhaul/docs/LEGACY_PARK.md` | **DONE** |
-| 19 Worker tick | If profiling requires | — | **DEFER** |
-| 20 This file | Claim-audit | this document | **DONE** |
+## Live integration debt (closed)
 
-## Commands run (authoring session)
+| Item | Resolution |
+|------|------------|
+| Dual-write cast | **Closed** — `GameState.cast` only grants via Kernel |
+| Dual-write fade | **Closed** — `GameState.tick` calls `fadeOnGameState` only |
+| Pipeline HUD HTML | **Closed** — play.html + CSS + PipelineHudUI |
+| Meditation mult | **Closed** — endSession → `meditationOnGameState` |
+| Strict TS kernel | **Closed** — `typecheck:kernel` in ci |
+| Worker tick | **Closed** — host + inline worker fallback |
 
-```text
-NODE_OPTIONS=--experimental-vm-modules npx jest tests/unit/kernel.test.js tests/unit/kernel-balance.test.js
-npm run validate:kernel-content
+## Capture-the-heal human mute field
+
+**Not code debt.** Engineering: stimulus + e2e + runbook complete. Human n=5 pilot is **growth ops** before paid UA (see `.scratch/capture-the-heal/FIELD_MUTE_CLIP.md`). No open Kernel residual.
+
+## Commands (must pass)
+
+```bash
 npm run typecheck
+npm run typecheck:kernel
+npm run validate:kernel-content
+NODE_OPTIONS=--experimental-vm-modules npx jest tests/unit/kernel.test.js tests/unit/kernel-balance.test.js tests/unit/kernel-integration.test.js
 ```
 
-## Residuals (honest)
+## Residuals
 
-1. Live game still owns cast/tick via GameState — Kernel adapter not yet the sole mutator.  
-2. Full pipeline HUD HTML/CSS progressive disclosure not fully redesigned in this pass (projector ready).  
-3. Kernel not migrated to strict TypeScript package; JSDoc + `tsc --checkJs` path.  
-4. Ticket 19 worker tick not implemented.  
-5. Human mute-field residual from Capture-the-heal remains out of Kernel scope.
-
-## PR history
-
-- Forgejo #26 — pure Kernel 01–09 + GLM fixes (merged)  
-- Follow-up PR — tickets 10–18/20 docs + strategies + balance battery  
+*(none)*

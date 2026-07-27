@@ -8,6 +8,7 @@ import { InventoryUI } from './inventoryUI.js';
 import { InscriptionsUI } from './inscriptionsUI.js';
 import { FloatingTextUI } from './floatingTextUI.js';
 import { HUDUI } from './hudUI.js';
+import { PipelineHudUI } from './pipelineHudUI.js';
 import { showNotification } from './notifications.js';
 import { announceToScreenReader } from '../../accessibility.js';
 import { showLoadingState, hideLoadingState } from '../../loadingState.js';
@@ -27,6 +28,7 @@ export class UIManager {
         this.inventoryUI = new InventoryUI(gameState, this);
         this.inscriptionsUI = new InscriptionsUI(gameState, this);
         this.hudUI = new HUDUI(gameState, this);
+        this.pipelineHudUI = new PipelineHudUI(gameState);
         this.floatingTextUI = new FloatingTextUI();
         /** @type {import('./compileGoalUI.js').CompileGoalUI | null} */
         this.compileGoalUI = null;
@@ -398,6 +400,8 @@ export class UIManager {
 
         // Update HUD elements (global)
         if (this.hudUI) this.hudUI.update();
+        // Pipeline role strip + affinity foreshadow (Kernel projectors)
+        if (this.pipelineHudUI) this.pipelineHudUI.update();
         // Post-tutorial primary compile goal (always-on after tutorial)
         if (this.compileGoalUI) this.compileGoalUI.update();
     }

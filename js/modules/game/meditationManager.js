@@ -5,6 +5,7 @@
 import { MeditationState } from '../../meditationState.js';
 import { MeditationTowers } from '../../meditationTowers.js';
 import { MeditationUI } from '../ui/meditationUI.js';
+import { meditationOnGameState } from '../../kernel/adapter.js';
 
 export class MeditationManager {
     /**
@@ -125,13 +126,43 @@ export class MeditationManager {
      */
     endSession() {
         if (this.state && this.state.activeSession) {
+            /** @type {any} */
+            const med = this.state;
+            const startedAt = Number(med.sessionStartTime) || Date.now();
+            const durationSec = Math.max(1, Math.floor((Date.now() - startedAt) / 1000));
+            const wavesCleared = Number(med.currentWave) || 0;
             this.state.endSession();
+            // Kernel sole path for first-session mastery production mult
+            try {
+                const r = meditationOnGameState(this.gameState, {
+                    durationSec,
+                    wavesCleared: Math.max(1, wavesCleared)
+                });
+                const mastered = (r.events || []).some((e) => e.type === 'meditation_mastered');
+                if (mastered && this.uiManager && this.uiManager.showNotification) {
+                    const mult = this.gameState.specializationBonuses?.productionMult;
+                    this.uiManager.showNotification(
+                        `Meditation mastery — pipeline ×${Number(mult || 1).toFixed(2)}`,
+                        'success'
+                    );
+                } else if (this.uiManager && this.uiManager.showNotification) {
+                    this.uiManager.showNotification('Meditation session ended!', 'info');
+                }
+            } catch {
+                if (this.uiManager && this.uiManager.showNotification) {
+                    this.uiManager.showNotification('Meditation session ended!', 'info');
+                }
+            }
             if (this.uiManager && this.uiManager.meditationUI) {
                 this.uiManager.meditationUI.updateControls();
             }
-            if (this.uiManager && this.uiManager.showNotification) {
-                this.uiManager.showNotification('Meditation session ended!', 'info');
-            }
         }
+    }
+
+    /**
+     * Pure-idle skip of Meditation mastery (optional path).
+     */
+    skipMastery() {
+        return meditationOnGameState(this.gameState, { skip: true });
     }
 }

@@ -165,6 +165,10 @@
                     
                     <!-- Content Panels -->
                     <div id="workstations-tab" class="tab-panel active relative z-10">
+                        <div id="pipeline-role-hud" class="pipeline-role-hud glass-panel px-3 py-2 mb-3" role="region" aria-label="Pipeline roles" hidden>
+                            <!-- PipelineHudUI fills Capture→Store→Bind→Compile→Shield -->
+                        </div>
+                        <div id="affinity-foreshadow" class="affinity-foreshadow text-[10px] font-mono text-gray-400 mb-3 px-1" hidden aria-live="polite"></div>
                         <div id="workstation-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                     </div>
                     <!-- Other panels... -->

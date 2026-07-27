@@ -30,6 +30,24 @@ export class DesignTierSystem {
         this.tierUnlockTimes = {}; // Track when each tier was unlocked
         /** @type {null | ((detail: { fromTier: number, toTier: number, at: number }) => void)} */
         this.onTierAdvance = null;
+        // Kernel chapter milestones emit design_tier_heal → recheck chrome gates
+        if (typeof window !== 'undefined') {
+            /** @type {any} */
+            const DTS = DesignTierSystem;
+            if (!DTS._kernelHealBound) {
+                DTS._kernelHealBound = true;
+                window.addEventListener('hex:kernelTierHeal', () => {
+                    try {
+                        /** @type {any} */
+                        const w = window;
+                        const dts = w.uiManager?.systems?.designTierSystem || null;
+                        if (dts && typeof dts.checkTierUnlocks === 'function') dts.checkTierUnlocks();
+                    } catch {
+                        /* ignore */
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -68,30 +86,40 @@ export class DesignTierSystem {
         const unlockedCount = typeof achievementSrc?.getUnlockedCount === 'function'
             ? achievementSrc.getUnlockedCount()
             : 0;
-        // Tier 1: BASIC - 500 AB + 3 Achievements
+
+        // Chapter / skill rebound (Restoration Kernel) — not pure AB grind
+        const reached = this.gameState.kernelChapters?.reached || [];
+        const prestigeCount = this.gameState.prestigeCount || 0;
+        let chapterTier = 0;
+        if (prestigeCount >= 1 || reached.includes('ch6_prestige')) chapterTier = 4;
+        else if (reached.includes('ch4_compile') || reached.includes('ch5_exhaustion')) chapterTier = 3;
+        else if (reached.includes('ch2_storage') || reached.includes('ch3_bind')) chapterTier = 2;
+        else if (reached.includes('ch1_capture') || (this.gameState.totalTaps || 0) >= 20) chapterTier = 1;
+
+        // Tier 1: BASIC - AB+achievements OR first capture chapter
         if (!this.unlockedTiers.has(1)) {
-            if (unlockedCount >= 3 && ab >= 500) {
+            if ((unlockedCount >= 3 && ab >= 500) || chapterTier >= 1) {
                 this.unlockTier(1);
             }
         }
 
-        // Tier 2: ENHANCED - 5,000 AB + 6 Achievements
+        // Tier 2: ENHANCED - AB path OR storage/bind chapter
         if (!this.unlockedTiers.has(2)) {
-            if (unlockedCount >= 6 && ab >= 5000) {
+            if ((unlockedCount >= 6 && ab >= 5000) || chapterTier >= 2) {
                 this.unlockTier(2);
             }
         }
 
-        // Tier 3: TERMINAL (Glass) - 50,000 AB + 9 Achievements
+        // Tier 3: TERMINAL (Glass)
         if (!this.unlockedTiers.has(3)) {
-            if (unlockedCount >= 9 && ab >= 50000) {
+            if ((unlockedCount >= 9 && ab >= 50000) || chapterTier >= 3) {
                 this.unlockTier(3);
             }
         }
 
-        // Tier 4: FULL (Audio/Parallax) - 500,000 AB + 12 Achievements
+        // Tier 4: FULL (Audio/Parallax) — AB path OR prestige
         if (!this.unlockedTiers.has(4)) {
-            if (unlockedCount >= 12 && ab >= 500000) {
+            if ((unlockedCount >= 12 && ab >= 500000) || chapterTier >= 4) {
                 this.unlockTier(4);
             }
         }

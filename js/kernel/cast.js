@@ -51,21 +51,24 @@ export function applyCast(state, opts = {}) {
     // Element specialization boosts only that element's cast reward (affinity lean).
     if (next.elementSpecialization && next.specializationBonuses?.castRewardMult) {
         const m = Number(next.specializationBonuses.castRewardMult) || 1;
+        /** @type {Record<string, string>} */
         const keyMap = {
             fire: 'fire_essence',
             water: 'water_essence',
             air: 'air_essence',
             crystal: 'crystal_dust'
         };
-        const k = keyMap[/** @type {string} */ (next.elementSpecialization)];
-        if (k && k in baseAmounts) baseAmounts[k] *= m;
+        const k = keyMap[String(next.elementSpecialization)];
+        if (k && Object.prototype.hasOwnProperty.call(baseAmounts, k)) {
+            baseAmounts[k] *= m;
+        }
     }
 
     const totalMult = clickMult * comboMult * eventMult * castSpeedMult * bonusMultiplier;
     next.totalTaps = (next.totalTaps || 0) + 1;
     next.affinity = next.affinity || { fire: 0, water: 0, air: 0, crystal: 0 };
 
-    /** Map inventory essence keys → affinity keys. */
+    /** @type {Record<string, 'fire'|'water'|'air'|'crystal'>} */
     const affinityKey = {
         fire_essence: 'fire',
         water_essence: 'water',
@@ -77,7 +80,7 @@ export function applyCast(state, opts = {}) {
         const gain = (base + clickAdditive) * totalMult;
         next.inventory[ingId] = (next.inventory[ingId] || 0) + gain;
         const el = affinityKey[ingId];
-        if (el && el in next.affinity) {
+        if (el) {
             next.affinity[el] = (next.affinity[el] || 0) + gain;
         }
     }

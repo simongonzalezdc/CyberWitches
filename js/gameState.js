@@ -11,7 +11,7 @@ import { debounce } from './commonUtils.js';
 import { encode, decode, validateSaveData } from './save/saveCodec.js';
 import { mirrorToIndexedDB } from './save/indexedDBBackup.js';
 import { pulseElement } from './animations.js';
-import { rollCastBonus } from './game/castBonus.js';
+import { castOnGameState, fadeOnGameState, strategyBonusesFor } from './kernel/adapter.js';
 import { getPotionEffectDef } from './modules/data/potionCatalog.js';
 // Coven system archived for future development - see ARCHIVED_COVEN_FEATURES.md
 // import { CovenSystem } from './covenSystem.js';
@@ -254,13 +254,21 @@ export class GameState {
         // Calculate production (with event multiplier)
         const production = this.calculateTotalProduction(delta, eventMultiplier);
 
-        // Apply production
+        // Apply production (legacy PRODUCERS path — still the live craft graph)
         for (const outputId in production) {
             if (outputId === 'ab') {
                 this.addAb(production[outputId]);
             } else {
                 this.addIngredient(outputId, production[outputId]);
             }
+        }
+
+        // Soft fade: sole mutator is Kernel (no dual fade implementation)
+        const offline = delta > 60;
+        const fadeResult = fadeOnGameState(this, delta, { offline });
+        if (fadeResult && fadeResult.faded && Object.keys(fadeResult.faded).length) {
+            this._lastVoidLoss = fadeResult.faded;
+            this.batchUpdate('voidLoss', fadeResult.faded, fadeResult.storageCap);
         }
 
         // Auto-save every 30 seconds using debounced version
@@ -724,27 +732,7 @@ export class GameState {
     }
 
     cast(comboMultiplier = 1.0, eventMultiplier = 1.0) {
-        this.totalTaps++;
-
-        // Base tier-0 ingredients (4 alchemical elements - Aether is synthesized from these)
-        const baseAmounts = {
-            crystal_dust: 0.5,
-            fire_essence: 0.5,
-            water_essence: 0.5,
-            air_essence: 0.5
-        };
-
-        // Apply Fire specialization cast reward multiplier
-        if (this.elementSpecialization === 'fire' && this.specializationBonuses.castRewardMult) {
-            for (const ingId in baseAmounts) {
-                baseAmounts[ingId] *= this.specializationBonuses.castRewardMult;
-            }
-        }
-
-        // Variable reward system (diegetic critical compile overclock)
-        const { bonusMultiplier, bonusType } = rollCastBonus();
-
-        // Apply click upgrades
+        // Click upgrades + prestige mults stay on GameState; Kernel is sole resource mutator.
         let clickAdditive = 0.0;
         let clickMult = 1.0;
 
@@ -759,7 +747,6 @@ export class GameState {
             }
         }
 
-        // Apply prestige click multiplier
         for (const bonusId in this.prestigeBonuses) {
             const bonusData = PRESTIGE_BONUSES.find(b => b.id === bonusId);
             if (bonusData && bonusData.type === 'click_mult') {
@@ -768,35 +755,49 @@ export class GameState {
             }
         }
 
-        // Apply cast speed buffs
+        // Meditation mastery production mult (Kernel-written) boosts cast rewards
+        const prodMult = Number(this.specializationBonuses?.productionMult) || 1;
+        if (prodMult > 1) clickMult *= prodMult;
+
         const castSpeedMult = this.getBuff('cast_speed');
 
-        // Apply combo, event, and bonus multipliers
-        const totalMult = clickMult * comboMultiplier * eventMultiplier * castSpeedMult * bonusMultiplier;
+        const { events } = castOnGameState(this, {
+            comboMult: comboMultiplier,
+            eventMult: eventMultiplier,
+            clickMult,
+            clickAdditive,
+            castSpeedMult
+        });
 
-        // Grant ingredients (with additive bonus)
-        for (const ingId in baseAmounts) {
-            this.addIngredient(ingId, (baseAmounts[ingId] + clickAdditive) * totalMult);
+        // Notify ingredient/AB listeners after kernel write
+        this.batchUpdate('abChanged', this.ab, this.ab);
+        for (const ingId of Object.keys(this.inventory || {})) {
+            this.batchUpdate('ingredientChanged', ingId, this.inventory[ingId]);
         }
 
-        // Also grant a small amount of AB per cast (for progression)
-        // This allows players to eventually unlock AB-producing workstations
-        const abPerCast = 0.15 * totalMult;
-        this.addAb(abPerCast);
+        const castEv = (events || []).find((e) => e && e.type === 'cast');
+        const bonusType = castEv?.bonusType || null;
+        const bonusMultiplier = Number(castEv?.bonusMultiplier) || 1;
 
-        // Trigger bonus feedback if applicable
-        if (bonusType && window.triggerBonusFeedback) {
+        if (bonusType && typeof window !== 'undefined' && window.triggerBonusFeedback) {
             window.triggerBonusFeedback(bonusType, bonusMultiplier);
         }
-
-        // Track bonus casts for achievements
         if (bonusMultiplier >= 5.0) {
             this.lastCastBonus = 5.0;
         }
 
-        // Coven system archived - see ARCHIVED_COVEN_FEATURES.md
-        // Update coven progress for casting
-        // if (this.covenSystem) this.covenSystem.updateCovenProgress('casting', 1);
+        // Design-tier heal from Kernel chapter milestones
+        for (const ev of events || []) {
+            if (ev && ev.type === 'design_tier_heal' && typeof window !== 'undefined') {
+                try {
+                    window.dispatchEvent(
+                        new window.CustomEvent('hex:kernelTierHeal', { detail: ev })
+                    );
+                } catch {
+                    /* ignore */
+                }
+            }
+        }
     }
 
     canAfford(recipe) {
@@ -873,9 +874,22 @@ export class GameState {
         }
 
         this.elementSpecialization = element;
-        const spec = ELEMENT_SPECIALIZATIONS[element];
-        if (spec) {
-            this.specializationBonuses = spec.bonuses;
+        // Kernel strategies are source of truth; legacy ELEMENT_SPECIALIZATIONS merged as fallback.
+        const kernelStrat = strategyBonusesFor(element);
+        const legacy = ELEMENT_SPECIALIZATIONS[element];
+        if (kernelStrat) {
+            this.specializationBonuses = {
+                ...(legacy?.bonuses || {}),
+                ...kernelStrat
+            };
+            // Preserve meditation mastery mult if present
+            const med =
+                Number(this.prestigeBonuses?.meditation_production_mult) ||
+                Number(this.specializationBonuses?.productionMult) ||
+                0;
+            if (med > 1) this.specializationBonuses.productionMult = med;
+        } else if (legacy) {
+            this.specializationBonuses = { ...legacy.bonuses };
         } else {
             console.error('Element specialization not found:', element);
             return false;
