@@ -131,31 +131,37 @@ class CustomTooltipManager {
             this.hide();
         });
 
-        // Mobile: show on tap
+        // Mobile: long-press for tooltip; never preventDefault so click/cast still fire
         if (mobileFriendly && (isMobile() || isTouchDevice())) {
             let tapTimeout;
-            element.addEventListener('touchstart', (e) => {
-                e.preventDefault();
+            let longPressFired = false;
+            element.addEventListener('touchstart', () => {
+                longPressFired = false;
                 tapTimeout = setTimeout(() => {
+                    longPressFired = true;
                     this.show(element, text, position);
-                }, 300);
-            });
+                }, 450);
+            }, { passive: true });
 
             element.addEventListener('touchend', () => {
                 clearTimeout(tapTimeout);
-            });
+                // If long-press tooltip opened, do not also force-hide immediately
+                if (!longPressFired) {
+                    // leave click pipeline alone
+                }
+            }, { passive: true });
 
             element.addEventListener('touchmove', () => {
                 clearTimeout(tapTimeout);
                 this.hide();
-            });
+            }, { passive: true });
 
             // Hide on tap outside
             document.addEventListener('touchstart', (e) => {
                 if (!element.contains(/** @type {Node} */ (e.target))) {
                     this.hide();
                 }
-            });
+            }, { passive: true });
         }
     }
 

@@ -95,6 +95,34 @@ export async function initGame() {
         // guarded by `if (window.showNotification)`. Nothing ever assigned these
         // globals, so every one of those notifications was a silent no-op.
         window.showNotification = showNotification;
+
+        // Diegetic cast overclock feedback (replaces dead jackpot hook)
+        window.triggerBonusFeedback = (bonusType, multiplier) => {
+            const mult = Number(multiplier) || 1;
+            const multLabel = `×${mult.toFixed(1)}`;
+            let copy;
+            if (bonusType === 'critical_compile' || bonusType === 'jackpot') {
+                copy = `CRITICAL_COMPILE ${multLabel}`;
+            } else if (bonusType === 'compile_overclock' || bonusType === 'bonus') {
+                copy = `COMPILE_OVERCLOCK ${multLabel}`;
+            } else {
+                copy = `COMPILE_EVENT ${multLabel}`;
+            }
+            try {
+                const castBtn = document.getElementById('cast-button');
+                const rect = castBtn ? castBtn.getBoundingClientRect() : null;
+                const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+                const y = rect ? rect.top : window.innerHeight * 0.4;
+                if (uiManager?.floatingTextUI?.show) {
+                    uiManager.floatingTextUI.show(copy, x, y, 'crit');
+                } else if (typeof showNotification === 'function') {
+                    showNotification(copy, 'success', 2000);
+                }
+            } catch (error) {
+                console.warn('triggerBonusFeedback failed:', error);
+            }
+        };
+
         window.announceToScreenReader = announceToScreenReader;
         window.errorReporter = errorReporter;
 
@@ -122,6 +150,17 @@ export async function initGame() {
         // Design Tier System — audioSystem is null at first; lazy-loaded later.
         const designTierSystem = new DesignTierSystem(gameState, uiManager, null);
         initUIHelpers(designTierSystem);
+        // Batch 1: enforce Tier 0 (or saved tier) at first paint + design-system root contract
+        try {
+            await designTierSystem.reconcileDesignSystemVersion();
+            const bootTier = typeof designTierSystem.getCurrentTier === 'function'
+                ? designTierSystem.getCurrentTier()
+                : (designTierSystem.currentTier ?? 0);
+            await designTierSystem.applyTier(bootTier);
+        } catch (error) {
+            console.warn('Design tier boot apply failed:', error);
+            document.body.classList.add('tier-0');
+        }
 
         const fadingThemeSystem = new FadingThemeSystem(gameState, designTierSystem);
 

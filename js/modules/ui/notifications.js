@@ -39,8 +39,17 @@ export class NotificationManager {
      * @param {string} type - Notification type (success, error, info, warning)
      * @param {number} duration - Duration in ms
      */
-    show(message, type = 'info', duration = 3000) {
+    show(message, type = 'info', duration = 3000, options = {}) {
         if (!this.container) return;
+
+        // Default is text-safe; opt into HTML via options.html or showHtml().
+        // Also allow known trusted icon templates from our own call sites.
+        const looksLikeTrustedIconTemplate =
+            typeof message === 'string' &&
+            message.includes('css-icon-') &&
+            !message.includes('<script') &&
+            !message.includes('onerror=');
+        const allowHtml = options.html === true || looksLikeTrustedIconTemplate;
 
         // Remove emojis if low tier
         message = stripEmojisIfLowTier(message);
@@ -61,7 +70,7 @@ export class NotificationManager {
         }
 
         if (this.count >= this.maxPerSecond) {
-            this.queue.push({ message, type, duration });
+            this.queue.push({ message, type, duration, options: { html: allowHtml } });
             return;
         }
 
@@ -83,14 +92,33 @@ export class NotificationManager {
             }
         }
 
-        this.createNotificationElement(message, type, duration);
+        this.createNotificationElement(message, type, duration, { html: allowHtml });
     }
 
-    createNotificationElement(message, type, duration) {
+    /**
+     * Show plain-text notification (safe default; no HTML).
+     */
+    showText(message, type = 'info', duration = 3000) {
+        this.show(message, type, duration, { html: false });
+    }
+
+    /**
+     * Show trusted HTML notification (icons/templates only).
+     */
+    showHtml(message, type = 'info', duration = 3000) {
+        this.show(message, type, duration, { html: true });
+    }
+
+    createNotificationElement(message, type, duration, options = {}) {
+        const allowHtml = options.html === true;
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.setAttribute('role', type === 'error' ? 'alert' : 'status');
-        notification.innerHTML = message;
+        if (allowHtml) {
+            notification.innerHTML = message;
+        } else {
+            notification.textContent = String(message ?? '');
+        }
 
         // Add close button
         const closeBtn = document.createElement('button');
@@ -125,6 +153,11 @@ export class NotificationManager {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
+            // Drain one queued notification if rate-limit had deferred it
+            if (this.queue.length > 0) {
+                const next = this.queue.shift();
+                this.show(next.message, next.type, next.duration, next.options || {});
+            }
         }, 300);
     }
 }
@@ -132,6 +165,6 @@ export class NotificationManager {
 export const notificationManager = new NotificationManager();
 
 // Export for modules
-export const showNotification = (message, type, duration) => {
-    notificationManager.show(message, type, duration);
+export const showNotification = (message, type, duration, options) => {
+    notificationManager.show(message, type, duration, options);
 };

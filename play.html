@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-design-system-version="kyanite-1">
 
 <head>
     <meta charset="UTF-8">
@@ -53,7 +53,7 @@
          creates an AudioContext before gesture and triggers autoplay warnings. -->
 </head>
 
-<body class="bg-void-950 text-white overflow-hidden font-sans antialiased">
+<body class="tier-0 bg-void-950 text-white overflow-hidden font-sans antialiased">
     <!-- Skip to main content (must be the first focusable element) -->
     <a href="#main-content" class="skip-link">Skip to game</a>
 
@@ -99,12 +99,31 @@
                     <h3 class="text-xs font-mono text-ky-green tracking-widest">RESOURCE_MONITOR</h3>
                 </div>
                 <div class="element-counters flex-1 overflow-y-auto p-4 space-y-3" id="element-counters">
-                    <!-- Elements injected by JS -->
-                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-fire">
-                        <span class="element-label text-xs text-red-400">FIRE</span>
-                        <span class="element-amount font-mono text-sm">0</span>
-                </div>
-                    <!-- ... other elements ... -->
+                    <!-- Tier-safe counters: neutral mono labels; element color via data-element for higher tiers -->
+                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-fire" data-element="fire">
+                        <span class="element-label text-xs text-gray-300 font-mono">FIRE</span>
+                        <span class="element-amount font-mono text-sm text-gray-100">0</span>
+                    </div>
+                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-water" data-element="water">
+                        <span class="element-label text-xs text-gray-300 font-mono">WATER</span>
+                        <span class="element-amount font-mono text-sm text-gray-100">0</span>
+                    </div>
+                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-air" data-element="air">
+                        <span class="element-label text-xs text-gray-300 font-mono">AIR</span>
+                        <span class="element-amount font-mono text-sm text-gray-100">0</span>
+                    </div>
+                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-crystal" data-element="crystal">
+                        <span class="element-label text-xs text-gray-300 font-mono">CRYSTAL</span>
+                        <span class="element-amount font-mono text-sm text-gray-100">0</span>
+                    </div>
+                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-aether" data-element="aether">
+                        <span class="element-label text-xs text-gray-300 font-mono">AETHER</span>
+                        <span class="element-amount font-mono text-sm text-gray-100">0</span>
+                    </div>
+                    <div class="element-counter flex justify-between items-center p-2 rounded bg-white/5" id="element-counter-focus" data-element="focus" style="display:none" aria-hidden="true">
+                        <span class="element-label text-xs text-gray-300 font-mono">FOCUS</span>
+                        <span class="element-amount font-mono text-sm text-gray-100">+0.0%</span>
+                    </div>
                 </div>
                 
                 <div class="sidebar-footer p-4 border-t border-white/10 bg-void-900/50">

@@ -5,7 +5,7 @@ modules deepen; it is the map AI agents and new contributors read first.
 
 ## Domain vocabulary
 
-- **AB (Arcane Bytes / "Essence")** — the primary currency. You generate it by
+- **AB (Arcane Bits / "Essence")** — the primary currency. You generate it by
   *casting*.
 - **Cast** — the core action: compile raw magic into data, producing AB
   (the EXEC button, `cast-button`).

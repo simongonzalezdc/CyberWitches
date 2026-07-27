@@ -416,7 +416,7 @@ export class ModalManager {
         const abEl = document.getElementById('welcome-ab');
 
         if (timeEl) timeEl.innerHTML = `<span class="css-icon-clock"></span> Away for: ${escapeHtml(formatTimeDuration(elapsed))}`;
-        if (abEl) abEl.innerHTML = `<span class="css-icon-sparkle"></span> Earned: ${escapeHtml(formatShort(abGained))} SE`;
+        if (abEl) abEl.innerHTML = `<span class="css-icon-sparkle"></span> Earned: ${escapeHtml(formatShort(abGained))} AB`;
 
         this.openModal('welcomeBack');
 

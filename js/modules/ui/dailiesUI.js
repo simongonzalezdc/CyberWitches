@@ -61,7 +61,7 @@ export class DailiesUI {
                 let rewardText = '';
                 switch (task.rewardType) {
                     case 'ab':
-                        rewardText = `${formatShort(task.rewardValue)} SE`;
+                        rewardText = `${formatShort(task.rewardValue)} AB`;
                         break;
                     case 'buff':
                         rewardText = `+${Math.floor(task.buffMultiplier * 100)}% for ${formatTimeDuration(task.rewardValue)}`;

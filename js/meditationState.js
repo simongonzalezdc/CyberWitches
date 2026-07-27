@@ -874,10 +874,15 @@ export class MeditationState {
             const dy = targetY - dist.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
 
-            // Check if distraction is stuck (not moving for too long)
+            // Check if distraction is stuck (position not changing — not distance-to-waypoint)
             const now = this._now();
             const timeSinceLastMove = now - (dist.lastMoveTime || now);
-            const hasMoved = distance > 0.01; // Check if actually moving
+            const prevX = dist._prevX ?? dist.x;
+            const prevY = dist._prevY ?? dist.y;
+            const posDelta = Math.hypot(dist.x - prevX, dist.y - prevY);
+            const hasMoved = posDelta > 0.01;
+            dist._prevX = dist.x;
+            dist._prevY = dist.y;
 
             if (!hasMoved && timeSinceLastMove > 1000) {
                 // Stuck for more than 1 second - force movement
@@ -1543,6 +1548,11 @@ export class MeditationState {
             this.tranquilityMax = state.tranquilityMax || 100;
             this.meditationInventory = state.meditationInventory || {};
             this.meditationUpgrades = state.meditationUpgrades || {};
+
+            // Restore meditation statistics (production bonus depends on these)
+            this.totalWavesCompleted = state.totalWavesCompleted || 0;
+            this.totalDistractionsKilled = state.totalDistractionsKilled || 0;
+            this.totalSessionsCompleted = state.totalSessionsCompleted || 0;
 
             // Rebuild towers
             if (state.towers) {

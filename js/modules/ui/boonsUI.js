@@ -44,13 +44,13 @@ export class BoonsUI {
                         effectText = `+${Math.floor(boonData.value * 100)}% ${boonData.param} Production per level`;
                         break;
                     case 'starting_currency':
-                        effectText = `+${formatShort(boonData.value)} SE at start per level`;
+                        effectText = `+${formatShort(boonData.value)} AB at start per level`;
                         break;
                     case 'start_ingredient':
                         effectText = `+${formatShort(boonData.value)} ${boonData.param} at start per level`;
                         break;
                     case 'ab_production_mult':
-                        effectText = `+${Math.floor(boonData.value * 100)}% Spell Energy Production per level`;
+                        effectText = `+${Math.floor(boonData.value * 100)}% Arcane Bits Production per level`;
                         break;
                     case 'click_mult':
                         effectText = `+${Math.floor(boonData.value * 100)}% Cast Rewards per level`;

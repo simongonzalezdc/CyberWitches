@@ -32,7 +32,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: 'pp_start_bits',
         displayName: 'Seeded Spellbook',
-        description: '+1000 SE at start / level',
+        description: '+1000 AB at start / level',
         type: 'starting_currency',
         value: 1000.0,
         baseCostPp: 5.0,
@@ -41,7 +41,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: 'pp_start_bits_2',
         displayName: 'Enchanted Tome',
-        description: '+10K SE at start / level',
+        description: '+10K AB at start / level',
         type: 'starting_currency',
         value: 10000.0,
         baseCostPp: 25.0,
@@ -50,7 +50,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: 'pp_start_bits_3',
         displayName: 'Arcane Library',
-        description: '+100K SE at start / level',
+        description: '+100K AB at start / level',
         type: 'starting_currency',
         value: 100000.0,
         baseCostPp: 100.0,
@@ -205,7 +205,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: 'pp_ab_mult',
         displayName: 'Arcane Bits Amplifier',
-        description: '+10% SE production / level',
+        description: '+10% AB production / level',
         type: 'ab_production_mult',
         value: 0.10,
         baseCostPp: 25.0,
@@ -242,7 +242,7 @@ export const PRESTIGE_BONUSES = [
     {
         id: 'pp_focus_conversion_1',
         displayName: 'Focus Conversion',
-        description: '+10% Focus→SE conversion / level',
+        description: '+10% Focus→AB conversion / level',
         type: 'focus_conversion_mult',
         value: 0.10,
         baseCostPp: 30.0,

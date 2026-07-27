@@ -734,19 +734,19 @@ export class GameState {
             }
         }
 
-        // Variable reward system (dopamine maximization)
+        // Variable reward system (diegetic critical compile overclock)
         const bonusRoll = Math.random();
         let bonusMultiplier = 1.0;
         let bonusType = null;
 
         if (bonusRoll < 0.05) {
-            // 5% chance for 2x-5x bonus (jackpot)
+            // 5% chance for 2x-5x critical compile
             bonusMultiplier = 2.0 + Math.random() * 3.0; // 2.0 to 5.0
-            bonusType = 'jackpot';
+            bonusType = 'critical_compile';
         } else if (bonusRoll < 0.15) {
-            // 10% chance for 1.5x bonus
+            // 10% chance for 1.5x overclock
             bonusMultiplier = 1.5;
-            bonusType = 'bonus';
+            bonusType = 'compile_overclock';
         }
 
         // Apply click upgrades
