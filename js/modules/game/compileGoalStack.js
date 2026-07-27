@@ -49,7 +49,7 @@ export const COMPILE_GOAL_QUEUE = [
 /**
  * @param {GoalContext & { meditationSessionDone?: boolean }} ctx
  * @param {string[]} [completedIds]
- * @returns {CompileGoal | null}
+ * @returns {CompileGoal} primary incomplete goal, or maintain sentinel when queue done
  */
 export function getPrimaryCompileGoal(ctx, completedIds = []) {
     const done = new Set(completedIds);
