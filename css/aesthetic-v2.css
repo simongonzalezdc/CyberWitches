@@ -369,6 +369,37 @@ body:not(.tier-0) .tab-panels-container {
     cursor: not-allowed;
 }
 
+/*
+ * Story / modal CTAs use btn-primary + story-button.
+ * Must keep high-contrast amber fill + near-void ink (WCAG AA) —
+ * do not inherit the dark instrument-button chrome above.
+ */
+.story-button,
+.btn-primary.story-button,
+#close-story-intro {
+    background: var(--ky-amber) !important;
+    border: 1px solid color-mix(in srgb, var(--ky-amber) 80%, var(--ky-crystal)) !important;
+    color: var(--ky-void) !important;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    padding: 0.75rem 1.5rem;
+    min-height: 48px;
+}
+
+.story-button:hover,
+.btn-primary.story-button:hover,
+#close-story-intro:hover {
+    background: color-mix(in srgb, var(--ky-amber) 85%, var(--ky-crystal)) !important;
+    color: var(--ky-void) !important;
+    border-color: var(--ky-crystal) !important;
+}
+
+.story-button:focus-visible,
+#close-story-intro:focus-visible {
+    outline: 2px solid var(--ky-cyan);
+    outline-offset: 3px;
+}
+
 /* Secondary / ghost */
 .btn-secondary,
 .btn-ghost {
