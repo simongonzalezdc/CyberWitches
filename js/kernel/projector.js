@@ -1,24 +1,27 @@
 /**
  * Read-only HUD projectors (tickets 13–14).
- * Pure view models — no DOM. UI may render these without owning economy rules.
+ * Pure view models — no DOM. Counts legacy ws_* via pipelineRoles.
  */
 
 import { PIPELINE_MODULES } from './content.js';
 import { getPrimaryContract } from './chapters.js';
 import { affinityForeshadow } from './affinity.js';
-
-const ROLE_ORDER = ['capture', 'store', 'bind', 'compile', 'shield'];
+import { ROLE_ORDER, countOwnedByRole, roleForId } from './pipelineRoles.js';
 
 /**
  * Pipeline structure for progressive disclosure HUD.
  * @param {import('./types.js').KernelState} state
+ * @param {{ legacyWorkstations?: Record<string, number> }} [opts]
+ *   When projecting from GameState, pass raw ws_* bag so owned counts match craft UI.
  */
-export function projectPipelineHud(state) {
+export function projectPipelineHud(state, opts = {}) {
     /** @type {Record<string, { role: string, modules: object[], ownedTotal: number }>} */
     const byRole = {};
     for (const role of ROLE_ORDER) {
         byRole[role] = { role, modules: [], ownedTotal: 0 };
     }
+
+    // Kernel content modules (mod_*)
     for (const mod of PIPELINE_MODULES) {
         const owned = state.workstations?.[mod.id] || 0;
         const unlocked = (state.ab || 0) >= mod.unlockAtAb;
@@ -33,14 +36,25 @@ export function projectPipelineHud(state) {
         };
         if (byRole[mod.role]) {
             byRole[mod.role].modules.push(entry);
-            byRole[mod.role].ownedTotal += owned;
         }
     }
+
+    // Owned totals: merge kernel bag + optional live legacy bag
+    const merged = {
+        ...(state.workstations || {}),
+        ...(opts.legacyWorkstations || {})
+    };
+    const counts = countOwnedByRole(merged);
+    for (const role of ROLE_ORDER) {
+        byRole[role].ownedTotal = counts[role] || 0;
+    }
+
     return {
         roles: ROLE_ORDER.map((r) => byRole[r]),
         storageCap: state.storageCap || 50,
         primaryVerb: 'EXEC',
         dualQuestHud: false,
+        roleForId,
         a11y: {
             reducedMotionSafe: true,
             oneThumbExec: true,

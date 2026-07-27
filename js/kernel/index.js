@@ -29,6 +29,14 @@ export {
 export { applyMeditationComplete, FIRST_SESSION_TARGET_SEC } from './meditation.js';
 export { applyTierCheck, TIER_GATES } from './tiers.js';
 export { projectPipelineHud, projectContractHud, projectAffinityHud } from './projector.js';
+export {
+    PRODUCER_PIPELINE_ROLES,
+    ROLE_ORDER,
+    roleForId,
+    countOwnedByRole,
+    withPipelineRole,
+    assertAllProducersMapped
+} from './pipelineRoles.js';
 
 /**
  * @param {import('./types.js').KernelState} [state]

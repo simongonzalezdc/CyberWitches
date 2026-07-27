@@ -5,6 +5,9 @@ import { GameState } from '../../js/gameState.js';
 import { castOnGameState, fadeOnGameState, meditationOnGameState } from '../../js/kernel/adapter.js';
 import { offlineTickOnGameState, WORKER_DT_THRESHOLD_SEC } from '../../js/kernel/tickWorkerHost.js';
 import { projectorsFromGameState } from '../../js/kernel/adapter.js';
+import { assertAllProducersMapped, countOwnedByRole } from '../../js/kernel/pipelineRoles.js';
+import { PRODUCERS } from '../../js/modules/data/producers.js';
+
 
 describe('Kernel live integration', () => {
     /** @type {GameState} */
@@ -138,5 +141,68 @@ describe('Kernel live integration', () => {
         };
         expect(kernelBlob.affinity).toBeTruthy();
         expect(typeof kernelBlob.rngSeed === 'number' || kernelBlob.rngSeed === undefined).toBe(true);
+    });
+
+    test('all live PRODUCERS map to pipeline roles (100%)', () => {
+        const r = assertAllProducersMapped(PRODUCERS.map((p) => p.id));
+        expect(r.missing).toEqual([]);
+        expect(r.ok).toBe(true);
+    });
+
+    test('HUD counts legacy ws_* into capture role', () => {
+        const p = projectorsFromGameState({
+            ab: 10,
+            inventory: {},
+            workstations: { ws_fire_forge: 2, ws_aether_synthesizer: 1 },
+            totalTaps: 5,
+            prestigeCount: 0
+        });
+        const capture = p.pipeline.roles.find((x) => x.role === 'capture');
+        const bind = p.pipeline.roles.find((x) => x.role === 'bind');
+        expect(capture.ownedTotal).toBeGreaterThanOrEqual(2);
+        expect(bind.ownedTotal).toBeGreaterThanOrEqual(1);
+    });
+
+    test('meditation productionMult increases tick production', () => {
+        gs.workstations = { ws_fire_forge: 3 };
+        gs.specializationBonuses = {};
+        gs.elementSpecialization = null;
+        const base = gs.calculateTotalProduction(10, 1);
+        gs.specializationBonuses = { productionMult: 1.2 };
+        const boosted = gs.calculateTotalProduction(10, 1);
+        const baseKey = Object.keys(base)[0];
+        if (baseKey) {
+            expect(boosted[baseKey]).toBeGreaterThan(base[baseKey]);
+        } else {
+            // forge outputs dist_fire
+            expect(Object.keys(boosted).length).toBeGreaterThan(0);
+        }
+    });
+
+    test('countOwnedByRole aggregates mixed bags', () => {
+        const c = countOwnedByRole({
+            ws_fire_forge: 1,
+            mod_essence_buffer: 2,
+            ws_arcane_bit_reactor: 1
+        });
+        expect(c.capture).toBeGreaterThanOrEqual(1);
+        expect(c.store).toBeGreaterThanOrEqual(2);
+        expect(c.compile).toBeGreaterThanOrEqual(1);
+    });
+
+    test('save payload kernel mirror fields are populated after cast', () => {
+        gs.cast();
+        // Mirror the saveGameStateImmediate kernel block
+        const kernel = {
+            affinity: gs.affinity ? { ...gs.affinity } : undefined,
+            chapters: gs.kernelChapters
+                ? JSON.parse(JSON.stringify(gs.kernelChapters))
+                : undefined,
+            storageCap: gs.storageCap,
+            rngSeed: gs.rngSeed
+        };
+        expect(kernel.affinity).toBeTruthy();
+        expect(Object.values(kernel.affinity).some((v) => v > 0)).toBe(true);
+        expect(kernel.rngSeed).toBeDefined();
     });
 });
