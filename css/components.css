@@ -1145,6 +1145,52 @@ body.tier-advance-heal .compile-goal-rail:not([hidden]) {
     min-width: 12rem;
     max-width: min(28rem, 42vw);
 }
+/* Pipeline role HUD — Capture→Store→Bind→Compile→Shield */
+.pipeline-role-hud {
+    border: 1px solid color-mix(in srgb, var(--ky-cyan) 30%, transparent);
+}
+.pipeline-role-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+}
+.pipeline-role-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid color-mix(in srgb, var(--ky-green) 35%, transparent);
+    background: color-mix(in srgb, var(--ky-green) 6%, transparent);
+    color: var(--ky-green, #7dffb3);
+    min-height: 2rem;
+}
+.pipeline-role-count {
+    color: var(--ky-cyan, #7dd3fc);
+    font-weight: 700;
+}
+.pipeline-role-arrow {
+    color: color-mix(in srgb, var(--ky-steel, #94a3b8) 80%, transparent);
+    user-select: none;
+}
+@media (max-width: 480px) {
+    .pipeline-role-row {
+        gap: 0.2rem;
+    }
+    .pipeline-role-chip {
+        padding: 0.2rem 0.35rem;
+        font-size: 0.6rem;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .pipeline-role-chip {
+        transition: none;
+    }
+}
 /* Full SHARE_RESTORE label — persistent + touch-friendly (Opus 5 Rank 2) */
 .heal-share-btn {
     display: inline-flex;
