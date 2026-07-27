@@ -793,3 +793,50 @@ footer {
     .feature-visual { min-height: 160px; }
     .hex-stack { width: 240px; height: 240px; }
 }
+
+/* Heal thesis before/after (critical-path ticket 13) */
+.hero-thesis {
+    font-size: 1.05rem;
+    line-height: 1.45;
+    margin: 0.75rem 0 0.5rem;
+    color: var(--text-primary, inherit);
+}
+.heal-thesis { padding: 3rem 0; }
+.heal-before-after {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    max-width: 48rem;
+    margin: 0 auto;
+}
+.heal-panel {
+    margin: 0;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--void-950, var(--bg-deep));
+}
+.heal-panel--after {
+    border-color: var(--ky-cyan);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--ky-cyan) 15%, transparent);
+}
+.heal-panel-body {
+    padding: 1.5rem;
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: var(--ky-steel);
+    min-height: 8rem;
+}
+.heal-panel-body--live { color: var(--ky-cyan); }
+.heal-panel-muted { opacity: 0.5; }
+.heal-panel-log { margin-top: 0.75rem; }
+.heal-panel-ok { color: var(--ky-green); }
+.heal-panel-warn { color: var(--ky-amber); }
+.heal-panel figcaption {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+@media (max-width: 640px) {
+    .heal-before-after { grid-template-columns: 1fr; }
+}
