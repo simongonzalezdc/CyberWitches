@@ -1,5 +1,30 @@
 # Changelog - Hex Compiler
 
+## [1.1.0] — 2026-07-27
+
+**Play:** https://simongonzalezdc.github.io/CyberWitches/play.html  
+**Tag:** `v1.1.0` · **Commits:** Restoration Kernel campaign through PR #38
+
+### Highlights
+
+- **Restoration Kernel** live — pure domain under `js/kernel/` owns cast resources + weighted soft fade
+- **Pipeline roles** — Capture → Store → Bind → Compile → Shield (28/28 producers mapped; HUD + badges)
+- **Weighted fade (`FADE_WEIGHT`)** — all craft intermediates take void pressure; Store stays a mid/late verb
+- **Anti-cliché copy** — sector-terminal voice on producers + pipeline modules
+- **Aesthetic v2** — hex lattice instrument deck (`css/aesthetic-v2.css`); tier-0 mono preserved; story CTA AA contrast
+- **Capture the heal** — mute-first design-tier ceremony + SHARE_RESTORE + compile goal rail
+- **Quality bar** — toast max 2, S+/A+ gates, guides under `guides/restoration-kernel/`
+- **CI / Pages** — Kernel validate + playtest scripts; continuous GitHub Pages deploy
+
+### PRs (selected)
+
+#14–#20 heal spine · #26–#34 Kernel + quality · #36 adversarial GD / fade / aesthetic · #37 docs + sessionShipMust · #38 story CTA a11y
+
+### Breaking / save
+
+- Save kernel mirror fields optional; snapshot **version 2** unchanged for this cut
+- No forced reset — existing saves continue
+
 ## Recent Changes
 
 ### Adversarial GD + intermediate fade + hex lattice aesthetic (2026-07-27) — PR #36

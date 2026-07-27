@@ -1,6 +1,6 @@
 {
   "name": "hex-compiler",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Magic is fading. You're a Hex Compiler\u2014translating magical hexes into hexadecimal code. An idle game about compiling spells into data and building digital preservation chambers.",
   "main": "index.html",
   "type": "module",
