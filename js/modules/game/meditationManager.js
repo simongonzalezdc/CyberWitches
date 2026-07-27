@@ -79,9 +79,9 @@ export class MeditationManager {
             }
         }
 
-        // Legacy global fallbacks removed
-        // window.meditationState = this.state;
-        // window.meditationTowers = this.towers;
+        // StatsUI and production-bonus readers still consult window.meditationState
+        window.meditationState = this.state;
+        window.meditationTowers = this.towers;
 
         if (this.uiManager && this.uiManager.showNotification) {
             this.uiManager.showNotification('Meditation unlocked!', 'success');

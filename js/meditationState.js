@@ -1221,8 +1221,14 @@ export class MeditationState {
      * Add focus
      */
     addFocus(amount) {
-        this.focus += amount;
-        this.focusTotalEarned += amount;
+        // Apply active focus_gain potion buffs from main gameState when present
+        let mult = 1;
+        if (this.gameState && typeof this.gameState.getBuff === 'function') {
+            mult = this.gameState.getBuff('focus_gain') || 1;
+        }
+        const granted = amount * mult;
+        this.focus += granted;
+        this.focusTotalEarned += granted;
 
         if (this.onFocusChanged) {
             this.onFocusChanged(this.focus);
