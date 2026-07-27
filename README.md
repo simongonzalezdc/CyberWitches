@@ -10,10 +10,11 @@ Hex Compiler is an idle game, published in the `CyberWitches` repository, that r
 
 **Thesis (mute-readable):** broken terminal chrome **heals** as you progress. A tier advance is a **SYSTEM_RESTORE** moment; **SHARE_RESTORE** exports a sanitized before/after still (no full save secrets).
 
+**Restoration Kernel (live):** pure domain dispatch under `js/kernel/` owns **cast resources** and **soft fade**; live craft remains the workstation ladder with **pipeline roles** (Capture → Store → Bind → Compile → Shield) on the HUD and cards. Affinity foreshadow and optional Meditation mastery production mult are Kernel-backed. Player/agent guides: [`guides/restoration-kernel/`](guides/restoration-kernel/). Quality bar: [`guides/restoration-kernel/QUALITY_BAR.md`](guides/restoration-kernel/QUALITY_BAR.md).
 
 ## Source of truth (remotes)
 
-**Forgejo** at `git.kyanitelabs.tech` is the canonical remote for pull requests and merges. A GitHub remote may exist as a mirror and can lag — treat Forgejo as source of truth for whether code is shipped.
+**Forgejo** at `git.kyanitelabs.tech` is the canonical remote for pull requests and merges. **GitHub** (`simongonzalezdc/CyberWitches`) is the push mirror that powers **GitHub Pages** deploy (`npm ci` + `build:prod`). If Pages lags, check the **Deploy** workflow — not only the Forgejo tip.
 
 ## Install / Quick start
 
@@ -28,7 +29,7 @@ Production build:
 npm run build:prod   # outputs static files to dist/
 ```
 
-Serve the contents of `dist/` from any static web host (configure it to serve `index.html` for all routes, with `play.html` available for direct game access). See [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md) for full deployment steps.
+Serve the contents of `dist/` from any static web host (configure it to serve `index.html` for all routes, with `play.html` available for direct game access). See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for full deployment steps.
 
 **Play the game:** [https://simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
 
@@ -37,12 +38,14 @@ Serve the contents of `dist/` from any static web host (configure it to serve `i
 Once the dev server is running, the game plays in the browser — cast spells manually or automate them, craft preservation chambers, buy upgrades, and run experiments to discover new techniques. Useful scripts:
 
 ```bash
-npm test               # run the Jest test suite
+npm test               # Jest unit suite
+npm run ci             # lint + typecheck + typecheck:kernel + content validate + playtest:kernel + test
+npm run playtest:kernel # automated Kernel playtest sim (n=5)
 npm run lint           # ESLint over js/**
 npm run optimize:images # re-compress background images with sharp
 ```
 
-Core systems: manual & automatic spell casting, preservation-chamber automation, an upgrade/inscription tree, experimentation, an ascension system with elemental specialization, achievements, daily rituals, and a meditation mini-game.
+Core systems: EXEC cast (Kernel resources), soft fade / storage pressure, workstation automation with pipeline roles, inscriptions, experimentation, prestige + affinity strategies, achievements, daily rituals, Meditation (post-prestige), design-tier heal ceremony + SHARE_RESTORE.
 
 ## Why / how it works
 
@@ -57,10 +60,11 @@ browser idle game · incremental clicker game open source · vanilla JavaScript 
 - **Game manual:** [GAME_MANUAL.md](GAME_MANUAL.md)
 - **User guide:** [USER_GUIDE.md](USER_GUIDE.md)
 - **Agent / domain map:** [CONTEXT.md](CONTEXT.md)
+- **Restoration Kernel guides:** [guides/restoration-kernel/](guides/restoration-kernel/) (manual, schema, claim-audit, quality bar)
 - **Privacy:** [PRIVACY.md](PRIVACY.md)
-- **Deployment guide:** [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md)
+- **Deployment guide:** [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (also `docs/deployment/` if present)
 - **Play the game:** [simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
-- **Campaign artifacts (Capture the heal):** [.scratch/capture-the-heal/](.scratch/capture-the-heal/)
+- **Campaign artifacts (Capture the heal — historical):** [.scratch/capture-the-heal/](.scratch/capture-the-heal/)
 - **API docs:** [docs/API.md](docs/API.md)
 - **License:** [MIT](LICENSE)
 - **KyaniteLabs:** [kyanitelabs.tech](https://kyanitelabs.tech)

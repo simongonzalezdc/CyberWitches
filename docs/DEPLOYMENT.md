@@ -43,11 +43,22 @@ This guide provides comprehensive instructions for deploying Hex Compiler to var
 
 ## Build Process
 
+### Production (GitHub Pages)
+
+Canonical play URL: **https://simongonzalezdc.github.io/CyberWitches/play.html**
+
+Deploy is automated via `.github/workflows/deploy.yml` on push to **GitHub `main`**:
+`npm ci` → `npm run build:prod` → upload `dist/`.
+
+If Pages is stale while Forgejo is ahead: sync/push `main` to the GitHub remote and check the **Deploy** workflow (historically failed on incomplete `package-lock` after TypeScript major bumps).
+
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/cyber-witches.git
-cd cyber-witches
+# Prefer Forgejo SoT; GitHub is the Pages mirror
+git clone git@git.kyanitelabs.tech:simon/CyberWitches.git
+# or: git clone https://github.com/simongonzalezdc/CyberWitches.git
+cd CyberWitches
 ```
 
 ### 2. Install Dependencies

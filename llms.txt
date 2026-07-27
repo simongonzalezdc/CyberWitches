@@ -8,23 +8,29 @@ Hex Compiler is an idle/clicker game, published in the CyberWitches repository, 
 - Design tiers (0–4): UI heals from broken mono terminal to full chrome.
 - Tier advance = SYSTEM_RESTORE ceremony (mute-readable); SHARE_RESTORE exports a sanitized split still + text (no full save secrets).
 - Single compile-goal rail after tutorial (not dual quest HUD).
+- Soft fade on over-capacity essence; pipeline roles Capture→Store→Bind→Compile→Shield on HUD/cards.
+- Restoration Kernel (`js/kernel/`): pure cast/fade/chapter/prestige/affinity; live cast+fade via adapter.
 - Local-only funnel keys `cw.funnel.*` (TTA/TTH/share); no remote analytics by default.
-- Canonical remote: Forgejo git.kyanitelabs.tech (GitHub is mirror).
+- Canonical remote: Forgejo git.kyanitelabs.tech (GitHub is Pages deploy mirror).
 
 ## Tech
 - Vanilla JavaScript (ES2023 modules), esbuild, installable PWA, Tone.js audio. MIT licensed.
+- Kernel: `js/kernel/` (adapter, fade, content schema, pipelineRoles, projectors).
 - Heal modules: `js/modules/game/healCeremony.js`, `healCapture.js`, `healShare.js`, `funnelMetrics.js`, `designTierSystem.js`.
+- Quality bar: `guides/restoration-kernel/QUALITY_BAR.md` (Q1–Q8).
 
 ## Run
 - `npm install`, then `npm start` (dev server on http://localhost:3000); `npm run build:prod` for static output.
-- Tests: `npm run ci`; heal e2e: `npx playwright test e2e/heal-operator-journeys.spec.js`.
+- Tests: `npm run ci` (lint, typecheck, typecheck:kernel, validate:kernel-content, playtest:kernel, unit).
+- Heal e2e: `npx playwright test e2e/heal-operator-journeys.spec.js`.
+- Kernel e2e: `npx playwright test e2e/kernel-void-save.spec.js`.
 
 ## Links
 - Play: https://simongonzalezdc.github.io/CyberWitches/play.html
-- Docs: CONTEXT.md, GAME_MANUAL.md, PRIVACY.md, docs/architecture.md
-- Campaign: .scratch/capture-the-heal/
+- Docs: CONTEXT.md, GAME_MANUAL.md, PRIVACY.md, docs/architecture.md, guides/restoration-kernel/
+- Campaign (historical Capture the heal): .scratch/capture-the-heal/
 - Repository (mirror): https://github.com/simongonzalezdc/CyberWitches
 - KyaniteLabs: https://kyanitelabs.tech
 
 ## Best-fit searches
-idle game, incremental game, clicker game, browser game, PWA game, hexadecimal, magic-tech narrative, vanilla JS game, UI heal, system restore, mute-first share
+idle game, incremental game, clicker game, browser game, PWA game, hexadecimal, magic-tech narrative, vanilla JS game, UI heal, system restore, mute-first share, restoration kernel, soft fade idle

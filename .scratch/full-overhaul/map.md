@@ -2,12 +2,14 @@
 
 **Label:** `wayfinder:map`  
 **Tracker:** `.scratch/full-overhaul/`  
-**Status:** approved — tickets published under `issues/`  
+**Status:** **SHIPPED on main/production (2026-07-27)** — planning archive; live docs in `guides/restoration-kernel/`  
 **SPEC:** `SPEC.md` · **Ralplan:** `RALPLAN.md`
 
 ## Destination
 
 Ship **Restoration Kernel**: full experience overhaul — preservation physics, pipeline decisions, chaptered storylets, taught prestige, pure domain Kernel — with design-tier heal as earned ceremony. Done when §8 metrics instrumented + Prestige 1 arc complete end-to-end + rules no longer owned by GameState god-object.
+
+**As-shipped note:** cast + soft fade are Kernel sole paths; live craft ladder remains `PRODUCERS` with pipeline **roles** unifying HUD/UX (not a full content rewrite onto only `PIPELINE_MODULES`).
 
 ## Notes
 - Center: **game design + architecture**, not virality.  

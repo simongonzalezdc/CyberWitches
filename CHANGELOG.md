@@ -2,6 +2,19 @@
 
 ## Recent Changes
 
+### Restoration Kernel + S+/A+ quality bar (2026-07-27) — PRs #26–#34
+
+**Domain core:** pure Kernel under `js/kernel/` (cast, fade, pipeline content, chapters, prestige, affinity strategies, meditation mastery, projectors).
+
+- ✅ Live **cast resources** + **soft fade** sole paths via Kernel adapter
+- ✅ Pipeline HUD + workstation **role badges** (Capture→Store→Bind→Compile→Shield); 28/28 producers role-mapped
+- ✅ Affinity foreshadow; Meditation mastery `productionMult` on cast **and** tick
+- ✅ Offline fade; save `kernel` mirror; toast stack hard-cap **2** (board stays readable)
+- ✅ CI: `typecheck:kernel`, `validate:kernel-content`, `playtest:kernel`; package-lock TS7 fix for Pages deploy
+- ✅ Guides + claim-audit + quality bar: `guides/restoration-kernel/`
+- ✅ Production canary HEALTHY with Kernel HUD live (GitHub Pages)
+- ⏳ Optional growth: **human** mute-clip field pilot before paid UA (engineering stimulus already shipped under Capture the heal)
+
 ### Capture the heal (2026-07-27) — PR #20 + heal spine #14–#19
 
 **Product thesis:** mute-readable UI restore is the shareable scoreboard.
@@ -13,7 +26,7 @@
 - ✅ **Landing / OG** heal still (`screenshots/heal-split-still.png`)
 - ✅ Operator e2e + unit coverage (`captureTheHeal.test.js`, `heal-operator-journeys.spec.js`)
 - ✅ Campaign map / claim-audit / mute-clip runbook under `.scratch/capture-the-heal/`
-- ⏳ Field mute-clip n=5 (HITL) still residual — growth spend gated
+- ⏳ **Human** mute-clip n=5 pilot remains a **growth ops** gate for paid UA (not a Kernel engineering residual)
 
 Prior heal foundation: mult-cache + ascend invalidate, SYSTEM_LOG save outcomes, meditation Δ feedback, prestige ceremony preview (PRs #14–#19).
 

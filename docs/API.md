@@ -58,6 +58,20 @@ Live modules under `js/modules/game/`. Prefer reading sources + unit tests over 
 
 ### Game State
 
+#### Restoration Kernel (`js/kernel/`)
+
+Pure domain package (no DOM). Live game uses the adapter for **cast resources** and **soft fade**.
+
+| Entry | Role |
+|-------|------|
+| `createKernel` / `reduce` | Command dispatch: cast, tick, craft, prestige_*, chapter_check, tier_check, meditation_complete |
+| `castOnGameState` / `fadeOnGameState` | Sole live mutators for cast loot and fade |
+| `validateContentPack` / `assertContentPackValid` | CI content pack (`npm run validate:kernel-content`) |
+| `projectorsFromGameState` | Pipeline / contract / affinity HUD view-models |
+| `roleForId` / `PRODUCER_PIPELINE_ROLES` | Map live `ws_*` stations to pipeline roles |
+
+Docs: `guides/restoration-kernel/SCHEMA.md`.
+
 #### `GameState` Class
 
 The main game state manager that handles all game logic and data.
