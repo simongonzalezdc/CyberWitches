@@ -36,3 +36,10 @@ Full recipe: `docs/agent-law/empower-orchestrator.md`.
 - Domain map: `CONTEXT.md`
 - Kernel player/agent guides: `guides/restoration-kernel/` (QUALITY_BAR / QUALITY_REPORT / CLAIM_AUDIT)
 - Package release: **v1.1.0**; continuous GitHub Pages deploy on `main`
+
+## Post-ship docs stamp
+
+After merging material work to `main`, re-stamp `guides/restoration-kernel/QUALITY_REPORT.md` and `CLAIM_AUDIT.md` to the new tip **in the same session** before declaring done.
+
+- Checklist: `guides/restoration-kernel/POST_SHIP_STAMP.md`
+- Helper: `bash scripts/post-ship-stamp.sh`

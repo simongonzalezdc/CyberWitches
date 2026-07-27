@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-27  
 **Bar:** `QUALITY_BAR.md` (Eng ∩ Product ∩ Systems ∩ Identity)  
-**main tip:** `0bc6c314aa4bd55b0f359d89db8767b689520114` (merge PR #58)  
+**main tip:**  (includes docs refresh PR #59)
 **package:** v1.1.0 · tag `v1.1.0`
 
 ## Overall
