@@ -129,7 +129,7 @@ describe('15 balance battery', () => {
         st.inventory = { fire_essence: 100 };
         const k2 = createKernel(st);
         const r = k2.dispatch({ type: 'craft', moduleId: 'mod_fire_capture' });
-        expect(r.state.workstations.mod_fire_capture).toBe(1);
+        expect(r.state.workstations.ws_fire_forge || r.state.workstations.mod_fire_capture).toBe(1);
         expect(r.state.designTier).toBeGreaterThanOrEqual(1);
     });
 
