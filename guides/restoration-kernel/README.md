@@ -16,6 +16,7 @@
 | [QUALITY_BAR.md](QUALITY_BAR.md) | Eng / product | Overall S+ O2: Eng∩Product∩Systems∩Identity |
 | [QUALITY_REPORT.md](QUALITY_REPORT.md) | Eng / product | Tip-dated scorecard |
 | [CLAIM_AUDIT.md](CLAIM_AUDIT.md) | Eng / auditors | Evidence map; residuals |
+| [POST_SHIP_STAMP.md](POST_SHIP_STAMP.md) | Eng / agents | Same-session tip stamp after merge |
 | [LEGACY_PARK.md](LEGACY_PARK.md) | Eng | Ownership + kill-list |
 
 ## Related repo docs

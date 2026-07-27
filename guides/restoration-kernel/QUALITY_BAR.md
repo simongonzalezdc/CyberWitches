@@ -89,4 +89,10 @@ NOT done until: QUALITY_REPORT.md lists tip SHA + all four blocks PASS.
 1. **tip** git SHA  
 2. date  
 3. table of Eng/Product/Systems/Identity with PASS/FAIL  
-4. commands run  
+4. commands run
+
+## Post-ship stamp
+
+After a material merge that affects these gates, re-stamp `QUALITY_REPORT.md` (and `CLAIM_AUDIT.md`) to the new `origin/main` tip **before** calling the campaign done.
+
+Procedure: [POST_SHIP_STAMP.md](POST_SHIP_STAMP.md) · `bash scripts/post-ship-stamp.sh`

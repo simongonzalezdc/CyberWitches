@@ -1,9 +1,13 @@
 # Claim-audit — Restoration Kernel (current)
 
 **Last updated:** 2026-07-27  
-**main tip:** `0bc6c31` (PR #58 overall S+ O2)  
+**main tip:**  / 
 **package / release:** **v1.1.0** (`v1.1.0` GitHub Release)  
 **Deploy:** GitHub Pages on every `main` push
+
+## Re-stamp after the next ship
+
+Do not leave this file on an old tip. After any material merge to `main`, run the checklist in [POST_SHIP_STAMP.md](POST_SHIP_STAMP.md) (or `bash scripts/post-ship-stamp.sh`) **in the same session** and update **main tip** + **Last updated** below.
 
 ## Verdict
 

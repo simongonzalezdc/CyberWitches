@@ -17,7 +17,8 @@ Automation and durable system changes require the scale/severity/reversibility/p
 - **Restoration Kernel:** pure domain in `js/kernel/`; live cast/fade must stay on the adapter. Docs: [guides/restoration-kernel/](guides/restoration-kernel/). Quality bar: `QUALITY_BAR.md`. Adversarial GD: `ADVERSARIAL_GD_REVIEW.md`.
 - **Fade:** any new non-AB inventory product of craft/capture must get a `FADE_WEIGHT` entry in `js/kernel/fade.js` (no immortal banks).
 - **Ownership:** craft writes must use canonical ids (`applyOwnershipDelta` / live `ws_*` for paired stations). Do not dual-count `ws_*`+`mod_*`. See `js/kernel/ownership.js`.
-- **Quality:** overall S+ is Eng∩Product∩Systems∩Identity — `guides/restoration-kernel/QUALITY_BAR.md`. Tip-date QUALITY_REPORT after material ship.
+- **Quality:** overall S+ is Eng∩Product∩Systems∩Identity — `guides/restoration-kernel/QUALITY_BAR.md`.
+- **Post-ship docs stamp (required after material merge):** same session, tip-stamp `QUALITY_REPORT.md` + `CLAIM_AUDIT.md` to `origin/main` SHA — checklist [`guides/restoration-kernel/POST_SHIP_STAMP.md`](guides/restoration-kernel/POST_SHIP_STAMP.md). Helper: `bash scripts/post-ship-stamp.sh`.
 - **Aesthetic:** surface polish goes in `css/aesthetic-v2.css` (or tokens in `styles/theme.css`); preserve tier-0 mono.
 - **Heal / share path:** do not put save secrets into `healShare` / `healCapture` exports. Prefer extending those modules over rewriting `GameState` for share features.
 - **Notifications:** do not raise `NotificationManager.maxVisible` above 2 without a visual regression check — board readability is part of the quality bar.
