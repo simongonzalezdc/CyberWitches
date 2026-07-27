@@ -35,13 +35,18 @@ const boot = async (page) => {
       bootEl.style.pointerEvents = 'none';
     }
   });
-  // Force Tier 0 presentation for deprivation
+  // Force hard Tier 0 mono presentation for deprivation (Opus 5 Rank 4)
   await page.evaluate(() => {
     document.body.classList.remove('tier-1', 'tier-2', 'tier-3', 'tier-4');
     document.body.classList.add('tier-0');
+    localStorage.setItem('cw.designTier', '0');
     localStorage.setItem('tutorialCompleted', 'true');
     /** @type {any} */
     const w = window;
+    const dts = w.uiManager?.systems?.designTierSystem;
+    if (dts?.applyTier) {
+      try { dts.applyTier(0); } catch { /* optional */ }
+    }
     w.uiManager?.compileGoalUI?.update?.();
   });
   await page.waitForTimeout(300);

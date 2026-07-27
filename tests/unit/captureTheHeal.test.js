@@ -108,11 +108,14 @@ describe('04 healCeremony state machine', () => {
         expect(restoreLine({ fromTier: 0, toTier: 2 })).toContain('SYSTEM_RESTORE v2.0');
     });
 
-    test('full motion runs dim → share_pulse via schedule', () => {
+    test('full motion runs dim → share_pulse; applyChrome at restore_line only', () => {
         /** @type {Array<[number, () => void]>} */
         const jobs = [];
         const classes = new Set();
         const logs = [];
+        const notifies = [];
+        /** @type {number[]} */
+        const chromeAt = [];
         /** @type {Array<{ pulse?: boolean } | undefined>} */
         const shareCalls = [];
         const result = runHealCeremony(
@@ -123,8 +126,9 @@ describe('04 healCeremony state machine', () => {
                 removeBodyClass: (c) => classes.delete(c),
                 setHealDataset: () => {},
                 appendLog: (line) => logs.push(line),
-                notify: () => {},
+                notify: (msg) => notifies.push(msg),
                 showSharePulse: (o) => shareCalls.push(o),
+                applyChrome: () => { chromeAt.push(Date.now()); },
                 schedule: (ms, fn) => { jobs.push([ms, fn]); }
             }
         );
@@ -132,19 +136,25 @@ describe('04 healCeremony state machine', () => {
         expect(result.beats).toContain('dim');
         expect(classes.has('tier-advance-heal')).toBe(true);
         expect(logs[0]).toMatch(/SYSTEM_RESTORE/);
-        // Drain scheduled beats — live beats array mutates
+        expect(chromeAt.length).toBe(0); // not at t=0
         jobs.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
         expect(result.beats).toEqual(
             expect.arrayContaining(['dim', 'restore_line', 'chrome', 'toast_log', 'share_pulse', 'done'])
         );
+        expect(chromeAt.length).toBe(1); // once at restore_line (+ done is no-op)
         expect(shareCalls.some((c) => c && c.pulse === true)).toBe(true);
+        expect(notifies).toHaveLength(1);
+        expect(notifies[0]).toMatch(/SYSTEM_RESTORE v1\.0 ONLINE/);
+        expect(notifies[0]).toMatch(/was v0\.0/);
         expect(result.line).toContain('v1.0');
     });
 
-    test('reduced-motion: final state + log only (no motion class / no pulse)', () => {
+    test('reduced-motion: applyChrome sync + ready share, no motion class', () => {
         const classes = new Set();
+        let chrome = 0;
         /** @type {Array<{ pulse?: boolean } | undefined>} */
         const shareCalls = [];
+        const notifies = [];
         const result = runHealCeremony(
             { fromTier: 0, toTier: 3 },
             {
@@ -153,17 +163,20 @@ describe('04 healCeremony state machine', () => {
                 removeBodyClass: (c) => classes.delete(c),
                 setHealDataset: () => {},
                 appendLog: () => {},
-                notify: () => {},
+                notify: (m) => notifies.push(m),
                 showSharePulse: (o) => shareCalls.push(o),
+                applyChrome: () => { chrome += 1; },
                 schedule: () => {}
             }
         );
         expect(result.reduced).toBe(true);
         expect(result.durationMs).toBe(0);
         expect(classes.has('tier-advance-heal')).toBe(false);
+        expect(chrome).toBe(1);
         expect(result.beats).toEqual(expect.arrayContaining(['toast_log', 'done']));
         expect(shareCalls.length).toBe(1);
         expect(shareCalls[0]?.pulse).toBe(false);
+        expect(notifies[0]).toMatch(/was v0\.0/);
     });
 
     test('prefersReducedMotion reads matchMedia', () => {
@@ -267,12 +280,24 @@ describe('source seams — designTier + craft + CSS ceremony', () => {
         expect(src).toContain('_markFunnelAutomation');
     });
 
-    test('CSS has ceremony beat classes + reduced-motion', () => {
+    test('CSS has ceremony beat classes + reduced-motion + hard mono scoped', () => {
         const css = fs.readFileSync(path.join(root, 'css/components.css'), 'utf8');
         expect(css).toContain('heal-ceremony-dim');
         expect(css).toContain('heal-ceremony-restore');
         expect(css).toContain('heal-ceremony-chrome');
         expect(css).toContain('prefers-reduced-motion');
+        expect(css).toContain('grayscale(0.92)');
+        expect(css).toContain('heal-share-btn--ready');
+        // filter must not be applied to bare body.tier-advance-heal { filter:
+        expect(css).not.toMatch(/body\.tier-advance-heal\s*\{[^}]*filter:/);
+    });
+
+    test('designTierSystem gates chrome behind ceremony applyChrome', () => {
+        const src = fs.readFileSync(path.join(root, 'js/modules/game/designTierSystem.js'), 'utf8');
+        expect(src).toContain('applyChrome');
+        expect(src).toContain('logOnly');
+        expect(src).toContain('SYSTEM_RESTORE v1.0');
+        expect(src).not.toContain('SYSTEM_UPDATE: v1.0');
     });
 
     test('03 format decision recorded still-first', () => {

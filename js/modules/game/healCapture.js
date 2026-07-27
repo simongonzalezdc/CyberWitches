@@ -128,11 +128,16 @@ export function paintSplitStill(ctx, input) {
     ctx.fillStyle = to.accent;
     ctx.fillRect(mid - 1, 0, 2, h);
 
-    // Footer brand (no secrets)
+    // Footer brand (no secrets) — pair-aware, not always "Broken"
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.font = '12px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillText('Hex Compiler — mute-readable heal', 28, h - 24);
-    ctx.fillText('Broken → restored', mid + 28, h - 24);
+    const fromT = Number(input.fromTier) || 0;
+    const toT = Number(input.toTier) || 0;
+    const footer = fromT === 0
+        ? 'Broken → restored'
+        : `v${fromT}.0 → v${toT}.0 chrome`;
+    ctx.fillText(footer, mid + 28, h - 24);
 }
 
 /**

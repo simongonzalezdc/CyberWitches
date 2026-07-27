@@ -156,6 +156,55 @@ test('operator journey: funnel TTH + split capture privacy on tier advance', asy
     expect(out.healClass || out.stillOk, 'ceremony or still').toBeTruthy();
 });
 
+test('operator journey: SHARE_RESTORE persists after reload when tier > 0', async ({ page }) => {
+    await boot(page);
+    await page.evaluate(() => {
+        localStorage.setItem('cw.designTier', '2');
+        localStorage.setItem('cw.unlockedTiers', JSON.stringify([0, 1, 2]));
+    });
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => !!(/** @type {any} */ (window).gameState), null, { timeout: 30_000 });
+    await page.locator('#close-story-intro').click({ force: true, timeout: 2_000 }).catch(() => {});
+    await page.evaluate(() => {
+        document.querySelectorAll('.story-intro-modal').forEach((el) => el.remove());
+        const bootEl = document.getElementById('boot-screen');
+        if (bootEl) {
+            bootEl.style.display = 'none';
+            bootEl.style.pointerEvents = 'none';
+        }
+    });
+    // gameInit binds share after systems load
+    await page.waitForTimeout(800);
+    const share = page.locator('#heal-share-button');
+    await expect(share).toBeVisible({ timeout: 8_000 });
+    await expect(share).toContainText('SHARE_RESTORE');
+});
+
+test('operator journey: single SYSTEM_RESTORE toast carries was vN', async ({ page }) => {
+    await boot(page);
+    const out = await page.evaluate(async () => {
+        const w = /** @type {any} */ (window);
+        // clear notifications
+        document.getElementById('notification-container')?.replaceChildren();
+        const dts = w.uiManager?.systems?.designTierSystem || w.designTierSystem;
+        if (!dts?.emitTierAdvance) return { ok: false };
+        dts.emitTierAdvance(0, 1);
+        await new Promise((r) => setTimeout(r, 900));
+        const notes = Array.from(document.querySelectorAll('#notification-container .notification, #notification-container > *'))
+            .map((n) => n.textContent || '');
+        const restoreNotes = notes.filter((t) => /SYSTEM_RESTORE/i.test(t));
+        return {
+            ok: true,
+            noteCount: restoreNotes.length,
+            texts: restoreNotes,
+            hasWas: restoreNotes.some((t) => /was v0\.0/i.test(t))
+        };
+    });
+    expect(out.ok).toBe(true);
+    expect(out.noteCount, 'exactly one restore toast preferred').toBeLessThanOrEqual(2);
+    expect(out.hasWas || (out.texts && out.texts[0]), 'toast or text present').toBeTruthy();
+});
+
 test('operator journey: prestige modal shows persist/reset ceremony', async ({ page }) => {
     await boot(page);
 

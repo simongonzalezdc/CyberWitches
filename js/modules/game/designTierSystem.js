@@ -138,7 +138,9 @@ export class DesignTierSystem {
     }
 
     /**
-     * Unlock a tier and apply its effects
+     * Unlock a tier and apply its effects.
+     * Adversarial GD: defer chrome apply until ceremony restore_line so the
+     * stranger sees broken → restored (not restored → flash).
      */
     async unlockTier(tier) {
         if (this.unlockedTiers.has(tier)) return;
@@ -146,14 +148,36 @@ export class DesignTierSystem {
         const fromTier = this.currentTier;
         this.unlockedTiers.add(tier);
         this.currentTier = Math.max(this.currentTier, tier);
-        await this.applyTier(tier);
         this.saveTier();
-        this.showUnlockNotification(tier);
-        this.emitTierAdvance(fromTier, tier);
+        // Flavor lines → SYSTEM_LOG only (ceremony owns the single toast)
+        this.showUnlockNotification(tier, { logOnly: true });
 
-        // Initialize background sparkles when Tier 3 is unlocked
-        if (tier >= 3 && this.uiManager?.systems?.particleSystem) {
-            this.uiManager.systems.particleSystem.init();
+        let chromeApplied = false;
+        const applyChrome = async () => {
+            if (chromeApplied) return;
+            chromeApplied = true;
+            await this.applyTier(tier);
+            if (tier >= 3 && this.uiManager?.systems?.particleSystem) {
+                try { this.uiManager.systems.particleSystem.init(); } catch { /* optional */ }
+            }
+        };
+
+        try {
+            this.emitTierAdvance(fromTier, tier, { applyChrome });
+        } catch (e) {
+            console.warn('emitTierAdvance failed during unlock', e);
+            try { await applyChrome(); } catch (err) { console.warn(err); }
+            return;
+        }
+
+        // Deferred safety: if ceremony never applied chrome (thrown mid-flight),
+        // force apply after ceremony window — never block at t=0 (that kills the reveal).
+        if (typeof window !== 'undefined' && typeof window.setTimeout === 'function') {
+            window.setTimeout(() => {
+                if (!chromeApplied) {
+                    applyChrome().catch((err) => console.warn('late applyChrome failed', err));
+                }
+            }, 1800);
         }
     }
 
@@ -161,22 +185,24 @@ export class DesignTierSystem {
      * First-class tier advance bus (heal/share/telemetry subscribe here).
      * @param {number} fromTier
      * @param {number} toTier
+     * @param {{ applyChrome?: () => void | Promise<void> }} [opts]
      */
-    emitTierAdvance(fromTier, toTier) {
+    emitTierAdvance(fromTier, toTier, opts = {}) {
         const detail = { fromTier, toTier, at: Date.now() };
         try {
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new window.CustomEvent('hex:tierAdvance', { detail }));
                 window.__lastTierAdvance = detail;
-                // Unmissable heal package: ceremony timeline + optional stinger
-                this.playHealMoment(detail);
-                // Local funnel: TTH (once) + cumulative tierAdvance
+                this.playHealMoment(detail, { applyChrome: opts.applyChrome });
                 try {
                     markFirstHeal(detail.at);
                 } catch { /* private mode */ }
             }
         } catch (e) {
             console.warn('emitTierAdvance failed', e);
+            if (typeof opts.applyChrome === 'function') {
+                try { opts.applyChrome(); } catch { /* ignore */ }
+            }
         }
         if (typeof this.onTierAdvance === 'function') {
             try { this.onTierAdvance(detail); } catch (e) { console.warn(e); }
@@ -184,18 +210,24 @@ export class DesignTierSystem {
     }
 
     /**
-     * Diegetic heal moment via ceremony state machine (ticket 04).
-     * Reduced-motion: final state + SYSTEM_LOG + toast (no motion classes).
+     * Diegetic heal moment via ceremony state machine.
      * @param {{ fromTier: number, toTier: number, at: number }} detail
+     * @param {{ applyChrome?: () => void | Promise<void> }} [opts]
      */
-    playHealMoment(detail) {
+    playHealMoment(detail, opts = {}) {
         try {
-            playHealCeremonyInBrowser(detail, { audioSystem: this.audioSystem });
+            playHealCeremonyInBrowser(detail, {
+                audioSystem: this.audioSystem,
+                applyChrome: opts.applyChrome
+            });
             if (this.audioSystem && typeof this.audioSystem.playSound === 'function') {
                 try { this.audioSystem.playSound('tier_unlock'); } catch { /* optional stinger */ }
             }
         } catch (e) {
             console.warn('playHealMoment failed', e);
+            if (typeof opts.applyChrome === 'function') {
+                try { opts.applyChrome(); } catch { /* ignore */ }
+            }
         }
     }
 
@@ -296,18 +328,32 @@ export class DesignTierSystem {
     }
 
     /**
-     * Show unlock notification
+     * Unlock flavor — SYSTEM_RESTORE vocabulary only.
+     * @param {number} tier
+     * @param {{ logOnly?: boolean }} [opts] when true (ceremony path), skip toast stack
      */
-    showUnlockNotification(tier) {
+    showUnlockNotification(tier, opts = {}) {
         const messages = {
-            1: { title: 'SYSTEM_UPDATE: v1.0', message: 'COLOR_DRIVERS_LOADED.' },
-            2: { title: 'SYSTEM_UPDATE: v2.0', message: 'AUDIO_MODULE_ONLINE.' },
-            3: { title: 'SYSTEM_UPDATE: v3.0', message: 'GRAPHICS_ENGINE_OPTIMIZED.' },
-            4: { title: 'SYSTEM_UPDATE: v4.0', message: 'FULL_SENSORY_SUITE_ACTIVE.' }
+            1: { title: 'SYSTEM_RESTORE v1.0', message: 'COLOR_DRIVERS_LOADED.' },
+            2: { title: 'SYSTEM_RESTORE v2.0', message: 'AUDIO_MODULE_ONLINE.' },
+            3: { title: 'SYSTEM_RESTORE v3.0', message: 'GRAPHICS_ENGINE_OPTIMIZED.' },
+            4: { title: 'SYSTEM_RESTORE v4.0', message: 'FULL_SENSORY_SUITE_ACTIVE.' }
         };
 
         const msg = messages[tier];
-        if (msg && this.uiManager?.showNotification) {
+        if (!msg) return;
+
+        // Prefer SYSTEM_LOG for flavor so ceremony owns the single mute-readable toast
+        if (opts.logOnly || typeof window !== 'undefined') {
+            try {
+                if (typeof window.__appendSystemLog === 'function') {
+                    window.__appendSystemLog(`${msg.title} — ${msg.message}`, 'success');
+                }
+            } catch { /* optional */ }
+        }
+        if (opts.logOnly) return;
+
+        if (this.uiManager?.showNotification) {
             this.uiManager.showNotification(msg.title, 'success');
             setTimeout(() => {
                 this.uiManager.showNotification(msg.message, 'info');
