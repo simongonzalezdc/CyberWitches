@@ -802,6 +802,16 @@ footer {
     color: var(--text-primary, inherit);
 }
 .heal-thesis { padding: 3rem 0; }
+.heal-panel--still {
+    grid-column: 1 / -1;
+}
+.heal-split-still-img {
+    width: 100%;
+    height: auto;
+    border-radius: 0.35rem;
+    border: 1px solid color-mix(in srgb, var(--ky-cyan) 35%, transparent);
+    display: block;
+}
 .heal-before-after {
     display: grid;
     grid-template-columns: 1fr 1fr;

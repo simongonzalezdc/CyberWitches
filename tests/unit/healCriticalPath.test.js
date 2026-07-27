@@ -48,10 +48,13 @@ describe('heal critical path W1–W4', () => {
     });
 
     test('08 heal package + reduced-motion path present', () => {
-        const src = fs.readFileSync(path.join(root, 'js/modules/game/designTierSystem.js'), 'utf8');
-        expect(src).toContain('tier-advance-heal');
-        expect(src).toContain('prefers-reduced-motion');
-        expect(src).toContain('SYSTEM_RESTORE');
+        const dts = fs.readFileSync(path.join(root, 'js/modules/game/designTierSystem.js'), 'utf8');
+        expect(dts).toContain('playHealMoment');
+        expect(dts).toContain('playHealCeremonyInBrowser');
+        const ceremony = fs.readFileSync(path.join(root, 'js/modules/game/healCeremony.js'), 'utf8');
+        expect(ceremony).toContain('tier-advance-heal');
+        expect(ceremony).toContain('prefers-reduced-motion');
+        expect(ceremony).toContain('SYSTEM_RESTORE');
         const css = fs.readFileSync(path.join(root, 'css/components.css'), 'utf8');
         expect(css).toContain('tier-advance-heal');
     });
@@ -87,6 +90,8 @@ describe('heal critical path W1–W4', () => {
         expect(html).toMatch(/heals/i);
         expect(html).toContain('heal-before-after');
         expect(html).toContain('Broken → restored');
+        expect(html).toContain('heal-split-still.png');
+        expect(html).toContain('og:image');
         // Play CTA still primary
         expect(html).toMatch(/href="play\.html"[^>]*>[\s\S]*?Play Now/);
     });
