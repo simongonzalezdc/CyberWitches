@@ -33,11 +33,17 @@ describe('session-ship Must contracts', () => {
     });
 
     test('cast path uses critical_compile not jackpot bonusType', () => {
-        const src = fs.readFileSync(path.join(root, 'js/gameState.js'), 'utf8');
+        // Live cast is Kernel-owned (castOnGameState → rollCastBonusSeeded).
+        // Legacy rollCastBonus remains in castBonus.js for UI/tests.
+        const gs = fs.readFileSync(path.join(root, 'js/gameState.js'), 'utf8');
+        const kernelCast = fs.readFileSync(path.join(root, 'js/kernel/cast.js'), 'utf8');
         const bonus = fs.readFileSync(path.join(root, 'js/game/castBonus.js'), 'utf8');
+        expect(gs).toContain('castOnGameState');
+        expect(kernelCast).toContain('rollCastBonusSeeded');
+        expect(kernelCast).toContain("bonusType = 'critical_compile'");
         expect(bonus).toContain("bonusType = 'critical_compile'");
-        expect(src).toContain('rollCastBonus');
-        expect(src).not.toMatch(/bonusType\s*=\s*'jackpot'/);
+        expect(gs).not.toMatch(/bonusType\s*=\s*'jackpot'/);
+        expect(kernelCast).not.toMatch(/bonusType\s*=\s*'jackpot'/);
         expect(bonus).not.toMatch(/bonusType\s*=\s*'jackpot'/);
         const backup = path.join(root, 'js/gameState.js.backup');
         if (fs.existsSync(backup)) {

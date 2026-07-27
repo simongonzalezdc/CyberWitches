@@ -14,8 +14,11 @@ Automation and durable system changes require the scale/severity/reversibility/p
 
 - **Canonical remote:** Forgejo (`git.kyanitelabs.tech`) for PRs/merges. **GitHub** is the mirror that runs **Pages Deploy** — if production lags, check Actions **Deploy** (often `npm ci` / lockfile), not only Forgejo.
 - **Domain map:** read [CONTEXT.md](CONTEXT.md) before deep refactors.
-- **Restoration Kernel:** pure domain in `js/kernel/`; live cast/fade must stay on the adapter. Docs: [guides/restoration-kernel/](guides/restoration-kernel/). Quality bar: `QUALITY_BAR.md`.
+- **Restoration Kernel:** pure domain in `js/kernel/`; live cast/fade must stay on the adapter. Docs: [guides/restoration-kernel/](guides/restoration-kernel/). Quality bar: `QUALITY_BAR.md`. Adversarial GD: `ADVERSARIAL_GD_REVIEW.md`.
+- **Fade:** any new non-AB inventory product of craft/capture must get a `FADE_WEIGHT` entry in `js/kernel/fade.js` (no immortal banks).
+- **Aesthetic:** surface polish goes in `css/aesthetic-v2.css` (or tokens in `styles/theme.css`); preserve tier-0 mono.
 - **Heal / share path:** do not put save secrets into `healShare` / `healCapture` exports. Prefer extending those modules over rewriting `GameState` for share features.
 - **Notifications:** do not raise `NotificationManager.maxVisible` above 2 without a visual regression check — board readability is part of the quality bar.
+- **Release:** players ship via **GitHub Pages** on `main` push. Do not bump `package.json` version unless intentionally cutting an external/marketing release.
 - **Tests:** `npm run ci` before PR (includes kernel content validate + playtest sim). Heal e2e: `e2e/heal-operator-journeys.spec.js`. Kernel e2e: `e2e/kernel-void-save.spec.js`.
 - **Campaign scratch:** Capture-the-heal history in `.scratch/capture-the-heal/` (growth field pilot is ops, not Kernel residual). Kernel overhaul tickets in `.scratch/full-overhaul/`.

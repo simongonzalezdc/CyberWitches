@@ -1,7 +1,8 @@
 # Restoration Kernel — documentation index
 
-**Status:** live on production (2026-07-27).  
-**Code:** `js/kernel/` · **Play:** https://simongonzalezdc.github.io/CyberWitches/play.html
+**Status:** live on production (2026-07-27) — includes PR #36 weighted fade + aesthetic v2.  
+**Code:** `js/kernel/` + `css/aesthetic-v2.css` · **Play:** https://simongonzalezdc.github.io/CyberWitches/play.html  
+**Release:** continuous Pages deploy — no semver tag required for this ship.
 
 | Doc | Audience | Contents |
 |-----|----------|----------|

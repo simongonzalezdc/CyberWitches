@@ -35,5 +35,11 @@ Address space `0xFADING` loses cells by the hour. You already lost Sector-7. Thi
 - Soft void loss (“lost to the void”)  
 - Compile contracts as system tickets  
 - SYSTEM_RESTORE on design-tier heals  
+- Hex lattice instrument deck (post-boot UI), mono boot at tier-0  
 
 Avoid generic idle apocalypse copy; stay diegetic to the hex grid.
+
+## Voice rules (anti-cliché)
+
+- Prefer: sector, packet, void weight, overcap, compile, address, latch  
+- Avoid: “preservation chamber,” “perfect harmony,” “transcendence through code,” empty quantum buzzwords

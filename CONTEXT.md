@@ -41,15 +41,19 @@ modules deepen; it is the map AI agents and new contributors read first.
   (`pipelineRoles.js`, `PipelineHudUI`, role badges on workstation cards).
 - **Affinity** — pre-prestige foreshadow; post-prestige specialization strategies
   (`affinity.js` / `SPECIALIZATION_STRATEGIES`).
-- **Soft fade** — unstored essence over storage cap bleeds (early game soft;
-  offline catch-up also fades).
+- **Soft fade** — unstored stock over storage cap bleeds (early game soft;
+  offline catch-up also fades). Cap is in **weighted void-pressure units**
+  (`FADE_WEIGHT` in `js/kernel/fade.js`): raw essence = 1.0; denser craft
+  intermediates lower (still > 0). No produced intermediate is immortal.
+- **Aesthetic v2** — hex lattice terminal surface (`css/aesthetic-v2.css`);
+  tier-0 monochrome path remains strict mono.
 
 ## Architecture seams
 
 - **Restoration Kernel** (`js/kernel/`) — pure transitions + content schema
   (`validate:kernel-content`, `typecheck:kernel`). Adapter bridges GameState.
   Projectors: pipeline / contract / affinity HUD view-models. Guides + claim-audit:
-  `guides/restoration-kernel/`. Quality bar: `QUALITY_BAR.md` / `QUALITY_REPORT.md`.
+  `guides/restoration-kernel/` (includes adversarial GD review + quality bar).
 - **Save codec** (`js/save/saveCodec.js`) — owns the integrity + migration core
   of persistence as pure functions over a *save snapshot*. GameState depends on
   just two: `encode(snapshot) -> string` and `decode(rawString) -> { outcome,
