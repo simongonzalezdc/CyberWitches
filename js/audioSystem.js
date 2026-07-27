@@ -2325,25 +2325,24 @@ export class AudioSystem {
         
         // Check every second to ensure music is disabled for tiers 0-3
         this.musicTierMonitor = setInterval(() => {
-            // policy seam (extracted pure helper)
+            let currentTier;
             try {
-                const tierSys = window.uiManager?.systems?.designTierSystem;
-                const tier = tierSys?.getCurrentTier?.() ?? 0;
-                if (!shouldAllowMusic(tier) && this.musicEnabled) {
-                    // keep existing stop logic below
-                }
-            } catch { /* ignore */ }
+                const tierSys =
+                    window.uiManager?.systems?.designTierSystem ||
+                    window.designTierSystem;
+                currentTier = Number(tierSys?.getCurrentTier?.() ?? 0) || 0;
+            } catch {
+                currentTier = 0;
+            }
 
-            const currentTier = window.designTierSystem ? window.designTierSystem.getCurrentTier() : 0;
-            
-            // STRICT: Tiers 0-3 must NEVER have music
-            if (currentTier < 4) {
+            // STRICT: policy seam — tiers 0-3 must NEVER have music
+            if (!shouldAllowMusic(currentTier)) {
                 if (this.musicEnabled) {
                     console.warn('Tier', currentTier, 'detected with music enabled - forcing disable');
                     this.musicEnabled = false;
                     this.stopMusic();
                 }
-                
+
                 // Double-check: if music nodes exist, stop them
                 if (this.musicNodes.length > 0 || this.musicGainNodes.length > 0) {
                     console.warn('Tier', currentTier, 'detected with music nodes active - stopping music');
