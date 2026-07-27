@@ -54,42 +54,31 @@ describe('heal W0 foundation', () => {
     test('02 ascend invalidates multiplier cache (no stale upgrade mult)', () => {
         const gs = new GameState();
         gs.workstations = { ws_fire_forge: 1 };
-        // Inject a fake upgrade into owned map that multiplies global
-        // Use a real upgrade if present; otherwise stub via direct cache pollution
         gs.upgradesOwned = {};
         gs.prestigeBonuses = {};
         gs.activeBuffs = [];
-        gs.prestigeLifetimeEarned = 1e12; // ensure ascend can grant keys
+        // lifetime needed for EK gain: floor(sqrt(L / 1.2e6)) > 0 → L >= 1.2e6
+        gs.prestigeLifetimeEarned = 5_000_000;
         gs.prestigePoints = 0;
+        gs.saveGameState = () => {};
+        gs.saveGameStateImmediate = () => {};
 
         // Seed a cached base that would be wrong after reset if not cleared
         gs.multiplierCache.set('ws_fire_forge', 99);
         gs.multiplierCacheDirty = false;
+        expect(gs.calculatePrestigeGain()).toBeGreaterThan(0);
 
-        // Force enough lifetime for gain if Balance allows; if ascend no-ops, still
-        // assert invalidate path by calling invalidate after simulating ascend body.
-        const beforeAscendCache = gs.multiplierCache.get('ws_fire_forge');
-        expect(beforeAscendCache).toBe(99);
+        gs.ascend();
 
-        // Directly exercise the contract ascend must uphold
-        gs.workstations = {};
-        gs.upgradesOwned = {};
-        gs.invalidateMultiplierCache();
         expect(gs.multiplierCacheDirty).toBe(true);
         expect(gs.multiplierCache.size).toBe(0);
+        expect(gs.workstations).toEqual({});
+        expect(gs.upgradesOwned).toEqual({});
 
-        // Fresh mult is base 1.x volatile, not 99
+        // Fresh mult is base ~1× volatile, not the polluted 99
         const after = gs.getProductionMultiplier('ws_fire_forge');
         expect(after).toBeLessThan(10);
         expect(after).not.toBe(99);
-
-        // Source guarantee: ascend() calls invalidate
-        const src = fs.readFileSync(path.join(root, 'js/gameState.js'), 'utf8');
-        const ascendIdx = src.indexOf('ascend()');
-        const invIdx = src.indexOf('invalidateMultiplierCache()', ascendIdx);
-        const endAscend = src.indexOf('\n    chooseElementSpecialization', ascendIdx);
-        expect(invIdx).toBeGreaterThan(ascendIdx);
-        expect(invIdx).toBeLessThan(endAscend);
     });
 
     test('01 forgejo CI runs tests without swallowing failures', () => {
