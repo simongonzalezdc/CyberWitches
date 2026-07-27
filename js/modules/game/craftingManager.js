@@ -7,6 +7,7 @@
 import { PRODUCERS } from '../../modules/data/producers.js';
 import { UPGRADES } from '../../modules/data/upgrades.js';
 import { HIDDEN_RECIPES } from '../../modules/data/recipes.js';
+import { markFirstAutomation } from './funnelMetrics.js';
 
 export class CraftingManager {
     constructor(gameState) {
@@ -41,6 +42,7 @@ export class CraftingManager {
 
         if (successCount > 0) {
             if (this.gameState.onWorkstationCrafted) this.gameState.onWorkstationCrafted(wsId, this.gameState.workstations[wsId]);
+            this._markFunnelAutomation(wsId);
             return true;
         }
 
@@ -77,10 +79,21 @@ export class CraftingManager {
 
         if (successCount > 0) {
             if (this.gameState.onWorkstationCrafted) this.gameState.onWorkstationCrafted(wsId, this.gameState.workstations[wsId]);
+            this._markFunnelAutomation(wsId);
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Local TTA funnel: first ws_fire_forge craft (Capture the heal ticket 02).
+     * @param {string} wsId
+     */
+    _markFunnelAutomation(wsId) {
+        try {
+            markFirstAutomation(wsId);
+        } catch { /* optional */ }
     }
 
     /**
