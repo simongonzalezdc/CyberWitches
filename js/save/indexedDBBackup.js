@@ -160,10 +160,40 @@ export async function restoreMissingFromIndexedDB(keys) {
 
             const backup = await idbGet(key);
             if (backup != null) {
-                try { localStorage.setItem(key, backup); } catch { /* quota / unavailable */ }
+                try {
+                    localStorage.setItem(key, backup);
+                    // Recovery is not silent — log to SYSTEM_LOG when bridge exists
+                    try {
+                        if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                            window.__appendSystemLog(`IDB_RESTORE recovered missing ${key}`, 'success');
+                        }
+                    } catch { /* optional */ }
+                    console.info(`[idb] Restored missing localStorage key from IndexedDB: ${key}`);
+                } catch (writeErr) {
+                    // Had a durable backup but could not write it back — player must know
+                    console.error(`[idb] Failed to restore ${key} into localStorage:`, writeErr);
+                    try {
+                        if (typeof window !== 'undefined' && typeof window.showNotification === 'function') {
+                            window.showNotification(
+                                `Could not restore saved progress for ${key} (browser storage full or blocked).`,
+                                'error',
+                                8000
+                            );
+                        }
+                        if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                            window.__appendSystemLog(`IDB_RESTORE_FAIL ${key}`, 'error');
+                        }
+                    } catch { /* optional */ }
+                }
             }
-        } catch {
-            // Never let one key's failure block the others or boot.
+        } catch (err) {
+            // Never let one key's failure block the others or boot — but log it.
+            console.warn(`[idb] restoreMissingFromIndexedDB failed for ${key}:`, err);
+            try {
+                if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                    window.__appendSystemLog(`IDB_RESTORE_ERR ${key}`, 'warn');
+                }
+            } catch { /* optional */ }
         }
     }
 }

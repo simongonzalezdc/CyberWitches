@@ -4,7 +4,7 @@ import { PRODUCERS } from './modules/data/producers.js';
 import { UPGRADES } from './modules/data/upgrades.js';
 import { PRESTIGE_BONUSES } from './modules/data/prestige.js';
 import { Balance, formatShort as formatShortUtil } from './utils.js';
-import { handleError } from './errorHandler.js';
+import { handleError, notifyPlayer } from './errorHandler.js';
 import { GAME_CONSTANTS } from './codeOrganization.js';
 import { ELEMENT_SPECIALIZATIONS, getIngredientElement, getWorkstationElement, isUniversalIngredient, isABProducer } from './elementSpecialization.js';
 import { debounce } from './commonUtils.js';
@@ -1045,6 +1045,12 @@ export class GameState {
             if (result.outcome === 'checksum_recalculated') {
                 console.warn('Save data checksum verification failed - recalculating checksum');
                 this.backupRawSave('cyberWitchesSave_checksum_fix_', saveDataStr);
+                // Not silent: player should know integrity repair happened
+                notifyPlayer(
+                    'Save integrity check repaired a checksum mismatch. A raw backup was kept.',
+                    'load:checksum',
+                    'warning'
+                );
             }
 
             if (result.outcome === 'migration_failed') {
@@ -1078,13 +1084,23 @@ export class GameState {
             // Load state
             this.ab = Number(data.ab);
             if (isNaN(this.ab)) {
-                console.warn('⚠️ Corrupted Save: AB was NaN. Resetting to 0.');
+                console.warn('Corrupted Save: AB was NaN. Resetting to 0.');
                 this.ab = 0.0;
+                handleError(
+                    new Error('Save had invalid Arcane Bits (NaN). Value was reset to 0.'),
+                    'load:corrupt-ab',
+                    true
+                );
             }
-            
+
             this.abTotalEarned = Number(data.abTotal);
             if (isNaN(this.abTotalEarned)) {
                 this.abTotalEarned = 0.0;
+                notifyPlayer(
+                    'Save had invalid lifetime AB total; it was reset to 0.',
+                    'load:corrupt-abTotal',
+                    'warning'
+                );
             }
 
             this.inventory = data.inventory || {};
@@ -1298,6 +1314,7 @@ export class GameState {
             localStorage.setItem(prefix + Date.now(), raw);
         } catch (e) {
             console.error('Failed to create backup:', e);
+            handleError(e, 'save:backup', true);
         }
     }
 

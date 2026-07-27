@@ -35,15 +35,16 @@ const MAX_ERROR_LOG_SIZE = 100;
  * @param {Object} additionalData - Additional context data
  */
 export function handleError(error, context = 'unknown', showToUser = false, category = ErrorCategory.GAME_STATE, severity = ErrorSeverity.MEDIUM, additionalData = {}) {
+    const err = error instanceof Error ? error : new Error(String(error ?? 'Unknown error'));
     // Create error entry
     const errorEntry = {
         timestamp: Date.now(),
-        message: error.message || 'Unknown error',
-        name: error.name || 'Error',
+        message: err.message || 'Unknown error',
+        name: err.name || 'Error',
         context,
         category,
         severity,
-        stack: error.stack,
+        stack: err.stack,
         additionalData,
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
         url: typeof window !== 'undefined' ? window.location.href : 'Unknown'
@@ -54,12 +55,16 @@ export function handleError(error, context = 'unknown', showToUser = false, cate
     
     // Log error details with enhanced formatting
     logError(errorEntry);
+
+    // Always try SYSTEM_LOG so failures are not console-only when the rail exists
+    surfaceToSystemLog(errorEntry, severity);
     
     // Show to user if requested
-    if (showToUser && typeof window !== 'undefined' && window.showNotification) {
+    if (showToUser && typeof window !== 'undefined') {
         const userMessage = formatUserMessage(errorEntry);
-        window.showNotification(userMessage, 'error');
-        
+        if (typeof window.showNotification === 'function') {
+            window.showNotification(userMessage, severity === ErrorSeverity.LOW ? 'warning' : 'error');
+        }
         // Announce to screen readers
         if (typeof window.announceToScreenReader === 'function') {
             window.announceToScreenReader(userMessage, 'assertive');
@@ -69,6 +74,74 @@ export function handleError(error, context = 'unknown', showToUser = false, cate
     // Report critical errors
     if (severity === ErrorSeverity.CRITICAL) {
         reportCriticalError(errorEntry);
+    }
+}
+
+/**
+ * Rate-limited failure report for hot loops (game tick/render).
+ * Surfaces the first hit per key immediately; suppresses spam for `cooldownMs`.
+ * @param {string} key
+ * @param {unknown} error
+ * @param {string} context
+ * @param {{ showToUser?: boolean, category?: string, severity?: string, cooldownMs?: number }} [opts]
+ */
+const _failureCooldowns = new Map();
+export function reportThrottledFailure(key, error, context, opts = {}) {
+    const cooldownMs = opts.cooldownMs ?? 15000;
+    const now = Date.now();
+    const last = _failureCooldowns.get(key) || 0;
+    if (now - last < cooldownMs) return false;
+    _failureCooldowns.set(key, now);
+    handleError(
+        error instanceof Error ? error : new Error(String(error ?? 'Unknown error')),
+        context,
+        opts.showToUser === true,
+        opts.category || ErrorCategory.GAME_STATE,
+        opts.severity || ErrorSeverity.MEDIUM,
+        { ...(opts.additionalData || {}), throttledKey: key }
+    );
+    return true;
+}
+
+/**
+ * Player-visible info that is not a hard error (e.g. save repaired).
+ * Always hits SYSTEM_LOG; notification is best-effort.
+ * @param {string} message
+ * @param {string} [context]
+ * @param {'info'|'warning'} [level]
+ */
+export function notifyPlayer(message, context = 'info', level = 'info') {
+    const text = String(message ?? '');
+    if (!text) return;
+    const logLevel = level === 'warning' ? 'warn' : 'info';
+    try {
+        if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+            window.__appendSystemLog(`${context}: ${text}`, logLevel);
+        }
+    } catch { /* optional */ }
+    try {
+        if (typeof window !== 'undefined' && typeof window.showNotification === 'function') {
+            window.showNotification(text, level === 'warning' ? 'warning' : 'info', 5000);
+        }
+    } catch { /* optional */ }
+    if (level === 'warning') {
+        console.warn(`[${context}]`, text);
+    } else {
+        console.info(`[${context}]`, text);
+    }
+}
+
+function surfaceToSystemLog(errorEntry, severity) {
+    try {
+        const level = severity === ErrorSeverity.LOW ? 'warn'
+            : severity === ErrorSeverity.CRITICAL || severity === ErrorSeverity.HIGH ? 'error'
+                : 'warn';
+        const line = `ERR ${errorEntry.context}: ${errorEntry.message}`;
+        if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+            window.__appendSystemLog(line, level);
+        }
+    } catch {
+        // Never let logging throw
     }
 }
 
@@ -167,12 +240,31 @@ function formatUserMessage(errorEntry) {
         }
     }
     
-    // Context-specific messages
-    if (errorEntry.context === 'save') {
+    // Context-specific messages (prefix match so load:migration / load:validation work)
+    const ctx = String(errorEntry.context || '');
+    if (ctx === 'save' || ctx.startsWith('save:')) {
         return 'Failed to save game. Your progress may not be saved. Please try again.';
     }
-    if (errorEntry.context === 'load') {
-        return 'Failed to load game. Attempting to restore from backup...';
+    if (ctx.startsWith('load:migration')) {
+        return errorEntry.message || 'Your save could not be upgraded and was reset. A backup was kept in this browser.';
+    }
+    if (ctx.startsWith('load:validation') || ctx.startsWith('load:corrupt')) {
+        return errorEntry.message || 'Your save was corrupted and could not be loaded. A backup was kept in this browser.';
+    }
+    if (ctx === 'load' || ctx.startsWith('load:')) {
+        return errorEntry.message || 'Failed to load game. Attempting to restore from backup...';
+    }
+    if (ctx.startsWith('meditation:')) {
+        return errorEntry.message || 'Meditation state had a problem. Progress in that mode may have been reset.';
+    }
+    if (ctx.startsWith('idb:') || ctx.startsWith('storage:')) {
+        return errorEntry.message || 'Browser storage had a problem. Progress may not persist until this is fixed.';
+    }
+
+    // Prefer the error's own message when it is already player-facing prose
+    if (errorEntry.message && errorEntry.message.length > 20 && errorEntry.message.length < 220
+        && !/^[A-Z][a-z]+Error:/.test(errorEntry.message)) {
+        return errorEntry.message;
     }
     
     // Default message with context (simplified for users)

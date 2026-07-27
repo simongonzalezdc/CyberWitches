@@ -70,6 +70,8 @@ declare global {
     addLockIndicator: (...args: any[]) => any;
     // Notifications helper, exposed in gameInit.js so any module can toast.
     showNotification: (message: string, type?: string, duration?: number, options?: { html?: boolean }) => any;
+    // SYSTEM_LOG bridge for errorHandler / storage modules (set in gameInit).
+    __appendSystemLog?: (message: string, level?: string) => void;
 
     // --- Analytics surface (opt-in) ---
     trackEvent: (...args: any[]) => any;

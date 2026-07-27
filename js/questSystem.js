@@ -32,6 +32,12 @@ class QuestSystem {
             }
         } catch (error) {
             console.error('Failed to load quests:', error);
+            if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                window.__appendSystemLog('ERR quest load failed', 'error');
+            }
+            if (typeof window !== 'undefined' && typeof window.showNotification === 'function') {
+                window.showNotification('Quest data could not be loaded. Objectives may reset.', 'warning', 4000);
+            }
         }
     }
     
@@ -46,6 +52,12 @@ class QuestSystem {
             }));
         } catch (error) {
             console.error('Failed to save quests:', error);
+            if (typeof window !== 'undefined' && typeof window.__appendSystemLog === 'function') {
+                window.__appendSystemLog('ERR quest save failed', 'error');
+            }
+            if (typeof window !== 'undefined' && typeof window.showNotification === 'function') {
+                window.showNotification('Quest progress could not be saved.', 'warning', 4000);
+            }
         }
     }
     
