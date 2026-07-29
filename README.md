@@ -1,26 +1,22 @@
 # Hex Compiler (CyberWitches)
 
-A browser-based idle/incremental game where you compile fading magic into hexadecimal code — for fans of clicker and incremental games who like a story.
+Browser idle/incremental game where you compile fading magic into hexadecimal code. Vanilla JS, PWA, esbuild, Tone.js audio.
+
+**Who it is for:** clicker/incremental fans who want a story-shaped compile loop.
 
 ## Quick start
 
 ```bash
+git clone https://github.com/simongonzalezdc/CyberWitches.git
+cd CyberWitches
 npm install
-npm start        # dev server on http://localhost:3000 (opens a browser)
+npm start          # dev server (opens browser)
+npm run build:prod # static output to dist/
 ```
 
-```bash
-npm run build:prod   # outputs static files to dist/
-```
+Play: [simongonzalezdc.github.io/CyberWitches](https://simongonzalezdc.github.io/CyberWitches/)
 
 ## Docs
 
-- [QUALITY_BAR](guides/restoration-kernel/QUALITY_BAR.md)
-- [QUALITY_REPORT](guides/restoration-kernel/QUALITY_REPORT.md)
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-- [https://simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
-- [Tone.js](https://tonejs.github.io/)
-
-## License
-
-See [LICENSE](LICENSE).
+- [Deployment](docs/DEPLOYMENT.md)
+- Quality guides under `guides/restoration-kernel/`
