@@ -2,25 +2,30 @@
 
 A browser-based idle/incremental game where you compile fading magic into hexadecimal code — for fans of clicker and incremental games who like a story.
 
+## Play
+
+https://simongonzalezdc.github.io/CyberWitches/play.html
+
 ## Quick start
 
 ```bash
 npm install
-npm start        # dev server on http://localhost:3000 (opens a browser)
+npm start        # dev server (opens a browser)
+npm run build:prod   # static output to dist/
 ```
 
-```bash
-npm run build:prod   # outputs static files to dist/
-```
+## Repository
 
-## Docs
+https://github.com/simongonzalezdc/CyberWitches
 
-- [QUALITY_BAR](guides/restoration-kernel/QUALITY_BAR.md)
-- [QUALITY_REPORT](guides/restoration-kernel/QUALITY_REPORT.md)
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
-- [https://simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
-- [Tone.js](https://tonejs.github.io/)
+## Stack
+
+- Vanilla JS modules under `js/`
+- esbuild-based packaging where configured
+- Jest unit tests + Playwright e2e
 
 ## License
 
-See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
+
+> Older “Coven / multiplayer social” experiments are **archived** and not claimed as shipped.
