@@ -13,31 +13,7 @@ A magical idle game where you build a coven of witches, craft mystical workstati
 - **Achievement System**: Unlock achievements with unique rewards
 - **Daily Tasks**: Complete challenges for bonus rewards
 
-### Enhanced Social Features
-- **Coven System**: Create or join covens with other players
-- **Coven Achievements**: Collaborative achievements with coven-wide rewards
-- **Special Events**: Time-limited events and competitions
-- **Social Leaderboards**: Compete with other players and covens
-- **Coven Chat**: Communicate with coven members through simulated chat
-- **Collaborative Rituals**: Work together to complete powerful rituals
-
-### Advanced Systems
-- **Cloud Save Integration**: Save progress to the cloud with conflict resolution
-- **Analytics System**: Privacy-compliant gameplay analytics
-- **Particle Effects**: Visual feedback for actions and achievements
-- **Audio System**: Immersive sound effects with toggle controls
-- **Celebration Animations**: Spectacular animations for achievements
-- **Easter Eggs**: Discover hidden features and secrets
-- **Performance Monitoring**: FPS counter and optimization suggestions
-- **Debug Mode**: Development tools for testing and debugging
-
-### Technical Features
-- **Responsive Design**: Optimized for desktop and mobile devices
-- **Virtual Scrolling**: Efficient rendering of large lists
-- **Error Handling**: Comprehensive error tracking and recovery
-- **Accessibility**: Full keyboard navigation and screen reader support
-- **Progressive Web App**: Installable on supported devices
-- **Offline Support**: Continue earning resources when away
+#
 
 ## 🚀 Getting Started
 
@@ -76,7 +52,7 @@ A magical idle game where you build a coven of witches, craft mystical workstati
 ### Tech Stack
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
 - **Build Tools**: Webpack, Babel, ESLint
-- **Testing**: Jest, Cypress
+- **Testing**: Jest + Playwright
 - **Deployment**: Static hosting (Netlify, Vercel), Node.js server, Docker
 
 ### Project Structure
@@ -85,10 +61,7 @@ cyber-witches/
 ├── docs/                 # Documentation
 ├── js/                   # JavaScript modules
 │   ├── gameState.js      # Core game state
-│   ├── covenSystem.js    # Coven management
 │   ├── achievements.js    # Achievement system
-│   ├── covenEvents.js    # Event system
-│   ├── covenChat.js      # Chat system
 │   ├── socialLeaderboards.js # Leaderboards
 │   ├── particleEffects.js # Particle effects
 │   ├── audioSystem.js     # Audio system
@@ -112,7 +85,7 @@ cyber-witches/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/cyber-witches.git
+   git clone https://github.com/simongonzalezdc/CyberWitches.git
    cd cyber-witches
    ```
 
@@ -226,10 +199,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Play Game**: [https://cyberwitches.game](https://cyberwitches.game)
-- **GitHub Repository**: [https://github.com/your-username/cyber-witches](https://github.com/your-username/cyber-witches)
+- **Play Game**: [https://simongonzalezdc.github.io/CyberWitches/play.html](https://simongonzalezdc.github.io/CyberWitches/play.html)
+- **GitHub Repository**: [https://github.com/simongonzalezdc/CyberWitches](https://github.com/simongonzalezdc/CyberWitches)
 - **Discord Community**: [https://discord.gg/cyberwitches](https://discord.gg/cyberwitches)
-- **Wiki**: [https://github.com/your-username/cyber-witches/wiki](https://github.com/your-username/cyber-witches/wiki)
+- **Wiki**: [https://github.com/simongonzalezdc/CyberWitches/wiki](https://github.com/simongonzalezdc/CyberWitches/wiki)
 
 ## 🙏 Acknowledgments
 
@@ -240,3 +213,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ❤️ by the Cyber Witches development team**
+
+> **Note:** Older “Coven / multiplayer social” surfaces were archived and are not claimed as shipped in the current build.
