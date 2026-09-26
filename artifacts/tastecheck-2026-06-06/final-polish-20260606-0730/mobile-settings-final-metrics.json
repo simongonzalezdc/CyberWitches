@@ -1,0 +1,16 @@
+{
+  "modalDisplay": "flex",
+  "content": {
+    "x": 32,
+    "y": 249,
+    "width": 327,
+    "height": 347
+  },
+  "labels": [
+    "Export save",
+    "Import save",
+    "Wipe save",
+    "Close"
+  ],
+  "overflowX": 0
+}

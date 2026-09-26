@@ -1,0 +1,71 @@
+{
+  "metrics": {
+    "readyState": "complete",
+    "hasGameState": true,
+    "title": "VOID WITCH PROTOCOL // HEX COMPILER",
+    "bodyText": "Skip to game\nESSENCE_BUFFER\nAB: 0\n--/s\n?\n/MNT/WORKSTATIONS\n/SYS/UPGRADES\n/USR/DATA\n/BIN/LAB\n/LOG/STATS\n/ETC/RITUALS\n/OPT/BOONS\n🔒\nFIRE FORGE\nLv. 0\n\nA digital preservation chamber that compiles Fire essence into stable data structures. Your code creates crystalline matrices that capture heat as information before it dissipates. Fire fades faster than other elements—every forge you program is a small victory against entropy.\n\n10\nFire Essence\nCRAFT\nMAX\nAQUA WELL\nLv. 0\n\nA digital preservation chamber that encodes Water essence into flowing data streams. Your algorithms create perpetual loops—constant data circulation preserves what static storage would lose. Motion coded into logic.\n\n10\nWater Essence\nCRAFT\nMAX\nZEPHYR GENERATOR\nLv. 0\n\nA preservation chamber that stabilizes Air essence before it fades. The constant circulation creates a barrier against entropy. Air is the most elusive element—capturing wind is like holding onto a memory.\n\n10\nAir Essence\nCRAFT\nMAX\nCRYSTAL CHAMBER\nLv. 0\n\nA pre",
+    "overflowX": 0,
+    "html": "<html lang=\"en\"><head>\n    <meta charset=\"UTF-8\">\n    <!-- Allow zoom up to 5x (WCAG 1.4.4): never disable user scaling. -->\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover\">\n\n    <!-- Content Security Policy -->\n    <meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; media-src 'self'; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';\">\n\n    <!-- Primary Meta Tags -->\n    <title>VOID WITCH PROTOCOL // HEX COMPILER</title>\n    <meta name=\"title\" content=\"Hex Compiler - Arcane Terminal\">\n    <meta name=\"description\" content=\"Initialize... Loading Spell Protocols... Compile Magic into Code. The Void is here.\">\n    \n    <!-- Fonts -->\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin=\"\">\n    <link href=\"https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap\" rel=\"stylesheet\">\n\n    <!-- Favicon (reuses the PWA icon so /favicon.ico no longer 404s) -->\n    <link rel=\"icon\" href=\"icons/icon-192x192.png\" type=\"image/png\">\n    <link rel=\"apple-touch-icon\" href=\"icons/icon-192x192.png\">\n\n    <!-- CSS -->\n    <link rel=\"stylesheet\" href=\"styles/theme.css\">\n    <link rel=\"stylesheet\" href=\"css/main.css\">\n    \n    <!-- Audio Engine. SELF-HOSTED (vendor/tone-15.1.22.js) — the exact bytes of\n         tone@15.1.22 from jsdelivr, integrity-verified at vendoring time against\n         the published SRI hash. Self-hosting removes the runtime CDN/supply-chain\n         dependency and makes the PWA work fully offline. -->\n    <script src=\"vendor/tone-15.1.22.js\" defer=\"\"></script>\n</head>\n\n<body class=\"bg-void-950",
+    "loaders": [
+      {
+        "tag": "DIV",
+        "id": "loading-overlay",
+        "className": "loading-overlay",
+        "text": "Loading game..."
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "className": "loading-spinner-large",
+        "text": ""
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "className": "loading-message loading-message-text",
+        "text": "Loading game..."
+      }
+    ],
+    "mainExists": true,
+    "storyExists": false,
+    "castExists": true
+  },
+  "events": {
+    "pageErrors": [],
+    "console": [
+      {
+        "type": "log",
+        "text": "%c * Tone.js v15.1.22 *  background: #000; color: #fff"
+      },
+      {
+        "type": "warning",
+        "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+      },
+      {
+        "type": "warning",
+        "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+      },
+      {
+        "type": "info",
+        "text": "Initializing Hex Compiler..."
+      },
+      {
+        "type": "info",
+        "text": "Hex Compiler initialization complete."
+      },
+      {
+        "type": "info",
+        "text": "✅ Game started successfully."
+      },
+      {
+        "type": "info",
+        "text": "🎮 Unified game loop active (10 TPS logic, 30 FPS visuals)"
+      },
+      {
+        "type": "info",
+        "text": "Service Worker registered: ServiceWorkerRegistration"
+      }
+    ],
+    "requestsFailed": []
+  }
+}

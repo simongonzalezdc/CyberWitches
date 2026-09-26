@@ -1,0 +1,25 @@
+{
+  "hasGameState": true,
+  "overflowX": 0,
+  "cast": {
+    "x": 124,
+    "y": 616,
+    "width": 72,
+    "height": 72,
+    "text": "EXEC"
+  },
+  "container": {
+    "x": 119,
+    "y": 611,
+    "width": 82,
+    "height": 82,
+    "text": "EXEC"
+  },
+  "deck": {
+    "x": 0,
+    "y": 604,
+    "width": 320,
+    "height": 96,
+    "text": "EXEC\n                \n            \n            \n            \n            \n                x1.0\n     "
+  }
+}

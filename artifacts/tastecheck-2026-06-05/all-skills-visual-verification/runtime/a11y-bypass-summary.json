@@ -1,0 +1,154 @@
+{
+  "desktop": {
+    "firstRun": {
+      "fails": 34,
+      "warnings": 17
+    },
+    "main": {
+      "fails": 33,
+      "warnings": 18
+    },
+    "firstRunTopFails": [
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"RESOURCE_MONITOR\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"FIRE\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/SYS/UPGRADES\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/USR/DATA\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/BIN/LAB\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/LOG/STATS\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/ETC/RITUALS\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/OPT/BOONS🔒\""
+    ],
+    "mainTopFails": [
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"RESOURCE_MONITOR\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"FIRE\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/SYS/UPGRADES\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/USR/DATA\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/BIN/LAB\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/LOG/STATS\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/ETC/RITUALS\"",
+      "  ✗ CONTRAST 2.94:1 (need 4.5) — 12px \"/OPT/BOONS🔒\""
+    ],
+    "mainWarnings": [
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Fire Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Water Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Air Essence\""
+    ]
+  },
+  "tablet": {
+    "firstRun": {
+      "fails": 26,
+      "warnings": 17
+    },
+    "main": {
+      "fails": 25,
+      "warnings": 18
+    },
+    "firstRunTopFails": [
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Fire Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Water Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\""
+    ],
+    "mainTopFails": [
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Fire Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Water Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\""
+    ],
+    "mainWarnings": [
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Fire Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Water Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Air Essence\""
+    ]
+  },
+  "mobile": {
+    "firstRun": {
+      "fails": 26,
+      "warnings": 17
+    },
+    "main": {
+      "fails": 25,
+      "warnings": 18
+    },
+    "firstRunTopFails": [
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Fire Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Water Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\""
+    ],
+    "mainTopFails": [
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Fire Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Water Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\""
+    ],
+    "mainWarnings": [
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Fire Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Water Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Air Essence\""
+    ]
+  },
+  "narrow320": {
+    "firstRun": {
+      "fails": 26,
+      "warnings": 17
+    },
+    "main": {
+      "fails": 25,
+      "warnings": 18
+    },
+    "firstRunTopFails": [
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Fire Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Water Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\""
+    ],
+    "mainTopFails": [
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Fire Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"A digital preservation chamber t\"",
+      "  ✗ CONTRAST 3.13:1 (need 4.5) — 11px \"Water Essence\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Craft\"",
+      "  ✗ CONTRAST 2.80:1 (need 4.5) — 12px \"Max\""
+    ],
+    "mainWarnings": [
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Fire Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Water Essence\"",
+      "  ! TINY 11px text — \"10\"",
+      "  ! TINY 11px text — \"Air Essence\""
+    ]
+  }
+}

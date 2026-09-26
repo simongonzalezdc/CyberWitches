@@ -1,0 +1,1184 @@
+
+> hex-compiler@1.0.0 test
+> NODE_OPTIONS=--experimental-vm-modules jest --runInBand
+
+(node:35459) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS tests/unit/gameState.test.js
+  GameState - Core Functionality
+    Initialization
+      ✓ should initialize with default currency values (7 ms)
+      ✓ should initialize with empty inventory (2 ms)
+      ✓ should initialize with empty workstations (1 ms)
+      ✓ should initialize with empty upgrades (1 ms)
+      ✓ should initialize prestige system (1 ms)
+      ✓ should initialize element specialization (1 ms)
+      ✓ should initialize stats (1 ms)
+      ✓ should initialize milestones (2 ms)
+      ✓ should initialize buffs system (1 ms)
+      ✓ should initialize discovered recipes (1 ms)
+    AB Currency Management
+      ✓ should add AB correctly (1 ms)
+      ✓ should track total AB earned (1 ms)
+      ✓ should reject negative AB amounts
+      ✓ should spend AB correctly
+      ✓ should not decrease total earned when spending (1 ms)
+      ✓ should handle spending more than available
+      ✓ should handle large AB amounts (1 ms)
+      ✓ should handle decimal AB amounts (1 ms)
+    Inventory Management
+      ✓ should add ingredients to empty inventory (1 ms)
+      ✓ should accumulate ingredients (1 ms)
+      ✓ should handle multiple ingredient types (1 ms)
+      ✓ should spend ingredients correctly (1 ms)
+      ✓ should handle spending non-existent ingredient (1 ms)
+      ✓ should handle decimal ingredient amounts (1 ms)
+      ✓ should handle very small ingredient amounts (1 ms)
+    Workstation Management
+      ✓ should add workstation when crafted (1 ms)
+      ✓ should increment workstation count
+      ✓ should handle multiple workstation types
+      ✓ should track total workstations crafted
+    Upgrade System
+      ✓ should mark upgrade as owned
+      ✓ should handle multiple upgrades (1 ms)
+      ✓ should check if upgrade is owned
+    Prestige System
+      ✓ should have prestige points (1 ms)
+      ✓ should track lifetime earned
+      ✓ should track prestige count
+      ✓ should manage prestige bonuses (1 ms)
+      ✓ should calculate prestige gain correctly (1 ms)
+      ✓ should calculate prestige gain based on lifetime earnings
+      ✓ should return 0 prestige gain when no lifetime earnings (1 ms)
+      ✓ should perform ascension when gain > 0 (3 ms)
+      ✓ should not ascend without enough earnings (1 ms)
+      ✓ should choose element specialization (3 ms)
+      ✓ should reject invalid element specialization
+      ✓ should apply prestige start bonuses without errors
+      ✓ should reset element specialization on successful ascend (1 ms)
+      ✓ should increment prestige count on successful ascend (2 ms)
+    Element Specialization
+      ✓ should start with no specialization
+      ✓ should allow setting specialization
+      ✓ should handle specialization bonuses (1 ms)
+      ✓ should support different element types (2 ms)
+      ✓ should set element specialization
+      ✓ should handle specialization bonuses
+      ✓ should allow changing specialization
+      ✓ should handle null specialization (1 ms)
+    Buff System
+      ✓ should add buff to active buffs
+      ✓ should handle multiple buffs
+      ✓ should remove expired buffs (1 ms)
+    Stats Tracking
+      ✓ should increment total taps (1 ms)
+      ✓ should track workstations crafted
+      ✓ should track potions crafted
+      ✓ should handle large stat values (1 ms)
+    Recipe Discovery
+      ✓ should start with no discovered recipes (1 ms)
+      ✓ should add discovered recipe (2 ms)
+      ✓ should track multiple discovered recipes (1 ms)
+      ✓ should check if recipe is discovered (1 ms)
+      ✓ should initialize with empty discovered recipes (1 ms)
+      ✓ should check if recipe is discovered (1 ms)
+      ✓ should add discovered recipes (1 ms)
+      ✓ should handle discovered recipes array
+    Milestone System
+      ✓ should have unlocked milestones set (1 ms)
+      ✓ should add unlocked milestone
+      ✓ should track multiple milestones (1 ms)
+      ✓ should not add duplicate milestones
+      ✓ should check milestone unlock status (1 ms)
+    Timestamps and Timing
+      ✓ should track last save time
+      ✓ should track last tick time (1 ms)
+      ✓ should calculate time delta
+    Tick Loop Management
+      ✓ should have no tick interval initially
+      ✓ should set tick interval when started (1 ms)
+      ✓ should clear tick interval when stopped (1 ms)
+      ✓ should clear existing interval when restarting (1 ms)
+    Callbacks
+      ✓ should initialize all callbacks as null (1 ms)
+      ✓ should allow setting callbacks (1 ms)
+      ✓ should allow setting multiple callbacks (1 ms)
+    State Consistency
+      ✓ should maintain consistent state after operations (1 ms)
+      ✓ should handle complex state modifications
+    Production Calculations
+      ✓ should calculate total production with no workstations (1 ms)
+      ✓ should calculate production with single workstation
+      ✓ should scale production with delta time
+      ✓ should calculate production with multiple workstations (1 ms)
+      ✓ should apply event multiplier to production (1 ms)
+      ✓ should get AB per second
+    Production Multipliers
+      ✓ should get base production multiplier (5 ms)
+      ✓ should apply upgrade multipliers (1 ms)
+      ✓ should calculate multipliers for different workstations (1 ms)
+    Buff Management
+      ✓ should add buff correctly
+      ✓ should get buff multiplier
+      ✓ should return 1.0 for non-existent buff
+      ✓ should update buffs over time
+      ✓ should stack same type buffs (1 ms)
+    Recipe Crafting
+      ✓ should check if recipe is affordable (1 ms)
+      ✓ should return false for unaffordable recipe
+      ✓ should consume recipe ingredients
+      ✓ should craft workstation if affordable
+    Prestige Calculations
+      ✓ should calculate prestige gain
+      ✓ should return 0 prestige gain when below threshold
+      ✓ should handle prestige bonus purchases (1 ms)
+    Save and Load
+      ✓ should save game state to localStorage (21 ms)
+      ✓ should load game state from localStorage (5 ms)
+      ✓ should handle missing save data gracefully (3 ms)
+      ✓ should preserve complex state through save/load cycle (3 ms)
+    Casting System
+      ✓ should handle basic cast (1 ms)
+      ✓ should apply combo multiplier to cast (1 ms)
+      ✓ should apply event multiplier to cast
+      ✓ should grant ingredients from casting (1 ms)
+      ✓ should grant AB from casting
+    Offline Progress
+      ✓ should calculate offline production
+      ✓ should apply offline cap (1 ms)
+      ✓ should handle zero offline time (1 ms)
+    Potions and Buffs
+      ✓ should get potion effect
+      ✓ should return null for invalid potion
+      ✓ should consume potion successfully (1 ms)
+      ✓ should not consume potion without inventory (1 ms)
+      ✓ should add buff correctly
+      ✓ should get buff multiplier
+      ✓ should return 1.0 for non-existent buff type (1 ms)
+      ✓ should stack multiple buffs (1 ms)
+      ✓ should update buffs and remove expired ones
+      ✓ should handle multiple potion types (1 ms)
+    Tick and Production
+      ✓ should handle tick function
+      ✓ should apply production during tick
+      ✓ should update buffs during tick
+      ✓ should accept event multiplier in tick (1 ms)
+    Casting and Multipliers
+      ✓ should handle casting without errors (1 ms)
+      ✓ should grant resources on cast (1 ms)
+      ✓ should apply multipliers to cast
+      ✓ should grant AB per cast
+      ✓ should handle specialization bonuses in cast (1 ms)
+    Save State Structure
+      ✓ should save and load discovered recipes (3 ms)
+      ✓ should save game state without errors (1 ms)
+      ✓ should save and load prestige data (2 ms)
+      ✓ should save and load element specialization (3 ms)
+      ✓ should handle corrupted save data (3 ms)
+      ✓ should handle missing save data (1 ms)
+
+PASS tests/unit/data.test.js
+  Data.js - Game Data Validation
+    INGREDIENTS Array
+      ✓ should export INGREDIENTS array (3 ms)
+      ✓ all ingredients should have required fields (19 ms)
+      ✓ ingredient IDs should be unique (1 ms)
+      ✓ ingredient tiers should be valid (4 ms)
+      ✓ meditation-only ingredients should have meditationOnly flag
+      ✓ should have base tier 0 ingredients
+      ✓ should have ingredients across multiple tiers (1 ms)
+    PRODUCERS Array
+      ✓ should export PRODUCERS array
+      ✓ all producers should have required fields (28 ms)
+      ✓ producer IDs should be unique (1 ms)
+      ✓ producer recipes should reference valid ingredients (5 ms)
+      ✓ producer outputs should have positive production rates (3 ms)
+      ✓ producer growth rates should be reasonable (4 ms)
+      ✓ producer unlock costs should be increasing
+    UPGRADES Array
+      ✓ should export UPGRADES array (1 ms)
+      ✓ all upgrades should have required fields (25 ms)
+      ✓ upgrade IDs should be unique
+      ✓ upgrade recipes should reference valid ingredients (4 ms)
+      ✓ upgrade values should be positive (2 ms)
+      ✓ multiplier upgrades should have values >= 1.0 (1 ms)
+      ✓ upgrades should have valid affect targets (4 ms)
+    PRESTIGE_BONUSES Array
+      ✓ should export PRESTIGE_BONUSES array (1 ms)
+      ✓ all prestige bonuses should have required fields (17 ms)
+      ✓ prestige bonus IDs should be unique
+      ✓ prestige bonus values should be positive (1 ms)
+      ✓ prestige bonus cost growth should be reasonable (2 ms)
+      ✓ prestige bonuses should have valid types (1 ms)
+    DAILY_TASKS_POOL Array
+      ✓ should export DAILY_TASKS_POOL array
+      ✓ all daily tasks should have required fields (8 ms)
+      ✓ daily task IDs should be unique (1 ms)
+      ✓ daily task reward values should be positive (1 ms)
+    HIDDEN_RECIPES Array
+      ✓ should export HIDDEN_RECIPES array (1 ms)
+      ✓ all hidden recipes should have required fields (11 ms)
+      ✓ hidden recipe IDs should be unique
+      ✓ hidden recipe inputs should reference valid ingredients (4 ms)
+      ✓ hidden recipe input amounts should be positive (9 ms)
+      ✓ hidden recipe output amounts should be positive (2 ms)
+    MEDITATION_TOWERS Array
+      ✓ should export MEDITATION_TOWERS array (1 ms)
+      ✓ all meditation towers should have required fields (2 ms)
+      ✓ meditation tower IDs should be unique
+    MEDITATION_DISTRACTIONS Array
+      ✓ should export MEDITATION_DISTRACTIONS array
+      ✓ all meditation distractions should have required fields (5 ms)
+    MEDITATION_UPGRADES Array
+      ✓ should export MEDITATION_UPGRADES array (1 ms)
+      ✓ all meditation upgrades should have required fields (1 ms)
+      ✓ meditation upgrade IDs should be unique
+    Cross-Reference Validation
+      ✓ producer outputs should reference valid ingredients or AB (2 ms)
+      ✓ upgrade recipes should only use defined ingredients (4 ms)
+      ✓ producer recipes should only use defined ingredients (4 ms)
+      ✓ hidden recipe inputs should reference valid ingredients (4 ms)
+      ✓ hidden recipe outputs should be defined (4 ms)
+      ✓ no circular dependencies in recipes (4 ms)
+    Balance Validation
+      ✓ producer costs should scale reasonably (2 ms)
+      ✓ upgrade costs should scale reasonably (3 ms)
+      ✓ prestige bonus costs should be balanced (4 ms)
+      ✓ production rates should be reasonable (4 ms)
+    Data Integrity
+      ✓ all arrays should be non-empty for core game data
+      ✓ ingredient display names should be properly capitalized (2 ms)
+      ✓ producer display names should be properly capitalized (1 ms)
+      ✓ upgrade display names should be properly capitalized (3 ms)
+      ✓ no undefined or null values in critical fields (10 ms)
+
+PASS tests/unit/analytics.test.js
+  Analytics System
+    Initialization
+      ✓ should create analytics system (4 ms)
+      ✓ should initialize with default config (2 ms)
+      ✓ should initialize with privacy settings (1 ms)
+      ✓ should initialize empty events array (1 ms)
+    Session Management
+      ✓ should generate unique session IDs (2 ms)
+      ✓ should have session start time (1 ms)
+      ✓ should track last activity time
+      ✓ should start session on init
+    User ID Management
+      ✓ should create user ID if not exists (2 ms)
+      ✓ should persist user ID to localStorage (1 ms)
+      ✓ should reuse existing user ID (1 ms)
+    Opt-In Management
+      ✓ should get opt-in status (1 ms)
+      ✓ should default to opted out when not set
+      ✓ should set opt-in status (1 ms)
+      ✓ should persist opt-in status (1 ms)
+    Event Tracking
+      ✓ should track basic event
+      ✓ should track event with value (2 ms)
+      ✓ should track event with metadata (1 ms)
+      ✓ should generate unique event IDs (1 ms)
+      ✓ should include timestamp in events (1 ms)
+      ✓ should include session ID in events (1 ms)
+    Specialized Event Tracking
+      ✓ should track progression events (1 ms)
+      ✓ should track action events
+      ✓ should track social events (2 ms)
+      ✓ should track economy events
+    Performance Tracking
+      ✓ should track performance metrics (1 ms)
+      ✓ should track FPS values
+      ✓ should track memory usage (1 ms)
+      ✓ should track load times (2 ms)
+      ✓ should get aggregated performance metrics (1 ms)
+    Error Tracking
+      ✓ should track errors (4 ms)
+      ✓ should increment error count (2 ms)
+      ✓ should track error context (1 ms)
+    Data Anonymization
+      ✓ should anonymize sensitive data (1 ms)
+      ✓ should detect sensitive keys (2 ms)
+      ✓ should detect potentially identifying keys (1 ms)
+      ✓ should hash strings consistently
+      ✓ should produce different hashes for different strings (1 ms)
+    Privacy Settings
+      ✓ should update privacy settings
+      ✓ should respect performance collection setting (1 ms)
+      ✓ should update multiple privacy settings (3 ms)
+    Event Management
+      ✓ should clear events (1 ms)
+      ✓ should get analytics summary (1 ms)
+      ✓ should include session duration in summary
+    Event Type Classification
+      ✓ should classify progression events (1 ms)
+      ✓ should classify action events
+      ✓ should classify performance events (1 ms)
+      ✓ should classify error events (1 ms)
+      ✓ should classify session events (1 ms)
+    Edge Cases
+      ✓ should not track events when opted out (1 ms)
+      ✓ should handle null event values gracefully (4 ms)
+      ✓ should handle undefined event metadata gracefully (2 ms)
+      ✓ should handle empty data anonymization (2 ms)
+      ✓ should handle null data with anonymization safely (1 ms)
+
+PASS tests/unit/utils.test.js
+  utils.js - Number Formatting
+    formatShort
+      ✓ should format numbers under 1000 as integers (4 ms)
+      ✓ should format thousands with K suffix (2 ms)
+      ✓ should format millions with M suffix (1 ms)
+      ✓ should format billions with B suffix (1 ms)
+      ✓ should format trillions with T suffix (1 ms)
+      ✓ should format quadrillions with Qa suffix
+      ✓ should format quintillions with Qi suffix (1 ms)
+      ✓ should handle decimal values correctly (2 ms)
+      ✓ should handle negative numbers
+      ✓ should cap at highest suffix (Sp) (1 ms)
+    formatPrecise
+      ✓ should format with default 2 decimals
+      ✓ should format with custom decimal places (1 ms)
+      ✓ should round correctly
+      ✓ should handle negative numbers
+      ✓ should handle zero (1 ms)
+    formatOneDecimal
+      ✓ should format small numbers with 1 decimal
+      ✓ should format thousands with K suffix and 1 decimal
+      ✓ should format millions with M suffix and 1 decimal
+      ✓ should format billions with B suffix and 1 decimal
+      ✓ should round to 1 decimal place
+    formatTimeDuration
+      ✓ should format seconds only (1 ms)
+      ✓ should format minutes and seconds (1 ms)
+      ✓ should format hours and minutes (no seconds) (1 ms)
+      ✓ should handle large durations (1 ms)
+      ✓ should floor decimal values
+  utils.js - Balance Calculations
+    Balance.prestigePointsFor
+      ✓ should return 0 for zero lifetime earned (1 ms)
+      ✓ should calculate prestige points with correct formula
+      ✓ should floor the result (1 ms)
+      ✓ should handle negative values as zero
+      ✓ should handle large values (2 ms)
+    Balance.nextPrestigeThreshold
+      ✓ should calculate next threshold correctly (1 ms)
+      ✓ should handle large prestige counts (1 ms)
+      ✓ should work with the prestigePointsFor function
+    Balance.scaledRecipe
+      ✓ should scale recipe costs with growth (1 ms)
+      ✓ should increase costs exponentially (3 ms)
+      ✓ should ceil the results
+      ✓ should handle multiple ingredients
+      ✓ should handle high ownership counts
+      ✓ should handle growth of 1.0 (no scaling)
+      ✓ should create new object, not modify original (1 ms)
+    Balance.calculateOfflineProduction
+      ✓ should calculate production for short durations
+      ✓ should calculate production for various rates (2 ms)
+      ✓ should cap at 12 hours (43200 seconds)
+      ✓ should handle zero production rate
+      ✓ should handle zero elapsed time
+      ✓ should handle fractional production rates
+      ✓ should handle decimal elapsed time
+    Balance constants
+      ✓ should have correct prestige scale
+      ✓ should have correct offline cap (12 hours)
+  utils.js - Edge Cases
+    ✓ formatShort should handle Infinity (1 ms)
+    ✓ formatShort should handle very small numbers
+    ✓ Balance.prestigePointsFor should handle very large numbers (1 ms)
+    ✓ Balance.scaledRecipe should handle empty recipe (1 ms)
+    ✓ formatTimeDuration should handle negative values (1 ms)
+  utils.js - Integration Tests
+    ✓ should maintain consistency between prestige calculations (2 ms)
+    ✓ should scale recipe costs realistically (1 ms)
+    ✓ should format and calculate consistently
+
+PASS tests/unit/retentionTracking.test.js
+  RetentionTracking
+    First Visit Tracking
+      ✓ should track first visit timestamp (5 ms)
+      ✓ should not overwrite existing first visit (1 ms)
+      ✓ should store install date in ISO format (1 ms)
+    UTM Parameter Extraction
+      ✓ should extract utm_source from URL (2 ms)
+      ✓ should extract utm_medium from URL (1 ms)
+      ✓ should extract utm_campaign from URL (1 ms)
+      ✓ should return null for missing UTM parameters (1 ms)
+      ✓ should handle multiple UTM parameters (1 ms)
+    Return Visit Detection
+      ✓ should calculate days since first visit (1 ms)
+      ✓ should detect D1 return window (1-2 days)
+      ✓ should detect D7 return window (7-8 days) (1 ms)
+      ✓ should detect D30 return window (30-31 days) (1 ms)
+    Day N Return Tracking
+      ✓ should mark D1 return as tracked
+      ✓ should mark D7 return as tracked (1 ms)
+      ✓ should mark D30 return as tracked
+      ✓ should not track same day N return twice (1 ms)
+    Session Tracking
+      ✓ should track session count per day
+      ✓ should increment session count on each visit
+      ✓ should use correct date format for session key (1 ms)
+    Retention Metrics
+      ✓ should return new user status when no first visit (1 ms)
+      ✓ should calculate days since install
+      ✓ should check D1 retention status
+      ✓ should check D7 retention status
+      ✓ should check D30 retention status (1 ms)
+      ✓ should return all retention metrics (1 ms)
+    Cohort Analysis
+      ✓ should generate cohort date from install date (1 ms)
+      ✓ should return null cohort info when no first visit
+      ✓ should calculate cohort information
+      ✓ should use YYYY-MM-DD format for cohort (1 ms)
+    Edge Cases
+      ✓ should handle very old install dates
+      ✓ should handle fractional day calculations (1 ms)
+      ✓ should handle missing localStorage values gracefully
+      ✓ should handle empty UTM parameters
+      ✓ should handle malformed timestamps (1 ms)
+
+PASS tests/gameState.saveValidation.test.js
+  GameState - Save File Validation
+    validateSaveData
+      ✓ should reject null data (3 ms)
+      ✓ should reject undefined data (1 ms)
+      ✓ should reject non-object data (1 ms)
+      ✓ should reject data with negative ab value (1 ms)
+      ✓ should reject data with negative abTotal value (1 ms)
+      ✓ should reject data with NaN values
+      ✓ should reject data with overflow values
+      ✓ should reject data with invalid timestamp (too old)
+      ✓ should reject data with invalid timestamp (too far in future)
+      ✓ should reject data with invalid inventory values
+      ✓ should reject data with NaN inventory values
+      ✓ should reject data with inventory overflow
+      ✓ should reject data with negative prestige points
+      ✓ should reject data with invalid prestige bonus levels (1 ms)
+      ✓ should reject data with excessively high prestige bonus levels
+      ✓ should reject data with too many discovered recipes (1 ms)
+      ✓ should reject data with too many unlocked milestones
+      ✓ should accept valid save data (5 ms)
+    checksum validation
+      ✓ should calculate consistent checksums (1 ms)
+      ✓ should calculate different checksums for different data (1 ms)
+      ✓ should verify valid checksum
+      ✓ should reject invalid checksum
+      ✓ should allow missing checksum (old saves)
+      ✓ should detect tampered data
+    save and load with validation
+      ✓ should save and load valid data with checksum (7 ms)
+      ✓ should reject corrupted save data (3 ms)
+      ✓ should handle malformed JSON gracefully (4 ms)
+
+PASS tests/unit/lintColorDebt.test.js
+  lint-color-debt
+    stripExclusions
+      ✓ strips CSS block comments (3 ms)
+      ✓ strips JS line comments (1 ms)
+      ✓ strips double-quoted strings (1 ms)
+      ✓ strips single-quoted strings (1 ms)
+      ✓ strips backtick template literals (1 ms)
+      ✓ strips template literals with nested ${} (1 ms)
+      ✓ strips url(...)
+      ✓ strips JSON-LD blocks (1 ms)
+      ✓ strips single-quoted JSON-LD type
+    extractViolations
+      ✓ catches 3-digit hex
+      ✓ catches 6-digit hex (1 ms)
+      ✓ catches uppercase hex
+      ✓ catches rgb/rgba
+      ✓ catches hsl/hsla (1 ms)
+      ✓ ignores colors in CSS block comments
+      ✓ ignores colors in JS line comments
+      ✓ ignores colors in double-quoted strings (1 ms)
+      ✓ ignores colors in single-quoted strings
+      ✓ ignores colors in backtick strings
+      ✓ ignores colors in url(...)
+      ✓ ignores colors in JSON-LD (2 ms)
+      ✓ ignores 4-digit and 8-digit hex (1 ms)
+      ✓ ignores HTML entities
+      ✓ catches colors in HTML style tags
+      ✓ catches colors in HTML style attributes
+      ✓ ignores colors in HTML comments (1 ms)
+      ✓ counts multiple violations in one file
+    findColorDebtFiles
+      ✓ discovers css, js, html files and respects whitelist (6 ms)
+      ✓ skips non-scan extensions (3 ms)
+    baseline comparison
+      ✓ passes when counts are within baseline (5 ms)
+      ✓ fails when a scanned file exceeds baseline (5 ms)
+      ✓ passes when a file improves relative to baseline (4 ms)
+      ✓ passes when new file has zero violations (3 ms)
+      ✓ fails when new file has violations (3 ms)
+      ✓ update-baseline writes current counts (5 ms)
+    CLI
+      ✓ exits 0 when debt is within baseline (228 ms)
+      ✓ exits 1 when debt exceeds baseline (184 ms)
+      ✓ --update-baseline writes baseline and exits 0 (218 ms)
+
+PASS tests/unit/progressionAnalysis.test.js
+  Progression Analysis
+    Initialization
+      ✓ should create progression analysis (4 ms)
+      ✓ should initialize with empty progression data (1 ms)
+      ✓ should collect initial data point on init (1 ms)
+    Data Collection
+      ✓ should collect data point
+      ✓ should include timestamp in data point
+      ✓ should include AB in data point (1 ms)
+      ✓ should include workstation count in data point (1 ms)
+      ✓ should include upgrades count in data point
+      ✓ should include prestige count in data point
+      ✓ should include total taps in data point
+      ✓ should limit data points to 1000 (3 ms)
+      ✓ should not collect data when gameState is null
+    Growth Rate Calculation
+      ✓ should calculate growth rate (1 ms)
+      ✓ should return 0 when not enough data (1 ms)
+      ✓ should return 0 when first value is 0
+      ✓ should return 0 when time diff is 0 (1 ms)
+      ✓ should calculate positive growth rate
+      ✓ should calculate growth rate for different metrics (1 ms)
+    Progression Speed Calculation
+      ✓ should calculate progression speed
+      ✓ should return error when not enough data
+      ✓ should include AB per minute (1 ms)
+      ✓ should include ABPS per minute
+      ✓ should include workstations per minute (1 ms)
+    Progression Analysis
+      ✓ should analyze progression
+      ✓ should return error when not enough data
+      ✓ should include growth rates in analysis (6 ms)
+      ✓ should include progression speed in analysis (1 ms)
+      ✓ should include bottlenecks in analysis (1 ms)
+    Bottleneck Identification
+      ✓ should identify bottlenecks
+      ✓ should identify no workstations bottleneck
+      ✓ should not identify bottleneck when AB is low (1 ms)
+
+PASS tests/unit/achievements.test.js
+  Achievement System
+    Initialization
+      ✓ should create achievement system (5 ms)
+      ✓ should initialize achievements array (1 ms)
+      ✓ should initialize unlocked achievements set (2 ms)
+      ✓ all achievements should have required fields (31 ms)
+      ✓ achievement IDs should be unique (1 ms)
+    Achievement Unlocking
+      ✓ should not unlock achievements by default (1 ms)
+      ✓ should unlock first_cast achievement (2 ms)
+      ✓ should unlock first_ab achievement (1 ms)
+      ✓ should unlock first_workstation achievement (2 ms)
+      ✓ should unlock multiple achievements at once (2 ms)
+      ✓ should not unlock same achievement twice
+    Achievement Rewards
+      ✓ should grant AB reward
+      ✓ should grant prestige point reward (1 ms)
+      ✓ should grant multiple rewards
+      ✓ should handle reward with zero amount
+    Achievement Tracking
+      ✓ should get total achievement count (1 ms)
+      ✓ should get unlocked achievement count
+      ✓ unlocked count should match set size
+      ✓ should track progress toward achievements (1 ms)
+    Achievement Conditions
+      ✓ should check cast-based achievements (1 ms)
+      ✓ should check AB-based achievements
+      ✓ should check workstation-based achievements (1 ms)
+      ✓ achievement conditions should be callable (5 ms)
+      ✓ achievement conditions should return boolean (4 ms)
+    Edge Cases
+      ✓ should handle very high game state values (1 ms)
+      ✓ should handle zero values in game state
+      ✓ should handle invalid reward types gracefully (1 ms)
+      ✓ should throw error for null reward (6 ms)
+      ✓ should throw error for undefined reward (1 ms)
+    Achievement Progress
+      ✓ should make incremental progress (1 ms)
+      ✓ should unlock achievements in order of difficulty (1 ms)
+      ✓ should persist unlocked state (1 ms)
+
+PASS tests/unit/playerAnalytics.test.js
+  Player Analytics
+    Initialization
+      ✓ should have player analytics manager (4 ms)
+      ✓ should initialize with disabled state by default (1 ms)
+      ✓ should initialize with empty events (1 ms)
+      ✓ should have maxEvents limit
+      ✓ should load saved preference from localStorage (1 ms)
+      ✓ should respect disabled preference from localStorage (1 ms)
+    Enable/Disable
+      ✓ should enable analytics
+      ✓ should save enabled preference to localStorage
+      ✓ should disable analytics (1 ms)
+      ✓ should save disabled preference to localStorage
+      ✓ should clear events when disabling
+    Event Tracking
+      ✓ should track event when enabled (1 ms)
+      ✓ should not track event when disabled (1 ms)
+      ✓ should include event name in tracked event
+      ✓ should include timestamp in tracked event
+      ✓ should anonymize properties
+      ✓ should limit events to maxEvents
+      ✓ should keep most recent events when at limit (1 ms)
+      ✓ should not track when canUseAnalytics returns false (1 ms)
+      ✓ should track when canUseAnalytics returns true (1 ms)
+    Property Anonymization
+      ✓ should remove userId from properties
+      ✓ should remove email from properties (1 ms)
+      ✓ should remove name from properties
+      ✓ should preserve other properties (1 ms)
+      ✓ should not modify original properties object
+    Action Tracking
+      ✓ should track action (1 ms)
+      ✓ should track action with player_action event name
+      ✓ should include action in properties
+      ✓ should merge action data with properties (1 ms)
+    Progression Tracking
+      ✓ should track progression (1 ms)
+      ✓ should track progression with progression event name
+      ✓ should include milestone in properties
+      ✓ should merge milestone data with properties
+    Get Analytics Data
+      ✓ should get analytics data (1 ms)
+      ✓ should return correct event count
+      ✓ should return events array (1 ms)
+    Global Functions
+      ✓ should have trackEvent global function
+      ✓ should have trackAction global function (1 ms)
+      ✓ trackEvent should track event
+      ✓ trackAction should track action
+
+PASS tests/unit/balanceAnalytics.test.js
+  Balance Analytics
+    Initialization
+      ✓ should have balance analytics manager (3 ms)
+      ✓ should initialize with empty metrics (1 ms)
+      ✓ should have getMetrics method (1 ms)
+    Metrics Collection
+      ✓ should collect metrics when gameState exists (1 ms)
+      ✓ should not error when gameState is null (1 ms)
+      ✓ should get metrics object
+    ABPS Calculation
+      ✓ should calculate ABPS with no workstations (1 ms)
+      ✓ should calculate ABPS with workstations
+      ✓ should return 0 when gameState is null
+      ✓ should return 0 when PRODUCERS is null (1 ms)
+      ✓ should sum ABPS from multiple workstations
+    Element PS Calculation
+      ✓ should calculate element PS with no workstations (1 ms)
+      ✓ should calculate element PS with workstations
+      ✓ should return 0 for element with no production
+      ✓ should return 0 when gameState is null (1 ms)
+      ✓ should return 0 when PRODUCERS is null
+      ✓ should sum element PS from multiple workstations
+    Next Cost Calculation
+      ✓ should calculate next cost for producer (1 ms)
+      ✓ should scale cost with ownership (1 ms)
+      ✓ should return 0 when no recipe
+      ✓ should return 0 when no growth
+      ✓ should sum all ingredient costs
+    Resource Generation Tracking
+      ✓ should track resource generation (1 ms)
+      ✓ should not error when gameState is null (1 ms)
+      ✓ should store metrics with timestamp (1 ms)
+    Progression Speed Tracking
+      ✓ should track progression speed (1 ms)
+      ✓ should not error when gameState is null (1 ms)
+      ✓ should track AB value
+      ✓ should track prestige count (1 ms)
+    Cost Scaling Tracking
+      ✓ should track cost scaling
+      ✓ should not error when gameState is null
+      ✓ should not error when PRODUCERS is null
+    Global Functions
+      ✓ should have getBalanceMetrics global function (1 ms)
+      ✓ getBalanceMetrics should return metrics (1 ms)
+
+PASS tests/unit/onboarding.test.js
+  Onboarding System
+    Initialization
+      ✓ should exist (3 ms)
+      ✓ should start with inactive state (1 ms)
+      ✓ should start with incomplete state (2 ms)
+      ✓ should start at step 0
+      ✓ should have action counter initialized (1 ms)
+      ✓ should check localStorage for completion on init (2 ms)
+      ✓ should not start if already complete (1 ms)
+      ✓ should not start if already active (1 ms)
+    Tutorial State Management
+      ✓ should initialize action counter (1 ms)
+      ✓ should handle actions when not active (1 ms)
+      ✓ should handle action with data
+      ✓ should handle undefined data parameter (1 ms)
+      ✓ should not throw on empty action type
+    Tutorial Progress
+      ✓ should track current step
+      ✓ should allow skipping tutorial (4 ms)
+      ✓ should save skip state to localStorage (1 ms)
+      ✓ should complete tutorial
+      ✓ should save completion state to localStorage (1 ms)
+      ✓ should allow restarting tutorial (14 ms)
+      ✓ should clear localStorage on restart (6 ms)
+    Global Functions
+      ✓ should have startTutorial function (1 ms)
+      ✓ should have skipTutorial function
+      ✓ should have restartTutorial function (1 ms)
+      ✓ should have handleTutorialAction function
+      ✓ should have isTutorialActive function
+      ✓ should have isTutorialComplete function (1 ms)
+      ✓ isTutorialActive should return boolean
+      ✓ isTutorialComplete should return boolean
+      ✓ handleTutorialAction should accept action type (1 ms)
+      ✓ handleTutorialAction should accept data parameter (2 ms)
+      ✓ startTutorial should call onboarding.start (5 ms)
+      ✓ skipTutorial should call onboarding.skipTutorial (1 ms)
+      ✓ restartTutorial should call onboarding.restartTutorial (4 ms)
+    State Queries
+      ✓ should return active state correctly
+      ✓ should return complete state correctly
+    Tutorial Persistence
+      ✓ should not auto-start if save exists
+      ✓ should not start if previously skipped
+      ✓ should mark as complete if previously completed
+    Tutorial Actions
+      ✓ should call handleAction when using global function (1 ms)
+      ✓ should handle multiple action types
+      ✓ should handle rapid actions
+      ✓ should handle actions with various data types
+    Edge Cases
+      ✓ should handle completion when not active (2 ms)
+      ✓ should handle skip when not active (1 ms)
+      ✓ should handle action when tutorial not active
+      ✓ should handle restart multiple times (14 ms)
+      ✓ should reset action counter on restart (4 ms)
+      ✓ should have shouldShow method
+      ✓ shouldShow returns false when tutorial is complete (1 ms)
+      ✓ shouldShow returns false when tutorial is skipped
+
+PASS tests/unit/game.test.js
+  Game Utility Functions
+    getTierSymbol
+      ✓ should return tier 0 symbol (4 ms)
+      ✓ should return tier 1 symbol (1 ms)
+      ✓ should return tier 2 symbol (1 ms)
+      ✓ should return tier 3 symbol
+      ✓ should return tier 4 symbol
+      ✓ should return tier 5 symbol
+      ✓ should return tier 0 for invalid tier (1 ms)
+      ✓ should include gradient
+      ✓ should include glow
+      ✓ should include borderGlow (1 ms)
+    getScaledRecipe
+      ✓ should scale recipe with growth 1.15
+      ✓ should scale recipe for 0 owned (1 ms)
+      ✓ should scale recipe for 5 owned (1 ms)
+      ✓ should handle multiple ingredients (1 ms)
+      ✓ should floor the result (matches the live game) (1 ms)
+      ✓ should handle empty recipe (1 ms)
+      ✓ should scale with growth 2.0
+    getWorkstationTier
+      ✓ should return tier 0 for first workstation
+      ✓ should return tier 0 for index 4
+      ✓ should return tier 1 for index 5
+      ✓ should return tier 1 for index 9
+      ✓ should return tier 2 for index 10
+      ✓ should return tier 3 for index 15
+      ✓ should return tier 4 for index 20 (1 ms)
+      ✓ should return -1 for non-existent workstation
+    getUpgradeTier
+      ✓ should return 0 for upgrade with no recipe (1 ms)
+      ✓ should return max tier from recipe ingredients
+      ✓ should handle recipe with single ingredient
+      ✓ should return 0 for recipe with unknown ingredients (1 ms)
+    getIngredientElement
+      ✓ should map fire_essence to fire
+      ✓ should map water_essence to water
+      ✓ should map air_essence to air
+      ✓ should map crystal_dust to crystal
+      ✓ should map aether_ess to aether (1 ms)
+      ✓ should map focus to aether
+      ✓ should return null for non-existent ingredient ab
+      ✓ should return null for unknown ingredient fire_candle
+      ✓ should return null for unknown ingredient water_liquid
+      ✓ should return null for unknown ingredient air_wind
+      ✓ should return crystal for crystal_orb
+      ✓ should return null for unknown ingredient aether_dist (1 ms)
+      ✓ should return null for unknown ingredient
+      ✓ should return null for undefined input
+      ✓ should handle empty string
+
+PASS tests/unit/dailyRituals.test.js
+  Daily Rituals
+    Initialization
+      ✓ should create daily rituals system (3 ms)
+      ✓ should initialize with empty state (2 ms)
+      ✓ should have task pool from data (1 ms)
+      ✓ should initialize callbacks as null
+    Day Key Generation
+      ✓ should generate day key in correct format (1 ms)
+      ✓ should generate consistent day key for same day (1 ms)
+      ✓ should pad month and day with zeros (1 ms)
+    Daily Refresh
+      ✓ should select tasks on first refresh (1 ms)
+      ✓ should reset progress on day change (1 ms)
+      ✓ should not reset on same day
+      ✓ should call onTasksRefreshed callback
+    Task Selection
+      ✓ should select up to 3 tasks
+      ✓ should select tasks from pool (1 ms)
+      ✓ should select different tasks each time (with randomization)
+    Task Progress
+      ✓ should update tap task progress (3 ms)
+      ✓ should call onTaskProgressUpdated callback (2 ms)
+      ✓ should call onTaskCompleted when target reached (1 ms)
+      ✓ should not update claimed tasks (1 ms)
+    Task Claiming
+      ✓ should claim completed task (1 ms)
+      ✓ should not claim incomplete task
+      ✓ should not claim already claimed task (1 ms)
+      ✓ should not claim non-existent task
+      ✓ should grant AB reward
+      ✓ should add task to claimed list
+    EK Fragments
+      ✓ should grant EK fragments (1 ms)
+      ✓ should convert 5 fragments to 1 EK
+      ✓ should handle partial fragments
+      ✓ should convert multiple sets of 5 fragments (1 ms)
+    Save and Load
+      ✓ should save state (1 ms)
+      ✓ should load state (1 ms)
+      ✓ should reconstruct active tasks from IDs
+      ✓ should handle missing data gracefully
+
+PASS tests/unit/meditationSim.test.js
+  MeditationState simulation — determinism
+    ✓ identical clock + seeded RNG produce identical state (reproducible) (36 ms)
+    ✓ a different RNG seed changes the outcome (RNG is actually used) (53 ms)
+  MeditationState simulation — clock injection
+    ✓ time only advances via the injected clock (no wall-clock leakage) (3 ms)
+  MeditationState simulation — wave lifecycle
+    ✓ startSession schedules wave 1, which begins when the clock reaches it (3 ms)
+    ✓ distractions spawn during an active wave (4 ms)
+  MeditationState simulation — combat
+    ✓ a tower in range damages and kills a distraction (5 ms)
+    ✓ a distraction reaching the center drains tranquility and can end the session (2 ms)
+  MeditationState simulation — tower placement economy
+    ✓ placeTower fails when ingredients are unaffordable and succeeds when affordable (3 ms)
+  MeditationState — reset()
+    ✓ reset() exists and clears progression + persisted state (6 ms)
+
+PASS tests/integration.test.js
+  Save/Load Integration Tests
+    Complete Save/Load Cycle
+      ✓ should handle save/load cycle with prestige data (10 ms)
+    Error Handling
+      ✓ should handle corrupted save data gracefully (9 ms)
+      ✓ should handle save errors gracefully (e.g. quota exceeded) (4 ms)
+      ✓ should handle load errors gracefully (e.g. storage access denied) (2 ms)
+      ✓ flushPendingSave persists immediately only when a save is pending (2 ms)
+      ✓ registerLifecycleHandlers wires hide/pagehide flush and is idempotent (3 ms)
+
+PASS tests/gameState.test.js
+  GameState
+    Initialization
+      ✓ should initialize with default values (6 ms)
+      ✓ should initialize milestones correctly (2 ms)
+    Currency Management
+      ✓ should add AB correctly (1 ms)
+      ✓ should track total AB earned (1 ms)
+      ✓ should spend AB correctly (1 ms)
+      ✓ should not allow negative AB (1 ms)
+    Inventory Management
+      ✓ should add ingredients correctly (1 ms)
+      ✓ should spend ingredients correctly (1 ms)
+      ✓ should not allow negative ingredients (1 ms)
+    Production
+      ✓ should calculate production correctly (1 ms)
+      ✓ should get AB per second (1 ms)
+    Save/Load
+      ✓ should save game state (4 ms)
+      ✓ should load game state (5 ms)
+      ✓ should handle corrupted save data (6 ms)
+      ✓ should validate save data
+    Save Conflict Resolution
+      ✓ should detect save conflicts (1 ms)
+      ✓ should merge save data when possible (1 ms)
+    Buffs
+      ✓ should add buffs correctly (1 ms)
+      ✓ should get buff multiplier (1 ms)
+      ✓ should update buffs and remove expired ones
+    Prestige
+      ✓ should calculate prestige gain (1 ms)
+      ✓ should complete prestige
+
+PASS tests/unit/questSystem.test.js
+  Quest System
+    Initialization
+      ✓ should create quest system (3 ms)
+      ✓ should initialize with empty arrays when no saved data (1 ms)
+      ✓ should create initial quests on first run (1 ms)
+      ✓ should load quests from localStorage if available
+    Quest Management
+      ✓ should add quest to active quests (1 ms)
+      ✓ should initialize quest progress to 0
+      ✓ should mark new quests as not completed (1 ms)
+      ✓ should get active quests (1 ms)
+      ✓ should get completed quests
+    Quest Progress
+      ✓ should update quest progress
+      ✓ should not error when updating non-existent quest (1 ms)
+      ✓ should complete quest when progress reaches target (1 ms)
+      ✓ should mark quest as completed (1 ms)
+    Quest Completion
+      ✓ should move quest from active to completed
+      ✓ should not error when completing non-existent quest
+      ✓ should handle multiple quest completions (1 ms)
+    Save and Load
+      ✓ should save quests to localStorage (1 ms)
+      ✓ should save active and completed quests
+      ✓ should load saved quests
+      ✓ should handle corrupted localStorage data
+    Rewards
+      ✓ should give notification reward (1 ms)
+      ✓ should give AB reward when gameState exists
+      ✓ should handle missing reward amount
+
+PASS tests/unit/lifecycleManager.test.js
+  LifecycleManager
+    Event Listeners
+      ✓ should track addEventListener calls (8 ms)
+      ✓ should actually add event listener (6 ms)
+      ✓ should remove event listener (3 ms)
+      ✓ should clean up all listeners on destroy (3 ms)
+    Timers
+      ✓ should track setInterval (9 ms)
+      ✓ should execute interval callback (6 ms)
+      ✓ should clear interval (2 ms)
+      ✓ should track setTimeout (5 ms)
+      ✓ should execute timeout callback (3 ms)
+      ✓ should auto-remove timeout after execution (2 ms)
+      ✓ should clean up all timers on destroy (3 ms)
+    Animation Frames
+      ✓ should track requestAnimationFrame (1 ms)
+      ✓ should cancel animation frame (1 ms)
+    Stats
+      ✓ should return accurate stats (2 ms)
+      ✓ should show destroyed state (1 ms)
+    Destroyed State
+      ✓ should warn when adding listener after destroy (1 ms)
+      ✓ should not set interval after destroy (1 ms)
+      ✓ should not set timeout after destroy
+
+PASS tests/unit/performanceBenchmarks.test.js
+  PerformanceBenchmarks
+    Initialization
+      ✓ should initialize with empty metrics (3 ms)
+      ✓ should have default thresholds (1 ms)
+      ✓ should not be monitoring by default
+    Benchmarking
+      ✓ should benchmark production calculation
+      ✓ should benchmark save operation (2 ms)
+      ✓ should benchmark render operation
+      ✓ should limit metric arrays to 100 samples (1 ms)
+    FPS Calculation
+      ✓ should calculate average FPS (1 ms)
+      ✓ should return 0 for empty FPS array
+    Memory Growth Calculation
+      ✓ should calculate memory growth rate
+      ✓ should return 0 for insufficient data (1 ms)
+    Reporting
+      ✓ should generate comprehensive report (1 ms)
+      ✓ should mark FPS as PASS when above threshold (1 ms)
+      ✓ should mark FPS as FAIL when below threshold
+    Start/Stop
+      ✓ should start monitoring
+      ✓ should stop monitoring (1 ms)
+      ✓ should not start twice
+
+PASS tests/unit/debug.test.js
+  Debug Utilities
+    debugLog
+      ✓ should exist (2 ms)
+      ✓ should not call console.info when debug is disabled (1 ms)
+      ✓ should handle arguments without crashing (1 ms)
+    debugWarn
+      ✓ should exist (1 ms)
+      ✓ should not call console.warn when debug is disabled
+      ✓ should handle arguments without crashing (1 ms)
+    debugError
+      ✓ should exist (1 ms)
+      ✓ should always call console.error (1 ms)
+      ✓ should pass arguments to console.error (1 ms)
+      ✓ should handle multiple arguments (1 ms)
+    debugGroup
+      ✓ should exist (1 ms)
+      ✓ should not call console.group when debug is disabled
+      ✓ should handle label without crashing (1 ms)
+    debugGroupEnd
+      ✓ should exist
+      ✓ should not call console.groupEnd when debug is disabled
+    debugTime
+      ✓ should exist
+      ✓ should not call console.time when debug is disabled
+      ✓ should handle label without crashing (1 ms)
+    debugTimeEnd
+      ✓ should exist
+      ✓ should not call console.timeEnd when debug is disabled
+      ✓ should handle label without crashing
+
+PASS tests/unit/eventSystem.test.js
+  Event System
+    Initialization
+      ✓ should initialize with game state reference (4 ms)
+      ✓ should initialize with empty active events (2 ms)
+      ✓ should have event chance configured (1 ms)
+      ✓ should have minimum event interval (1 ms)
+    Event Timing
+      ✓ should not trigger events before minimum interval (1 ms)
+      ✓ should allow events after minimum interval (1 ms)
+    Event Chance Scaling
+      ✓ should double chance after 100 taps
+      ✓ should scale chance further after 500 taps
+    Event Activation
+      ✓ should activate instant reward events (1 ms)
+      ✓ should activate timed events
+      ✓ should return event result (1 ms)
+    Event Management
+      ✓ should track active timed events
+      ✓ should have method to check for events
+      ✓ should have method to trigger events
+      ✓ should have method to activate events
+    Event Types
+      ✓ should handle lucky strike event (1 ms)
+      ✓ should handle windfall event
+
+PASS tests/unit/saveCodec.test.js
+  saveCodec encode/decode round-trip
+    ✓ a valid snapshot encodes and decodes back to a loaded snapshot (6 ms)
+    ✓ encode drops zero-valued inventory and workstation entries (1 ms)
+  saveCodec decode outcomes
+    ✓ unparseable input yields parse_error and no snapshot (1 ms)
+    ✓ a tampered field (stale checksum) is recovered as checksum_recalculated (1 ms)
+    ✓ a structurally invalid snapshot yields invalid (1 ms)
+  saveCodec migration
+    ✓ a v1.0 save is migrated up with required fields initialised (12 ms)
+    ✓ a versionless save is stamped to the current version
+    ✓ migration infers prestige.count from prestige points
+    ✓ decode applies migration end-to-end for an old save
+  saveCodec compressSaveDataObject
+    ✓ reuses nested references (callers must pass a copy) (1 ms)
+
+PASS tests/unit/comboSystem.test.js
+  Combo System
+    Initialization
+      ✓ should initialize with zero combo (3 ms)
+      ✓ should initialize with 1.0 multiplier (1 ms)
+      ✓ should have combo timeout of 2000ms
+      ✓ should initialize milestone bonuses set (1 ms)
+    Combo Building
+      ✓ should start combo at 1 on first action (1 ms)
+      ✓ should increment combo on rapid actions (1 ms)
+      ✓ should reset combo after timeout (1 ms)
+      ✓ should track max combo
+      ✓ should maintain max combo even after reset (1 ms)
+    Combo Multiplier
+      ✓ should calculate multiplier correctly (1 ms)
+      ✓ should cap multiplier at 2.0
+      ✓ should return 1.0 when combo expires (1 ms)
+      ✓ should return current multiplier when combo active
+    Combo Count
+      ✓ should return current combo count (1 ms)
+      ✓ should return 0 when combo expires
+    Reset
+      ✓ should reset combo count (1 ms)
+      ✓ should reset multiplier
+      ✓ should not reset milestone bonuses
+
+PASS tests/unit/gameState.saveRecovery.test.js
+  GameState.loadGameState save recovery
+    ✓ does nothing destructive when there is no save (6 ms)
+    ✓ clears the loading overlay on every exit path (8 ms)
+    ✓ corrupt (unparseable) save is not loaded and is backed up (3 ms)
+    ✓ structurally invalid save (valid JSON, bad shape) is rejected and backed up (3 ms)
+    ✓ a well-formed save still loads normally (recovery does not block valid saves) (1 ms)
+
+PASS tests/unit/indexedDBBackup.test.js
+  indexedDBBackup — primitives
+    ✓ set then get round-trips the value (15 ms)
+    ✓ get returns null for an absent key (7 ms)
+    ✓ delete removes the value (15 ms)
+    ✓ mirrorToIndexedDB persists without being awaited (9 ms)
+  indexedDBBackup — restoreMissingFromIndexedDB (eviction recovery)
+    ✓ restores a key into localStorage when it is missing there but present in IDB (11 ms)
+    ✓ does NOT overwrite localStorage when it already has the key (15 ms)
+    ✓ is a no-op when neither store has the key (9 ms)
+    ✓ handles multiple keys independently (10 ms)
+
+PASS tests/unit/lazyLoader.test.js
+  LazyLoader
+    Module Loading
+      ✓ should load module (2 ms)
+      ✓ should cache loaded modules (1 ms)
+      ✓ should return cached module (1 ms)
+      ✓ should track loading promises (1 ms)
+    Cache Management
+      ✓ should check if module is loaded (1 ms)
+      ✓ should unload module (1 ms)
+    Statistics
+      ✓ should return accurate stats (2 ms)
+      ✓ should handle empty cache (2 ms)
+    Preloading
+      ✓ should not preload already loaded module (1 ms)
+      ✓ should not preload module already loading
+
+PASS tests/unit/inscriptionsManager.test.js
+  InscriptionsManager.inscribeUpgrade
+    ✓ delegates to CraftingManager.inscribeUpgrade (not gameState) (7 ms)
+    ✓ does not throw on the success notification path and refreshes UI (2 ms)
+    ✓ does not throw on the failure path (1 ms)
+    ✓ resolves a real upgrade displayName from UPGRADES data (1 ms)
+
+PASS tests/unit/designSystemVersion.test.js
+  design-system version storage
+    ✓ persists outside save/export blobs (7 ms)
+    ✓ DesignTierSystem records version and reapplies theme on mismatch (3 ms)
+
+PASS tests/unit/uiStore.test.js
+  ReactiveStore — reset()
+    ✓ reset() restores the original seed state, not an empty object (3 ms)
+    ✓ reset() notifies listeners of restored values (5 ms)
+    ✓ the seed snapshot is immutable to later mutations (no shared reference) (1 ms)
+
+PASS tests/unit/errorHandler.test.js
+  handleError user notification routing
+    ✓ routes a user-facing error to window.showNotification when showToUser=true (8 ms)
+    ✓ does NOT notify the user when showToUser is false (1 ms)
+    ✓ never throws even if window.showNotification is missing (5 ms)
+
+PASS tests/unit/tutorialSystem.notifier.test.js
+  TutorialSystem notifier seam
+    ✓ completeTutorial emits through the injected notifier, with no UIManager (10 ms)
+    ✓ falls back to the default notifier when none is injected (1 ms)
+
+PASS js/tests/gameState.test.js
+  GameState
+    ✓ should initialize with default values (1 ms)
+    ✓ should save and load game state
+    ✓ should calculate production correctly (1 ms)
+    ✓ should handle crafting workstations
+    ✓ should handle purchasing upgrades
+
+PASS tests/unit/audioAccess.test.js
+  audio access seam
+    ✓ returns whatever was registered (4 ms)
+    ✓ returns null before an AudioSystem is wired (1 ms)
+
+Test Suites: 34 passed, 34 total
+Tests:       882 passed, 882 total
+Snapshots:   0 total
+Time:        9.709 s
+Ran all test suites.

@@ -1,0 +1,10 @@
+{
+  "storyVisible": false,
+  "labels": [
+    "Export save",
+    "Import save",
+    "Wipe save",
+    "Close"
+  ],
+  "overflowX": 0
+}

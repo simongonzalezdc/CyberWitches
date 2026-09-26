@@ -1,0 +1,446 @@
+{
+  "url": "http://127.0.0.1:8091",
+  "outDir": "/Users/simongonzalezdecruz/workspaces/archive/personal/CyberWitches/artifacts/tastecheck-2026-06-06/fresh-audit-20260606-0640",
+  "generatedAt": "2026-06-06T13:42:55.725Z",
+  "captures": [
+    {
+      "name": "desktop",
+      "shell": {
+        "label": "desktop-shell",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "scroll": {
+          "documentScrollWidth": 1440,
+          "documentClientWidth": 1440,
+          "overflowX": 0,
+          "bodyScrollWidth": 1440
+        },
+        "body": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(5, 5, 8)",
+          "borderColor": "rgb(255, 255, 255)",
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        "title": "VOID WITCH PROTOCOL // HEX COMPILER",
+        "skipLink": true,
+        "main": true,
+        "castButton": {
+          "x": 672,
+          "y": 765,
+          "width": 96,
+          "height": 96,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(0, 0, 0, 0.5)"
+        },
+        "sidebar": {
+          "x": 0,
+          "y": 80,
+          "width": 320,
+          "height": 646,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(10, 10, 18)"
+        },
+        "tabsNav": {
+          "x": 320,
+          "y": 80,
+          "width": 1120,
+          "height": 45,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.8)"
+        },
+        "tabsContent": {
+          "x": 320,
+          "y": 80,
+          "width": 1120,
+          "height": 646,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(5, 5, 8)"
+        },
+        "firstTab": {
+          "role": "tab",
+          "ariaControls": "workstations-tab",
+          "ariaSelected": "true",
+          "text": "/MNT/WORKSTATIONS"
+        },
+        "activeTab": {
+          "role": "tab",
+          "ariaControls": "workstations-tab",
+          "ariaSelected": "true",
+          "text": "/MNT/WORKSTATIONS",
+          "styles": {
+            "color": "rgb(0, 240, 255)",
+            "backgroundColor": "rgba(0, 0, 0, 0)",
+            "borderColor": "rgb(0, 240, 255)",
+            "outlineColor": "rgb(0, 240, 255)"
+          }
+        },
+        "settingsButton": {
+          "x": 1383,
+          "y": 18,
+          "width": 44,
+          "height": 44,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.78)"
+        },
+        "helpButton": {
+          "x": 1331,
+          "y": 18,
+          "width": 44,
+          "height": 44,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.78)"
+        },
+        "focusableCount": 37,
+        "storyVisible": false,
+        "contrastPairs": [
+          {
+            "name": "desktop-shell: cast text",
+            "ratio": 14.91,
+            "fg": "rgb(0, 240, 255)",
+            "bg": "rgba(0, 0, 0, 0.5)"
+          },
+          {
+            "name": "desktop-shell: active tab text",
+            "ratio": 14.91,
+            "fg": "rgb(0, 240, 255)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      },
+      "modal": {
+        "x": 496,
+        "y": 265,
+        "width": 448,
+        "height": 371,
+        "centerDelta": 0,
+        "insideViewport": true,
+        "role": "dialog",
+        "ariaModal": "true"
+      },
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "mobile",
+      "shell": {
+        "label": "mobile-shell",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scroll": {
+          "documentScrollWidth": 390,
+          "documentClientWidth": 390,
+          "overflowX": 0,
+          "bodyScrollWidth": 390
+        },
+        "body": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(5, 5, 8)",
+          "borderColor": "rgb(255, 255, 255)",
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        "title": "VOID WITCH PROTOCOL // HEX COMPILER",
+        "skipLink": true,
+        "main": true,
+        "castButton": {
+          "x": 147,
+          "y": 709,
+          "width": 96,
+          "height": 96,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(0, 0, 0, 0.5)"
+        },
+        "sidebar": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "display": "none",
+          "visibility": "visible",
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(10, 10, 18)"
+        },
+        "tabsNav": {
+          "x": 0,
+          "y": 80,
+          "width": 390,
+          "height": 45,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.8)"
+        },
+        "tabsContent": {
+          "x": 0,
+          "y": 80,
+          "width": 390,
+          "height": 784,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(5, 5, 8)"
+        },
+        "firstTab": {
+          "role": "tab",
+          "ariaControls": "workstations-tab",
+          "ariaSelected": "true",
+          "text": "/MNT/WORKSTATIONS"
+        },
+        "activeTab": {
+          "role": "tab",
+          "ariaControls": "workstations-tab",
+          "ariaSelected": "true",
+          "text": "/MNT/WORKSTATIONS",
+          "styles": {
+            "color": "rgb(0, 240, 255)",
+            "backgroundColor": "rgba(0, 0, 0, 0)",
+            "borderColor": "rgb(0, 240, 255)",
+            "outlineColor": "rgb(0, 240, 255)"
+          }
+        },
+        "settingsButton": {
+          "x": 333,
+          "y": 18,
+          "width": 44,
+          "height": 44,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.78)"
+        },
+        "helpButton": {
+          "x": 281,
+          "y": 18,
+          "width": 44,
+          "height": 44,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.78)"
+        },
+        "focusableCount": 37,
+        "storyVisible": false,
+        "contrastPairs": [
+          {
+            "name": "mobile-shell: cast text",
+            "ratio": 14.91,
+            "fg": "rgb(0, 240, 255)",
+            "bg": "rgba(0, 0, 0, 0.5)"
+          },
+          {
+            "name": "mobile-shell: active tab text",
+            "ratio": 14.91,
+            "fg": "rgb(0, 240, 255)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      },
+      "modal": {
+        "x": 32,
+        "y": 249,
+        "width": 327,
+        "height": 347,
+        "centerDelta": 0,
+        "insideViewport": true,
+        "role": "dialog",
+        "ariaModal": "true"
+      },
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "narrow320",
+      "shell": {
+        "label": "narrow320-shell",
+        "viewport": {
+          "width": 320,
+          "height": 700
+        },
+        "scroll": {
+          "documentScrollWidth": 320,
+          "documentClientWidth": 320,
+          "overflowX": 0,
+          "bodyScrollWidth": 320
+        },
+        "body": {
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(5, 5, 8)",
+          "borderColor": "rgb(255, 255, 255)",
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        "title": "VOID WITCH PROTOCOL // HEX COMPILER",
+        "skipLink": true,
+        "main": true,
+        "castButton": {
+          "x": 112,
+          "y": 565,
+          "width": 96,
+          "height": 96,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(0, 0, 0, 0.5)"
+        },
+        "sidebar": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "display": "none",
+          "visibility": "visible",
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(10, 10, 18)"
+        },
+        "tabsNav": {
+          "x": 0,
+          "y": 80,
+          "width": 320,
+          "height": 45,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "auto",
+          "overflowY": "auto",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.8)"
+        },
+        "tabsContent": {
+          "x": 0,
+          "y": 80,
+          "width": 320,
+          "height": 640,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "color": "rgb(255, 255, 255)",
+          "backgroundColor": "rgb(5, 5, 8)"
+        },
+        "firstTab": {
+          "role": "tab",
+          "ariaControls": "workstations-tab",
+          "ariaSelected": "true",
+          "text": "/MNT/WORKSTATIONS"
+        },
+        "activeTab": {
+          "role": "tab",
+          "ariaControls": "workstations-tab",
+          "ariaSelected": "true",
+          "text": "/MNT/WORKSTATIONS",
+          "styles": {
+            "color": "rgb(0, 240, 255)",
+            "backgroundColor": "rgba(0, 0, 0, 0)",
+            "borderColor": "rgb(0, 240, 255)",
+            "outlineColor": "rgb(0, 240, 255)"
+          }
+        },
+        "settingsButton": {
+          "x": 263,
+          "y": 18,
+          "width": 44,
+          "height": 44,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.78)"
+        },
+        "helpButton": {
+          "x": 211,
+          "y": 18,
+          "width": 44,
+          "height": 44,
+          "display": "flex",
+          "visibility": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "color": "rgb(0, 240, 255)",
+          "backgroundColor": "rgba(10, 10, 18, 0.78)"
+        },
+        "focusableCount": 37,
+        "storyVisible": false,
+        "contrastPairs": [
+          {
+            "name": "narrow320-shell: cast text",
+            "ratio": 14.91,
+            "fg": "rgb(0, 240, 255)",
+            "bg": "rgba(0, 0, 0, 0.5)"
+          },
+          {
+            "name": "narrow320-shell: active tab text",
+            "ratio": 14.91,
+            "fg": "rgb(0, 240, 255)",
+            "bg": "rgba(0, 0, 0, 0)"
+          }
+        ]
+      },
+      "pageErrors": [],
+      "consoleErrors": []
+    },
+    {
+      "name": "mobile-first-run-story",
+      "story": {
+        "x": 34,
+        "y": 144,
+        "width": 323,
+        "height": 556,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "role": "dialog",
+        "ariaModal": "true",
+        "markedSeenBeforeClose": null,
+        "insideViewport": true
+      },
+      "seenAfterClose": "true",
+      "pageErrors": [],
+      "consoleErrors": []
+    }
+  ]
+}
