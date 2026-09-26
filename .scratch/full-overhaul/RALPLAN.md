@@ -85,7 +85,7 @@ Adopt **Option A with strangler discipline**:
 ### Constraints for execution
 1. Command API: `kernel.dispatch({type, payload})` only path for player actions.  
 2. Content schema versioned; CI fails on invalid graphs.  
-3. Feature freeze outside map during overhaul (empower-orchestrator: no random systems).  
+3. Feature freeze outside map during overhaul.  
 4. First playable vertical of the **whole fantasy** (fade+pipeline+chapter through prestige teach) before path-depth expansion — this is not “a slice instead of overhaul”; it is the **minimum complete expression of the full vision’s core law**.
 
 ---
